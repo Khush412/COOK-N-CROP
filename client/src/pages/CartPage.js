@@ -19,37 +19,67 @@ import {
   Card,
   CardContent,
   CardActions,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormLabel,
+  FormControlLabel,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
+import addressService from '../services/addressService'; // New: Import address service
+import orderService from '../services/orderService';     // New: Import order service
+import AddressForm from '../components/AddressForm';     // New: Import AddressForm component
 
 const CartPage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [addresses, setAddresses] = useState([]); // New: State for user addresses
+  const [selectedAddress, setSelectedAddress] = useState(null); // New: State for selected address
+  const [showAddressForm, setShowAddressForm] = useState(false); // New: State to toggle address form
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false); // New: State for order placement loading
+  const [orderSuccessDialogOpen, setOrderSuccessDialogOpen] = useState(false); // New: State for order success dialog
+  const [placedOrderId, setPlacedOrderId] = useState(null); // New: State to store placed order ID
 
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await productService.getCart();
-        setCart(data);
+        const cartData = await productService.getCart();
+        setCart(cartData);
+
+        const userAddresses = await addressService.getAddresses();
+        setAddresses(userAddresses);
+        // Set default address if available
+        const defaultAddress = userAddresses.find(addr => addr.isDefault);
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress);
+        } else if (userAddresses.length > 0) {
+          setSelectedAddress(userAddresses[0]); // Select the first address if no default
+        }
+
       } catch (err) {
-        setError('Failed to load cart.');
-        showSnackbar('Failed to load cart.', 'error');
+        setError('Failed to load cart or addresses.');
+        showSnackbar('Failed to load cart or addresses.', 'error');
       } finally {
         setLoading(false);
       }
     };
-    fetchCart();
+    fetchData();
   }, []);
 
   const showSnackbar = (message, severity) => {
@@ -100,6 +130,69 @@ const CartPage = () => {
       showSnackbar('Cart cleared successfully!', 'success');
     } catch (err) {
       showSnackbar('Failed to clear cart.', 'error');
+    }
+  };
+
+  // New: Handle address selection
+  const handleAddressChange = (event) => {
+    const addressId = event.target.value;
+    const address = addresses.find(addr => addr._id === addressId);
+    setSelectedAddress(address);
+  };
+
+  // New: Handle adding a new address
+  const handleAddAddress = async (newAddressData) => {
+    try {
+      const addedAddress = await addressService.addAddress(newAddressData);
+      setAddresses([...addresses, addedAddress]);
+      setSelectedAddress(addedAddress); // Select the newly added address
+      setShowAddressForm(false);
+      showSnackbar('Address added successfully!', 'success');
+    } catch (err) {
+      showSnackbar('Failed to add address.', 'error');
+    }
+  };
+
+  // New: Handle order placement
+  const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      showSnackbar('Please select a shipping address.', 'warning');
+      return;
+    }
+    if (!cart || cart.items.length === 0) {
+      showSnackbar('Your cart is empty.', 'warning');
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    try {
+      const orderItems = cart.items.map(item => ({
+        product: item.product._id,
+        qty: item.quantity,
+      }));
+
+      const orderData = {
+        orderItems,
+        shippingAddress: {
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          zipCode: selectedAddress.zipCode,
+          country: selectedAddress.country,
+        },
+        totalPrice: parseFloat(calculateTotal()),
+      };
+
+      const createdOrder = await orderService.createOrder(orderData);
+      setPlacedOrderId(createdOrder._id); // Store the order ID
+      setOrderSuccessDialogOpen(true); // Open the success dialog
+      await productService.clearCart(); // Clear cart after successful order
+      setCart({ items: [] }); // Update local cart state
+    } catch (err) {
+      showSnackbar('Failed to place order.', 'error');
+      console.error('Order placement error:', err);
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -190,7 +283,7 @@ const CartPage = () => {
             <Grid item sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'stretch' }}>
               <Divider orientation="vertical" flexItem sx={{ my: 2 }} />
             </Grid>
-            <Grid  width={300}item xs={12} md={4} height={'100%'}>
+            <Grid width={300} item xs={12} md={4} height={'100%'}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -210,6 +303,53 @@ const CartPage = () => {
                 </Box>
                 <Box sx={{ flexShrink: 0, mt: 2, borderTop: '1px solid', borderColor: theme.palette.divider, pt: 2 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
+                    Shipping Address
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  {showAddressForm ? (
+                    <AddressForm onSubmit={handleAddAddress} onCancel={() => setShowAddressForm(false)} />
+                  ) : (
+                    <>
+                      {addresses.length > 0 ? (
+                        <FormControl component="fieldset" fullWidth>
+                          <FormLabel component="legend">Select an address</FormLabel>
+                          <RadioGroup
+                            aria-label="shipping-address"
+                            name="shipping-address-group"
+                            value={selectedAddress ? selectedAddress._id : ''}
+                            onChange={handleAddressChange}
+                          >
+                            {addresses.map((addr) => (
+                              <FormControlLabel
+                                key={addr._id}
+                                value={addr._id}
+                                control={<Radio />}
+                                label={
+                                  <Box>
+                                    <Typography variant="body2">{addr.street}, {addr.city}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{addr.state}, {addr.zipCode}, {addr.country}</Typography>
+                                    {addr.label && <Typography variant="caption" color="text.hint">({addr.label})</Typography>}
+                                  </Box>
+                                }
+                              />
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>No saved addresses. Please add one.</Typography>
+                      )}
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        onClick={() => setShowAddressForm(true)}
+                        sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}
+                      >
+                        Add New Address
+                      </Button>
+                    </>
+                  )}
+
+                  <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
                     Billing Info
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
@@ -233,14 +373,52 @@ const CartPage = () => {
                 </Box>
               </Paper>
             </Grid>
-            <Box sx={{ paddingLeft: { xs: '100px', md: '795px' }, alignSelf: 'flex-end', pr: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
-                <Button variant="contained" color="primary" size="large" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Proceed to Checkout
+            <Box sx={{ paddingLeft: { xs: '100px', md: '800px' }, alignSelf: 'flex-end', pr: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={handlePlaceOrder}
+                  disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
+                  sx={{ fontFamily: theme.typography.fontFamily }}
+                >
+                  {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Proceed to Checkout'}
                 </Button>
               </Box>
           </Grid>
         )}
       </Paper>
+      <Dialog
+        open={orderSuccessDialogOpen}
+        onClose={() => setOrderSuccessDialogOpen(false)}
+        aria-labelledby="order-success-dialog-title"
+        aria-describedby="order-success-dialog-description"
+      >
+        <DialogTitle id="order-success-dialog-title">{"Order Placed Successfully!"}</DialogTitle>
+        <DialogContent>
+          <Typography id="order-success-dialog-description" sx={{ mb: 2 }}>
+            Your order has been placed successfully. Thank you for your purchase!
+          </Typography>
+          <Typography>
+            You can view your order details by clicking the button below.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOrderSuccessDialogOpen(false);
+              if (placedOrderId) {
+                navigate(`/order/${placedOrderId}`);
+              }
+            }}
+            autoFocus
+            variant="contained"
+            color="primary"
+          >
+            View Order Details
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbarMessage}

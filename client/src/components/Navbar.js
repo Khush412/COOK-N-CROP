@@ -27,6 +27,8 @@ import {
   Settings as SettingsIcon,
   ArrowDropDown as ArrowDropDownIcon,
   ShoppingCart as ShoppingCartIcon,
+  Home as HomeIcon,
+  ReceiptLong as ReceiptLongIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import { useTheme } from "@mui/material/styles";
@@ -187,6 +189,11 @@ export default function Navbar() {
   const handleProfile = () => {
     handleCloseUserMenu();
     navigate("/profile");
+  };
+
+  const handleAddresses = () => {
+    handleCloseUserMenu();
+    navigate("/profile/addresses");
   };
 
   const isActive = (path) =>
@@ -397,6 +404,13 @@ export default function Navbar() {
                     Profile
                   </MenuItem>
 
+                  <MenuItem onClick={handleAddresses} sx={{ borderRadius: 2, px: 3 }}>
+                    <ListItemIcon>
+                      <HomeIcon fontSize="small" />
+                    </ListItemIcon>
+                    Saved Addresses
+                  </MenuItem>
+
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
@@ -421,6 +435,19 @@ export default function Navbar() {
                       <SubscriptionsIcon fontSize="small" />
                     </ListItemIcon>
                     Subscription
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/orders");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <ReceiptLongIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Orders
                   </MenuItem>
 
                   <MenuItem

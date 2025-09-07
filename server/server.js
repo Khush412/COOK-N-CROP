@@ -22,6 +22,8 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
+const addressRoutes = require('./routes/address'); // New: Import address routes
+const orderRoutes = require('./routes/order'); // New: Import order routes
 
 // Connect to database
 connectDB();
@@ -105,6 +107,8 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/addresses', addressRoutes); // New: Use address routes
+app.use('/api/orders', orderRoutes); // New: Use order routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

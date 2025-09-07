@@ -10,6 +10,9 @@ import Subscription from "./pages/Subscription";
 import Dashboard from "./pages/Control_panel";
 import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
+import OrderDetailsPage from "./pages/OrderDetailsPage"; // New: Import OrderDetailsPage
+import AddressManagementPage from "./pages/AddressManagementPage"; // New: Import AddressManagementPage
+import OrderHistoryPage from "./pages/OrderHistoryPage"; // New: Import OrderHistoryPage
 
 export default function AppRouter() {
   return (
@@ -21,9 +24,12 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}
+      <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
       <Route path="/subscription" element={<Subscription />} />
       <Route path="/dashboard/*" element={<Dashboard />} />
       <Route path="/cart" element={<CartPage />} />
+      <Route path="/order/:id" element={<OrderDetailsPage />} /> {/* New: Order Details Page */}
       
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" replace />} />
