@@ -10,6 +10,10 @@ const Product = require('../models/Product');
 router.post('/', protect, async (req, res) => {
   const { productId, quantity } = req.body;
 
+  if (typeof quantity !== 'number' || quantity <= 0) {
+    return res.status(400).json({ message: 'Quantity must be a positive number.' });
+  }
+
   try {
     const product = await Product.findById(productId);
 
@@ -56,7 +60,14 @@ router.get('/', protect, async (req, res) => {
     const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
 
     if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
+      // Instead of a 404, return a 200 with a default empty cart structure.
+      // This is a valid state for a user who has not added items yet.
+      return res.json({
+        _id: null,
+        user: req.user.id,
+        items: [],
+        __v: 0,
+      });
     }
 
     res.json(cart);

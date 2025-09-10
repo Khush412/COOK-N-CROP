@@ -40,7 +40,7 @@ export default function AuthPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      navigate("/my-resumes");
+      navigate("/dashboard");
     }
   }, [isAuthenticated, loading, navigate]);
 
@@ -387,10 +387,10 @@ export default function AuthPage() {
             >
               <PersonAddIcon sx={{ fontSize: 24, color: theme.palette.primary.main, mb: 0.5 }} />
                           <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1 }}>
-              Join ResuMate Today!
+              Join Cook-N-Crop Today!
             </Typography>
             <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-              Create professional resumes in minutes with our easy-to-use builder
+              Discover fresh ingredients and inspiring recipes from our community!
             </Typography>
             </Box>
           </DialogContent>

@@ -159,8 +159,6 @@ const userSchema = new mongoose.Schema({
       default: 0
     }
   },
-  // Resume management
-  resumes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resume' }],
   // User preferences
   preferences: {
     theme: {
@@ -223,11 +221,11 @@ const userSchema = new mongoose.Schema({
   },
   // Activity tracking
   activity: {
-    totalResumesCreated: {
+    totalOrders: {
       type: Number,
       default: 0
     },
-    totalDownloads: {
+    totalSpent: {
       type: Number,
       default: 0
     },

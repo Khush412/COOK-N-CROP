@@ -194,59 +194,6 @@ router.put('/:id/password', protect, validatePasswordChange, handleValidationErr
   }
 });
 
-// @desc    Get user's resumes
-// @route   GET /api/users/:id/resumes
-// @access  Private
-router.get('/:id/resumes', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('resumes');
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    if (req.user.id !== req.params.id && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized to access these resumes' });
-    }
-
-    res.status(200).json({ success: true, count: user.resumes.length, data: user.resumes });
-  } catch (error) {
-    console.error('Get resumes error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-// @desc    Add resume to user
-// @route   POST /api/users/:id/resumes
-// @access  Private
-router.post('/:id/resumes', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    if (req.user.id !== req.params.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized to add resumes to this account' });
-    }
-
-    const resume = {
-      title: req.body.title,
-      template: req.body.template,
-      data: req.body.data,
-      isPublic: req.body.isPublic || false,
-    };
-
-    user.resumes.push(resume);
-    user.activity.totalResumesCreated += 1;
-    await user.save();
-
-    res.status(201).json({ success: true, data: user.resumes[user.resumes.length - 1] });
-  } catch (error) {
-    console.error('Add resume error:', error);
-    res.status(500).json({ success: false, message: 'Server error during resume creation' });
-  }
-});
-
 // @desc    Update user subscription plan
 // @route   PUT /api/users/:id/subscription
 // @access  Private

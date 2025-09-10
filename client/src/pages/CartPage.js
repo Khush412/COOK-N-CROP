@@ -180,7 +180,6 @@ const CartPage = () => {
           zipCode: selectedAddress.zipCode,
           country: selectedAddress.country,
         },
-        totalPrice: parseFloat(calculateTotal()),
       };
 
       const createdOrder = await orderService.createOrder(orderData);
@@ -220,8 +219,8 @@ const CartPage = () => {
             </Button>
           </Box>
         ) : (
-          <Grid container spacing={4} sx={{ flexDirection: { xs: 'column', md: 'row' } }}>
-            <Grid width={650} item xs={12} md={8}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} lg={7}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Items in your cart ({cart.items.length})</Typography>
                 <Button
@@ -279,12 +278,8 @@ const CartPage = () => {
                 ))}
               </List>
             </Grid>
-            {/* Faint vertical line */}
-            <Grid item sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'stretch' }}>
-              <Divider orientation="vertical" flexItem sx={{ my: 2 }} />
-            </Grid>
-            <Grid width={300} item xs={12} md={4} height={'100%'}>
-              <Paper elevation={2} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Grid item xs={12} lg={5}>
+              <Paper elevation={2} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
                     Order Summary
@@ -370,21 +365,20 @@ const CartPage = () => {
                       ${calculateTotal()}
                     </Typography>
                   </Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    fullWidth
+                    onClick={handlePlaceOrder}
+                    disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
+                    sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5 }}
+                  >
+                    {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Proceed to Checkout'}
+                  </Button>
                 </Box>
               </Paper>
             </Grid>
-            <Box sx={{ paddingLeft: { xs: '100px', md: '800px' }, alignSelf: 'flex-end', pr: { xs: 2, md: 4 }, pb: { xs: 2, md: 4 } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={handlePlaceOrder}
-                  disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
-                  sx={{ fontFamily: theme.typography.fontFamily }}
-                >
-                  {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Proceed to Checkout'}
-                </Button>
-              </Box>
           </Grid>
         )}
       </Paper>

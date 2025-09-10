@@ -20,13 +20,17 @@ import {
   Message as MessageIcon,
 } from "@mui/icons-material";
 
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+
 export default function Community() {
   const theme = useTheme();
 
   const communityStats = [
-    { label: "Active Members", value: "2,847", icon: <PeopleIcon />, color: theme.palette.primary.main },
-    { label: "Resumes Created", value: "15,234", icon: <TrendingUpIcon />, color: theme.palette.secondary.main },
-    { label: "Success Stories", value: "892", icon: <StarIcon />, color: theme.palette.success.main },
+    { label: "Food Lovers", value: "2,847", icon: <PeopleIcon />, color: theme.palette.primary.main },
+    { label: "Recipes Shared", value: "1,234", icon: <MenuBookIcon />, color: theme.palette.secondary.main },
+    { label: "Local Farmers", value: "150+", icon: <LocalFloristIcon />, color: theme.palette.success.main },
     { label: "Discussions", value: "3,456", icon: <MessageIcon />, color: theme.palette.info.main },
   ];
 
@@ -35,31 +39,31 @@ export default function Community() {
       id: 1,
       author: "Sarah Johnson",
       avatar: "S",
-      title: "How I landed my dream job with a killer resume",
-      content: "After using ResuMate, I got 3 interview calls in just one week! The templates are amazing...",
-      tags: ["Success Story", "Career Tips"],
+      title: "My secret to the perfect sourdough bread!",
+      content: "After many attempts, I've finally perfected my sourdough recipe. The key is using fresh, locally milled flour...",
+      tags: ["Baking", "Recipes"],
       time: "2 hours ago",
       likes: 24,
       comments: 8,
     },
     {
       id: 2,
-      author: "Mike Chen",
-      avatar: "M",
-      title: "Best practices for ATS-friendly resumes",
-      content: "Here are some tips I learned from HR professionals about making your resume ATS-compatible...",
-      tags: ["ATS", "Tips"],
+      author: "Farmer Mike",
+      avatar: "FM",
+      title: "This week's harvest: Sweet corn and heirloom tomatoes",
+      content: "The weather has been perfect! Come grab some of the sweetest corn you'll ever taste at the marketplace this weekend.",
+      tags: ["Harvest", "Local Produce"],
       time: "5 hours ago",
       likes: 18,
       comments: 12,
     },
     {
       id: 3,
-      author: "Emily Rodriguez",
-      avatar: "E",
-      title: "Resume templates for tech professionals",
-      content: "Sharing some of my favorite templates for software developers and designers...",
-      tags: ["Templates", "Tech"],
+      author: "Chef Emily",
+      avatar: "CE",
+      title: "Quick & Healthy Weeknight Dinner Ideas",
+      content: "Struggling with what to cook after a long day? Here are three of my go-to recipes that take less than 30 minutes.",
+      tags: ["Quick Meals", "Healthy"],
       time: "1 day ago",
       likes: 31,
       comments: 15,
@@ -84,7 +88,7 @@ export default function Community() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            ResuMate Community
+            Cook-N-Crop Community
           </Typography>
           <Typography
             variant="h6"
@@ -95,7 +99,7 @@ export default function Community() {
               lineHeight: 1.6,
             }}
           >
-            Connect with professionals, share success stories, and get expert advice on building the perfect resume.
+            Connect with food lovers, share recipes, and get tips from local farmers and chefs.
           </Typography>
         </Box>
 
@@ -248,7 +252,7 @@ export default function Community() {
             Join the Conversation
           </Typography>
           <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 3, maxWidth: 500, mx: "auto" }}>
-            Share your resume success stories, ask questions, and connect with other professionals in our growing community.
+            Share your favorite recipes, ask for cooking advice, and connect with other foodies in our growing community.
           </Typography>
           <Button
             variant="contained"

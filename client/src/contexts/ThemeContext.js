@@ -29,16 +29,7 @@ export const ThemeProviderComponent = ({ children }) => {
       ...baseTheme,
       typography: {
         ...baseTheme.typography,
-        fontFamily,
-        button: { ...baseTheme.typography.button, textTransform: "uppercase" },
-        h1: { ...baseTheme.typography.h1, textTransform: "uppercase" },
-        h2: { ...baseTheme.typography.h2, textTransform: "uppercase" },
-        h3: { ...baseTheme.typography.h3, textTransform: "uppercase" },
-        h4: { ...baseTheme.typography.h4, textTransform: "uppercase" },
-        h5: { ...baseTheme.typography.h5, textTransform: "uppercase" },
-        h6: { ...baseTheme.typography.h6, textTransform: "uppercase" },
-        subtitle1: { ...baseTheme.typography.subtitle1, textTransform: "uppercase" },
-        subtitle2: { ...baseTheme.typography.subtitle2, textTransform: "uppercase" },
+        fontFamily
       },
     };
   }, [themeKey, fontFamily]);

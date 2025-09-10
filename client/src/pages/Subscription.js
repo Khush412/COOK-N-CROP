@@ -23,33 +23,33 @@ import api from "../config/axios";
 import { useAuth } from "../contexts/AuthContext";
 
 const FEATURES = [
-  "Create a single resume",
-  "Basic templates",
-  "Download as PDF",
-  "Save resumes locally",
-  "Community support",
-  "Create multiple resumes",
-  "Access premium templates",
-  "Download PDF & DOCX",
-  "Unlimited cloud storage",
-  "Priority email support",
-  "SEO optimization tools",
-  "Professional review services",
-  "Resume delivery tracking",
-  "Custom branding",
-  "Dedicated support",
+  "Browse all public recipes",
+  "Shop the entire marketplace",
+  "Basic community access",
+  "Save up to 20 favorite recipes",
+  "Create weekly meal plans",
+  "Save unlimited favorite recipes",
+  "Access to premium recipe collections",
+  "Advanced meal planner with nutritional info",
+  "Create and share shopping lists",
+  "Priority customer support",
+  "Exclusive video tutorials from chefs",
+  "Monthly curated ingredient box",
+  "Early access to seasonal produce",
+  "Personalized recipe recommendations",
+  "Direct support from our culinary team",
 ];
 
 const PLAN_FEATURE_COUNTS = {
   free: 5,
-  premium: 7,
+  premium: 10,
   pro: FEATURES.length,
 };
 
 const PLANS = [
-  { key: "free", name: "Free", price: "$0 / month" },
-  { key: "premium", name: "Premium", price: "$9.99 / month" },
-  { key: "pro", name: "Pro", price: "$19.99 / month" },
+  { key: "free", name: "Foodie", price: "$0 / month" },
+  { key: "premium", name: "Pro Chef", price: "$7.99 / month" },
+  { key: "pro", name: "Gourmet", price: "$24.99 / month" },
 ];
 
 export default function SubscriptionPage() {

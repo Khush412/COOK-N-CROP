@@ -4,20 +4,22 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SchoolIcon from "@mui/icons-material/School";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PaymentIcon from "@mui/icons-material/Payment";
 import GroupIcon from "@mui/icons-material/Group";
-import DescriptionIcon from "@mui/icons-material/Description";
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import HomeIcon from '@mui/icons-material/Home';
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const pages = [
   { label: "Profile", path: "/profile", icon: AccountCircleIcon, color: "#786fa6" },
   { label: "Subscription", path: "/subscription", icon: PaymentIcon, color: "#4dd0e1" },
-  { label: "Billing", path: "/billing", icon: PaymentIcon, color: "#ffb94b" },
+  { label: "My Addresses", path: "/profile/addresses", icon: HomeIcon, color: "#ffb94b" },
   { label: "Community", path: "/community", icon: GroupIcon, color: "#4fc3f7" },
-  { label: "My Resumes", path: "/my-resumes", icon: DescriptionIcon, color: "#b8e986" },
+  { label: "My Orders", path: "/profile/orders", icon: ReceiptLongIcon, color: "#b8e986" },
   { label: "Settings", path: "/settings", icon: SettingsIcon, color: "#b388ff" },
-  { label: "Courses", path: "/courses", icon: SchoolIcon, color: "#ff8a65" },
+  { label: "Shopping Cart", path: "/cart", icon: ShoppingCartIcon, color: "#ff8a65" },
 ];
 
 export default function ControlPanel() {

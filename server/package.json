@@ -1,7 +1,7 @@
 {
-  "name": "resume-builder-server",
+  "name": "cook-n-crop-server",
   "version": "1.0.0",
-  "description": "Backend server for Resume Builder application",
+  "description": "Backend server for the Cook-N-Crop application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -32,12 +32,12 @@
     "nodemon": "^3.0.2"
   },
   "keywords": [
-    "resume",
-    "builder",
+    "food",
+    "ecommerce",
     "authentication",
     "mongodb",
     "express"
   ],
-  "author": "Resume Builder Team",
+  "author": "Cook-N-Crop Team",
   "license": "MIT"
 }

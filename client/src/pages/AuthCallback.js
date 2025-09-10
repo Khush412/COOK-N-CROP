@@ -18,7 +18,7 @@ export default function AuthCallback() {
     } else if (token) {
       // Handle successful OAuth
       handleOAuthCallback(token);
-      navigate('/my-resumes');
+      navigate('/dashboard');
     } else {
       // No token or error, redirect to login
       navigate('/login');

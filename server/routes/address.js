@@ -10,6 +10,11 @@ router.post('/', protect, async (req, res) => {
     const { street, city, state, zipCode, country, label, isDefault } = req.body;
 
     try {
+        // If this address is set as default, unset all other default addresses for this user
+        if (isDefault) {
+            await Address.updateMany({ user: req.user.id, isDefault: true }, { isDefault: false });
+        }
+
         const address = new Address({
             user: req.user.id,
             street,
@@ -58,6 +63,11 @@ router.put('/:id', protect, async (req, res) => {
         // Make sure user owns address
         if (address.user.toString() !== req.user.id) {
             return res.status(401).json({ message: 'Not authorized to update this address' });
+        }
+
+        // If this address is being set as default, unset all other default addresses for this user
+        if (isDefault && !address.isDefault) {
+            await Address.updateMany({ user: req.user.id, isDefault: true }, { isDefault: false });
         }
 
         address.street = street || address.street;
