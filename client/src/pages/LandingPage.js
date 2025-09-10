@@ -10,12 +10,10 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import DescriptionIcon from "@mui/icons-material/Description";
-import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import EmailIcon from "@mui/icons-material/Email";
-
-
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 // Hero section image path
 const HERO_IMG = "/images/hero.png";
 
@@ -278,17 +276,17 @@ export default function LandingPage() {
         <Grid container spacing={6} justifyContent="center" textAlign="center">
           {[
             {
-              icon: <DescriptionIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
+              icon: <StorefrontIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
               title: "Explore the Market",
               desc: "Fill your cart with fresh, high-quality produce from local farmers and trusted vendors.",
             },
             {
-              icon: <CheckCircleOutlineIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
+              icon: <EmojiObjectsIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
               title: "Find Your Inspiration",
               desc: "Browse thousands of recipes or use our search to find the perfect dish for any occasion.",
             },
             {
-              icon: <DownloadDoneIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
+              icon: <GroupAddIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
               title: "Cook & Share",
               desc: "Follow easy step-by-step instructions, cook a delicious meal, and share your experience with the community.",
             },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -38,11 +38,13 @@ const AddressManagementPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchAddresses();
+  const showSnackbar = useCallback((message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   }, []);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     try {
       setLoading(true);
       const data = await addressService.getAddresses();
@@ -53,13 +55,11 @@ const AddressManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showSnackbar]);
 
-  const showSnackbar = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
+  useEffect(() => {
+    fetchAddresses();
+  }, [fetchAddresses]);
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {

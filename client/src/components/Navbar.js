@@ -9,7 +9,6 @@ import {
   MenuItem,
   Menu,
   Button,
-  InputBase,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -375,6 +374,7 @@ export default function Navbar() {
                   id="user-menu"
                   anchorEl={anchorElUser}
                   open={Boolean(anchorElUser)}
+                  disableScrollLock={true}
                   onClose={handleCloseUserMenu}
                   MenuListProps={{
                     "aria-labelledby": "user-menu-button",
@@ -516,6 +516,7 @@ export default function Navbar() {
         onClose={() => setThemeDialogOpen(false)}
         maxWidth="xs"
         fullWidth
+        disableScrollLock={true}
         aria-labelledby="theme-dialog-title"
         PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
       >
