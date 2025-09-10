@@ -1,0 +1,85 @@
+const mongoose = require('mongoose');
+
+const PostSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  title: {
+    type: String,
+    required: [true, 'Please add a title'],
+    trim: true,
+    maxlength: [100, 'Title cannot be more than 100 characters'],
+  },
+  content: {
+    type: String,
+    required: [true, 'Please add content'],
+  },
+  tags: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+  upvotes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+    },
+  ],
+  // For recipe-specific posts
+  isRecipe: {
+    type: Boolean,
+    default: false,
+  },
+  recipeDetails: {
+    prepTime: String,
+    cookTime: String,
+    servings: String,
+    ingredients: [String],
+    instructions: [String],
+  },
+  reports: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+      },
+      reason: {
+        type: String,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Create a text index for searching
+PostSchema.index({ title: 'text', content: 'text', tags: 'text' });
+
+// Virtual for upvote count
+PostSchema.virtual('upvoteCount').get(function() {
+  return this.upvotes.length;
+});
+
+// Virtual for comment count
+PostSchema.virtual('commentCount').get(function() {
+  return this.comments.length;
+});
+
+module.exports = mongoose.model('Post', PostSchema);

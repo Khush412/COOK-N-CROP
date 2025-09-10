@@ -83,6 +83,96 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
   }
 });
 
+// @desc    Toggle save/unsave a post
+// @route   PUT /api/users/me/posts/save/:postId
+// @access  Private
+router.put('/me/posts/save/:postId', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const postId = req.params.postId;
+
+    // Defensive check: Ensure savedPosts is an array. This handles older user documents
+    // that might not have this field initialized.
+    if (!Array.isArray(user.savedPosts)) {
+      user.savedPosts = [];
+    }
+
+    const postIndex = user.savedPosts.indexOf(postId);
+
+    if (postIndex > -1) {
+      // Post is already saved, so unsave it
+      user.savedPosts.splice(postIndex, 1);
+    } else {
+      // Post is not saved, so save it
+      user.savedPosts.push(postId);
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, savedPosts: user.savedPosts });
+  } catch (error) {
+    console.error('Toggle save post error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get user's saved posts
+// @route   GET /api/users/me/posts/saved
+// @access  Private
+router.get('/me/posts/saved', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate({
+      path: 'savedPosts',
+      populate: {
+        path: 'user',
+        select: 'username profilePic'
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, data: user.savedPosts });
+  } catch (error) {
+    console.error('Get saved posts error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get public user profile by username, including their posts and comments
+// @route   GET /api/users/profile/:username
+// @access  Public
+router.get('/profile/:username', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).select('username bio profilePic createdAt');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Dynamically import Post and Comment models to avoid circular dependencies if any
+    const Post = require('../models/Post');
+    const Comment = require('../models/Comment');
+
+    // Fetch user's recent posts
+    const posts = await Post.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .limit(15) // Limit for performance
+      .select('title createdAt');
+
+    // Fetch user's recent comments
+    const comments = await Comment.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .limit(15) // Limit for performance
+      .populate('post', 'title _id') // Populate post title to give context
+      .select('content createdAt post');
+
+    res.status(200).json({ success: true, data: { user, posts, comments } });
+  } catch (error) {
+    console.error('Get public profile error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ======= Dynamic :id Routes =======
 
 // @desc    Get single user by ID

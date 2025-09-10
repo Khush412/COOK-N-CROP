@@ -50,6 +50,11 @@ const authReducer = (state, action) => {
         ...state,
         user: { ...state.user, ...action.payload }
       };
+    case 'UPDATE_SAVED_POSTS':
+      return {
+        ...state,
+        user: state.user ? { ...state.user, savedPosts: action.payload } : null,
+      };
     default:
       return state;
   }
@@ -221,6 +226,10 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   };
 
+  const updateUserSavedPosts = (savedPosts) => {
+    dispatch({ type: 'UPDATE_SAVED_POSTS', payload: savedPosts });
+  };
+
   const value = {
     ...state,
     register,
@@ -230,7 +239,8 @@ export const AuthProvider = ({ children }) => {
     updatePreferences,
     clearError,
     handleOAuthCallback,
-    loadUser
+    loadUser,
+    updateUserSavedPosts,
   };
 
   return (

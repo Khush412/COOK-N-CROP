@@ -15,9 +15,7 @@ function App() {
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
           <Navbar />
           <main style={{ flexGrow: 1 }}>
-            <Container maxWidth="lg" sx={{ py: 3 }}>
-              <AppRouter />
-            </Container>
+            <AppRouter />
           </main>
           <Footer />
         </div>

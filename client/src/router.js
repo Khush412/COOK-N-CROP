@@ -5,6 +5,8 @@ import CropCorner from "./pages/CropCorner";
 import Login from "./pages/AuthPage";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
+import PublicProfilePage from "./pages/PublicProfilePage"; // New: Import PublicProfilePage
+import PostPage from "./pages/PostPage"; // New: Import PostPage
 import Community from "./pages/Community";
 import Subscription from "./pages/Subscription";
 import Dashboard from "./pages/Control_panel";
@@ -12,12 +14,15 @@ import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
 import OrderDetailsPage from "./pages/OrderDetailsPage"; // New: Import OrderDetailsPage
 import AddressManagementPage from "./pages/AddressManagementPage"; // New: Import AddressManagementPage
+import SavedPostsPage from "./pages/SavedPostsPage"; // New
 import OrderHistoryPage from "./pages/OrderHistoryPage"; // New: Import OrderHistoryPage
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/user/:username" element={<PublicProfilePage />} /> {/* New: Public Profile Page */}
+      <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
       <Route path="/community" element={<Community />} />
       <Route path="/CropCorner" element={<CropCorner />} />
       <Route path="/recipes" element={<Recipes />} />
@@ -25,6 +30,7 @@ export default function AppRouter() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}
+      <Route path="/profile/saved-posts" element={<SavedPostsPage />} /> {/* New */}
       <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
       <Route path="/subscription" element={<Subscription />} />
       <Route path="/dashboard/*" element={<Dashboard />} />

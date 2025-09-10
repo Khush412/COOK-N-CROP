@@ -28,6 +28,7 @@ import {
   ShoppingCart as ShoppingCartIcon,
   Home as HomeIcon,
   ReceiptLong as ReceiptLongIcon,
+  Bookmark as BookmarkIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import { useTheme } from "@mui/material/styles";
@@ -448,6 +449,19 @@ export default function Navbar() {
                       <ReceiptLongIcon fontSize="small" />
                     </ListItemIcon>
                     My Orders
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/saved-posts");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <BookmarkIcon fontSize="small" />
+                    </ListItemIcon>
+                    Saved Posts
                   </MenuItem>
 
                   <MenuItem

@@ -44,6 +44,7 @@ const sendTokenResponse = (user, statusCode, res) => {
         twitter: user.twitter,
         preferences: user.preferences,
         subscription: user.subscription,
+        savedPosts: user.savedPosts,
         activity: user.activity,
         createdAt: user.createdAt
       }
@@ -194,6 +195,7 @@ router.get('/me', protect, async (req, res) => {
         twitter: user.twitter,
         preferences: user.preferences,
         subscription: user.subscription,
+        savedPosts: user.savedPosts,
         activity: user.activity,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin,

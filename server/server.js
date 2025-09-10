@@ -24,6 +24,8 @@ const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
 const addressRoutes = require('./routes/address'); // New: Import address routes
 const orderRoutes = require('./routes/order'); // New: Import order routes
+const postRoutes = require('./routes/posts'); // New: Import post routes
+const commentRoutes = require('./routes/comments'); // New: Import comment routes
 
 // Connect to database
 connectDB();
@@ -42,6 +44,14 @@ app.use(helmet({
       connectSrc: ["'self'"]
     }
   }
+}));
+
+// CORS configuration - MUST be placed before routes and rate limiters
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Rate limiting
@@ -65,14 +75,6 @@ const authLimiter = rateLimit({
     message: 'Too many authentication attempts, please try again later.'
   }
 });
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
@@ -109,6 +111,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/addresses', addressRoutes); // New: Use address routes
 app.use('/api/orders', orderRoutes); // New: Use order routes
+app.use('/api/posts', postRoutes); // New: Use post routes
+app.use('/api/comments', commentRoutes); // New: Use comment routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

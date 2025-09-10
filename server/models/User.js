@@ -199,6 +199,8 @@ const userSchema = new mongoose.Schema({
       }
     }
   },
+  // Saved content
+  savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
   // Subscription and billing
   subscription: {
     plan: {
