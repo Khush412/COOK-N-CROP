@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem } from '@mui/material';
+import { Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import BlockIcon from '@mui/icons-material/Block';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import adminService from '../../services/adminService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ManageUsers = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,6 +51,18 @@ const ManageUsers = () => {
     }
   };
 
+  const handleToggleStatus = async (userId, currentStatus) => {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    if (window.confirm(`Are you sure you want to ${action} this user?`)) {
+      try {
+        const res = await adminService.toggleUserStatus(userId);
+        setUsers(users.map(u => u._id === userId ? { ...u, isActive: res.data.isActive } : u));
+      } catch (err) {
+        alert(`Failed to ${action} user.`);
+      }
+    }
+  };
+
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
@@ -72,6 +88,7 @@ const ManageUsers = () => {
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Joined</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -98,6 +115,14 @@ const ManageUsers = () => {
                     <Typography>{user.role}</Typography>
                   )}
                 </TableCell>
+                <TableCell>
+                  <Chip
+                    label={user.isActive ? 'Active' : 'Inactive'}
+                    color={user.isActive ? 'success' : 'error'}
+                    size="small"
+                    variant="outlined"
+                  />
+                </TableCell>
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell align="right">
                   {editingUserId === user._id ? (
@@ -107,11 +132,20 @@ const ManageUsers = () => {
                     </>
                   ) : (
                     <>
-                      <Tooltip title="Edit Role"><IconButton onClick={() => handleEditClick(user)}><EditIcon /></IconButton></Tooltip>
-                      <Tooltip title="Delete User">
-                        <IconButton onClick={() => handleDeleteUser(user._id)} color="error" disabled={user.role === 'admin'}>
-                          <DeleteIcon />
-                        </IconButton>
+                      <Tooltip title="Edit Role">
+                        <IconButton onClick={() => handleEditClick(user)} disabled={user._id === currentUser.id}><EditIcon /></IconButton>
+                      </Tooltip>
+                      <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                        <span> {/* Span is needed for disabled Tooltip */}
+                          <IconButton onClick={() => handleToggleStatus(user._id, user.isActive)} disabled={user._id === currentUser.id || user.role === 'admin'} color={user.isActive ? 'warning' : 'success'}>
+                            {user.isActive ? <BlockIcon /> : <CheckCircleOutlineIcon />}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Permanently Delete User">
+                        <span>
+                          <IconButton onClick={() => handleDeleteUser(user._id)} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon /></IconButton>
+                        </span>
                       </Tooltip>
                     </>
                   )}

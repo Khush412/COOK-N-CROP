@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 const Comment = require('../models/Comment');
+const Notification = require('../models/Notification');
 
 // @desc    Upvote/unvote a comment
 // @route   PUT /api/comments/:id/upvote
@@ -28,6 +29,26 @@ router.put('/:id/upvote', protect, async (req, res) => {
     }
 
     await comment.save();
+
+    // Create notification, but not if the user is upvoting their own comment
+    if (comment.user.toString() !== req.user.id) {
+      // Only create a notification if the user is adding an upvote, not removing it
+      if (upvotedIndex === -1) {
+        const newNotification = await Notification.create({
+          recipient: comment.user,
+          sender: req.user.id,
+          type: 'comment_upvote',
+          post: comment.post,
+          comment: comment._id,
+        });
+        const recipientSocketId = req.onlineUsers[comment.user.toString()];
+        if (recipientSocketId) {
+          const populatedNotification = await Notification.findById(newNotification._id).populate('sender', 'username profilePic').populate('post', 'title');
+          req.io.to(recipientSocketId).emit('new_notification', populatedNotification);
+        }
+      }
+    }
+
     res.json({ upvotes: comment.upvotes });
   } catch (error) {
     console.error('Comment upvote error:', error);
@@ -138,6 +159,22 @@ router.put('/:id/report', protect, async (req, res) => {
     res.json({ success: true, message: 'Comment reported successfully' });
   } catch (error) {
     console.error('Report comment error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get all reported comments (Admin only)
+// @route   GET /api/comments/reported
+// @access  Private/Admin
+router.get('/reported', protect, authorize('admin'), async (req, res) => {
+  try {
+    const comments = await Comment.find({ 'reports.0': { $exists: true } })
+      .populate('user', 'username')
+      .populate('post', 'title')
+      .populate('reports.user', 'username');
+    res.json(comments);
+  } catch (error) {
+    console.error('Get reported comments error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const Notification = require('../models/Notification');
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -114,6 +115,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @desc    Get all reported posts (Admin only)
+// @route   GET /api/posts/reported
+// @access  Private/Admin
+router.get('/reported', protect, authorize('admin'), async (req, res) => {
+  try {
+    const posts = await Post.find({ 'reports.0': { $exists: true } })
+      .populate('user', 'username')
+      .populate('reports.user', 'username');
+    res.json(posts);
+  } catch (error) {
+    console.error('Get reported posts error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Get single post by ID
 // @route   GET /api/posts/:id
 // @access  Public
@@ -179,6 +195,25 @@ router.put('/:id/upvote', protect, async (req, res) => {
     }
 
     await post.save();
+
+    // Create notification, but not if the user is upvoting their own post
+    if (post.user.toString() !== req.user.id) {
+      // Only create a notification if the user is adding an upvote, not removing it
+      if (upvotedIndex === -1) {
+        const newNotification = await Notification.create({
+          recipient: post.user,
+          sender: req.user.id,
+          type: 'post_upvote',
+          post: post._id,
+        });
+        const recipientSocketId = req.onlineUsers[post.user.toString()];
+        if (recipientSocketId) {
+          const populatedNotification = await Notification.findById(newNotification._id).populate('sender', 'username profilePic').populate('post', 'title');
+          req.io.to(recipientSocketId).emit('new_notification', populatedNotification);
+        }
+      }
+    }
+
     res.json({ upvotes: post.upvotes });
   } catch (error) {
     console.error('Upvote error:', error);
@@ -217,6 +252,27 @@ router.post('/:id/comments', protect, async (req, res) => {
       post.comments.push(savedComment._id);
       await post.save();
     }
+
+    // Create notification for the post author or parent comment author
+    const recipientId = parentCommentId ? (await Comment.findById(parentCommentId)).user : post.user;
+
+    // Don't notify if user is replying to their own post/comment
+    if (recipientId.toString() !== req.user.id) {
+      const newNotification = await Notification.create({
+        recipient: recipientId,
+        sender: req.user.id,
+        type: 'reply',
+        post: post._id,
+        comment: savedComment._id,
+      });
+
+      const recipientSocketId = req.onlineUsers[recipientId.toString()];
+      if (recipientSocketId) {
+        const populatedNotification = await Notification.findById(newNotification._id).populate('sender', 'username profilePic').populate('post', 'title');
+        req.io.to(recipientSocketId).emit('new_notification', populatedNotification);
+      }
+    }
+
 
     const populatedComment = await Comment.findById(savedComment._id).populate('user', 'username profilePic');
     res.status(201).json(populatedComment);
@@ -331,5 +387,21 @@ router.put('/:id/report', protect, async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+// @desc    Get all reported posts (Admin only)
+// @route   GET /api/posts/reported
+// @access  Private/Admin
+router.get('/reported', protect, authorize('admin'), async (req, res) => {
+  try {
+    const posts = await Post.find({ 'reports.0': { $exists: true } })
+      .populate('user', 'username')
+      .populate('reports.user', 'username');
+    res.json(posts);
+  } catch (error) {
+    console.error('Get reported posts error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 
 module.exports = router;

@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const http = require('http');
+const { Server } = require("socket.io");
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -26,11 +28,40 @@ const addressRoutes = require('./routes/address'); // New: Import address routes
 const orderRoutes = require('./routes/order'); // New: Import order routes
 const postRoutes = require('./routes/posts'); // New: Import post routes
 const commentRoutes = require('./routes/comments'); // New: Import comment routes
+const notificationRoutes = require('./routes/notifications'); // New: Import notification routes
+const adminRoutes = require('./routes/admin'); // New: Import admin routes
 
 // Connect to database
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ["GET", "POST"]
+  }
+});
+
+let onlineUsers = {};
+
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
+
+  socket.on("join", (userId) => {
+    onlineUsers[userId] = socket.id;
+    console.log("Online users:", Object.keys(onlineUsers));
+  });
+
+  socket.on("disconnect", () => {
+    const userId = Object.keys(onlineUsers).find(key => onlineUsers[key] === socket.id);
+    if (userId) {
+      delete onlineUsers[userId];
+      console.log(`User ${userId} disconnected. Socket: ${socket.id}`);
+      console.log("Online users:", Object.keys(onlineUsers));
+    }
+  });
+});
 
 // Security middleware
 app.use(helmet({
@@ -101,6 +132,13 @@ const passport = require('passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware to attach io and onlineUsers to req
+app.use((req, res, next) => {
+  req.io = io;
+  req.onlineUsers = onlineUsers;
+  next();
+});
+
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -113,6 +151,8 @@ app.use('/api/addresses', addressRoutes); // New: Use address routes
 app.use('/api/orders', orderRoutes); // New: Use order routes
 app.use('/api/posts', postRoutes); // New: Use post routes
 app.use('/api/comments', commentRoutes); // New: Use comment routes
+app.use('/api/admin', adminRoutes); // New: Use admin routes
+app.use('/api/notifications', notificationRoutes); // New: Use notification routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -214,7 +254,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 

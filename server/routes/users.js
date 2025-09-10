@@ -83,6 +83,19 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
   }
 });
 
+// @desc    Get all users (Admin only)
+// @route   GET /api/users/all
+// @access  Private/Admin
+router.get('/all', protect, authorize('admin'), async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Toggle save/unsave a post
 // @route   PUT /api/users/me/posts/save/:postId
 // @access  Private
@@ -318,6 +331,60 @@ router.put('/:id/subscription', protect, async (req, res) => {
   } catch (error) {
     console.error('Subscription update error:', error);
     res.status(500).json({ success: false, message: 'Server error during subscription update' });
+  }
+});
+
+// @desc    Update user role (Admin only)
+// @route   PUT /api/users/:id/role
+// @access  Private/Admin
+router.put('/:id/role', protect, authorize('admin'), async (req, res) => {
+  try {
+    const { role } = req.body;
+    const validRoles = ['user', 'premium', 'admin'];
+
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role specified' });
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.status(200).json({ success: true, data: { _id: user._id, role: user.role } });
+  } catch (error) {
+    console.error('Update user role error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Toggle user active status (Admin only)
+// @route   PUT /api/users/:id/status
+// @access  Private/Admin
+router.put('/:id/status', protect, authorize('admin'), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Prevent admin from deactivating themselves
+    if (user._id.toString() === req.user.id) {
+        return res.status(400).json({ success: false, message: 'Admin cannot deactivate their own account.' });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.status(200).json({ success: true, data: { _id: user._id, isActive: user.isActive } });
+  } catch (error) {
+    console.error('Toggle user status error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

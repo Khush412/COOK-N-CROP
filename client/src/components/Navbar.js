@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, forwardRef, useCallback } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -12,6 +12,9 @@ import {
   Tooltip,
   Dialog,
   DialogTitle,
+  Snackbar,
+  Alert,
+  Badge,
   Avatar,
   ListItemIcon,
   Divider,
@@ -28,9 +31,14 @@ import {
   ShoppingCart as ShoppingCartIcon,
   Home as HomeIcon,
   ReceiptLong as ReceiptLongIcon,
+  Notifications as NotificationsIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
   Bookmark as BookmarkIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
+import NotificationsMenu from "./NotificationsMenu"; // New
+import notificationService from "../services/notificationService"; // New
+import { useSocket } from "../contexts/SocketContext"; // New
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
@@ -169,6 +177,11 @@ export default function Navbar() {
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
+  const socket = useSocket(); // New
+  const [anchorElNotifications, setAnchorElNotifications] = useState(null); // New
+  const [notifications, setNotifications] = useState([]); // New
+  const [unreadCount, setUnreadCount] = useState(0); // New
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' }); // New
   const [hasShadow, setHasShadow] = useState(false);
 
   useEffect(() => {
@@ -176,6 +189,44 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const showSnackbar = useCallback((message, severity) => {
+    setSnackbar({ open: true, message, severity });
+  }, []);
+
+  // Fetch notifications when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchNotifications = async () => {
+        try {
+          const data = await notificationService.getNotifications();
+          setNotifications(data.notifications);
+          setUnreadCount(data.unreadCount);
+        } catch (error) {
+          console.error("Failed to fetch notifications:", error);
+        }
+      };
+      fetchNotifications();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated]);
+
+  // Listen for real-time notifications
+  useEffect(() => {
+    if (socket) {
+      socket.on('new_notification', (newNotification) => {
+        showSnackbar(`New notification from ${newNotification.sender.username}`, 'info');
+        setNotifications(prev => [newNotification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      });
+
+      return () => {
+        socket.off('new_notification');
+      };
+    }
+  }, [socket, showSnackbar]);
 
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
@@ -198,6 +249,39 @@ export default function Navbar() {
 
   const isActive = (path) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+
+  const handleOpenNotificationsMenu = (event) => {
+    setAnchorElNotifications(event.currentTarget);
+  };
+
+  const handleCloseNotificationsMenu = () => {
+    setAnchorElNotifications(null);
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   return (
     <>
@@ -335,6 +419,29 @@ export default function Navbar() {
               </IconButton>
             </Tooltip>
 
+            {/* Notifications Button */}
+            {isAuthenticated && (
+              <Tooltip title="Notifications" arrow>
+                <IconButton
+                  size="large"
+                  onClick={handleOpenNotificationsMenu}
+                  sx={{
+                    color: theme.palette.common.white,
+                    "&:hover": {
+                      color: theme.palette.secondary.main,
+                      backgroundColor: "transparent",
+                    },
+                    transition: "color 0.25s ease",
+                  }}
+                  aria-label="notifications"
+                >
+                  <Badge badgeContent={unreadCount} color="secondary">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
+
             {/* User Profile or Login Button */}
             {isAuthenticated ? (
               <>
@@ -451,6 +558,21 @@ export default function Navbar() {
                     My Orders
                   </MenuItem>
 
+                  {user?.role === 'admin' && (
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseUserMenu();
+                        navigate("/admin");
+                      }}
+                      sx={{ borderRadius: 2, px: 3 }}
+                    >
+                      <ListItemIcon>
+                        <AdminPanelSettingsIcon fontSize="small" />
+                      </ListItemIcon>
+                      Admin Dashboard
+                    </MenuItem>
+                  )}
+
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
@@ -540,6 +662,25 @@ export default function Navbar() {
         <ThemeCustomizer />
       </Dialog>
 
+      <NotificationsMenu
+        anchorEl={anchorElNotifications}
+        open={Boolean(anchorElNotifications)}
+        handleClose={handleCloseNotificationsMenu}
+        notifications={notifications}
+        onMarkRead={handleMarkAsRead}
+        onMarkAllRead={handleMarkAllAsRead}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       
     </>
   );

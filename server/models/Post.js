@@ -74,12 +74,12 @@ PostSchema.index({ title: 'text', content: 'text', tags: 'text' });
 
 // Virtual for upvote count
 PostSchema.virtual('upvoteCount').get(function() {
-  return this.upvotes.length;
+  return this.upvotes ? this.upvotes.length : 0;
 });
 
 // Virtual for comment count
 PostSchema.virtual('commentCount').get(function() {
-  return this.comments.length;
+  return this.comments ? this.comments.length : 0;
 });
 
 module.exports = mongoose.model('Post', PostSchema);

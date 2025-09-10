@@ -35,6 +35,35 @@ const updateUserRole = async (userId, role) => {
   return response.data;
 };
 
+const toggleUserStatus = async (userId) => {
+  const response = await api.put(`/users/${userId}/status`);
+  return response.data;
+};
+
+const createProduct = async (formData) => {
+  const response = await api.post('/products', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+const updateProduct = async (productId, formData) => {
+  const response = await api.put(`/products/${productId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+const deleteProduct = async (productId) => {
+  const response = await api.delete(`/products/${productId}`);
+  return response.data;
+};
+
+const getDashboardStats = async () => {
+  const response = await api.get('/admin/stats');
+  return response.data;
+};
+
 const adminService = {
   getAllUsers,
   deleteUser,
@@ -43,6 +72,11 @@ const adminService = {
   deletePost,
   deleteComment,
   updateUserRole,
+  toggleUserStatus,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getDashboardStats,
 };
 
 export default adminService;

@@ -70,6 +70,16 @@ const clearCart = async () => {
   }
 };
 
+const createProductReview = async (productId, review) => {
+  try {
+    const response = await axios.post(`/products/${productId}/reviews`, review);
+    return response.data;
+  } catch (error) {
+    console.error(`Error creating review for product ${productId}`, error);
+    throw error;
+  }
+};
+
 const productService = {
   getAllProducts,
   getProductById,
@@ -78,6 +88,7 @@ const productService = {
   updateCartItemQuantity,
   removeCartItem,
   clearCart,
+  createProductReview,
 };
 
 export default productService;
