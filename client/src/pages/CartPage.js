@@ -54,6 +54,7 @@ const CartPage = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false); // New: State for order placement loading
   const [orderSuccessDialogOpen, setOrderSuccessDialogOpen] = useState(false); // New: State for order success dialog
   const [placedOrderId, setPlacedOrderId] = useState(null); // New: State to store placed order ID
+  const [paymentMethod, setPaymentMethod] = useState('COD'); // Default payment method
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,6 +167,8 @@ const CartPage = () => {
 
     setIsPlacingOrder(true);
     try {
+      // The backend should fetch price/name/image from the DB using the product ID
+      // to prevent price tampering on the client. We only need to send ID and quantity.
       const orderItems = cart.items.map(item => ({
         product: item.product._id,
         qty: item.quantity,
@@ -174,21 +177,25 @@ const CartPage = () => {
       const orderData = {
         orderItems,
         shippingAddress: {
+          fullName: selectedAddress.fullName,
           street: selectedAddress.street,
           city: selectedAddress.city,
           state: selectedAddress.state,
           zipCode: selectedAddress.zipCode,
           country: selectedAddress.country,
+          phone: selectedAddress.phone,
         },
+        paymentMethod: paymentMethod,
+        totalPrice: parseFloat(calculateTotal()),
       };
 
       const createdOrder = await orderService.createOrder(orderData);
       setPlacedOrderId(createdOrder._id); // Store the order ID
       setOrderSuccessDialogOpen(true); // Open the success dialog
       await productService.clearCart(); // Clear cart after successful order
-      setCart({ items: [] }); // Update local cart state
+      setCart(null); // Update local cart state to show empty
     } catch (err) {
-      showSnackbar('Failed to place order.', 'error');
+      showSnackbar(err.response?.data?.message || 'Failed to place order.', 'error');
       console.error('Order placement error:', err);
     } finally {
       setIsPlacingOrder(false);
@@ -345,7 +352,23 @@ const CartPage = () => {
                   )}
 
                   <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
-                    Billing Info
+                    Payment Method
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <FormControl component="fieldset" fullWidth>
+                    <RadioGroup
+                      aria-label="payment-method"
+                      name="payment-method-group"
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    >
+                      <FormControlLabel value="PayPal" control={<Radio />} label="PayPal / Credit Card" />
+                      <FormControlLabel value="COD" control={<Radio />} label="Cash on Delivery" />
+                    </RadioGroup>
+                  </FormControl>
+
+                  <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
+                    Order Total
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -374,7 +397,7 @@ const CartPage = () => {
                     disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
                     sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5 }}
                   >
-                    {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Proceed to Checkout'}
+                    {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Place Order'}
                   </Button>
                 </Box>
               </Paper>
