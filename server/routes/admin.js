@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Parser } = require('json2csv');
 const { protect, authorize } = require('../middleware/auth');
 const User = require('../models/User');
 const Product = require('../models/Product');
@@ -62,6 +63,39 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
     });
   } catch (error) {
     console.error('Get stats error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
+// @desc    Export users to CSV
+// @route   GET /api/admin/users/export
+// @access  Private/Admin
+router.get('/users/export', protect, authorize('admin'), async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password -__v').lean();
+
+    const fields = [
+      { label: 'User ID', value: '_id' },
+      { label: 'Username', value: 'username' },
+      { label: 'Email', value: 'email' },
+      { label: 'Role', value: 'role' },
+      { label: 'Is Active', value: 'isActive' },
+      { label: 'Is Email Verified', value: 'isEmailVerified' },
+      { label: 'Joined Date', value: 'createdAt' },
+      { label: 'Last Login', value: 'lastLogin' },
+      { label: 'Login Count', value: 'loginCount' },
+      { label: 'Subscription Plan', value: 'subscription.plan' },
+      { label: 'Subscription Active', value: 'subscription.isActive' },
+    ];
+
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(users);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('users-export.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Export users error:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 });

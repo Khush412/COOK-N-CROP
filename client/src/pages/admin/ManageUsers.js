@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import DownloadIcon from '@mui/icons-material/Download';
 import adminService from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -16,6 +17,7 @@ const ManageUsers = () => {
   const [error, setError] = useState(null);
   const [editingUserId, setEditingUserId] = useState(null);
   const [selectedRole, setSelectedRole] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -74,12 +76,38 @@ const ManageUsers = () => {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const blob = await adminService.exportUsers();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      const date = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `cook-n-crop-users-${date}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Failed to export users.');
+      console.error('Export error:', error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
     <Paper sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>Manage Users</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" gutterBottom>Manage Users</Typography>
+        <Button variant="outlined" startIcon={exporting ? <CircularProgress size={20} /> : <DownloadIcon />} onClick={handleExport} disabled={exporting}>
+          {exporting ? 'Exporting...' : 'Export to CSV'}
+        </Button>
+      </Box>
       <TableContainer>
         <Table>
           <TableHead>

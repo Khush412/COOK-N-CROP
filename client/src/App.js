@@ -5,7 +5,7 @@ import { SocketProvider } from "./contexts/SocketContext"; // New
 import Navbar from "./components/Navbar";
 import AppRouter from "./router";
 import Footer from "./components/Footer";
-import { Container, CssBaseline, GlobalStyles } from "@mui/material";
+import { CssBaseline, GlobalStyles } from "@mui/material";
 
 function App() {
   return (

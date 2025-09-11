@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
@@ -9,12 +8,9 @@ import {
   Card,
   CardContent,
   Grid,
-  Avatar,
   Chip,
   Button,
   Paper,
-  Divider,
-  IconButton,
   CircularProgress,
   Alert,
   Dialog,
@@ -24,7 +20,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   TextField,
-  InputAdornment,
+  Stack,
   Pagination,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -33,15 +29,13 @@ import {
   TrendingUp as TrendingUpIcon,
   Star as StarIcon,
   Message as MessageIcon,
-  ThumbUp as ThumbUpIcon,
   Forum as ForumIcon,
   NewReleases as NewReleasesIcon,
-  Search as SearchIcon,
+  Whatshot as WhatshotIcon,
 } from "@mui/icons-material";
 
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import communityService from '../services/communityService'; // Corrected path
 import userService from '../services/userService';
 import CreatePostForm from '../components/CreatePostForm';
@@ -68,24 +62,9 @@ export default function Community() {
   const [savingPosts, setSavingPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [sort, setSort] = useState('new'); // 'new', 'top', 'discussed'
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-
-  // Debounce search term to avoid API calls on every keystroke
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchTerm !== debouncedSearchTerm) {
-        setPage(1); // Reset to first page on new search
-      }
-      setDebouncedSearchTerm(searchTerm);
-    }, 500); // 500ms delay
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm, debouncedSearchTerm]);
+  const [trendingTags, setTrendingTags] = useState([]);
 
   useEffect(() => {
     // Scroll to top when page or filters change
@@ -97,13 +76,7 @@ export default function Community() {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        // If search is cleared and we are sorting by relevance, switch back to 'new'
-        let currentSort = sort;
-        if (!debouncedSearchTerm && sort === 'relevance') {
-          setSort('new');
-          currentSort = 'new';
-        }
-        const data = await communityService.getPosts(currentSort, debouncedSearchTerm, page); // This is correct
+        const data = await communityService.getPosts(sort, page);
         setPosts(data.posts);
         setTotalPages(data.pages);
         setError(null);
@@ -115,7 +88,19 @@ export default function Community() {
     };
 
     fetchPosts();
-  }, [sort, debouncedSearchTerm, page]);
+  }, [sort, page]);
+
+  useEffect(() => {
+    const fetchTrendingTags = async () => {
+        try {
+            const tags = await communityService.getTrendingTags();
+            setTrendingTags(tags);
+        } catch (err) {
+            console.error("Failed to fetch trending tags");
+        }
+    };
+    fetchTrendingTags();
+  }, []);
 
   const handleOpenCreatePost = () => {
     if (!isAuthenticated) {
@@ -219,6 +204,11 @@ export default function Community() {
     setPage(value);
   };
 
+  const handleTagClick = (tag) => {
+    // This functionality is removed for now.
+    setSnackbar({ open: true, message: `Searching for tag "${tag}" is not yet implemented.`, severity: 'info' });
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: theme.palette.background.default, py: 4 }}>
       <Container maxWidth="lg">
@@ -293,127 +283,136 @@ export default function Community() {
           ))}
         </Grid>
 
-        {/* Community Posts */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 3 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-              Community Posts
-            </Typography>
-            <TextField
-              label="Search Posts"
-              variant="outlined"
-              size="small"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ flexGrow: 1, maxWidth: { xs: '100%', md: 350 } }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-            <ToggleButtonGroup
-              value={sort}
-              exclusive
-              onChange={handleSortChange}
-              aria-label="post sorting"
-            >
-              {debouncedSearchTerm && (
-                <ToggleButton value="relevance" aria-label="sort by relevance">
-                  <StarIcon sx={{ mr: 1 }} />
-                  Relevance
-                </ToggleButton>
+        <Grid container spacing={4} sx={{ mt: 2 }}>
+          {/* Main Content */}
+          <Grid item xs={12} md={8}>
+            {/* Community Posts */}
+            <Box sx={{ mb: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 3 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                  Community Posts
+                </Typography>
+                <ToggleButtonGroup
+                  value={sort}
+                  exclusive
+                  onChange={handleSortChange}
+                  aria-label="post sorting"
+                >
+                  <ToggleButton value="new" aria-label="sort by new">
+                    <NewReleasesIcon sx={{ mr: 1 }} />
+                    New
+                  </ToggleButton>
+                  <ToggleButton value="top" aria-label="sort by top">
+                    <TrendingUpIcon sx={{ mr: 1 }} />
+                    Top
+                  </ToggleButton>
+                  <ToggleButton value="discussed" aria-label="sort by most discussed">
+                    <ForumIcon sx={{ mr: 1 }} />
+                    Discussed
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                  <CircularProgress />
+                </Box>
               )}
-              <ToggleButton value="new" aria-label="sort by new">
-                <NewReleasesIcon sx={{ mr: 1 }} />
-                New
-              </ToggleButton>
-              <ToggleButton value="top" aria-label="sort by top">
-                <TrendingUpIcon sx={{ mr: 1 }} />
-                Top
-              </ToggleButton>
-              <ToggleButton value="discussed" aria-label="sort by most discussed">
-                <ForumIcon sx={{ mr: 1 }} />
-                Discussed
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-          
-          {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
-          {error && <Alert severity="error">{error}</Alert>}
+              {error && <Alert severity="error">{error}</Alert>}
 
-          {!loading && !error && posts.length === 0 && (
-            <Typography sx={{ textAlign: 'center', color: 'text.secondary', my: 4 }}>
-              No posts yet. Be the first to start a conversation!
-            </Typography>
-          )}
-          <Grid container spacing={3}>
-            {!loading && !error && posts.map((post) => (
-              <Grid item xs={12} md={6} lg={4} key={post._id}>
-                <PostCard
-                  post={post}
-                  user={user}
-                  onUpvote={handleUpvote}
-                  upvotingPosts={upvotingPosts}
-                  onToggleSave={handleToggleSave}
-                  savingPosts={savingPosts}
-                />
+              {!loading && !error && posts.length === 0 && (
+                <Typography sx={{ textAlign: 'center', color: 'text.secondary', my: 4 }}>
+                  No posts yet. Be the first to start a conversation!
+                </Typography>
+              )}
+              <Grid container spacing={3}>
+                {!loading && !error && posts.map((post) => (
+                  <Grid item xs={12} lg={6} key={post._id}>
+                    <PostCard
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
+            </Box>
+
+            {/* Pagination Controls */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+              {totalPages > 1 && (
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                />
+              )}
+            </Box>
           </Grid>
-        </Box>
 
-        {/* Pagination Controls */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-          {totalPages > 1 && (
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="large"
-            />
-          )}
-        </Box>
+          {/* Sidebar */}
+          <Grid item xs={12} md={4}>
+            <Stack spacing={4} sx={{ position: 'sticky', top: 100 }}>
+              {/* Call to Action */}
+              <Paper
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
+                  border: `1px solid ${theme.palette.primary.main}30`,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: theme.palette.text.primary }}>
+                  Join the Conversation
+                </Typography>
+                <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 3, maxWidth: 500, mx: "auto" }}>
+                  Share your favorite recipes, ask for cooking advice, and connect with other foodies.
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleOpenCreatePost}
+                  size="large"
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                  }}
+                >
+                  Create a Post
+                </Button>
+              </Paper>
 
-        {/* Call to Action */}
-        <Paper
-          sx={{
-            p: 4,
-            textAlign: "center",
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
-            border: `1px solid ${theme.palette.primary.main}30`,
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: theme.palette.text.primary }}>
-            Join the Conversation
-          </Typography>
-          <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 3, maxWidth: 500, mx: "auto" }}>
-            Share your favorite recipes, ask for cooking advice, and connect with other foodies in our growing community.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={handleOpenCreatePost}
-            size="large"
-            sx={{
-              px: 4,
-              py: 1.5,
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-            }}
-          >
-            Create a Post
-          </Button>
-        </Paper>
+              {/* Trending Tags */}
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
+                  <WhatshotIcon color="error" sx={{ mr: 1 }} />
+                  Trending Tags
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {trendingTags.length > 0 ? trendingTags.map(item => (
+                    <Chip
+                      key={item.tag}
+                      label={item.tag}
+                      onClick={() => handleTagClick(item.tag)}
+                      clickable
+                      color="primary"
+                      variant="outlined"
+                    />
+                  )) : (
+                    <Typography variant="body2" color="text.secondary">No trending tags right now.</Typography>
+                  )}
+                </Box>
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
 
         <Dialog open={openCreatePost} onClose={handleCloseCreatePost} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ fontWeight: 700 }}>Create a New Post</DialogTitle>

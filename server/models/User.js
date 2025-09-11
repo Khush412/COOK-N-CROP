@@ -201,6 +201,9 @@ const userSchema = new mongoose.Schema({
   },
   // Saved content
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+  // Following/Followers
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   // Subscription and billing
   subscription: {
     plan: {

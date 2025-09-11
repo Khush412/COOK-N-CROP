@@ -87,6 +87,42 @@ router.post('/:id/reviews', protect, async (req, res) => {
   }
 });
 
+// @route   PUT api/products/:id/reviews/:reviewId/upvote
+// @desc    Upvote/un-upvote a product review
+// @access  Private
+router.put('/:id/reviews/:reviewId/upvote', protect, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const review = product.reviews.id(req.params.reviewId);
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Check if user has already upvoted
+    const upvoteIndex = review.upvotes.findIndex(
+      (userId) => userId.toString() === req.user._id.toString()
+    );
+
+    if (upvoteIndex > -1) {
+      // Already upvoted, so remove upvote
+      review.upvotes.splice(upvoteIndex, 1);
+    } else {
+      // Not upvoted, so add upvote
+      review.upvotes.push(req.user._id);
+    }
+
+    await product.save();
+    res.json({ upvotes: review.upvotes });
+  } catch (error) {
+    console.error('Upvote review error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin

@@ -3,7 +3,7 @@ import { Paper, Box, Avatar, Typography, Chip, Divider, IconButton, Button } fro
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { ThumbUp as ThumbUpIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon } from '@mui/icons-material';
+import { ThumbUp as ThumbUpIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, MenuBook as MenuBookIcon } from '@mui/icons-material';
 
 const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPosts }) => {
   const theme = useTheme();
@@ -48,9 +48,14 @@ const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPos
         </Box>
       </Box>
 
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: theme.palette.text.primary }}>
-        {post.title}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        {post.isRecipe && (
+          <MenuBookIcon color="action" sx={{ fontSize: '1.2rem' }} />
+        )}
+        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+          {post.title}
+        </Typography>
+      </Box>
 
       <Typography
         variant="body2"

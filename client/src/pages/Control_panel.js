@@ -3,7 +3,6 @@ import {
   Box, ButtonBase, Typography, Grid, useTheme, useMediaQuery, Fade,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import SchoolIcon from "@mui/icons-material/School";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PaymentIcon from "@mui/icons-material/Payment";

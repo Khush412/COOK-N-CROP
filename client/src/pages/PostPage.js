@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -13,9 +13,11 @@ import {
   Divider,
   Button,
   Stack,
+  Grid,
   List,
   ListItemIcon,
   ListItemText,
+  ListItem,
   Snackbar,
   IconButton,
   Menu,
@@ -25,9 +27,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListSubheader,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon } from '@mui/icons-material';
+import {
+  ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
+  Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon,
+  Timer as TimerIcon, RestaurantMenu as RestaurantMenuIcon, People as PeopleIcon
+} from '@mui/icons-material';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +42,36 @@ import CommentForm from '../components/CommentForm';
 import CommentThreadItem from '../components/CommentThreadItem';
 import EditPostForm from '../components/EditPostForm';
 import ReportDialog from '../components/ReportDialog';
+
+const RecipeDisplay = ({ recipe, description }) => {
+  const theme = useTheme();
+  return (
+    <Box>
+      <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+        {description}
+      </Typography>
+      <Stack direction="row" spacing={3} sx={{ my: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1, justifyContent: 'space-around' }}>
+        {recipe.prepTime && <Box sx={{ textAlign: 'center' }}><TimerIcon /><Typography variant="caption" display="block">Prep: {recipe.prepTime}</Typography></Box>}
+        {recipe.cookTime && <Box sx={{ textAlign: 'center' }}><TimerIcon color="primary" /><Typography variant="caption" display="block">Cook: {recipe.cookTime}</Typography></Box>}
+        {recipe.servings && <Box sx={{ textAlign: 'center' }}><PeopleIcon /><Typography variant="caption" display="block">Serves: {recipe.servings}</Typography></Box>}
+      </Stack>
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={5}>
+          <Typography variant="h6" gutterBottom>Ingredients</Typography>
+          <List dense>
+            {recipe.ingredients.map((ing, i) => <ListItem key={i}><ListItemText primary={`• ${ing}`} /></ListItem>)}
+          </List>
+        </Grid>
+        <Grid item xs={12} md={7}>
+          <Typography variant="h6" gutterBottom>Instructions</Typography>
+          <List dense>
+            {recipe.instructions.map((inst, i) => <ListItem key={i} alignItems="flex-start"><ListItemText primary={`${i + 1}. ${inst}`} /></ListItem>)}
+          </List>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
 
 const PostPage = () => {
   const { id } = useParams();
@@ -56,10 +93,10 @@ const PostPage = () => {
   const [isReporting, setIsReporting] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [deleteCommentConfirmOpen, setDeleteCommentConfirmOpen] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null); // New state for replies
+  const [replyingTo, setReplyingTo] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
       setLoading(true);
       const data = await communityService.getPostById(id);
@@ -69,11 +106,11 @@ const PostPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchPost();
-  }, [id]);
+  }, [id, fetchPost]);
 
   const handleUpvote = async (postId) => {
     if (!isAuthenticated) {
@@ -407,9 +444,13 @@ const PostPage = () => {
         ) : (
           <>
             {/* Post Content */}
-            <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
-              {post.content}
-            </Typography>
+            {post.isRecipe ? (
+              <RecipeDisplay recipe={post.recipeDetails} description={post.content} />
+            ) : (
+              <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+                {post.content}
+              </Typography>
+            )}
 
             {/* Tags */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>

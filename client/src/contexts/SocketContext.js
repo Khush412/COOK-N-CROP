@@ -19,16 +19,12 @@ export const SocketProvider = ({ children }) => {
       // Announce user's presence to the server
       newSocket.emit('join', user.id);
 
-      // Clean up on disconnect or user change
-      return () => newSocket.close();
-    } else {
-      // If user logs out, disconnect the socket
-      if (socket) {
-        socket.close();
-        setSocket(null);
-      }
+      // This cleanup function runs when the user logs out or the component unmounts.
+      return () => {
+        newSocket.close();
+      };
     }
-  }, [user]); // Re-run effect when user object changes
+  }, [user]); // Only re-run the effect if the user object changes
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>

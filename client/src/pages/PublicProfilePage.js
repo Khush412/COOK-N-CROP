@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -14,39 +14,68 @@ import {
   List,
   ListItem,
   ListItemText,
+  Button,
+  Stack,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
 import CommentIcon from '@mui/icons-material/Comment';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import userService from '../services/userService';
+import { useAuth } from '../contexts/AuthContext';
 
 const PublicProfilePage = () => {
   const { username } = useParams();
-  const theme = useTheme();
+  const navigate = useNavigate();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
       setLoading(true);
       setError(null);
       try {
         const res = await userService.getPublicProfile(username);
         setProfileData(res.data);
+        setIsFollowing(res.data.isFollowing);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load profile.');
       } finally {
         setLoading(false);
       }
-    };
+    }, [username]);
+
+  useEffect(() => {
     fetchProfile();
-  }, [username]);
+  }, [fetchProfile]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+  };
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/user/${username}`);
+      return;
+    }
+    setFollowLoading(true);
+    try {
+      await userService.toggleFollow(profileData.user._id);
+      setIsFollowing(prev => !prev);
+      // Optimistically update follower count
+      setProfileData(prev => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          followersCount: isFollowing ? prev.user.followersCount - 1 : prev.user.followersCount + 1,
+        },
+      }));
+    } finally {
+      setFollowLoading(false);
+    }
   };
 
   if (loading) {
@@ -85,9 +114,28 @@ const PublicProfilePage = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
               {user.bio || 'No bio provided.'}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Joined on {format(new Date(user.createdAt), 'PPP')}
-            </Typography>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>{user.followersCount}</strong> Followers
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>{user.followingCount}</strong> Following
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                • Joined {format(new Date(user.createdAt), 'MMM yyyy')}
+              </Typography>
+            </Stack>
+          </Box>
+          <Box sx={{ ml: 'auto', alignSelf: 'flex-start' }}>
+            {isAuthenticated && currentUser?.username !== user.username && (
+              <Button
+                variant={isFollowing ? 'outlined' : 'contained'}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {isFollowing ? 'Unfollowing' : 'Follow'}
+              </Button>
+            )}
           </Box>
         </Box>
 

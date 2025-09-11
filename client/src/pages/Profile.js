@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -11,6 +12,12 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Paper,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Fade,
   useMediaQuery
 } from "@mui/material";
@@ -19,10 +26,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from "@mui/icons-material/Twitter";
+import userService from "../services/userService"; // New
 import api from "../config/axios"; // Use your axios config path
+import { useAuth } from "../contexts/AuthContext";
 
 const SOCIALS = [
   { name: "Google", key: "google", icon: GoogleIcon, color: "#DB4437" },
@@ -33,6 +43,8 @@ const SOCIALS = [
 export default function Profile() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({
     username: "",
@@ -44,6 +56,17 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ error: "", success: "" });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState({ error: "", success: "" });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -135,6 +158,62 @@ export default function Profile() {
       setFeedback({ error: error.response?.data?.message || "Failed to update profile.", success: "" });
     }
     setLoading(false);
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const savePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordFeedback({ error: "New passwords do not match.", success: "" });
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordFeedback({ error: "New password must be at least 6 characters.", success: "" });
+      return;
+    }
+
+    setPasswordLoading(true);
+    setPasswordFeedback({ error: "", success: "" });
+    try {
+      const res = await userService.changePassword(passwordForm);
+      setPasswordFeedback({ error: "", success: res.message });
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      // Optional: Log out user after password change for security
+      // setTimeout(() => navigate('/login'), 2000);
+    } catch (error) {
+      setPasswordFeedback({
+        error: error.message || "Failed to change password.",
+        success: "",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await userService.deleteAccount(deletePassword);
+      setDeleteLoading(false);
+      setDeleteDialogOpen(false);
+      // The backend clears the cookie, so we just need to update the frontend state
+      logout();
+      navigate('/', { state: { message: 'Your account has been successfully deleted.' } });
+    } catch (error) {
+      setDeleteError(error.message || 'Failed to delete account. Please check your password.');
+      setDeleteLoading(false);
+    }
+  };
+
+  const openDeleteDialog = () => {
+    setDeleteError('');
+    setDeletePassword('');
+    setDeleteDialogOpen(true);
   };
 
   const unlinkSocial = async (key) => {
@@ -461,6 +540,136 @@ export default function Profile() {
           );
         })}
       </Stack>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Security Section */}
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
+        <Typography variant="h5" fontWeight={700} mb={3}>
+          Security
+        </Typography>
+
+        <Fade in={!!passwordFeedback.error}>
+          <Alert variant="filled" severity="error" sx={{ mb: 2 }}>
+            {passwordFeedback.error}
+          </Alert>
+        </Fade>
+        <Fade in={!!passwordFeedback.success}>
+          <Alert variant="filled" severity="success" sx={{ mb: 2 }}>
+            {passwordFeedback.success}
+          </Alert>
+        </Fade>
+
+        <Box component="form" onSubmit={savePassword}>
+          <Stack spacing={2}>
+            <TextField
+              type="password"
+              label="Current Password"
+              name="currentPassword"
+              variant="filled"
+              fullWidth
+              required
+              value={passwordForm.currentPassword}
+              onChange={handlePasswordChange}
+              disabled={passwordLoading}
+            />
+            <TextField
+              type="password"
+              label="New Password"
+              name="newPassword"
+              variant="filled"
+              fullWidth
+              required
+              value={passwordForm.newPassword}
+              onChange={handlePasswordChange}
+              disabled={passwordLoading}
+              helperText="Min 6 characters, with at least one uppercase, one lowercase, and one number."
+            />
+            <TextField
+              type="password"
+              label="Confirm New Password"
+              name="confirmPassword"
+              variant="filled"
+              fullWidth
+              required
+              value={passwordForm.confirmPassword}
+              onChange={handlePasswordChange}
+              disabled={passwordLoading}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={passwordLoading}
+                startIcon={passwordLoading ? <CircularProgress size={20} /> : null}
+              >
+                {passwordLoading ? 'Updating...' : 'Change Password'}
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Delete Account Section */}
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, border: 1, borderColor: 'error.main' }}>
+        <Typography variant="h5" fontWeight={700} color="error.main">
+          Danger Zone
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+          Deleting your account is a permanent action and cannot be undone. All your personal data will be anonymized, but your posts and comments will remain.
+        </Typography>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={openDeleteDialog}
+          startIcon={<WarningAmberIcon />}
+        >
+          Delete My Account
+        </Button>
+      </Paper>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Are you absolutely sure?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This action is irreversible. To confirm, please enter your password below.
+          </DialogContentText>
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {deleteError}
+            </Alert>
+          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="delete-password"
+            label="Your Password"
+            type="password"
+            fullWidth
+            variant="standard"
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            disabled={deleteLoading}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleteLoading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading || !deletePassword}
+            startIcon={deleteLoading ? <CircularProgress size={20} /> : null}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

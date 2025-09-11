@@ -377,6 +377,16 @@ export default function Navbar() {
               >
                 Recipes
               </NavLink>
+              {isAuthenticated && (
+                <NavLink
+                  component={RouterLink}
+                  to="/feed"
+                  active={isActive("/feed") ? 1 : 0}
+                  tabIndex={0}
+                >
+                  My Feed
+                </NavLink>
+              )}
             </Box>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 'auto', mr: 4 }}>

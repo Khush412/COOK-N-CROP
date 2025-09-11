@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -61,6 +61,19 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
+// @desc    Get all orders
+// @route   GET /api/orders
+// @access  Private/Admin
+router.get('/', protect, authorize('admin'), async (req, res) => {
+  try {
+    const orders = await Order.find({}).populate('user', 'id username');
+    res.json(orders);
+  } catch (error) {
+    console.error('Get all orders error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Get logged in user orders
 // @route   GET /api/orders/myorders
 // @access  Private
@@ -88,6 +101,49 @@ router.get('/:id', protect, async (req, res) => {
     }
 
     res.json(order);
+});
+
+// @desc    Update order to paid
+// @route   PUT /api/orders/:id/pay
+// @access  Private/Admin
+router.put('/:id/pay', protect, authorize('admin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      // In a real app, you'd add paymentResult details from a payment gateway here
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    console.error('Update order to paid error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Update order to delivered
+// @route   PUT /api/orders/:id/deliver
+// @access  Private/Admin
+router.put('/:id/deliver', protect, authorize('admin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    console.error('Update order to delivered error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 module.exports = router;

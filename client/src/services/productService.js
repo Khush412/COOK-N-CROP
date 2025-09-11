@@ -80,6 +80,16 @@ const createProductReview = async (productId, review) => {
   }
 };
 
+const toggleReviewUpvote = async (productId, reviewId) => {
+  try {
+    const response = await axios.put(`/products/${productId}/reviews/${reviewId}/upvote`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error toggling upvote for review ${reviewId}`, error);
+    throw error;
+  }
+};
+
 const productService = {
   getAllProducts,
   getProductById,
@@ -89,6 +99,7 @@ const productService = {
   removeCartItem,
   clearCart,
   createProductReview,
+  toggleReviewUpvote,
 };
 
 export default productService;

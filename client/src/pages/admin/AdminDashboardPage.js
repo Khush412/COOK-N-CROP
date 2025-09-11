@@ -4,12 +4,14 @@ import { NavLink, Outlet } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
 import ReportIcon from '@mui/icons-material/Report';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const adminNavItems = [
   { text: 'Dashboard', path: '/admin', icon: <DashboardIcon /> },
   { text: 'Manage Users', path: '/admin/users', icon: <PeopleIcon /> },
   { text: 'Manage Products', path: '/admin/products', icon: <InventoryIcon /> },
+  { text: 'Manage Orders', path: '/admin/orders', icon: <ReceiptLongIcon /> },
   { text: 'Reported Content', path: '/admin/reports', icon: <ReportIcon /> },
 ];
 

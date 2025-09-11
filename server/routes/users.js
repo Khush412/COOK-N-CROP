@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const { validateProfileUpdate, validatePasswordChange, handleValidationErrors } = require('../middleware/validation');
 const upload = require('../middleware/upload');
 
@@ -57,6 +57,82 @@ router.put(
     }
   }
 );
+
+// @desc    Change current user's password
+// @route   PUT /api/users/me/password
+// @access  Private
+router.put(
+  '/me/password',
+  protect,
+  validatePasswordChange,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).select('+password');
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
+      const isMatch = await user.comparePassword(req.body.currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+      }
+
+      user.password = req.body.newPassword;
+      await user.save();
+
+      // Optionally, you can send a new token here or just a success message.
+      res.status(200).json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ success: false, message: 'Server error during password change' });
+    }
+  }
+);
+
+// @desc    Delete current user's account
+// @route   POST /api/users/me/delete-account
+// @access  Private
+router.post('/me/delete-account', protect, async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required to delete your account.' });
+    }
+
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Incorrect password.' });
+    }
+
+    // Anonymize user data instead of hard deleting to preserve community content integrity
+    user.username = `user_${user._id.toString().slice(-8)}`;
+    user.email = `${user._id}@deleted.co`;
+    user.password = undefined; // This will be removed by the pre-save hook if not modified
+    user.bio = 'This account has been deleted.';
+    user.profilePic = null;
+    user.isActive = false;
+    user.google = undefined;
+    user.github = undefined;
+    user.twitter = undefined;
+    user.savedPosts = [];
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save({ validateBeforeSave: false }); // Skip validation as we are intentionally setting invalid email etc.
+
+    res.cookie('token', 'none', { expires: new Date(Date.now() + 10 * 1000), httpOnly: true });
+    res.status(200).json({ success: true, message: 'Account deleted successfully.' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ success: false, message: 'Server error during account deletion.' });
+  }
+});
 
 // @desc    Unlink a social OAuth provider from current user
 // @route   DELETE /api/users/me/social/unlink/:provider
@@ -155,12 +231,22 @@ router.get('/me/posts/saved', protect, async (req, res) => {
 // @desc    Get public user profile by username, including their posts and comments
 // @route   GET /api/users/profile/:username
 // @access  Public
-router.get('/profile/:username', async (req, res) => {
+router.get('/profile/:username', optionalAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username }).select('username bio profilePic createdAt');
+    const user = await User.findOne({ username: req.params.username }).select('username bio profilePic createdAt followers following');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    // Check if the logged-in user (if any) is following this profile
+    let isFollowing = false;
+    if (req.user) {
+      isFollowing = req.user.following.some(id => id.equals(user._id));
+    }
+
+    const publicProfile = user.getPublicProfile();
+    publicProfile.followersCount = user.followers.length;
+    publicProfile.followingCount = user.following.length;
 
     // Dynamically import Post and Comment models to avoid circular dependencies if any
     const Post = require('../models/Post');
@@ -179,7 +265,7 @@ router.get('/profile/:username', async (req, res) => {
       .populate('post', 'title _id') // Populate post title to give context
       .select('content createdAt post');
 
-    res.status(200).json({ success: true, data: { user, posts, comments } });
+    res.status(200).json({ success: true, data: { user: publicProfile, posts, comments, isFollowing } });
   } catch (error) {
     console.error('Get public profile error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -187,6 +273,43 @@ router.get('/profile/:username', async (req, res) => {
 });
 
 // ======= Dynamic :id Routes =======
+
+// @desc    Follow/unfollow a user
+// @route   PUT /api/users/:id/follow
+// @access  Private
+router.put('/:id/follow', protect, async (req, res) => {
+  try {
+    const userToFollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
+
+    if (!userToFollow || !currentUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ success: false, message: "You cannot follow yourself." });
+    }
+
+    const isFollowing = currentUser.following.some(id => id.equals(userToFollow._id));
+
+    if (isFollowing) {
+      // Unfollow
+      currentUser.following.pull(userToFollow._id);
+      userToFollow.followers.pull(currentUser._id);
+    } else {
+      // Follow
+      currentUser.following.push(userToFollow._id);
+      userToFollow.followers.push(currentUser._id);
+    }
+
+    await Promise.all([currentUser.save(), userToFollow.save()]);
+
+    res.status(200).json({ success: true, message: isFollowing ? 'User unfollowed' : 'User followed' });
+  } catch (error) {
+    console.error('Follow user error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // @desc    Get single user by ID
 // @route   GET /api/users/:id

@@ -64,6 +64,28 @@ const getDashboardStats = async () => {
   return response.data;
 };
 
+const getAllOrders = async () => {
+  const response = await api.get('/orders');
+  return response.data;
+};
+
+const updateOrderToPaid = async (orderId) => {
+  const response = await api.put(`/orders/${orderId}/pay`);
+  return response.data;
+};
+
+const updateOrderToDelivered = async (orderId) => {
+  const response = await api.put(`/orders/${orderId}/deliver`);
+  return response.data;
+};
+
+const exportUsers = async () => {
+  const response = await api.get('/admin/users/export', {
+    responseType: 'blob', // Important to handle the file download
+  });
+  return response.data;
+};
+
 const adminService = {
   getAllUsers,
   deleteUser,
@@ -77,6 +99,10 @@ const adminService = {
   updateProduct,
   deleteProduct,
   getDashboardStats,
+  getAllOrders,
+  updateOrderToPaid,
+  updateOrderToDelivered,
+  exportUsers,
 };
 
 export default adminService;

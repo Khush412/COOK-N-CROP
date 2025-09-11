@@ -6,11 +6,11 @@ const Rating = ({ value, onChange, readOnly = false }) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     if (i <= value) {
-      stars.push(<Star key={i} onClick={() => !readOnly && onChange(i)} />);
+      stars.push(<Star key={i} onClick={() => !readOnly && typeof onChange === 'function' && onChange(i)} />);
     } else if (i === Math.ceil(value) && !Number.isInteger(value)) {
       stars.push(<StarHalf key={i} />);
     } else {
-      stars.push(<StarBorder key={i} onClick={() => !readOnly && onChange(i)} />);
+      stars.push(<StarBorder key={i} onClick={() => !readOnly && typeof onChange === 'function' && onChange(i)} />);
     }
   }
 

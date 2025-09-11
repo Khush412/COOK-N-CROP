@@ -57,7 +57,7 @@ const CommentSchema = new mongoose.Schema({
 
 // Virtual for upvote count
 CommentSchema.virtual('upvoteCount').get(function() {
-  return this.upvotes.length;
+  return this.upvotes ? this.upvotes.length : 0;
 });
 
 module.exports = mongoose.model('Comment', CommentSchema);

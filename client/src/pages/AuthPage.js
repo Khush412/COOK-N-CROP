@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 export default function AuthPage() {
   const theme = useTheme();
@@ -43,18 +43,6 @@ export default function AuthPage() {
       navigate("/dashboard");
     }
   }, [isAuthenticated, loading, navigate]);
-
-  // Only clear errors when switching mode, don't clear popup state here
-  useEffect(() => {
-    clearError();
-    setLocalError(null);
-  }, [signingIn, clearError]);
-
-  // Prevent reload from anchor elements for forgot password
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    alert("Forgot password flow not implemented yet");
-  };
 
   const handleSignIn = async (e) => {
     e.preventDefault(); // MUST be first to stop reload
@@ -259,10 +247,8 @@ export default function AuthPage() {
               autoComplete="current-password"
             />
             <C.Anchor
-              as="button"
-              type="button"
-              onClick={handleForgotPassword}
-              style={{
+              as={RouterLink}
+              to="/forgot-password"              style={{
                 color: theme.palette.primary.main,
                 background: "none",
                 border: "none",

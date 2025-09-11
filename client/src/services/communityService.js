@@ -1,12 +1,12 @@
 import api from '../config/axios';
 
-const getPosts = async (sort = 'new', search = '', page = 1) => {
+const getPosts = async (sort = 'new', page = 1, options = {}) => {
   try {
     const params = new URLSearchParams();
     params.append('sort', sort);
     params.append('page', page);
-    if (search) {
-      params.append('search', search);
+    if (options.isRecipe) {
+      params.append('isRecipe', 'true');
     }
     const response = await api.get(`/posts?${params.toString()}`);
     return response.data;
@@ -127,6 +127,26 @@ const reportComment = async (commentId, reason) => {
   }
 };
 
+const getTrendingTags = async () => {
+  try {
+    const response = await api.get('/posts/tags/trending');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching trending tags:', error);
+    throw error;
+  }
+};
+
+const getFeedPosts = async (page = 1) => {
+  try {
+    const response = await api.get(`/posts/feed?page=${page}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching feed posts:', error);
+    throw error;
+  }
+};
+
 const communityService = {
   getPosts,
   createPost,
@@ -140,6 +160,8 @@ const communityService = {
   deleteComment,
   reportPost,
   reportComment,
+  getTrendingTags,
+  getFeedPosts,
 };
 
 export default communityService;

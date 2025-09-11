@@ -35,78 +35,58 @@ router.post('/', protect, async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const { sort = 'new', search = '', page = 1, limit = 9 } = req.query;
+    const { sort = 'new', page = 1, limit = 9, isRecipe } = req.query;
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const aggregationProjection = {
+    const pipeline = [];
+    const matchConditions = {};
+
+    if (isRecipe === 'true') {
+      matchConditions.isRecipe = true;
+    }
+
+    if (Object.keys(matchConditions).length > 0) {
+      pipeline.push({ $match: matchConditions });
+    }
+
+    // Add sorting stages
+    if (sort === 'top') {
+      pipeline.push({ $addFields: { upvoteCountSort: { $size: { $ifNull: ['$upvotes', []] } } } });
+      pipeline.push({ $sort: { upvoteCountSort: -1, createdAt: -1 } });
+    } else if (sort === 'discussed') {
+      pipeline.push({ $addFields: { commentCountSort: { $size: { $ifNull: ['$comments', []] } } } });
+      pipeline.push({ $sort: { commentCountSort: -1, createdAt: -1 } });
+    } else { // Default to 'new'
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    // Add pagination
+    pipeline.push({ $skip: skip }, { $limit: limitNum });
+
+    // Add lookups and final shaping
+    pipeline.push({ $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' } });
+    pipeline.push({ $unwind: '$user' });
+
+    // Final projection stage
+    pipeline.push({ $project: {
       title: 1,
       content: 1,
       tags: 1,
-      upvotes: 1,
-      comments: 1,
       isRecipe: 1,
       recipeDetails: 1,
       createdAt: 1,
       updatedAt: 1,
-      upvoteCount: 1,
-      commentCount: 1,
-      user: {
-        _id: '$user._id',
-        username: '$user.username',
-        profilePic: '$user.profilePic',
-      },
-    };
+      upvotes: 1,
+      user: { _id: '$user._id', username: '$user.username', profilePic: '$user.profilePic' },
+      upvoteCount: { $size: { $ifNull: ['$upvotes', []] } },
+      commentCount: { $size: { $ifNull: ['$comments', []] } },
+    }});
 
-    // Base match stage
-    const matchStage = search ? { $match: { $text: { $search: search } } } : null;
-
-    // Pipeline for fetching paginated data
-    const dataPipeline = [];
-    if (matchStage) dataPipeline.push(matchStage);
-
-    // Add sorting stages
-    if (sort === 'top') {
-      dataPipeline.push({ $addFields: { upvoteCountSort: { $size: { $ifNull: ['$upvotes', []] } } } });
-      dataPipeline.push({ $sort: { upvoteCountSort: -1, createdAt: -1 } });
-    } else if (sort === 'discussed') {
-      dataPipeline.push({ $addFields: { commentCountSort: { $size: { $ifNull: ['$comments', []] } } } });
-      dataPipeline.push({ $sort: { commentCountSort: -1, createdAt: -1 } });
-    } else if (sort === 'relevance' && search) {
-      dataPipeline.push({ $sort: { score: { $meta: 'textScore' } } });
-    } else { // Default to 'new'
-      dataPipeline.push({ $sort: { createdAt: -1 } });
-    }
-
-    // Add pagination, lookup, and final projection
-    dataPipeline.push(
-      { $skip: skip },
-      { $limit: limitNum },
-      { $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' } },
-      { $unwind: '$user' },
-      { $addFields: { 
-          upvoteCount: { $size: { $ifNull: ['$upvotes', []] } },
-          commentCount: { $size: { $ifNull: ['$comments', []] } } 
-      } },
-      { $project: aggregationProjection }
-    );
-
-    // Pipeline for getting total count
-    const countPipeline = [];
-    if (matchStage) countPipeline.push(matchStage);
-    countPipeline.push({ $count: 'total' });
-
-    // Execute both pipelines using $facet
-    const results = await Post.aggregate([
-      { $facet: {
-          posts: dataPipeline,
-          totalCount: countPipeline
-      }}
-    ]);
-
-    const posts = results[0].posts;
-    const totalPosts = results[0].totalCount[0] ? results[0].totalCount[0].total : 0;
+    // Execute pipeline to get posts and a separate query for the total count
+    const posts = await Post.aggregate(pipeline);
+    const totalPosts = await Post.countDocuments(matchConditions);
 
     res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
   } catch (error) {
@@ -126,6 +106,61 @@ router.get('/reported', protect, authorize('admin'), async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.error('Get reported posts error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get posts from users the current user is following
+// @route   GET /api/posts/feed
+// @access  Private
+router.get('/feed', protect, async (req, res) => {
+  try {
+    const { page = 1, limit = 9 } = req.query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const followingIds = req.user.following;
+
+    if (followingIds.length === 0) {
+      return res.json({ posts: [], page: 1, pages: 0 });
+    }
+
+    const posts = await Post.find({ user: { $in: followingIds } })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .populate('user', 'username profilePic');
+
+    const totalPosts = await Post.countDocuments({ user: { $in: followingIds } });
+
+    res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
+  } catch (error) {
+    console.error('Get feed error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get trending tags
+// @route   GET /api/posts/tags/trending
+// @access  Public
+router.get('/tags/trending', async (req, res) => {
+  try {
+    // Get tags from posts in the last 30 days to keep it fresh
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const tags = await Post.aggregate([
+      { $match: { createdAt: { $gte: thirtyDaysAgo }, tags: { $ne: null, $not: { $size: 0 } } } },
+      { $unwind: '$tags' },
+      { $group: { _id: '$tags', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      { $project: { _id: 0, tag: '$_id', count: 1 } }
+    ]);
+    res.json(tags);
+  } catch (error) {
+    console.error('Get trending tags error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -387,21 +422,5 @@ router.put('/:id/report', protect, async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
-
-// @desc    Get all reported posts (Admin only)
-// @route   GET /api/posts/reported
-// @access  Private/Admin
-router.get('/reported', protect, authorize('admin'), async (req, res) => {
-  try {
-    const posts = await Post.find({ 'reports.0': { $exists: true } })
-      .populate('user', 'username')
-      .populate('reports.user', 'username');
-    res.json(posts);
-  } catch (error) {
-    console.error('Get reported posts error:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
 
 module.exports = router;

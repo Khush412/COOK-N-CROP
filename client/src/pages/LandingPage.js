@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useTheme } from '@mui/material/styles';
 import {
   Box,
@@ -9,6 +10,8 @@ import {
   Paper,
   TextField,
   InputAdornment,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -152,8 +155,25 @@ const TEXTURE_URL = "https://www.transparenttextures.com/patterns/paper-fibers.p
 
 export default function LandingPage() {
   const theme = useTheme();
+  const location = useLocation();
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
+  useEffect(() => {
+    if (location.state?.message) {
+      setSnackbar({
+        open: true,
+        message: location.state.message,
+        severity: location.state.severity || 'success',
+      });
+      // Clear the state from history so it doesn't reappear on back/forward navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar({ ...snackbar, open: false });
+  };
   return (
     <Box
       sx={{
@@ -362,6 +382,17 @@ export default function LandingPage() {
           </Button>
         </Box>
       </Container>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
