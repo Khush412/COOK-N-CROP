@@ -49,12 +49,13 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Fruits', 'Vegetables', 'Exotic Produce', 'Seasonal Picks', 'Organic / Specials'],
+    enum: ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'],
   },
-  inStock: {
-    type: Boolean,
-    default: true,
-  },
+  countInStock: {
+  type: Number,
+  required: true,
+  default: 0,
+},
   origin: {
     type: String,
   },

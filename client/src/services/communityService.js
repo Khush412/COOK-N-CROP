@@ -147,6 +147,11 @@ const getFeedPosts = async (page = 1) => {
   }
 };
 
+const getShoppableIngredients = async (postId) => {
+  const { data } = await api.get(`/posts/${postId}/shoppable-ingredients`);
+  return data;
+};
+
 const communityService = {
   getPosts,
   createPost,
@@ -162,6 +167,7 @@ const communityService = {
   reportComment,
   getTrendingTags,
   getFeedPosts,
+  getShoppableIngredients,
 };
 
 export default communityService;

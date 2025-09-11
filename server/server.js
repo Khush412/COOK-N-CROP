@@ -28,6 +28,7 @@ const addressRoutes = require('./routes/address'); // New: Import address routes
 const orderRoutes = require('./routes/order'); // New: Import order routes
 const postRoutes = require('./routes/posts'); // New: Import post routes
 const commentRoutes = require('./routes/comments'); // New: Import comment routes
+const couponRoutes = require('./routes/couponRoutes'); // New: Import coupon routes
 const notificationRoutes = require('./routes/notifications'); // New: Import notification routes
 const adminRoutes = require('./routes/admin'); // New: Import admin routes
 
@@ -151,6 +152,7 @@ app.use('/api/addresses', addressRoutes); // New: Use address routes
 app.use('/api/orders', orderRoutes); // New: Use order routes
 app.use('/api/posts', postRoutes); // New: Use post routes
 app.use('/api/comments', commentRoutes); // New: Use comment routes
+app.use('/api/coupons', couponRoutes); // New: Use coupon routes
 app.use('/api/admin', adminRoutes); // New: Use admin routes
 app.use('/api/notifications', notificationRoutes); // New: Use notification routes
 

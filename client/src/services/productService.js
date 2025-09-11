@@ -90,6 +90,31 @@ const toggleReviewUpvote = async (productId, reviewId) => {
   }
 };
 
+const createProduct = async (productData) => {
+  // productData should be FormData
+  const { data } = await axios.post('/products', productData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+const updateProduct = async (id, productData) => {
+  // productData should be FormData
+  const { data } = await axios.put(`/products/${id}`, productData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+const deleteProduct = async (id) => {
+  const { data } = await axios.delete(`/products/${id}`);
+  return data;
+};
+
 const productService = {
   getAllProducts,
   getProductById,
@@ -100,6 +125,9 @@ const productService = {
   clearCart,
   createProductReview,
   toggleReviewUpvote,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 };
 
 export default productService;

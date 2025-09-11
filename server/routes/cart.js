@@ -31,15 +31,29 @@ router.post('/', protect, async (req, res) => {
 
       if (itemIndex > -1) {
         // Product exists in the cart, update quantity
-        cart.items[itemIndex].quantity += quantity;
+        const newQuantity = cart.items[itemIndex].quantity + quantity;
+        if (product.countInStock < newQuantity) {
+          return res.status(400).json({ message: `Not enough stock for ${product.name}. Only ${product.countInStock} available.` });
+        }
+        cart.items[itemIndex].quantity = newQuantity;
       } else {
         // Product does not exist in cart, add new item
+        if (product.countInStock < quantity) {
+          return res.status(400).json({
+            message: `Not enough stock for ${product.name}. Only ${product.countInStock} available.`,
+          });
+        }
         cart.items.push({ product: productId, quantity });
       }
       cart = await cart.save();
       res.json(cart);
     } else {
       // No cart for user, create new cart
+      if (product.countInStock < quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for ${product.name}. Only ${product.countInStock} available.`,
+        });
+      }
       const newCart = await Cart.create({
         user: req.user.id,
         items: [{ product: productId, quantity }],
@@ -95,7 +109,18 @@ router.put('/item/:productId', protect, async (req, res) => {
       (item) => item.product.toString() === productId
     );
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
     if (itemIndex > -1) {
+      if (quantity > product.countInStock) {
+        return res.status(400).json({
+          message: `Not enough stock for ${product.name}. Only ${product.countInStock} available.`,
+        });
+      }
+
       let item = cart.items[itemIndex];
       item.quantity = quantity;
       if (item.quantity <= 0) {

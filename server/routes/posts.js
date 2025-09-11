@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 
 // @desc    Create a new post
@@ -35,7 +36,7 @@ router.post('/', protect, async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const { sort = 'new', page = 1, limit = 9, isRecipe } = req.query;
+    const { sort = 'new', page = 1, limit = 9, isRecipe, search } = req.query;
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
@@ -47,12 +48,18 @@ router.get('/', async (req, res) => {
       matchConditions.isRecipe = true;
     }
 
+    if (search) {
+      matchConditions.$text = { $search: search };
+    }
+
     if (Object.keys(matchConditions).length > 0) {
       pipeline.push({ $match: matchConditions });
     }
 
     // Add sorting stages
-    if (sort === 'top') {
+    if (sort === 'relevance' && search) {
+      pipeline.push({ $sort: { score: { $meta: 'textScore' } } });
+    } else if (sort === 'top') {
       pipeline.push({ $addFields: { upvoteCountSort: { $size: { $ifNull: ['$upvotes', []] } } } });
       pipeline.push({ $sort: { upvoteCountSort: -1, createdAt: -1 } });
     } else if (sort === 'discussed') {
@@ -70,7 +77,7 @@ router.get('/', async (req, res) => {
     pipeline.push({ $unwind: '$user' });
 
     // Final projection stage
-    pipeline.push({ $project: {
+    const projectStage = {
       title: 1,
       content: 1,
       tags: 1,
@@ -82,7 +89,13 @@ router.get('/', async (req, res) => {
       user: { _id: '$user._id', username: '$user.username', profilePic: '$user.profilePic' },
       upvoteCount: { $size: { $ifNull: ['$upvotes', []] } },
       commentCount: { $size: { $ifNull: ['$comments', []] } },
-    }});
+    };
+
+    if (search) {
+      projectStage.score = { $meta: 'textScore' };
+    }
+
+    pipeline.push({ $project: projectStage });
 
     // Execute pipeline to get posts and a separate query for the total count
     const posts = await Post.aggregate(pipeline);
@@ -161,6 +174,47 @@ router.get('/tags/trending', async (req, res) => {
     res.json(tags);
   } catch (error) {
     console.error('Get trending tags error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get shoppable ingredients for a recipe post
+// @route   GET /api/posts/:id/shoppable-ingredients
+// @access  Public
+router.get('/:id/shoppable-ingredients', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post || !post.isRecipe || !post.recipeDetails?.ingredients) {
+      return res.json([]); // Return empty array if not a valid recipe
+    }
+
+    const ingredients = post.recipeDetails.ingredients;
+    
+    // Fetch all product names. This is not super efficient for large DBs,
+    // but okay for now. A better approach would use text search indexes.
+    const allProducts = await Product.find({ countInStock: { $gt: 0 } }).select('name');
+
+    const shoppableProducts = [];
+    const foundProductIds = new Set();
+
+    ingredients.forEach(ingredientLine => {
+      const lowerIngredientLine = ingredientLine.toLowerCase();
+      for (const product of allProducts) {
+        const lowerProductName = product.name.toLowerCase();
+        // Simple matching: check if product name is in the ingredient line
+        // and we haven't already added this product.
+        if (lowerIngredientLine.includes(lowerProductName) && !foundProductIds.has(product._id.toString())) {
+          shoppableProducts.push(product);
+          foundProductIds.add(product._id.toString());
+          break; // Move to next ingredient line once a match is found
+        }
+      }
+    });
+
+    res.json(shoppableProducts);
+  } catch (error) {
+    console.error('Get shoppable ingredients error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

@@ -6,12 +6,14 @@ import ReportIcon from '@mui/icons-material/Report';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import DiscountIcon from '@mui/icons-material/Discount';
 
 const adminNavItems = [
   { text: 'Dashboard', path: '/admin', icon: <DashboardIcon /> },
   { text: 'Manage Users', path: '/admin/users', icon: <PeopleIcon /> },
   { text: 'Manage Products', path: '/admin/products', icon: <InventoryIcon /> },
   { text: 'Manage Orders', path: '/admin/orders', icon: <ReceiptLongIcon /> },
+  { text: 'Manage Coupons', path: '/admin/coupons', icon: <DiscountIcon /> },
   { text: 'Reported Content', path: '/admin/reports', icon: <ReportIcon /> },
 ];
 

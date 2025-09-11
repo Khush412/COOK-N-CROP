@@ -33,17 +33,18 @@ import { useTheme } from '@mui/material/styles';
 import {
   ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
   Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon,
-  Timer as TimerIcon, RestaurantMenu as RestaurantMenuIcon, People as PeopleIcon
+  Timer as TimerIcon, RestaurantMenu as RestaurantMenuIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
 import CommentForm from '../components/CommentForm';
+import productService from '../services/productService';
 import CommentThreadItem from '../components/CommentThreadItem';
 import EditPostForm from '../components/EditPostForm';
 import ReportDialog from '../components/ReportDialog';
 
-const RecipeDisplay = ({ recipe, description }) => {
+const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick, isAdding }) => {
   const theme = useTheme();
   return (
     <Box>
@@ -55,17 +56,36 @@ const RecipeDisplay = ({ recipe, description }) => {
         {recipe.cookTime && <Box sx={{ textAlign: 'center' }}><TimerIcon color="primary" /><Typography variant="caption" display="block">Cook: {recipe.cookTime}</Typography></Box>}
         {recipe.servings && <Box sx={{ textAlign: 'center' }}><PeopleIcon /><Typography variant="caption" display="block">Serves: {recipe.servings}</Typography></Box>}
       </Stack>
-      <Grid container spacing={4}>
+      {shoppableIngredients.length > 0 && (
+        <Box sx={{ mt: 4, mb: 4, p: 2, bgcolor: 'success.lightest', borderRadius: 2, border: '1px solid', borderColor: 'success.light' }}>
+          <Typography variant="h6" gutterBottom sx={{ color: 'success.dark', fontWeight: 'bold' }}>
+            Shop the Recipe!
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            We found {shoppableIngredients.length} matching ingredients in our store.
+          </Typography>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={isAdding ? <CircularProgress size={20} color="inherit" /> : <ShoppingCartIcon />}
+            onClick={onShopClick}
+            disabled={isAdding}
+          >
+            {isAdding ? 'Adding to Cart...' : 'Add Ingredients to Cart'}
+          </Button>
+        </Box>
+      )}
+      <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item xs={12} md={5}>
           <Typography variant="h6" gutterBottom>Ingredients</Typography>
           <List dense>
-            {recipe.ingredients.map((ing, i) => <ListItem key={i}><ListItemText primary={`• ${ing}`} /></ListItem>)}
+            {recipe.ingredients.map((ing, i) => <ListItem key={i} sx={{ py: 0.2 }}><ListItemText primary={`• ${ing}`} /></ListItem>)}
           </List>
         </Grid>
         <Grid item xs={12} md={7}>
           <Typography variant="h6" gutterBottom>Instructions</Typography>
           <List dense>
-            {recipe.instructions.map((inst, i) => <ListItem key={i} alignItems="flex-start"><ListItemText primary={`${i + 1}. ${inst}`} /></ListItem>)}
+            {recipe.instructions.map((inst, i) => <ListItem key={i} alignItems="flex-start" sx={{ py: 0.2 }}><ListItemText primary={`${i + 1}. ${inst}`} /></ListItem>)}
           </List>
         </Grid>
       </Grid>
@@ -94,6 +114,8 @@ const PostPage = () => {
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [deleteCommentConfirmOpen, setDeleteCommentConfirmOpen] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [shoppableIngredients, setShoppableIngredients] = useState([]);
+  const [isAddingIngredients, setIsAddingIngredients] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const fetchPost = useCallback(async () => {
@@ -101,6 +123,17 @@ const PostPage = () => {
       setLoading(true);
       const data = await communityService.getPostById(id);
       setPost(data);
+
+      // After post loads, fetch shoppable ingredients if it's a recipe
+      if (data.isRecipe) {
+        try {
+          const shoppableData = await communityService.getShoppableIngredients(id);
+          setShoppableIngredients(shoppableData);
+        } catch (err) {
+          console.error("Could not fetch shoppable ingredients", err);
+          // Don't block the page, just log the error
+        }
+      }
     } catch (err) {
       setError('Failed to load the post. It may have been deleted or the link is incorrect.');
     } finally {
@@ -111,6 +144,30 @@ const PostPage = () => {
   useEffect(() => {
     fetchPost();
   }, [id, fetchPost]);
+
+  const handleAddIngredientsToCart = async () => {
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/post/' + id);
+      return;
+    }
+    if (shoppableIngredients.length === 0) return;
+
+    setIsAddingIngredients(true);
+    try {
+      // Add each product to the cart. We assume quantity 1 for each.
+      const addToCartPromises = shoppableIngredients.map(product =>
+        productService.addToCart(product._id, 1)
+      );
+      await Promise.all(addToCartPromises);
+      setSnackbar({ open: true, message: `${shoppableIngredients.length} ingredients added to your cart!`, severity: 'success' });
+      // Navigate to cart after a short delay
+      setTimeout(() => navigate('/cart'), 1500);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to add ingredients to cart.', severity: 'error' });
+    } finally {
+      setIsAddingIngredients(false);
+    }
+  };
 
   const handleUpvote = async (postId) => {
     if (!isAuthenticated) {
@@ -445,7 +502,13 @@ const PostPage = () => {
           <>
             {/* Post Content */}
             {post.isRecipe ? (
-              <RecipeDisplay recipe={post.recipeDetails} description={post.content} />
+              <RecipeDisplay
+                recipe={post.recipeDetails}
+                description={post.content}
+                shoppableIngredients={shoppableIngredients}
+                onShopClick={handleAddIngredientsToCart}
+                isAdding={isAddingIngredients}
+              />
             ) : (
               <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
                 {post.content}

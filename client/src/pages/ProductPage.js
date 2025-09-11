@@ -23,6 +23,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -144,9 +145,9 @@ const ProductPage = () => {
     try {
       await productService.addToCart(product._id, 1);
       setQuantityInCart(1);
-      setSnackbar({ open: true, message: 'Product added to cart!' });
+      setSnackbar({ open: true, message: 'Product added to cart!', severity: 'success' });
     } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to add product to cart.', severity: 'error' });
+      setSnackbar({ open: true, message: error.response?.data?.message || 'Failed to add product to cart.', severity: 'error' });
     } finally {
       setCartLoading(false);
     }
@@ -154,12 +155,16 @@ const ProductPage = () => {
 
   const handleIncreaseQuantity = async () => {
     if (!isAuthenticated) return navigate(`/login?redirect=/product/${id}`);
+    if (quantityInCart >= product.countInStock) {
+      setSnackbar({ open: true, message: 'Cannot add more than available stock.', severity: 'warning' });
+      return;
+    }
     setCartLoading(true);
     try {
       await productService.addToCart(product._id, 1); // Backend handles incrementing
       setQuantityInCart(prev => prev + 1);
     } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to increase quantity.', severity: 'error' });
+      setSnackbar({ open: true, message: error.response?.data?.message || 'Failed to increase quantity.', severity: 'error' });
     } finally {
       setCartLoading(false);
     }
@@ -249,10 +254,22 @@ const ProductPage = () => {
             <Typography variant="body1" color="text.secondary" paragraph>
               {product.description}
             </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Status: {product.countInStock > 0 ? (
+                <Chip label="In Stock" color="success" />
+              ) : (
+                <Chip label="Out of Stock" color="error" />
+              )}
+              {product.countInStock > 0 && product.countInStock <= 10 && (
+                <Typography variant="caption" color="warning.main" sx={{ ml: 1, fontWeight: 'bold' }}>
+                  (Only {product.countInStock} left!)
+                </Typography>
+              )}
+            </Typography>
             <Box sx={{ mt: 2 }}>
               {quantityInCart === 0 ? (
-                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || !product.inStock}>
-                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || product.countInStock === 0}>
+                  {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 0.5, maxWidth: 'fit-content' }}>
@@ -260,7 +277,7 @@ const ProductPage = () => {
                     <RemoveIcon />
                   </IconButton>
                   <Typography variant="h6" sx={{ px: 2, minWidth: '30px', textAlign: 'center' }}>{quantityInCart}</Typography>
-                  <IconButton size="small" onClick={handleIncreaseQuantity} disabled={cartLoading}>
+                  <IconButton size="small" onClick={handleIncreaseQuantity} disabled={cartLoading || quantityInCart >= product.countInStock}>
                     <AddIcon />
                   </IconButton>
                 </Box>

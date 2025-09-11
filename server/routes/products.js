@@ -128,14 +128,14 @@ router.put('/:id/reviews/:reviewId/upvote', protect, async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, inStock, origin, freshness } = req.body;
+    const { name, price, description, category, countInStock, origin, freshness } = req.body;
 
     const product = new Product({
       name,
       price,
       description,
       category,
-      inStock: inStock === 'true', // FormData sends strings
+      countInStock: Number(countInStock) || 0,
       origin,
       freshness,
       image: req.file ? `/uploads/productImages/${req.file.filename}` : '/images/placeholder.png',
@@ -154,7 +154,7 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
 // @access  Private/Admin
 router.put('/:id', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, inStock, origin, freshness } = req.body;
+    const { name, price, description, category, countInStock, origin, freshness } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -166,7 +166,7 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
     product.price = price || product.price;
     product.description = description || product.description;
     product.category = category || product.category;
-    product.inStock = inStock === undefined ? product.inStock : inStock === 'true';
+    product.countInStock = countInStock === undefined ? product.countInStock : Number(countInStock);
     product.origin = origin || product.origin;
     product.freshness = freshness || product.freshness;
 

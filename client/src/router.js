@@ -27,6 +27,7 @@ import ManageProducts from "./pages/admin/ManageProducts"; // New
 import ReportedContent from "./pages/admin/ReportedContent"; // New
 import SavedPostsPage from "./pages/SavedPostsPage"; // New
 import OrderHistoryPage from "./pages/OrderHistoryPage"; // New: Import OrderHistoryPage
+import ManageCoupons from './pages/admin/ManageCoupons';
 
 export default function AppRouter() {
   return (
@@ -57,6 +58,7 @@ export default function AppRouter() {
           <Route path="orders" element={<ManageOrders />} />
           <Route path="products" element={<ManageProducts />} />
           <Route path="reports" element={<ReportedContent />} />
+          <Route path="coupons" element={<ManageCoupons />} />
         </Route>
       </Route>
       <Route path="/order/:id" element={<OrderDetailsPage />} /> {/* New: Order Details Page */}

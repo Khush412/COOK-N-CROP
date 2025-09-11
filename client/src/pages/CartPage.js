@@ -18,6 +18,9 @@ import {
   useTheme,
   Card,
   CardContent,
+  TextField,
+  InputAdornment,
+  MenuItem,
   CardActions,
   Radio,
   RadioGroup,
@@ -37,7 +40,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
 import orderService from '../services/orderService';     // New: Import order service
+import couponService from '../services/couponService';   // New: Import coupon service
 import AddressForm from '../components/AddressForm';     // New: Import AddressForm component
+import { useAuth } from '../contexts/AuthContext';       // New: Import useAuth
 
 const CartPage = () => {
   const theme = useTheme();
@@ -54,7 +59,11 @@ const CartPage = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false); // New: State for order placement loading
   const [orderSuccessDialogOpen, setOrderSuccessDialogOpen] = useState(false); // New: State for order success dialog
   const [placedOrderId, setPlacedOrderId] = useState(null); // New: State to store placed order ID
-  const [paymentMethod, setPaymentMethod] = useState('COD'); // Default payment method
+  const [couponCode, setCouponCode] = useState(''); // New: State for coupon input
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // New: State for applied coupon details
+  const [couponError, setCouponError] = useState(''); // New: State for coupon errors
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false); // New: State for coupon apply loading
+  const { user } = useAuth(); // New: Get user for prefill
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,13 +107,26 @@ const CartPage = () => {
 
   const calculateTotal = () => {
     if (!cart || !cart.items) return 0;
-    return cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0).toFixed(2);
+    const subtotal = cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    if (appliedCoupon) {
+        return (subtotal - appliedCoupon.discountAmount).toFixed(2);
+    }
+    return subtotal.toFixed(2);
   };
 
+  const calculateSubtotal = () => cart ? cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0) : 0;
+
   const handleUpdateQuantity = async (productId, quantity) => {
+    const item = cart.items.find(i => i.product._id === productId);
+    if (item && quantity > item.product.countInStock) {
+      showSnackbar(`Only ${item.product.countInStock} of ${item.product.name} available.`, 'warning');
+      return;
+    }
+
     try {
       await productService.updateCartItemQuantity(productId, quantity);
       const data = await productService.getCart();
+      setAppliedCoupon(null); // Reset coupon on cart change
       setCart(data);
       showSnackbar('Cart updated successfully!', 'success');
     } catch (err) {
@@ -116,6 +138,7 @@ const CartPage = () => {
     try {
       await productService.removeCartItem(productId);
       const data = await productService.getCart();
+      setAppliedCoupon(null); // Reset coupon on cart change
       setCart(data);
       showSnackbar('Item removed from cart.', 'info');
     } catch (err) {
@@ -127,13 +150,13 @@ const CartPage = () => {
     try {
       await productService.clearCart();
       const data = await productService.getCart();
+      setAppliedCoupon(null); // Reset coupon on cart change
       setCart(data);
       showSnackbar('Cart cleared successfully!', 'success');
     } catch (err) {
       showSnackbar('Failed to clear cart.', 'error');
     }
   };
-
   // New: Handle address selection
   const handleAddressChange = (event) => {
     const addressId = event.target.value;
@@ -151,6 +174,26 @@ const CartPage = () => {
       showSnackbar('Address added successfully!', 'success');
     } catch (err) {
       showSnackbar('Failed to add address.', 'error');
+    }
+  };
+
+  // New: Handle applying a coupon
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+        setCouponError('Please enter a coupon code.');
+        return;
+    }
+    setIsApplyingCoupon(true);
+    setCouponError('');
+    try {
+        const subtotal = calculateSubtotal();
+        const data = await couponService.validateCoupon(couponCode, subtotal);
+        setAppliedCoupon(data);
+        showSnackbar('Coupon applied successfully!', 'success');
+    } catch (err) {
+        setCouponError(err.response?.data?.message || 'Failed to apply coupon.');
+    } finally {
+        setIsApplyingCoupon(false);
     }
   };
 
@@ -185,15 +228,17 @@ const CartPage = () => {
           country: selectedAddress.country,
           phone: selectedAddress.phone,
         },
-        paymentMethod: paymentMethod,
-        totalPrice: parseFloat(calculateTotal()),
+        // Pass coupon code only if it has been successfully applied
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
       };
 
       const createdOrder = await orderService.createOrder(orderData);
-      setPlacedOrderId(createdOrder._id); // Store the order ID
-      setOrderSuccessDialogOpen(true); // Open the success dialog
-      await productService.clearCart(); // Clear cart after successful order
-      setCart(null); // Update local cart state to show empty
+
+      // Show success dialog and clear cart
+      setPlacedOrderId(createdOrder._id);
+      setOrderSuccessDialogOpen(true);
+      await productService.clearCart();
+      setCart(null);
     } catch (err) {
       showSnackbar(err.response?.data?.message || 'Failed to place order.', 'error');
       console.error('Order placement error:', err);
@@ -205,7 +250,7 @@ const CartPage = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, display: 'flex', flexDirection: 'column', minHeight: '70vh' }}>
-        <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily }}>
+       <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily }}>
           Your Shopping Cart
         </Typography>
 
@@ -264,7 +309,7 @@ const CartPage = () => {
                             <RemoveIcon fontSize="small" />
                           </IconButton>
                           <Typography sx={{ mx: 1, minWidth: '20px', textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{item.quantity}</Typography>
-                          <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity + 1)}>
+                          <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity + 1)} disabled={item.quantity >= item.product.countInStock}>
                             <AddIcon fontSize="small" />
                           </IconButton>
                         </Box>
@@ -292,16 +337,41 @@ const CartPage = () => {
                     Order Summary
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
-                  <List dense>
-                    {cart.items.map((item) => (
-                      <ListItem key={item.product._id} disablePadding>
-                        <ListItemText
-                          primary={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{item.product.name} x {item.quantity}</Typography>}
-                          secondary={<Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.product.price * item.quantity).toFixed(2)}</Typography>}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                  <Box sx={{ maxHeight: 150, overflowY: 'auto', pr: 1 }}>
+                    <List dense>
+                      {cart.items.map((item) => (
+                        <ListItem key={item.product._id} disablePadding>
+                          <ListItemText
+                            primary={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{item.product.name} x {item.quantity}</Typography>}
+                            secondary={<Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.product.price * item.quantity).toFixed(2)}</Typography>}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <TextField
+                        label="Coupon Code"
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        error={!!couponError}
+                        helperText={couponError}
+                        disabled={isApplyingCoupon}
+                    />
+                    <Button
+                        variant="contained"
+                        onClick={handleApplyCoupon}
+                        disabled={isApplyingCoupon}
+                        sx={{ height: '40px' }}
+                    >
+                        {isApplyingCoupon ? <CircularProgress size={24} /> : 'Apply'}
+                    </Button>
+                  </Box>
+                  {appliedCoupon && <Alert severity="success" sx={{ mt: 2 }}>Coupon "{appliedCoupon.code}" applied! You saved ${appliedCoupon.discountAmount.toFixed(2)}.</Alert>}
                 </Box>
                 <Box sx={{ flexShrink: 0, mt: 2, borderTop: '1px solid', borderColor: theme.palette.divider, pt: 2 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -351,32 +421,24 @@ const CartPage = () => {
                     </>
                   )}
 
-                  <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
-                    Payment Method
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <FormControl component="fieldset" fullWidth>
-                    <RadioGroup
-                      aria-label="payment-method"
-                      name="payment-method-group"
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                    >
-                      <FormControlLabel value="PayPal" control={<Radio />} label="PayPal / Credit Card" />
-                      <FormControlLabel value="COD" control={<Radio />} label="Cash on Delivery" />
-                    </RadioGroup>
-                  </FormControl>
-
-                  <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
+                 <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
                     Order Total
-                  </Typography>
+                 </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
                     <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
-                      ${calculateTotal()}
+                      ${calculateSubtotal().toFixed(2)}
                     </Typography>
                   </Box>
+                  {appliedCoupon && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, color: 'success.main' }}>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({appliedCoupon.code})</Typography>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        -${appliedCoupon.discountAmount.toFixed(2)}
+                        </Typography>
+                    </Box>
+                  )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                     <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography>
                     <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography>
@@ -444,5 +506,6 @@ const CartPage = () => {
     </Container>
   );
 };
+
 
 export default CartPage;

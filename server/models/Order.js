@@ -26,6 +26,17 @@ const orderSchema = mongoose.Schema({
         zipCode: { type: String, required: true },
         country: { type: String, required: true },
     },
+    subtotal: {
+        type: Number,
+        required: true,
+    },
+    discount: {
+        code: String,
+        amount: {
+            type: Number,
+            default: 0,
+        },
+    },
     totalPrice: {
         type: Number,
         required: true,

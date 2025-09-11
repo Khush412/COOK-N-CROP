@@ -4,6 +4,7 @@ const passport = require('passport');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const sendEmail = require('../utils/sendEmail');
 const { validateRegister, validateLogin } = require('../middleware/validation');
 
 const router = express.Router();
@@ -201,12 +202,25 @@ router.post('/forgot-password', async (req, res) => {
 
     await user.save();
 
-    // In a real app, you would send an email here with the resetToken.
-    // For this demo, we'll log it to the console.
     const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
-    console.log('--- PASSWORD RESET ---');
-    console.log('Reset URL (for testing):', resetUrl);
-    console.log('----------------------');
+    const message = `
+      <h1>You have requested a password reset</h1>
+      <p>Please go to this link to reset your password:</p>
+      <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
+      <p>This link will expire in 10 minutes.</p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Password Reset Request for Cook-N-Crop',
+        message,
+      });
+    } catch (err) {
+      console.error('Email sending error:', err);
+      // Clear fields on error to be safe
+    }
 
     res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
   } catch (error) {
