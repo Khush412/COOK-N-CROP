@@ -145,7 +145,7 @@ const PublicProfilePage = () => {
           </Box>
           <Box sx={{ ml: 'auto', alignSelf: 'flex-start' }}>
             {isAuthenticated && currentUser?.username !== user.username && (
-              <>
+              <Stack direction="row" spacing={1}>
                 <Button
                   variant={isFollowing ? 'outlined' : 'contained'}
                   onClick={handleFollowToggle}
@@ -157,20 +157,18 @@ const PublicProfilePage = () => {
                   variant="outlined"
                   startIcon={<MailOutlineIcon />}
                   onClick={() => navigate('/messages', { state: { newConversationWith: user } })}
-                  sx={{ ml: 1 }}
                 >
                   Message
                 </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<BlockIcon />}
-                onClick={handleBlockToggle}
-                sx={{ ml: 1 }}
-              >
-                Block
-              </Button>
-              </>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<BlockIcon />}
+                  onClick={handleBlockToggle}
+                >
+                  Block
+                </Button>
+              </Stack>
             )}
           </Box>
         </Box>

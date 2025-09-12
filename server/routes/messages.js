@@ -123,4 +123,31 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
+// @desc    Get unread message count for the current user
+// @route   GET /api/messages/unread-count
+// @access  Private
+router.get('/unread-count', protect, async (req, res) => {
+  try {
+    // Find all conversations the user is in, excluding those with blocked users
+    const conversations = await Conversation.find({
+      participants: req.user.id,
+      'participants': { $nin: req.user.blockedUsers || [] }
+    }).select('_id');
+
+    const conversationIds = conversations.map(c => c._id);
+
+    // Count messages in those conversations that are not sent by the user and not read by the user
+    const unreadCount = await Message.countDocuments({
+      conversation: { $in: conversationIds },
+      sender: { $ne: req.user.id },
+      readBy: { $ne: req.user.id }
+    });
+
+    res.json({ unreadCount });
+  } catch (error) {
+    console.error('Get unread count error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

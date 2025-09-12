@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Container, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Paper } from '@mui/material';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useSocket } from '../../contexts/SocketContext';
 import PeopleIcon from '@mui/icons-material/People';
 import ReportIcon from '@mui/icons-material/Report';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -24,6 +25,14 @@ const adminNavItems = [
 ];
 
 const AdminDashboardPage = () => {
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('join_admin_room');
+    }
+  }, [socket]);
+
   return (
     <Container maxWidth="xl" sx={{ mt: 12, display: 'flex', gap: 4, alignItems: 'flex-start' }}>
       <Paper elevation={3} sx={{ width: 250, flexShrink: 0, position: 'sticky', top: 100 }}>

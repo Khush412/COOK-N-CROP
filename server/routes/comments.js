@@ -34,10 +34,12 @@ router.put('/:id/upvote', protect, async (req, res) => {
     if (comment.user.toString() !== req.user.id) {
       // Only create a notification if the user is adding an upvote, not removing it
       if (upvotedIndex === -1) {
+        const message = `<strong>${req.user.username}</strong> upvoted your comment.`;
         const newNotification = await Notification.create({
           recipient: comment.user,
           sender: req.user.id,
-          type: 'comment_upvote',
+          type: 'upvote', // Corrected type to match enum
+          message: message,
           post: comment.post,
           comment: comment._id,
         });

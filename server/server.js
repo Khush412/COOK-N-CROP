@@ -32,6 +32,7 @@ const couponRoutes = require('./routes/couponRoutes'); // New: Import coupon rou
 const notificationRoutes = require('./routes/notifications'); // New: Import notification routes
 const adminRoutes = require('./routes/admin'); // New: Import admin routes
 const messageRoutes = require('./routes/messages'); // New: Import message routes
+const searchRoutes = require('./routes/search'); // New: Import search routes
 
 // Connect to database
 connectDB();
@@ -53,6 +54,12 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     onlineUsers[userId] = socket.id;
     console.log("Online users:", Object.keys(onlineUsers));
+  });
+
+  // Allow admins to join a special room for admin-only events
+  socket.on('join_admin_room', () => {
+    socket.join('admin_room');
+    console.log(`Socket ${socket.id} joined admin_room`);
   });
 
   socket.on("disconnect", () => {
@@ -157,6 +164,7 @@ app.use('/api/coupons', couponRoutes); // New: Use coupon routes
 app.use('/api/admin', adminRoutes); // New: Use admin routes
 app.use('/api/notifications', notificationRoutes); // New: Use notification routes
 app.use('/api/messages', messageRoutes); // New: Use message routes
+app.use('/api/search', searchRoutes); // New: Use search routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

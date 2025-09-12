@@ -111,6 +111,11 @@ const deleteUserAddress = async (userId, addressId) => {
   return response.data;
 };
 
+const getRecentActivity = async () => {
+  const response = await api.get('/admin/recent-activity');
+  return response.data;
+};
+
 const getDashboardStats = async () => {
   const response = await api.get('/admin/stats');
   return response.data;
@@ -162,6 +167,7 @@ const adminService = {
   sendBroadcast,
   getUserAddresses,
   deleteUserAddress,
+  getRecentActivity,
   getDashboardStats,
   getAllOrders,
   updateOrderToPaid,

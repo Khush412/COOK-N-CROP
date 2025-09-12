@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef, useCallback } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import {
+import { InputBase,
   AppBar,
   Toolbar,
   Typography,
@@ -36,6 +36,7 @@ import {
   Bookmark as BookmarkIcon,
   Favorite as FavoriteIcon,
   History as HistoryIcon,
+  Search as SearchIcon,
   Mail as MailIcon,
   Block as BlockIcon,
 } from "@mui/icons-material";
@@ -56,7 +57,6 @@ const NavLink = styled(Button)(({ theme, active }) => ({
   fontSize: 12,
   letterSpacing: "0.07em",
   fontFamily: theme.typography.fontFamily,
-  marginRight: theme.spacing(3),
   paddingBottom: 5,
   position: "relative",
   textTransform: "uppercase",
@@ -173,11 +173,51 @@ const StyledMenu = forwardRef((props, ref) => {
   );
 });
 
+// Search component styles
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
+
 export default function Navbar() {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, unreadMessageCount, fetchUnreadMessageCount } = useAuth();
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
@@ -187,6 +227,7 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0); // New
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' }); // New
   const [hasShadow, setHasShadow] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const onScroll = () => setHasShadow(window.scrollY > 20);
@@ -215,6 +256,11 @@ export default function Navbar() {
     fetchNotifications();
   }, [fetchNotifications]);
 
+  // Fetch unread message count
+  useEffect(() => {
+    fetchUnreadMessageCount();
+  }, [fetchUnreadMessageCount]);
+
   // Listen for real-time notifications
   useEffect(() => {
     if (socket) {
@@ -231,7 +277,7 @@ export default function Navbar() {
 
       socket.on('new_private_message', (message) => {
         showSnackbar(`New message from ${message.sender.username}`, 'info');
-        // Here you could also update a global unread message count if you add one
+        fetchUnreadMessageCount(); // Refetch count on new message
       });
 
       return () => {
@@ -240,10 +286,17 @@ export default function Navbar() {
         socket.off('new_private_message');
       };
     }
-  }, [socket, showSnackbar, fetchNotifications]);
+  }, [socket, showSnackbar, fetchNotifications, fetchUnreadMessageCount]);
 
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${searchQuery.trim()}`);
+      setSearchQuery(''); // Optional: clear search bar after search
+    }
+  };
 
   const handleLogout = async () => {
     handleCloseUserMenu();
@@ -317,11 +370,11 @@ export default function Navbar() {
         <Toolbar
           sx={{
             px: 2,
-            maxWidth: 1400,
+            maxWidth: 1500, // Increased for more space
             margin: "auto",
             width: '100%',
             alignItems: "center",
-            position: 'relative',
+            display: 'flex',
           }}
         >
           {/* Site Name */}
@@ -348,13 +401,12 @@ export default function Navbar() {
             </Typography>
           </SiteName>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', position: 'absolute', left: '30%' }}>
-            {/* Navigation Links */}
-            <Box
+          {/* Navigation Links */}
+          <Box
               component="nav"
               aria-label="main navigation"
               sx={{
-                display: { xs: "none", md: "flex" },
+                display: { xs: "none", lg: "flex" }, // Hide on smaller screens to make space
                 alignItems: "center",
                 gap: 4,
               }}
@@ -402,8 +454,24 @@ export default function Navbar() {
                 </NavLink>
               )}
             </Box>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 'auto', mr: 4 }}>
+
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Search Bar */}
+          <Search>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ 'aria-label': 'search' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
+            />
+          </Search>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Cart Button */}
             <Tooltip title="Shopping Cart" arrow>
               <IconButton
@@ -618,7 +686,9 @@ export default function Navbar() {
                     sx={{ borderRadius: 2, px: 3 }}
                   >
                     <ListItemIcon>
-                      <MailIcon fontSize="small" />
+                      <Badge badgeContent={unreadMessageCount} color="secondary">
+                        <MailIcon fontSize="small" />
+                      </Badge>
                     </ListItemIcon>
                     Messages
                   </MenuItem>

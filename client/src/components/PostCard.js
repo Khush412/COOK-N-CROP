@@ -1,13 +1,14 @@
-import React from 'react';
-import { Paper, Box, Avatar, Typography, Chip, Divider, IconButton, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Paper, Box, Avatar, Typography, Chip, Divider, IconButton, Button, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { ThumbUp as ThumbUpIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, MenuBook as MenuBookIcon } from '@mui/icons-material';
+import { ThumbUp as ThumbUpIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, MenuBook as MenuBookIcon, Star as StarIcon } from '@mui/icons-material';
+import communityService from '../services/communityService';
 
 const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPosts }) => {
   const theme = useTheme();
-
+  const [isFeatured, setIsFeatured] = useState(post.isFeatured);
   const isSaved = user?.savedPosts?.includes(post._id);
 
   return (
@@ -17,6 +18,8 @@ const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPos
         height: "100%",
         display: 'flex',
         flexDirection: 'column',
+        border: isFeatured ? `2px solid ${theme.palette.secondary.main}` : `1px solid ${theme.palette.divider}`,
+        position: 'relative',
         transition: "transform 0.3s ease, box-shadow 0.3s ease",
         "&:hover": {
           transform: "translateY(-2px)",
@@ -24,6 +27,11 @@ const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPos
         },
       }}
     >
+      {isFeatured && (
+        <Tooltip title="Featured Post">
+          <StarIcon sx={{ position: 'absolute', top: 8, right: 8, color: 'secondary.main' }} />
+        </Tooltip>
+      )}
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
         <Avatar
           src={post.user.profilePic}
@@ -126,6 +134,20 @@ const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPos
             >
                 Read More
             </Button>
+            {user?.role === 'admin' && (
+              <Button
+                size="small"
+                onClick={async () => {
+                  const res = await communityService.toggleFeaturePost(post._id);
+                  if (res.success) {
+                    setIsFeatured(res.isFeatured);
+                  }
+                }}
+                color={isFeatured ? 'secondary' : 'primary'}
+              >
+                {isFeatured ? 'Unfeature' : 'Feature'}
+              </Button>
+            )}
         </Box>
       </Box>
     </Paper>

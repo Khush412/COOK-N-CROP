@@ -14,17 +14,43 @@ router.post('/', protect, async (req, res) => {
   try {
     const { title, content, tags, isRecipe, recipeDetails } = req.body;
 
-    const newPost = new Post({
+    const postData = {
       user: req.user.id,
       title,
       content,
       tags,
       isRecipe,
-      recipeDetails: isRecipe ? recipeDetails : undefined,
-    });
+    };
 
+    if (isRecipe && recipeDetails) {
+      const parseNumericDetail = (value) => {
+        if (value === '' || value === null || value === undefined) return null;
+        const num = Number(value);
+        return isNaN(num) ? null : num;
+      };
+      postData.recipeDetails = {
+        ...recipeDetails,
+        prepTime: parseNumericDetail(recipeDetails.prepTime),
+        cookTime: parseNumericDetail(recipeDetails.cookTime),
+        servings: parseNumericDetail(recipeDetails.servings),
+      };
+    }
+
+    const newPost = new Post(postData);
     const post = await newPost.save();
     const populatedPost = await Post.findById(post._id).populate('user', 'username profilePic');
+
+    // Emit real-time event to admins
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin_room').emit('new_activity', {
+        type: 'post',
+        id: populatedPost._id,
+        title: `New post by ${populatedPost.user.username}: "${populatedPost.title}"`,
+        timestamp: populatedPost.createdAt
+      });
+    }
+
     res.status(201).json(populatedPost);
   } catch (error) {
     console.error('Post creation error:', error);
@@ -81,13 +107,13 @@ router.get('/', optionalAuth, async (req, res) => {
     if (sort === 'relevance' && search) {
       pipeline.push({ $sort: { score: { $meta: 'textScore' } } });
     } else if (sort === 'top') {
-      pipeline.push({ $addFields: { upvoteCountSort: { $size: { $ifNull: ['$upvotes', []] } } } });
-      pipeline.push({ $sort: { upvoteCountSort: -1, createdAt: -1 } });
+      pipeline.push({ $addFields: { sortScore: { $size: { $ifNull: ['$upvotes', []] } } } });
+      pipeline.push({ $sort: { isFeatured: -1, sortScore: -1, createdAt: -1 } });
     } else if (sort === 'discussed') {
-      pipeline.push({ $addFields: { commentCountSort: { $size: { $ifNull: ['$comments', []] } } } });
-      pipeline.push({ $sort: { commentCountSort: -1, createdAt: -1 } });
+      pipeline.push({ $addFields: { sortScore: { $size: { $ifNull: ['$comments', []] } } } });
+      pipeline.push({ $sort: { isFeatured: -1, sortScore: -1, createdAt: -1 } });
     } else { // Default to 'new'
-      pipeline.push({ $sort: { createdAt: -1 } });
+      pipeline.push({ $sort: { isFeatured: -1, createdAt: -1 } });
     }
 
     // Add pagination
@@ -103,6 +129,7 @@ router.get('/', optionalAuth, async (req, res) => {
       content: 1,
       tags: 1,
       isRecipe: 1,
+      isFeatured: 1,
       recipeDetails: 1,
       createdAt: 1,
       updatedAt: 1,
@@ -267,7 +294,11 @@ router.get('/:id', async (req, res) => {
             },
           },
         ],
-      });
+      })
+      .populate({
+        path: 'recipeReviews.user',
+        select: 'username profilePic'
+      }); // Populate the user for each recipe review
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -313,10 +344,12 @@ router.put('/:id/upvote', protect, async (req, res) => {
     if (post.user.toString() !== req.user.id) {
       // Only create a notification if the user is adding an upvote, not removing it
       if (upvotedIndex === -1) {
+        const message = `<strong>${req.user.username}</strong> upvoted your post: "<strong>${post.title}</strong>"`;
         const newNotification = await Notification.create({
           recipient: post.user,
           sender: req.user.id,
           type: 'upvote',
+          message: message,
           post: post._id,
         });
         const recipientSocketId = req.onlineUsers[post.user.toString()];
@@ -371,10 +404,18 @@ router.post('/:id/comments', protect, async (req, res) => {
 
     // Don't notify if user is replying to their own post/comment
     if (recipientId.toString() !== req.user.id) {
+      // Construct the notification message
+      let notificationMessage;
+      if (parentCommentId) {
+        notificationMessage = `<strong>${req.user.username}</strong> replied to your comment.`;
+      } else {
+        notificationMessage = `<strong>${req.user.username}</strong> commented on your post: "<strong>${post.title}</strong>"`;
+      }
       const newNotification = await Notification.create({
         recipient: recipientId,
         sender: req.user.id,
         type: 'comment',
+        message: notificationMessage,
         post: post._id,
         comment: savedComment._id,
       });
@@ -497,6 +538,81 @@ router.put('/:id/report', protect, async (req, res) => {
     res.json({ success: true, message: 'Post reported successfully' });
   } catch (error) {
     console.error('Report post error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Feature/unfeature a post
+// @route   PUT /api/posts/:id/feature
+// @access  Private/Admin
+router.put('/:id/feature', protect, authorize('admin'), async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.isFeatured = !post.isFeatured;
+    await post.save();
+
+    res.json({
+      success: true,
+      message: `Post ${post.isFeatured ? 'featured' : 'unfeatured'} successfully.`,
+      isFeatured: post.isFeatured
+    });
+  } catch (error) {
+    console.error('Feature post error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Create a new recipe review
+// @route   POST /api/posts/:id/recipe-reviews
+// @access  Private
+router.post('/:id/recipe-reviews', protect, async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    if (!post.isRecipe) {
+      return res.status(400).json({ message: 'This post is not a recipe and cannot be reviewed.' });
+    }
+
+    const alreadyReviewed = post.recipeReviews.find(
+      (r) => r.user.toString() === req.user.id.toString()
+    );
+
+    // Sanitize existing bad data if present, to allow saving.
+    if (post.isRecipe && post.recipeDetails) {
+      const parseNumericDetail = (value) => {
+        if (value === '' || value === null || value === undefined) return null;
+        const num = Number(value);
+        return isNaN(num) ? null : num;
+      };
+      post.recipeDetails.prepTime = parseNumericDetail(post.recipeDetails.prepTime);
+      post.recipeDetails.cookTime = parseNumericDetail(post.recipeDetails.cookTime);
+      post.recipeDetails.servings = parseNumericDetail(post.recipeDetails.servings);
+    }
+
+    if (alreadyReviewed) {
+      return res.status(400).json({ message: 'You have already reviewed this recipe' });
+    }
+
+    const review = { name: req.user.username, rating: Number(rating), comment, user: req.user._id };
+
+    post.recipeReviews.push(review);
+    post.numRecipeReviews = post.recipeReviews.length;
+    post.recipeRating = post.recipeReviews.reduce((acc, item) => item.rating + acc, 0) / post.recipeReviews.length;
+
+    await post.save();
+    res.status(201).json({ message: 'Review added successfully' });
+  } catch (error) {
+    console.error('Create recipe review error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

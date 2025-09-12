@@ -17,10 +17,16 @@ const sendMessage = async (recipientId, content) => {
   return data;
 };
 
+const getUnreadCount = async () => {
+  const { data } = await api.get(`${API_URL}/unread-count`);
+  return data;
+};
+
 const messagingService = {
   getConversations,
   getMessages,
   sendMessage,
+  getUnreadCount,
 };
 
 export default messagingService;

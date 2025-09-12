@@ -36,6 +36,7 @@ import BroadcastPage from './pages/admin/BroadcastPage';
 import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
+import SearchPage from './pages/SearchPage';
 import MessengerPage from './pages/MessengerPage';
 import WishlistPage from './pages/WishlistPage';
 
@@ -53,6 +54,7 @@ export default function AppRouter() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} /> {/* New */}
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> {/* New */}
       <Route path="/login" element={<Login />} />
+      <Route path="/search" element={<SearchPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}

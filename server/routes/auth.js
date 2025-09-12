@@ -93,6 +93,18 @@ router.post('/register', validateRegister, async (req, res) => {
     sendEmail({ email: user.email, subject: 'Welcome to Cook-N-Crop!', message: welcomeMessage }).catch(err => {
       console.error('Failed to send welcome email:', err);
     });
+
+    // Emit real-time event to admins
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin_room').emit('new_activity', {
+        type: 'user',
+        id: user._id,
+        title: `New user registered: ${user.username}`,
+        timestamp: user.createdAt
+      });
+    }
+
     sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error('Registration error details:', {

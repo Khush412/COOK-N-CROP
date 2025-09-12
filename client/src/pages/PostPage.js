@@ -28,6 +28,8 @@ import {
   DialogContentText,
   DialogTitle,
   ListSubheader,
+  TextField,
+  ListItemAvatar,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -38,6 +40,7 @@ import {
 import communityService from '../services/communityService';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
+import Rating from '../components/Rating';
 import CommentForm from '../components/CommentForm';
 import productService from '../services/productService';
 import CommentThreadItem from '../components/CommentThreadItem';
@@ -117,6 +120,9 @@ const PostPage = () => {
   const [shoppableIngredients, setShoppableIngredients] = useState([]);
   const [isAddingIngredients, setIsAddingIngredients] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [recipeRating, setRecipeRating] = useState(0);
+  const [recipeComment, setRecipeComment] = useState('');
+  const [recipeReviewLoading, setRecipeReviewLoading] = useState(false);
 
   const fetchPost = useCallback(async () => {
     try {
@@ -289,6 +295,26 @@ const PostPage = () => {
     }
   };
 
+  const handleRecipeReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!recipeRating) {
+      setSnackbar({ open: true, message: 'Please select a rating.', severity: 'error' });
+      return;
+    }
+    setRecipeReviewLoading(true);
+    try {
+      await communityService.addRecipeReview(id, { rating: recipeRating, comment: recipeComment });
+      setSnackbar({ open: true, message: 'Recipe review submitted!', severity: 'success' });
+      setRecipeRating(0);
+      setRecipeComment('');
+      fetchPost(); // Re-fetch post to show new review
+    } catch (err) {
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Failed to submit review.', severity: 'error' });
+    } finally {
+      setRecipeReviewLoading(false);
+    }
+  };
+
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
@@ -414,6 +440,7 @@ const PostPage = () => {
     return null; // Should be handled by error state
   }
 
+  const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews.some(review => review.user === user?.id);
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
@@ -440,6 +467,12 @@ const PostPage = () => {
             <Typography variant="h6" component="h1" sx={{ fontWeight: 700 }}>
               {post.title}
             </Typography>
+            {post.isRecipe && post.numRecipeReviews > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                <Rating value={post.recipeRating} readOnly precision={0.5} />
+                <Typography sx={{ ml: 1.5 }} color="text.secondary">({post.numRecipeReviews} recipe reviews)</Typography>
+              </Box>
+            )}
             <Typography variant="body2" color="text.secondary">
               Posted by{' '}
               <Typography
@@ -554,6 +587,67 @@ const PostPage = () => {
         )}
 
         <Divider sx={{ my: 3 }} />
+
+        {/* Recipe Reviews Section */}
+        {post.isRecipe && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+              Recipe Reviews
+            </Typography>
+            {isAuthenticated ? (
+              hasUserReviewedRecipe ? (
+                <Alert severity="success">You have already reviewed this recipe.</Alert>
+              ) : (
+                <Box component="form" onSubmit={handleRecipeReviewSubmit} sx={{ mb: 4 }}>
+                  <Typography component="legend">Leave a Review</Typography>
+                  <Rating value={recipeRating} onChange={(newValue) => setRecipeRating(newValue)} />
+                  <TextField
+                    label="Your Review Comment"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    margin="normal"
+                    value={recipeComment}
+                    onChange={(e) => setRecipeComment(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={recipeReviewLoading}
+                    startIcon={recipeReviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                  >
+                    {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}
+                  </Button>
+                </Box>
+              )
+            ) : (
+              <Alert severity="info">
+                <RouterLink to={`/login?redirect=/post/${id}`}>Log in</RouterLink> to leave a recipe review.
+              </Alert>
+            )}
+
+            {post.recipeReviews.length > 0 ? (
+              <List>
+                {post.recipeReviews.map((review) => (
+                  <ListItem key={review._id} alignItems="flex-start" divider>
+                    <ListItemAvatar>
+                      <Avatar src={review.user?.profilePic}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={<Rating value={review.rating} readOnly />}
+                      secondary={<>
+                        <Typography component="span" variant="body2" color="text.primary" sx={{ display: 'block', my: 1 }}>{review.comment}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary">by {review.user?.username || review.name} on {new Date(review.createdAt).toLocaleDateString()}</Typography>
+                      </>}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : <Typography color="text.secondary" sx={{ mt: 2 }}>No recipe reviews yet.</Typography>}
+            <Divider sx={{ my: 3 }} />
+          </Box>
+        )}
 
         {/* Comments Section */}
         <Box>

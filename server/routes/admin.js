@@ -175,6 +175,50 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
   }
 });
 
+// @desc    Get recent platform activity
+// @route   GET /api/admin/recent-activity
+// @access  Private/Admin
+router.get('/recent-activity', protect, authorize('admin'), async (req, res) => {
+  try {
+    const limit = 7; // Number of items per type to fetch
+
+    const newUsers = await User.find().sort({ createdAt: -1 }).limit(limit).select('username createdAt');
+    const newOrders = await Order.find().sort({ createdAt: -1 }).limit(limit).select('totalPrice createdAt user').populate('user', 'username');
+    const newPosts = await Post.find().sort({ createdAt: -1 }).limit(limit).select('title createdAt user').populate('user', 'username');
+
+    const combinedActivity = [
+      ...newUsers.map(u => ({
+        type: 'user',
+        id: u._id,
+        title: `New user registered: ${u.username}`,
+        timestamp: u.createdAt
+      })),
+      ...newOrders.map(o => ({
+        type: 'order',
+        id: o._id,
+        title: `New order #${o._id.toString().slice(-6)} by ${o.user?.username || 'N/A'} for $${o.totalPrice.toFixed(2)}`,
+        timestamp: o.createdAt
+      })),
+      ...newPosts.map(p => ({
+        type: 'post',
+        id: p._id,
+        title: `New post by ${p.user?.username || 'N/A'}: "${p.title}"`,
+        timestamp: p.createdAt
+      }))
+    ];
+
+    // Sort all activities by timestamp and take the most recent ones
+    const sortedActivity = combinedActivity
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 15);
+
+    res.json({ success: true, data: sortedActivity });
+  } catch (error) {
+    console.error('Get recent activity error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
 // @desc    Send a broadcast message to all users
 // @route   POST /api/admin/broadcast
 // @access  Private/Admin

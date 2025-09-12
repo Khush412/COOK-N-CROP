@@ -8,7 +8,7 @@ import { useSocket } from '../contexts/SocketContext';
 import messagingService from '../services/messagingService';
 
 const MessengerPage = () => {
-  const { user } = useAuth();
+  const { user, fetchUnreadMessageCount } = useAuth();
   const socket = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,14 +53,15 @@ const MessengerPage = () => {
     try {
       const data = await messagingService.getMessages(convo._id);
       setMessages(data);
-      // Mark conversation as read locally
+      // Mark conversation as read locally and refetch global count
       setConversations(prev => prev.map(c => c._id === convo._id ? { ...c, unreadCount: 0 } : c));
+      fetchUnreadMessageCount();
     } catch (err) {
       setError('Failed to load messages.');
     } finally {
       setLoading(prev => ({ ...prev, messages: false }));
     }
-  }, []);
+  }, [fetchUnreadMessageCount]);
 
   // This effect handles starting a new conversation from a user profile
   useEffect(() => {

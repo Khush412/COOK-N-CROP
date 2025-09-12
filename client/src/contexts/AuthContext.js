@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import api from '../config/axios';
+import messagingService from '../services/messagingService';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -60,6 +61,11 @@ const authReducer = (state, action) => {
         ...state,
         user: state.user ? { ...state.user, wishlist: action.payload } : null,
       };
+    case 'SET_UNREAD_MESSAGE_COUNT':
+      return {
+        ...state,
+        unreadMessageCount: action.payload,
+      };
     default:
       return state;
   }
@@ -71,7 +77,8 @@ const initialState = {
   user: null,
   token: localStorage.getItem('token'),
   loading: true,
-  error: null
+  error: null,
+  unreadMessageCount: 0,
 };
 
 // Auth Provider Component
@@ -239,6 +246,17 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'UPDATE_WISHLIST', payload: wishlist });
   };
 
+  const fetchUnreadMessageCount = useCallback(async () => {
+    if (state.isAuthenticated) {
+      try {
+        const data = await messagingService.getUnreadCount();
+        dispatch({ type: 'SET_UNREAD_MESSAGE_COUNT', payload: data.unreadCount });
+      } catch (error) {
+        console.error("Failed to fetch unread message count.");
+      }
+    }
+  }, [state.isAuthenticated]);
+
   const value = {
     ...state,
     register,
@@ -251,6 +269,7 @@ export const AuthProvider = ({ children }) => {
     loadUser,
     updateUserSavedPosts,
     updateUserWishlist,
+    fetchUnreadMessageCount,
   };
 
   return (

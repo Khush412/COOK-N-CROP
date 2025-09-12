@@ -271,6 +271,19 @@ userSchema.virtual('profilePicture').get(function() {
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function(next) {
+  // If profilePic is not set, try to set it from a social provider.
+  // This ensures OAuth users get an avatar automatically.
+  if (!this.profilePic) {
+    if (this.google?.picture) {
+      this.profilePic = this.google.picture;
+    } else if (this.github?.avatar_url) {
+      this.profilePic = this.github.avatar_url;
+    } else if (this.twitter?.profile_image_url) {
+      // Twitter URLs can be low-res, get the original size
+      this.profilePic = this.twitter.profile_image_url.replace('_normal', '');
+    }
+  }
+
   if (!this.isModified('password')) return next();
 
   try {

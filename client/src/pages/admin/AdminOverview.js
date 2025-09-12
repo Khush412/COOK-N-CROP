@@ -1,13 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Box, Paper, Grid, CircularProgress, Alert, useTheme } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { formatDistanceToNow } from 'date-fns';
+import { useSocket } from '../../contexts/SocketContext';
 import adminService from '../../services/adminService';
+
+const RecentActivityFeed = () => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const socket = useSocket();
+
+  const fetchActivity = useCallback(async () => {
+    try {
+      const res = await adminService.getRecentActivity();
+      setActivities(res.data);
+    } catch (err) {
+      console.error("Failed to fetch recent activity");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('new_activity', (newActivity) => {
+        setActivities(prev => [newActivity, ...prev].slice(0, 15)); // Add to top and keep list size manageable
+      });
+      return () => socket.off('new_activity');
+    }
+  }, [socket]);
+
+  const getIcon = (type) => {
+    switch (type) {
+      case 'user': return <PeopleIcon color="primary" />;
+      case 'order': return <ShoppingCartIcon color="secondary" />;
+      case 'post': return <PostAddIcon color="success" />;
+      default: return null;
+    }
+  };
+
+  return (
+    <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>Recent Activity</Typography>
+      {loading ? <CircularProgress /> : (
+        <List dense sx={{ maxHeight: 350, overflowY: 'auto' }}>
+          {activities.map(activity => (
+            <ListItem key={`${activity.type}-${activity.id}`} divider>
+              <ListItemIcon sx={{ minWidth: 40 }}>{getIcon(activity.type)}</ListItemIcon>
+              <ListItemText
+                primary={activity.title}
+                secondary={formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Paper>
+  );
+};
 
 const StatCard = ({ title, value, icon, color }) => (
   <Paper elevation={3} sx={{ p: 3, display: 'flex', alignItems: 'center', borderRadius: 2 }}>
@@ -150,6 +210,9 @@ const AdminOverview = () => {
               </Table>
             </TableContainer>
           </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <RecentActivityFeed />
         </Grid>
       </Grid>
 

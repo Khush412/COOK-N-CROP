@@ -149,6 +149,17 @@ router.post('/', protect, async (req, res) => {
             console.error('Could not send order confirmation email:', emailError);
         }
 
+        // Emit real-time event to admins
+        const io = req.app.get('io');
+        if (io) {
+            io.to('admin_room').emit('new_activity', {
+                type: 'order',
+                id: createdOrder._id,
+                title: `New order #${createdOrder._id.toString().slice(-6)} by ${req.user.username} for $${createdOrder.totalPrice.toFixed(2)}`,
+                timestamp: createdOrder.createdAt
+            });
+        }
+
         res.status(201).json(createdOrder);
     } catch (error) {
         console.error('Order creation error:', error);

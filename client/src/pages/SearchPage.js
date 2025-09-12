@@ -1,77 +1,54 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Box,
-  Container,
-  Typography,
-  CircularProgress,
-  Alert,
-  Grid,
-  Paper,
-  Pagination,
-  ToggleButtonGroup,
-  ToggleButton,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Avatar,
-  Divider,
+  Box, Container, Typography, CircularProgress, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination,
 } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import CommentIcon from '@mui/icons-material/Comment';
-import postService from '../services/postService';
+import searchService from '../services/searchService';
+import ProductCard from '../components/ProductCard';
+import PostCard from '../components/PostCard';
+import { useAuth } from '../contexts/AuthContext';
 
-const PostItem = ({ post }) => (
-  <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-    <CardContent sx={{ flexGrow: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Avatar src={post.user.profilePic} sx={{ width: 32, height: 32, mr: 1.5 }} />
-        <Box>
-          <Typography variant="subtitle2">{post.user.username}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-          </Typography>
-        </Box>
-      </Box>
-      <Typography variant="h6" component={RouterLink} to={`/post/${post._id}`} sx={{ textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}>
-        {post.title}
+const UserCard = ({ user }) => (
+  <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
+    <Avatar src={user.profilePic} sx={{ width: 56, height: 56 }} />
+    <Box>
+      <Typography variant="h6" component={RouterLink} to={`/user/${user.username}`} sx={{ textDecoration: 'none', color: 'text.primary' }}>
+        {user.username}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-        {post.content}
+      <Typography variant="body2" color="text.secondary">
+        {user.followers?.length || 0} Followers
       </Typography>
-    </CardContent>
-    <Divider />
-    <CardActions sx={{ justifyContent: 'space-between', px: 2, py: 1 }}>
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button size="small" startIcon={<ThumbUpIcon />} disabled>
-          {post.upvoteCount}
-        </Button>
-        <Button size="small" startIcon={<CommentIcon />} disabled>
-          {post.commentCount}
-        </Button>
-      </Box>
-      <Button component={RouterLink} to={`/post/${post._id}`} size="small">
-        View
-      </Button>
-    </CardActions>
-  </Card>
+    </Box>
+  </Paper>
 );
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [results, setResults] = useState({ posts: [], pages: 0 });
+  const { user } = useAuth(); // Get current user for PostCard
+  const [globalResults, setGlobalResults] = useState({ posts: [], products: [], users: [] });
+  const [paginatedResults, setPaginatedResults] = useState({ posts: [], products: [], users: [] });
+  const [pagination, setPagination] = useState({
+    posts: { page: 1, totalPages: 0 },
+    products: { page: 1, totalPages: 0 },
+    users: { page: 1, totalPages: 0 },
+  });
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [tab, setTab] = useState('all');
 
   const query = useMemo(() => searchParams.get('q') || '', [searchParams]);
-  const page = useMemo(() => parseInt(searchParams.get('page') || '1', 10), [searchParams]);
-  const sort = useMemo(() => searchParams.get('sort') || 'relevance', [searchParams]);
 
+  // Effect for initial global search (for the "All" tab)
   useEffect(() => {
     if (!query) {
-      setResults({ posts: [], pages: 0 });
+      setGlobalResults({ posts: [], products: [], users: [] });
+      setPaginatedResults({ posts: [], products: [], users: [] });
+      setPagination({
+        posts: { page: 1, totalPages: 0 },
+        products: { page: 1, totalPages: 0 },
+        users: { page: 1, totalPages: 0 },
+      });
       setLoading(false);
       return;
     }
@@ -80,8 +57,8 @@ const SearchPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await postService.searchPosts({ search: query, page, sort, limit: 12 });
-        setResults(data);
+        const data = await searchService.globalSearch(query);
+        setGlobalResults(data);
       } catch (err) {
         setError('Failed to fetch search results.');
       } finally {
@@ -90,16 +67,148 @@ const SearchPage = () => {
     };
 
     fetchResults();
-  }, [query, page, sort]);
+  }, [query]);
 
-  const handlePageChange = (event, value) => {
-    setSearchParams({ q: query, sort, page: value });
+  // Effect for tab-specific, paginated search
+  useEffect(() => {
+    if (tab === 'all' || !query) return;
+
+    const fetchPaginatedResults = async () => {
+      setTabLoading(true);
+      try {
+        let data;
+        const currentPage = pagination[tab].page;
+
+        if (tab === 'posts') {
+          data = await searchService.searchPosts(query, currentPage);
+          setPaginatedResults(prev => ({ ...prev, posts: data.posts }));
+          setPagination(prev => ({ ...prev, posts: { page: data.page, totalPages: data.pages } }));
+        } else if (tab === 'products') {
+          data = await searchService.searchProducts(query, currentPage);
+          setPaginatedResults(prev => ({ ...prev, products: data.products }));
+          setPagination(prev => ({ ...prev, products: { page: data.page, totalPages: data.pages } }));
+        } else if (tab === 'users') {
+          data = await searchService.searchUsers(query, currentPage);
+          setPaginatedResults(prev => ({ ...prev, users: data.users }));
+          setPagination(prev => ({ ...prev, users: { page: data.page, totalPages: data.pages } }));
+        }
+      } catch (err) {
+        setError(`Failed to load results for ${tab}.`);
+      } finally {
+        setTabLoading(false);
+      }
+    };
+
+    fetchPaginatedResults();
+  }, [query, tab, pagination.posts.page, pagination.products.page, pagination.users.page]);
+
+  const handleTabChange = (event, newValue) => {
+    setTab(newValue);
+    // Reset other tabs' pages to 1 when switching
+    setPagination(prev => ({
+      posts: { ...prev.posts, page: 1 },
+      products: { ...prev.products, page: 1 },
+      users: { ...prev.users, page: 1 },
+    }));
   };
 
-  const handleSortChange = (event, newSort) => {
-    if (newSort !== null) {
-      setSearchParams({ q: query, sort: newSort, page: 1 });
+  const handlePageChange = (type, value) => {
+    setPagination(prev => ({ ...prev, [type]: { ...prev[type], page: value } }));
+  };
+
+  const renderResults = () => {
+    const noResults = globalResults.posts.length === 0 && globalResults.products.length === 0 && globalResults.users.length === 0;
+
+    if (loading) {
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
     }
+    if (error) {
+      return <Alert severity="error">{error}</Alert>;
+    }
+    if (noResults) {
+      return <Alert severity="info">No results found for "{query}".</Alert>;
+    }
+
+    if (tabLoading) {
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
+    }
+
+    if (tab === 'all') {
+      return (
+        <Box>
+          {globalResults.posts.length > 0 && (
+            <Box mb={4}>
+              <Typography variant="h5" gutterBottom>Posts</Typography>
+              <Grid container spacing={3}>
+                {globalResults.posts.map(post => (
+                  <Grid item key={`post-${post._id}`} xs={12} sm={6} md={4}>
+                    <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
+                  </Grid>
+                ))}
+              </Grid>
+              <Divider sx={{ my: 4 }} />
+            </Box>
+          )}
+          {globalResults.products.length > 0 && (
+            <Box mb={4}>
+              <Typography variant="h5" gutterBottom>Products</Typography>
+              <Grid container spacing={3}>
+                {globalResults.products.map(product => (
+                  <Grid item key={`product-${product._id}`} xs={12} sm={6} md={4} lg={3}>
+                    <ProductCard product={product} showSnackbar={() => {}} />
+                  </Grid>
+                ))}
+              </Grid>
+              <Divider sx={{ my: 4 }} />
+            </Box>
+          )}
+          {globalResults.users.length > 0 && (
+            <Box>
+              <Typography variant="h5" gutterBottom>Users</Typography>
+              <Grid container spacing={3}>
+                {globalResults.users.map(userResult => (
+                  <Grid item key={`user-${userResult._id}`} xs={12} sm={6} md={4}>
+                    <UserCard user={userResult} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </Box>
+      );
+    }
+
+    return (
+      <Box>
+        <Grid container spacing={3}>
+          {tab === 'posts' && paginatedResults.posts.map(post => (
+            <Grid item key={`post-${post._id}`} xs={12} sm={6} md={4}>
+              <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
+            </Grid>
+          ))}
+          {tab === 'products' && paginatedResults.products.map(product => (
+            <Grid item key={`product-${product._id}`} xs={12} sm={6} md={4} lg={3}>
+              <ProductCard product={product} showSnackbar={() => {}} />
+            </Grid>
+          ))}
+          {tab === 'users' && paginatedResults.users.map(userResult => (
+            <Grid item key={`user-${userResult._id}`} xs={12} sm={6} md={4}>
+              <UserCard user={userResult} />
+            </Grid>
+          ))}
+        </Grid>
+        {pagination[tab]?.totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination
+              count={pagination[tab].totalPages}
+              page={pagination[tab].page}
+              onChange={(e, value) => handlePageChange(tab, value)}
+              color="primary"
+            />
+          </Box>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -120,59 +229,17 @@ const SearchPage = () => {
       </Paper>
 
       {query && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-          <ToggleButtonGroup
-            value={sort}
-            exclusive
-            onChange={handleSortChange}
-            aria-label="sort results"
-          >
-            <ToggleButton value="relevance" aria-label="sort by relevance">
-              Relevance
-            </ToggleButton>
-            <ToggleButton value="new" aria-label="sort by new">
-              Newest
-            </ToggleButton>
-            <ToggleButton value="top" aria-label="sort by top">
-              Top
-            </ToggleButton>
-            <ToggleButton value="discussed" aria-label="sort by most discussed">
-              Discussed
-            </ToggleButton>
-          </ToggleButtonGroup>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Tabs value={tab} onChange={handleTabChange} aria-label="search results tabs">
+            <Tab label="All" value="all" />
+            <Tab label={`Posts (${globalResults.posts.length})`} value="posts" disabled={globalResults.posts.length === 0} />
+            <Tab label={`Products (${globalResults.products.length})`} value="products" disabled={globalResults.products.length === 0} />
+            <Tab label={`Users (${globalResults.users.length})`} value="users" disabled={globalResults.users.length === 0} />
+          </Tabs>
         </Box>
       )}
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Alert severity="error">{error}</Alert>
-      ) : results.posts.length > 0 ? (
-        <>
-          <Grid container spacing={3}>
-            {results.posts.map((post) => (
-              <Grid item key={post._id} xs={12} sm={6} md={4}>
-                <PostItem post={post} />
-              </Grid>
-            ))}
-          </Grid>
-          {results.pages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-              <Pagination
-                count={results.pages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-              />
-            </Box>
-          )}
-        </>
-      ) : (
-        query && <Alert severity="info">No posts found matching your search criteria.</Alert>
-      )}
+      {query && renderResults()}
     </Container>
   );
 };

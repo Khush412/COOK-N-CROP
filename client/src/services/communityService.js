@@ -164,6 +164,26 @@ const getShoppableIngredients = async (postId) => {
   return data;
 };
 
+const toggleFeaturePost = async (postId) => {
+  try {
+    const response = await api.put(`/posts/${postId}/feature`);
+    return response.data;
+  } catch (error) {
+    console.error('Error toggling feature status:', error);
+    throw error;
+  }
+};
+
+const addRecipeReview = async (postId, reviewData) => {
+  try {
+    const response = await api.post(`/posts/${postId}/recipe-reviews`, reviewData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding recipe review:', error);
+    throw error;
+  }
+};
+
 const communityService = {
   getPosts,
   createPost,
@@ -180,6 +200,8 @@ const communityService = {
   getTrendingTags,
   getFeedPosts,
   getShoppableIngredients,
+  toggleFeaturePost,
+  addRecipeReview,
 };
 
 export default communityService;
