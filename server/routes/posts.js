@@ -12,7 +12,7 @@ const User = require('../models/User'); // Import User model
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { title, content, tags, isRecipe, recipeDetails } = req.body;
+    const { title, content, tags, isRecipe, recipeDetails, taggedProducts } = req.body;
 
     const postData = {
       user: req.user.id,
@@ -20,6 +20,7 @@ router.post('/', protect, async (req, res) => {
       content,
       tags,
       isRecipe,
+      taggedProducts: isRecipe ? taggedProducts : [],
     };
 
     if (isRecipe && recipeDetails) {
@@ -79,6 +80,8 @@ router.get('/', optionalAuth, async (req, res) => {
 
     if (isRecipe === 'true') {
       matchConditions.isRecipe = true;
+    } else if (isRecipe === 'false') {
+      matchConditions.isRecipe = false;
     }
 
     if (search) {
@@ -131,6 +134,7 @@ router.get('/', optionalAuth, async (req, res) => {
       isRecipe: 1,
       isFeatured: 1,
       recipeDetails: 1,
+      taggedProducts: 1,
       createdAt: 1,
       updatedAt: 1,
       upvotes: 1,
@@ -298,7 +302,8 @@ router.get('/:id', async (req, res) => {
       .populate({
         path: 'recipeReviews.user',
         select: 'username profilePic'
-      }); // Populate the user for each recipe review
+      }) // Populate the user for each recipe review
+      .populate('taggedProducts', 'name price image countInStock'); // Populate tagged products
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,19 +19,32 @@ import {
   DialogContentText,
   DialogTitle,
   Fade,
-  useMediaQuery
+  useMediaQuery,
+  Grid,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Chip,
+  Tabs,
+  Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Close";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import userService from "../services/userService"; // New
-import api from "../config/axios"; // Use your axios config path
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { format, formatDistanceToNow } from 'date-fns';
+import userService from '../services/userService';
+import api from '../config/axios';
 import { useAuth } from "../contexts/AuthContext";
 
 const SOCIALS = [
@@ -40,22 +53,89 @@ const SOCIALS = [
   { name: "Twitter", key: "twitter", icon: TwitterIcon, color: "#1DA1F2" },
 ];
 
-export default function Profile() {
+const ProfileEditModal = ({ open, onClose, user, onSave }) => {
+  const [form, setForm] = useState({ username: '', bio: '' });
+  const [newPic, setNewPic] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      setForm({ username: user.username || '', bio: user.bio || '' });
+      setImagePreview(user.profilePic || '');
+    }
+  }, [user, open]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'username' && !/^[a-zA-Z0-9_]*$/.test(value)) return;
+    if (name === 'bio' && value.length > 500) return;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      setNewPic(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    if (form.username.trim().length < 3) {
+      setError('Username must be at least 3 characters.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const data = new FormData();
+      data.append('username', form.username.trim());
+      data.append('bio', form.bio.trim());
+      if (newPic) data.append('profilePic', newPic);
+      await onSave(data);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Edit Profile</DialogTitle>
+      <DialogContent>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 2 }}>
+          <Avatar src={imagePreview} sx={{ width: 120, height: 120, mb: 2 }} />
+          <Button variant="outlined" onClick={() => fileInputRef.current?.click()}>Change Picture</Button>
+          <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileChange} />
+        </Box>
+        <TextField label="Username" name="username" value={form.username} onChange={handleChange} fullWidth margin="normal" helperText="3-30 chars; letters, numbers, underscores only" />
+        <TextField label="Bio" name="bio" value={form.bio} onChange={handleChange} fullWidth multiline rows={4} margin="normal" helperText={`${form.bio.length}/500 characters`} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={loading}>Cancel</Button>
+        <Button onClick={handleSave} variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}>Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const Profile = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { logout } = useAuth();
+  const { user, loadUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    bio: "",
-    profilePic: "",
-    newPic: null,
-  });
-  const [editing, setEditing] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ error: "", success: "" });
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [activityTab, setActivityTab] = useState(0);
+
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -63,101 +143,49 @@ export default function Profile() {
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordFeedback, setPasswordFeedback] = useState({ error: "", success: "" });
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-  const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    let ignore = false;
-    async function fetchProfile() {
+  const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
+    try {
       setLoading(true);
-      setFeedback({ error: "", success: "" });
-      try {
-        const res = await api.get("/users/me");
-        if (!ignore) {
-          setUser(res.data.data);
-          setForm({
-            username: res.data.data.username || "",
-            email: res.data.data.email || "",
-            bio: res.data.data.bio || "",
-            profilePic: res.data.data.profilePic || "",
-            newPic: null,
-          });
-        }
-      } catch (error) {
-        if (!ignore) {
-          setFeedback({ error: error.response?.data?.message || "Failed to load profile.", success: "" });
-        }
-      }
+      const res = await userService.getDashboardData();
+      setDashboardData(res.data);
+    } catch (error) {
+      setFeedback({ error: "Failed to load dashboard data.", success: "" });
+    } finally {
       setLoading(false);
     }
-    fetchProfile();
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  }, [user]);
 
-  // HANDLERS
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "username" && !/^[a-zA-Z0-9_]*$/.test(value)) return;
-    if (name === "bio" && value.length > 500) return;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleProfileSave = async (formData) => {
+    await api.put("/users/me", formData, { headers: { "Content-Type": "multipart/form-data" } });
+    await loadUser(); // Reload user context to reflect changes globally
+    setFeedback({ success: "Profile updated successfully.", error: "" });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      if (form.newPic) URL.revokeObjectURL(form.profilePic);
-      setForm((prev) => ({
-        ...prev,
-        newPic: file,
-        profilePic: URL.createObjectURL(file),
-      }));
-    }
-  };
-
-  const openFileDialog = () => fileInputRef.current?.click();
-
-  const cancelEdit = () => {
-    if (form.newPic) URL.revokeObjectURL(form.profilePic);
-    setEditing(false);
-    setFeedback({ error: "", success: "" });
-    setForm({
-      username: user?.username || "",
-      email: user?.email || "",
-      bio: user?.bio || "",
-      profilePic: user?.profilePic || "",
-      newPic: null,
-    });
-  };
-
-  const saveProfile = async () => {
-    if (form.username.trim().length < 3) {
-      setFeedback({ error: "Username must be at least 3 characters.", success: "" });
-      return;
-    }
-    setLoading(true);
-    setFeedback({ error: "", success: "" });
+  const unlinkSocial = async (key) => {
+    if (!window.confirm(`Are you sure you want to unlink your ${key.charAt(0).toUpperCase() + key.slice(1)} account? If you don't have a password set, you may be locked out.`)) return;
     try {
-      const data = new FormData();
-      data.append("username", form.username.trim());
-      data.append("bio", form.bio.trim());
-      if (form.newPic) data.append("profilePic", form.newPic);
-      const res = await api.put("/users/me", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setUser(res.data.data);
-      setEditing(false);
-      setForm((prev) => ({ ...prev, newPic: null }));
-      setFeedback({ error: "", success: "Profile updated successfully." });
-    } catch (error) {
-      setFeedback({ error: error.response?.data?.message || "Failed to update profile.", success: "" });
+      await api.delete(`/users/me/social/unlink/${key}`);
+      await loadUser(); // Reload user context to reflect changes
+      setFeedback({ error: "", success: `${key.charAt(0).toUpperCase() + key.slice(1)} account unlinked successfully.` });
+    } catch (err) {
+      setFeedback({ error: `Failed to unlink ${key}.`, success: "" });
     }
-    setLoading(false);
+  };
+
+  const linkSocial = (key) => {
+    // Redirect to the backend OAuth endpoint to start the linking process
+    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/${key}`;
   };
 
   const handlePasswordChange = (e) => {
@@ -182,8 +210,6 @@ export default function Profile() {
       const res = await userService.changePassword(passwordForm);
       setPasswordFeedback({ error: "", success: res.message });
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      // Optional: Log out user after password change for security
-      // setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
       setPasswordFeedback({
         error: error.message || "Failed to change password.",
@@ -216,31 +242,15 @@ export default function Profile() {
     setDeleteDialogOpen(true);
   };
 
-  const unlinkSocial = async (key) => {
-    if (!window.confirm(`Are you sure you want to unlink ${key}?`)) return;
-    try {
-      await api.delete(`/users/me/social/unlink/${key}`);
-      setUser((prev) => ({ ...prev, [key]: null }));
-      setFeedback({ error: "", success: `${capitalize(key)} unlinked successfully.` });
-    } catch {
-      setFeedback({ error: `Failed to unlink ${key}.`, success: "" });
-    }
-  };
+  const statusColors = { Pending: 'warning', Processing: 'info', Shipped: 'primary', Delivered: 'success', Canceled: 'error' };
 
-  const linkSocial = (key) => {
-    alert(`Linking ${capitalize(key)} is not implemented yet.`);
-  };
-
-  function capitalize(str) {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-  }
-
-  if (loading && !user)
+  if (loading) {
     return (
       <Box sx={{ mt: 20, textAlign: "center" }}>
         <CircularProgress size={48} />
       </Box>
     );
+  }
 
   return (
     <Box
@@ -248,7 +258,7 @@ export default function Profile() {
         px: { xs: 2, md: 5 },
         maxWidth: 760,
         mx: "auto",
-        mt: 8, // REDUCED top margin
+        mt: 12,
         fontFamily: theme.typography.fontFamily,
         minHeight: "80vh",
         color: theme.palette.text.primary,
@@ -271,364 +281,178 @@ export default function Profile() {
       <Typography
         variant={isMobile ? "h4" : "h3"}
         fontWeight={900}
-        gutterBottom
         sx={{
-          mb : 0,
+          mb: 4,
           letterSpacing: 1.2,
           fontFamily: theme.typography.fontFamily,
         }}
       >
-        PROFILE INFORMATION
+        My Dashboard
       </Typography>
 
       <Fade in={!!feedback.error}>
-        <Alert variant="filled" severity="error" sx={{ mb: 3 }}>
+        <Alert variant="filled" severity="error" sx={{ mb: 2 }}>
           {feedback.error}
         </Alert>
       </Fade>
       <Fade in={!!feedback.success}>
-        <Alert variant="filled" severity="success" sx={{ mb: 2 }}>
+        <Alert variant="filled" severity="success" sx={{ mb: 2 }} onClose={() => setFeedback({ ...feedback, success: '' })}>
           {feedback.success}
         </Alert>
       </Fade>
 
-      {/* Profile Box */}
-      <Box
-        sx={{
-          mt : 0,
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          alignItems: isMobile ? "center" : "flex-start",
-          gap: isMobile ? 2 : 5,
-        }}
-      >
-        <Box sx={{ position: "relative", mt: isMobile ? 1 : 0 }}>
-          <Avatar
-            src={form.profilePic}
-            alt={form.username}
-            sx={{
-              mb :0,
-              width: 128,
-              height: 128,
-              fontSize: 55,
-              boxShadow: theme.shadows[6],
-              border: `4px solid ${theme.palette.background.paper}`,
-              cursor: editing ? "pointer" : "default",
-              background: theme.palette.grey[100],
-              color: theme.palette.text.primary,
-              transition: "box-shadow 0.3s ease",
-              "&:hover": editing ? { boxShadow: theme.shadows[12] } : undefined,
-            }}
-            onClick={editing ? openFileDialog : undefined}
-          />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-          {editing && (
-            <Tooltip title="Change Profile Picture">
-              <IconButton
-                onClick={openFileDialog}
-                size="small"
-                sx={{
-                  position: "absolute",
-                  bottom: -6,
-                  right: -6,
-                  bgcolor: theme.palette.background.paper,
-                  border: `2px solid ${theme.palette.divider}`,
-                  boxShadow: 3,
-                  "&:hover": { bgcolor: theme.palette.grey[100] },
-                }}
-                aria-label="Change Profile Picture"
-              >
-                <CameraAltIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-
-        {/* Form */}
-        <Stack sx={{ flexGrow: 1, width: "100%" }} spacing={2}>
-          <TextField
-            label="Username"
-            name="username"
-            variant="filled"
-            fullWidth
-            disabled={!editing}
-            value={form.username}
-            onChange={handleChange}
-            inputProps={{
-              maxLength: 30,
-              style: { fontFamily: theme.typography.fontFamily, fontWeight: 600 },
-            }}
-            helperText="3-30 chars; letters, numbers, underscores only"
-            error={editing && form.username.trim().length < 3}
-          />
-          <TextField
-            label="Email"
-            name="email"
-            variant="filled"
-            fullWidth
-            disabled
-            value={form.email}
-            inputProps={{
-              readOnly: true,
-              style: { fontFamily: theme.typography.fontFamily, color: theme.palette.grey[700] },
-            }}
-          />
-          <TextField
-            label="Bio"
-            name="bio"
-            variant="filled"
-            multiline
-            rows={4}
-            fullWidth
-            disabled={!editing}
-            value={form.bio}
-            onChange={handleChange}
-            inputProps={{
-              maxLength: 500,
-              style: { fontFamily: theme.typography.fontFamily, fontSize: 16 },
-            }}
-            helperText={`${form.bio.length}/500 characters`}
-          />
-        </Stack>
-      </Box>
-
-      {/* Action Buttons */}
-      <Stack direction="row" spacing={2} justifyContent="center" mb={4} sx={{ mt: isMobile ? 2 : 2 }}>
-        {!editing ? (
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<EditIcon />}
-            onClick={() => setEditing(true)}
-            sx={{
-              fontWeight: 700,
-              fontFamily: theme.typography.fontFamily,
-              bgcolor: theme.palette.primary.main,
-              color: theme.palette.primary.contrastText,
-              "&:hover": { bgcolor: theme.palette.primary.dark },
-            }}
-          >
-            Edit Profile
-          </Button>
-        ) : (
-          <>
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<CancelIcon />}
-              onClick={cancelEdit}
-              disabled={loading}
-              sx={{
-                fontWeight: 600,
-                fontFamily: theme.typography.fontFamily,
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              size="large"
-              color="success"
-              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-              onClick={saveProfile}
-              disabled={loading}
-              sx={{
-                fontWeight: 700,
-                fontFamily: theme.typography.fontFamily,
-              }}
-            >
-              Save Changes
-            </Button>
-          </>
-        )}
-      </Stack>
-
-      <Divider sx={{ mb: 2, mt: 2 }} />
-
-      <Typography
-        variant={isMobile ? "h6" : "h5"}
-        fontWeight={700}
-        mb={2}
-        sx={{ textAlign: isMobile ? "center" : "left", mt: 0 }}
-      >
-        Linked Social Accounts
-      </Typography>
-
-      <Stack
-        direction={isMobile ? "column" : "row"}
-        spacing={2}
-        alignItems="flex-start"
-        justifyContent="center"
-        width="100%"
-        sx={{ mb: 9 }}
-      >
-        {SOCIALS.map(({ name, key, icon: Icon, color }) => {
-          const linked = !!user?.[key]?.id;
-          return (
-            <Box
-              key={key}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                width: isMobile ? "100%" : 265,
-                gap: 2,
-                pl: 2,
-                pr: 2,
-                py: 1.5,
-                my: isMobile ? 1 : 0,
-                boxShadow: theme.shadows[1],
-                border: `2px solid ${linked ? color : theme.palette.divider}`,
-                borderRadius: 3,
-                justifyContent: "center",
-                background: linked ? color + "10" : theme.palette.background.paper,
-                transition: "box-shadow 0.18s",
-              }}
-            >
-              <Icon sx={{ color, fontSize: 33 }} />
-              <Typography
-                variant="subtitle1"
-                fontWeight={700}
-                flexGrow={1}
-                fontFamily={theme.typography.fontFamily}
-                sx={{
-                  minWidth: 68,
-                  letterSpacing: 0.5,
-                  color: theme.palette.text.primary,
-                  textAlign: "left"
-                }}
-              >
-                {name.toUpperCase()}
-              </Typography>
-              {linked ? (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  onClick={() => unlinkSocial(key)}
-                  sx={{
-                    fontWeight: 700,
-                    minWidth: 74,
-                    fontFamily: theme.typography.fontFamily,
-                  }}
-                >
-                  Unlink
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    fontWeight: 700,
-                    minWidth: 74,
-                    fontFamily: theme.typography.fontFamily,
-                    bgcolor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                    "&:hover": { bgcolor: theme.palette.primary.dark },
-                  }}
-                  onClick={() => linkSocial(key)}
-                >
-                  Link
-                </Button>
-              )}
+      <Grid container spacing={4}>
+        {/* Profile Header Card */}
+        <Grid item xs={12}>
+          <Paper elevation={3} sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Avatar src={user?.profilePic} sx={{ width: 100, height: 100 }} />
+            <Box flexGrow={1}>
+              <Typography variant="h4" fontWeight="bold">{user?.username}</Typography>
+              <Typography variant="body1" color="text.secondary">{user?.bio || 'No bio provided.'}</Typography>
             </Box>
-          );
-        })}
-      </Stack>
+            <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setEditModalOpen(true)}>Edit Profile</Button>
+          </Paper>
+        </Grid>
+
+        {/* Recent Orders Card */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>Recent Orders</Typography>
+            {dashboardData?.recentOrders?.length > 0 ? (
+              <List>
+                {dashboardData.recentOrders.map(order => (
+                  <ListItem key={order._id} secondaryAction={<Button component={RouterLink} to={`/order/${order._id}`} size="small">View</Button>} divider>
+                    <ListItemText
+                      primary={`Order #${order._id.slice(-6)} - $${order.totalPrice.toFixed(2)}`}
+                      secondary={format(new Date(order.createdAt), 'PP')}
+                    />
+                    <Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" />
+                  </ListItem>
+                ))}
+              </List>
+            ) : <Typography color="text.secondary">No recent orders.</Typography>}
+            <Button component={RouterLink} to="/profile/orders" sx={{ mt: 2 }}>View All Orders</Button>
+          </Paper>
+        </Grid>
+
+        {/* Recent Activity Card */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>Recent Activity</Typography>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs value={activityTab} onChange={(e, newValue) => setActivityTab(newValue)} aria-label="activity tabs">
+                <Tab label="Posts" />
+                <Tab label="Comments" />
+              </Tabs>
+            </Box>
+            {activityTab === 0 && (
+              <List>
+                {dashboardData?.recentPosts?.length > 0 ? dashboardData.recentPosts.map(post => (
+                  <ListItemButton key={post._id} component={RouterLink} to={`/post/${post._id}`} divider>
+                    <ListItemText primary={post.title} secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`} />
+                  </ListItemButton>
+                )) : <Typography color="text.secondary" sx={{ p: 2 }}>No recent posts.</Typography>}
+              </List>
+            )}
+            {activityTab === 1 && (
+              <List>
+                {dashboardData?.recentComments?.length > 0 ? dashboardData.recentComments.map(comment => (
+                  <ListItemButton key={comment._id} component={RouterLink} to={`/post/${comment.post._id}`} divider>
+                    <ListItemText primary={`"${comment.content.substring(0, 50)}..."`} secondary={`On "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`} />
+                  </ListItemButton>
+                )) : <Typography color="text.secondary" sx={{ p: 2 }}>No recent comments.</Typography>}
+              </List>
+            )}
+            <Button component={RouterLink} to="/profile/my-activity" sx={{ mt: 2 }}>View All Activity</Button>
+          </Paper>
+        </Grid>
+      </Grid>
 
       <Divider sx={{ my: 4 }} />
 
       {/* Security Section */}
-      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
-        <Typography variant="h5" fontWeight={700} mb={3}>
-          Security
-        </Typography>
-
-        <Fade in={!!passwordFeedback.error}>
-          <Alert variant="filled" severity="error" sx={{ mb: 2 }}>
-            {passwordFeedback.error}
-          </Alert>
-        </Fade>
-        <Fade in={!!passwordFeedback.success}>
-          <Alert variant="filled" severity="success" sx={{ mb: 2 }}>
-            {passwordFeedback.success}
-          </Alert>
-        </Fade>
-
-        <Box component="form" onSubmit={savePassword}>
-          <Stack spacing={2}>
-            <TextField
-              type="password"
-              label="Current Password"
-              name="currentPassword"
-              variant="filled"
-              fullWidth
-              required
-              value={passwordForm.currentPassword}
-              onChange={handlePasswordChange}
-              disabled={passwordLoading}
-            />
-            <TextField
-              type="password"
-              label="New Password"
-              name="newPassword"
-              variant="filled"
-              fullWidth
-              required
-              value={passwordForm.newPassword}
-              onChange={handlePasswordChange}
-              disabled={passwordLoading}
-              helperText="Min 6 characters, with at least one uppercase, one lowercase, and one number."
-            />
-            <TextField
-              type="password"
-              label="Confirm New Password"
-              name="confirmPassword"
-              variant="filled"
-              fullWidth
-              required
-              value={passwordForm.confirmPassword}
-              onChange={handlePasswordChange}
-              disabled={passwordLoading}
-            />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={passwordLoading}
-                startIcon={passwordLoading ? <CircularProgress size={20} /> : null}
-              >
-                {passwordLoading ? 'Updating...' : 'Change Password'}
-              </Button>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">Account Security</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Paper variant="outlined" sx={{ p: 3 }}>
+            <Typography variant="h5" fontWeight={700} mb={3}>Change Password</Typography>
+            <Fade in={!!passwordFeedback.error}><Alert variant="filled" severity="error" sx={{ mb: 2 }}>{passwordFeedback.error}</Alert></Fade>
+            <Fade in={!!passwordFeedback.success}><Alert variant="filled" severity="success" sx={{ mb: 2 }}>{passwordFeedback.success}</Alert></Fade>
+            <Box component="form" onSubmit={savePassword}>
+              <Stack spacing={2}>
+                <TextField type="password" label="Current Password" name="currentPassword" variant="filled" fullWidth required value={passwordForm.currentPassword} onChange={handlePasswordChange} disabled={passwordLoading} />
+                <TextField type="password" label="New Password" name="newPassword" variant="filled" fullWidth required value={passwordForm.newPassword} onChange={handlePasswordChange} disabled={passwordLoading} helperText="Min 6 characters." />
+                <TextField type="password" label="Confirm New Password" name="confirmPassword" variant="filled" fullWidth required value={passwordForm.confirmPassword} onChange={handlePasswordChange} disabled={passwordLoading} />
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button type="submit" variant="contained" disabled={passwordLoading} startIcon={passwordLoading ? <CircularProgress size={20} /> : null}>
+                    {passwordLoading ? 'Updating...' : 'Change Password'}
+                  </Button>
+                </Box>
+              </Stack>
             </Box>
-          </Stack>
-        </Box>
-      </Paper>
+          </Paper>
+        </AccordionDetails>
+      </Accordion>
 
-      <Divider sx={{ my: 4 }} />
+      <Accordion sx={{ mt: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">Linked Accounts</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Paper variant="outlined" sx={{ p: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Link your social accounts for easy login. Unlinking an account may prevent you from logging in if you don't have a password set.
+            </Typography>
+            <Stack spacing={2}>
+              {SOCIALS.map(({ name, key, icon: Icon, color }) => {
+                const linked = !!user?.[key]?.id;
+                return (
+                  <Box
+                    key={key}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      p: 1.5,
+                      border: 1,
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Icon sx={{ color, mr: 2, fontSize: 28 }} />
+                    <Typography variant="subtitle1" fontWeight="bold" flexGrow={1}>
+                      {name}
+                    </Typography>
+                    {linked ? (
+                      <Button variant="outlined" color="error" size="small" onClick={() => unlinkSocial(key)}>
+                        Unlink
+                      </Button>
+                    ) : (
+                      <Button variant="contained" size="small" onClick={() => linkSocial(key)}>
+                        Link Account
+                      </Button>
+                    )}
+                  </Box>
+                );
+              })}
+            </Stack>
+          </Paper>
+        </AccordionDetails>
+      </Accordion>
 
-      {/* Delete Account Section */}
-      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, border: 1, borderColor: 'error.main' }}>
-        <Typography variant="h5" fontWeight={700} color="error.main">
-          Danger Zone
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-          Deleting your account is a permanent action and cannot be undone. All your personal data will be anonymized, but your posts and comments will remain.
-        </Typography>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={openDeleteDialog}
-          startIcon={<WarningAmberIcon />}
-        >
-          Delete My Account
-        </Button>
-      </Paper>
+      <Accordion sx={{ mt: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold" color="error.main">Danger Zone</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Paper variant="outlined" sx={{ p: 3, border: 1, borderColor: 'error.main' }}>
+            <Typography variant="h5" fontWeight={700} color="error.main">Delete Account</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>This action is permanent and cannot be undone. All your personal data will be anonymized.</Typography>
+            <Button variant="contained" color="error" onClick={openDeleteDialog} startIcon={<WarningAmberIcon />}>Delete My Account</Button>
+          </Paper>
+        </AccordionDetails>
+      </Accordion>
 
       {/* Delete Account Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
@@ -670,6 +494,15 @@ export default function Profile() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ProfileEditModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        user={user}
+        onSave={handleProfileSave}
+      />
     </Box>
   );
 }
+
+export default Profile;

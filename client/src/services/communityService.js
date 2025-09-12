@@ -5,8 +5,8 @@ const getPosts = async (sort = 'new', page = 1, options = {}) => {
     const params = new URLSearchParams();
     params.append('sort', sort);
     params.append('page', page);
-    if (options.isRecipe) {
-      params.append('isRecipe', 'true');
+    if (typeof options.isRecipe === 'boolean') {
+      params.append('isRecipe', options.isRecipe.toString());
     }
     if (options.tags && options.tags.length > 0) {
       params.append('tags', options.tags.join(','));

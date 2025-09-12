@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -11,16 +11,18 @@ import {
   Divider,
   Typography,
   IconButton,
+  Autocomplete,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import productService from '../services/productService';
 
-const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
+const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState([]);
   const [currentTag, setCurrentTag] = useState('');
-  const [isRecipe, setIsRecipe] = useState(false);
+  const [isRecipe, setIsRecipe] = useState(forceRecipe === true);
   const [recipeDetails, setRecipeDetails] = useState({
     prepTime: '',
     cookTime: '',
@@ -28,6 +30,16 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
     ingredients: [''],
     instructions: [''],
   });
+  const [taggedProducts, setTaggedProducts] = useState([]);
+  const [productSearchOptions, setProductSearchOptions] = useState([]);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
+
+  useEffect(() => {
+    // If forceRecipe is defined, keep the state in sync.
+    if (typeof forceRecipe === 'boolean') {
+      setIsRecipe(forceRecipe);
+    }
+  }, [forceRecipe]);
 
   const handleTagKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -47,7 +59,10 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
-    const postData = { title, content, tags, isRecipe };
+    const postData = {
+      title, content, tags, isRecipe,
+      taggedProducts: taggedProducts.map(p => p._id),
+    };
     if (isRecipe) {
       postData.recipeDetails = {
         ...recipeDetails,
@@ -80,6 +95,28 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
     }
   };
 
+  const handleProductSearch = async (event, newValue) => {
+    if (newValue.length < 2) {
+      setProductSearchOptions([]);
+      return;
+    }
+    setProductSearchLoading(true);
+    try {
+      const products = await productService.searchProductsForTagging(newValue);
+      setProductSearchOptions(products);
+    } catch (err) {
+      console.error("Failed to search products", err);
+    } finally {
+      setProductSearchLoading(false);
+    }
+  };
+
+  const handleTagProductDelete = (productToDelete) => {
+    setTaggedProducts((prev) =>
+      prev.filter((product) => product._id !== productToDelete._id)
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <Stack spacing={3} sx={{ pt: 1 }}>
@@ -103,16 +140,18 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
           onChange={(e) => setContent(e.target.value)}
           disabled={loading}
         />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isRecipe}
-              onChange={(e) => setIsRecipe(e.target.checked)}
-              disabled={loading}
-            />
-          }
-          label="This is a Recipe"
-        />
+        {typeof forceRecipe !== 'boolean' && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isRecipe}
+                onChange={(e) => setIsRecipe(e.target.checked)}
+                disabled={loading}
+              />
+            }
+            label="This is a Recipe"
+          />
+        )}
 
         {isRecipe && (
           <Box sx={{ border: '1px dashed', borderColor: 'divider', p: 2, borderRadius: 1 }}>
@@ -166,6 +205,39 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
             <Button onClick={() => addDynamicListItem('instructions')} startIcon={<AddIcon />} size="small">
               Add Step
             </Button>
+          </Box>
+        )}
+
+        {isRecipe && (
+          <Box>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" gutterBottom>Tag Products Used</Typography>
+            <Autocomplete
+              options={productSearchOptions}
+              getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option._id === value._id}
+              onInputChange={handleProductSearch}
+              onChange={(event, newValue) => {
+                if (newValue && !taggedProducts.some(p => p._id === newValue._id)) {
+                  setTaggedProducts([...taggedProducts, newValue]);
+                }
+              }}
+              loading={productSearchLoading}
+              renderInput={(params) => (
+                <TextField {...params} label="Search for a product to tag..." variant="outlined"
+                  InputProps={{ ...params.InputProps, endAdornment: (<>{productSearchLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                />
+              )}
+            />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+              {taggedProducts.map((product) => (
+                <Chip
+                  key={product._id}
+                  label={product.name}
+                  onDelete={() => handleTagProductDelete(product)}
+                />
+              ))}
+            </Box>
           </Box>
         )}
 

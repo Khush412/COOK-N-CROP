@@ -129,6 +129,11 @@ const addMultipleToCart = async (items) => {
   return data;
 };
 
+const searchProductsForTagging = async (query) => {
+  const { data } = await axios.get(`/products/search?q=${query}`);
+  return data;
+};
+
 
 const productService = {
   getAllProducts,
@@ -144,6 +149,7 @@ const productService = {
   updateProduct,
   deleteProduct,
   addMultipleToCart,
+  searchProductsForTagging,
 };
 
 export default productService;

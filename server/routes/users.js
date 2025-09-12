@@ -437,6 +437,46 @@ router.get('/me/blocked', protect, async (req, res) => {
   }
 });
 
+// @desc    Get current user's dashboard data
+// @route   GET /api/users/me/dashboard
+// @access  Private
+router.get('/me/dashboard', protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const Post = require('../models/Post');
+    const Comment = require('../models/Comment');
+    const Order = require('../models/Order');
+
+    const recentOrdersPromise = Order.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .select('totalPrice status createdAt');
+
+    const recentPostsPromise = Post.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .select('title createdAt');
+
+    const recentCommentsPromise = Comment.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .populate('post', 'title _id')
+      .select('content createdAt post');
+
+    const [recentOrders, recentPosts, recentComments] = await Promise.all([
+      recentOrdersPromise,
+      recentPostsPromise,
+      recentCommentsPromise,
+    ]);
+
+    res.status(200).json({ success: true, data: { recentOrders, recentPosts, recentComments } });
+  } catch (error) {
+    console.error('Get dashboard data error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Get all addresses for a specific user (Admin only)
 // @route   GET /api/users/:userId/addresses
 // @access  Private/Admin

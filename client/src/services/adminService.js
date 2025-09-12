@@ -142,6 +142,11 @@ const updateOrderStatus = async (orderId, status) => {
   return response.data;
 };
 
+const toggleFeatureProduct = async (productId) => {
+  const response = await api.put(`/products/${productId}/feature`);
+  return response.data;
+};
+
 const exportUsers = async () => {
   const response = await api.get('/admin/users/export', {
     responseType: 'blob', // Important to handle the file download
@@ -178,6 +183,7 @@ const adminService = {
   searchProductsForAdmin,
   createOrderForUser,
   exportUsers,
+  toggleFeatureProduct,
 };
 
 export default adminService;

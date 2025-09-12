@@ -110,6 +110,16 @@ const getBlockedUsers = async () => {
   }
 };
 
+const getDashboardData = async () => {
+  try {
+    const response = await api.get('/users/me/dashboard');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    throw error.response?.data || error;
+  }
+};
+
 const userService = {
   getPublicProfile,
   toggleSavePost,
@@ -122,6 +132,7 @@ const userService = {
   getMyActivity,
   blockUser,
   getBlockedUsers,
+  getDashboardData,
 };
 
 export default userService;

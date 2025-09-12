@@ -69,6 +69,12 @@ const PostSchema = new mongoose.Schema({
     ingredients: [String],
     instructions: [String],
   },
+  taggedProducts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+    },
+  ],
   recipeReviews: [recipeReviewSchema],
   reports: [
     {

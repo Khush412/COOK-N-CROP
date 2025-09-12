@@ -85,6 +85,7 @@ export default function Community() {
       try {
         setLoading(true);
         const data = await communityService.getPosts(sort, page, {
+          isRecipe: false,
           tags: selectedTags,
           search: debouncedSearchTerm,
         });
@@ -417,6 +418,7 @@ export default function Community() {
               onSubmit={handleCreatePostSubmit}
               onCancel={handleCloseCreatePost}
               loading={isSubmitting}
+              forceRecipe={false}
             />
           </DialogContent>
         </Dialog>

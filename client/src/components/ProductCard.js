@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardMedia, CardContent, CardActions, Typography, Button, IconButton, Box, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -7,8 +8,10 @@ import userService from '../services/userService';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import StarIcon from '@mui/icons-material/Star';
 
 const ProductCard = ({ product, showSnackbar }) => {
+  const theme = useTheme();
   const { user, isAuthenticated, updateUserWishlist } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -55,8 +58,18 @@ const ProductCard = ({ product, showSnackbar }) => {
   };
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
+    <Card sx={{
+      display: 'flex', flexDirection: 'column', height: '100%',
+      transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 },
+      border: product.isFeatured ? `2px solid ${theme.palette.secondary.main}` : 'none',
+      position: 'relative',
+    }}>
       <Box sx={{ position: 'relative' }}>
+        {product.isFeatured && (
+          <Tooltip title="Featured Product">
+            <StarIcon sx={{ position: 'absolute', top: 8, left: 8, color: 'secondary.main', zIndex: 1, filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))' }} />
+          </Tooltip>
+        )}
         <CardMedia
           component={RouterLink}
           to={`/product/${product._id}`}

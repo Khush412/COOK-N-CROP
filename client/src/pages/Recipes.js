@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -18,6 +18,9 @@ import {
   Slider,
   Button,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -28,11 +31,14 @@ import {
   Whatshot as WhatshotIcon,
 } from "@mui/icons-material";
 import communityService from '../services/communityService';
+import { useAuth } from '../contexts/AuthContext';
 import userService from '../services/userService';
 import PostCard from '../components/PostCard';
+import CreatePostForm from '../components/CreatePostForm';
 
 const RecipesPage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
 
   const [posts, setPosts] = useState([]);
@@ -47,6 +53,8 @@ const RecipesPage = () => {
   const [trendingTags, setTrendingTags] = useState([]);
   const [prepTime, setPrepTime] = useState(120);
   const [servings, setServings] = useState(1);
+  const [openCreatePost, setOpenCreatePost] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -159,13 +167,43 @@ const RecipesPage = () => {
     );
   };
 
+  const handleOpenCreatePost = () => {
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/recipes');
+    } else {
+      setOpenCreatePost(true);
+    }
+  };
+
+  const handleCloseCreatePost = () => {
+    if (isSubmitting) return;
+    setOpenCreatePost(false);
+  };
+
+  const handleCreatePostSubmit = async (postData) => {
+    setIsSubmitting(true);
+    try {
+      const newPost = await communityService.createPost(postData);
+      setOpenCreatePost(false);
+      setSnackbar({ open: true, message: 'Recipe created successfully!', severity: 'success' });
+      if (page === 1 && sort === 'new') {
+        setPosts(prev => [newPost, ...prev]);
+      }
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to create recipe. Please try again.', severity: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, mb: 4 }}>
         Community Recipes
       </Typography>
 
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="flex-end" alignItems="center" sx={{ mb: 4 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+        <Button variant="contained" onClick={handleOpenCreatePost}>Create Recipe</Button>
         <TextField
           label="Search Recipes by Title or Tag"
           variant="outlined"
@@ -278,6 +316,18 @@ const RecipesPage = () => {
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>{snackbar.message}</Alert>
       </Snackbar>
+
+      <Dialog open={openCreatePost} onClose={handleCloseCreatePost} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Create a New Recipe</DialogTitle>
+        <DialogContent>
+          <CreatePostForm
+            onSubmit={handleCreatePostSubmit}
+            onCancel={handleCloseCreatePost}
+            loading={isSubmitting}
+            forceRecipe={true}
+          />
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 };

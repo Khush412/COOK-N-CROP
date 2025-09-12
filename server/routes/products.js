@@ -54,18 +54,37 @@ router.get('/', async (req, res) => {
         sortOption = { name: -1 };
         break;
       default:
-        sortOption = { createdAt: -1 }; // Default sort
+        sortOption = { createdAt: -1 };
     }
+
+    const finalSort = { isFeatured: -1, ...sortOption };
 
     const count = await Product.countDocuments(query);
     const products = await Product.find(query)
-      .sort(sortOption)
+      .sort(finalSort)
       .limit(pageSize)
       .skip(pageSize * (page - 1));
 
     res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Search products for autocomplete
+// @route   GET /api/products/search
+// @access  Public
+router.get('/search', async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    if (query.length < 2) return res.json([]);
+
+    const products = await Product.find({ name: { $regex: query, $options: 'i' } })
+      .limit(10)
+      .select('name image _id');
+    res.json(products);
+  } catch (err) {
     res.status(500).send('Server Error');
   }
 });
@@ -112,6 +131,31 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ msg: 'Product not found' });
     }
     res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Feature/unfeature a product
+// @route   PUT /api/products/:id/feature
+// @access  Private/Admin
+router.put('/:id/feature', protect, authorize('admin'), async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.isFeatured = !product.isFeatured;
+    await product.save();
+
+    res.json({
+      success: true,
+      message: `Product ${product.isFeatured ? 'featured' : 'unfeatured'} successfully.`,
+      isFeatured: product.isFeatured
+    });
+  } catch (error) {
+    console.error('Feature product error:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 

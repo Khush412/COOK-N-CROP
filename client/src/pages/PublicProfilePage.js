@@ -85,9 +85,9 @@ const PublicProfilePage = () => {
       navigate(`/login?redirect=/user/${username}`);
       return;
     }
-    if (window.confirm(`Are you sure you want to block ${user.username}? You will no longer see their content or be able to message them.`)) {
+    if (window.confirm(`Are you sure you want to block ${profileData.user.username}? You will no longer see their content or be able to message them.`)) {
       try {
-        await userService.blockUser(user._id);
+        await userService.blockUser(profileData.user._id);
         navigate('/community'); // Redirect away from the profile after blocking
       } catch (err) {
         alert('Failed to block user.');

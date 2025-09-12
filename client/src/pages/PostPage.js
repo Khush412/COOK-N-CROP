@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Box,
@@ -27,6 +28,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Card,
   ListSubheader,
   TextField,
   ListItemAvatar,
@@ -93,6 +95,38 @@ const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick,
         </Grid>
       </Grid>
     </Box>
+  );
+};
+
+const TaggedProductCard = ({ product }) => {
+  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  const handleAddToCart = async () => {
+    setIsAdding(true);
+    try {
+      await addToCart(product._id, 1);
+      setSnackbar({ open: true, message: `${product.name} added to cart!` });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  return (
+    <Card sx={{ display: 'flex', alignItems: 'center', p: 1.5 }}>
+      <Avatar src={product.image} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
+      <Box sx={{ flexGrow: 1 }}>
+        <Typography variant="subtitle1" fontWeight="bold">{product.name}</Typography>
+        <Typography variant="body2" color="primary">${product.price.toFixed(2)}</Typography>
+      </Box>
+      <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0}>
+        {product.countInStock > 0 ? (isAdding ? <CircularProgress size={20} /> : 'Add') : 'Out of Stock'}
+      </Button>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ open: false, message: '' })} message={snackbar.message} />
+    </Card>
   );
 };
 
@@ -587,6 +621,23 @@ const PostPage = () => {
         )}
 
         <Divider sx={{ my: 3 }} />
+
+        {/* Tagged Products Section */}
+        {post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+              Products Used in this Recipe
+            </Typography>
+            <Grid container spacing={2}>
+              {post.taggedProducts.map(product => (
+                <Grid item xs={12} sm={6} key={product._id}>
+                  <TaggedProductCard product={product} />
+                </Grid>
+              ))}
+            </Grid>
+            <Divider sx={{ my: 3 }} />
+          </Box>
+        )}
 
         {/* Recipe Reviews Section */}
         {post.isRecipe && (

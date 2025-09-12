@@ -7,6 +7,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import StarIcon from '@mui/icons-material/Star';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 
@@ -188,6 +189,16 @@ const ManageProducts = () => {
     }
   };
 
+  const handleFeatureToggle = async (productId) => {
+    try {
+      const res = await adminService.toggleFeatureProduct(productId);
+      // Optimistically update the UI
+      setProducts(products.map(p => p._id === productId ? { ...p, isFeatured: res.isFeatured } : p));
+    } catch (err) {
+      alert('Failed to update feature status.');
+    }
+  };
+
   const handleDeleteSelected = async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedProducts.length} selected products?`)) {
       try {
@@ -299,6 +310,11 @@ const ManageProducts = () => {
                         <TableCell>${product.price.toFixed(2)}</TableCell>
                         <TableCell>{product.countInStock}</TableCell>
                         <TableCell align="right">
+                          <Tooltip title="Edit Product">
+                            <IconButton onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
+                              <StarIcon color={product.isFeatured ? "secondary" : "action"} />
+                            </IconButton>
+                          </Tooltip>
                           <Tooltip title="Edit Product">
                             <IconButton onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}><EditIcon /></IconButton>
                           </Tooltip>
