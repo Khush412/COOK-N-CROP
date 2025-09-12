@@ -205,6 +205,7 @@ const userSchema = new mongoose.Schema({
   // Following/Followers
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   // Subscription and billing
   subscription: {
     plan: {

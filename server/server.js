@@ -31,6 +31,7 @@ const commentRoutes = require('./routes/comments'); // New: Import comment route
 const couponRoutes = require('./routes/couponRoutes'); // New: Import coupon routes
 const notificationRoutes = require('./routes/notifications'); // New: Import notification routes
 const adminRoutes = require('./routes/admin'); // New: Import admin routes
+const messageRoutes = require('./routes/messages'); // New: Import message routes
 
 // Connect to database
 connectDB();
@@ -155,6 +156,7 @@ app.use('/api/comments', commentRoutes); // New: Use comment routes
 app.use('/api/coupons', couponRoutes); // New: Use coupon routes
 app.use('/api/admin', adminRoutes); // New: Use admin routes
 app.use('/api/notifications', notificationRoutes); // New: Use notification routes
+app.use('/api/messages', messageRoutes); // New: Use message routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

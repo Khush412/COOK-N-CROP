@@ -35,6 +35,8 @@ import LowStockPage from './pages/admin/LowStockPage';
 import BroadcastPage from './pages/admin/BroadcastPage';
 import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
+import BlockedUsersPage from './pages/BlockedUsersPage';
+import MessengerPage from './pages/MessengerPage';
 import WishlistPage from './pages/WishlistPage';
 
 export default function AppRouter() {
@@ -56,8 +58,10 @@ export default function AppRouter() {
       <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}
       <Route path="/profile/saved-posts" element={<SavedPostsPage />} /> {/* New */}
       <Route path="/profile/my-activity" element={<MyActivityPage />} />
+      <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />
       <Route path="/profile/wishlist" element={<WishlistPage />} />
       <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
+      <Route path="/messages" element={<PrivateRoute />}><Route index element={<MessengerPage />} /></Route>
       <Route path="/subscription" element={<Subscription />} />
       <Route path="/dashboard/*" element={<Dashboard />} />
       <Route path="/cart" element={<CartPage />} />

@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const Product = require('../models/Product');
 const Notification = require('../models/Notification');
+const User = require('../models/User'); // Import User model
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -34,7 +35,7 @@ router.post('/', protect, async (req, res) => {
 // @desc    Get all posts
 // @route   GET /api/posts
 // @access  Public
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { sort = 'new', page = 1, limit = 9, isRecipe, search, tags, maxPrepTime, minServings } = req.query;
     const pageNum = Number(page);
@@ -43,6 +44,12 @@ router.get('/', async (req, res) => {
 
     const pipeline = [];
     const matchConditions = {};
+
+    // Exclude posts from users that the current user has blocked
+    if (req.user) {
+      const currentUser = await User.findById(req.user.id).select('blockedUsers');
+      matchConditions.user = { $nin: currentUser.blockedUsers };
+    }
 
     if (isRecipe === 'true') {
       matchConditions.isRecipe = true;
@@ -140,7 +147,7 @@ router.get('/reported', protect, authorize('admin'), async (req, res) => {
 // @desc    Get posts from users the current user is following
 // @route   GET /api/posts/feed
 // @access  Private
-router.get('/feed', protect, async (req, res) => {
+router.get('/feed', protect, async (req, res) => { // protect middleware already provides req.user
   try {
     const { page = 1, limit = 9 } = req.query;
     const pageNum = Number(page);
@@ -153,13 +160,16 @@ router.get('/feed', protect, async (req, res) => {
       return res.json({ posts: [], page: 1, pages: 0 });
     }
 
-    const posts = await Post.find({ user: { $in: followingIds } })
+    // Also exclude blocked users from the feed
+    const blockedIds = req.user.blockedUsers || [];
+
+    const posts = await Post.find({ user: { $in: followingIds, $nin: blockedIds } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
       .populate('user', 'username profilePic');
 
-    const totalPosts = await Post.countDocuments({ user: { $in: followingIds } });
+    const totalPosts = await Post.countDocuments({ user: { $in: followingIds, $nin: blockedIds } });
 
     res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
   } catch (error) {

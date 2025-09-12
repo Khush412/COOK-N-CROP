@@ -421,6 +421,22 @@ router.get('/profile/:username', optionalAuth, async (req, res) => {
   }
 });
 
+// @desc    Get current user's blocked users
+// @route   GET /api/users/me/blocked
+// @access  Private
+router.get('/me/blocked', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('blockedUsers', 'username profilePic');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.status(200).json({ success: true, data: user.blockedUsers });
+  } catch (error) {
+    console.error('Get blocked users error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Get all addresses for a specific user (Admin only)
 // @route   GET /api/users/:userId/addresses
 // @access  Private/Admin
@@ -459,6 +475,40 @@ router.delete('/:userId/addresses/:addressId', protect, authorize('admin'), asyn
 });
 
 // ======= Dynamic :id Routes =======
+
+// @desc    Block/unblock a user
+// @route   PUT /api/users/:id/block
+// @access  Private
+router.put('/:id/block', protect, async (req, res) => {
+  try {
+    const userToBlock = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
+
+    if (!userToBlock || !currentUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ success: false, message: "You cannot block yourself." });
+    }
+
+    const isBlocked = currentUser.blockedUsers.some(id => id.equals(userToBlock._id));
+
+    if (isBlocked) {
+      // Unblock
+      currentUser.blockedUsers.pull(userToBlock._id);
+    } else {
+      // Block
+      currentUser.blockedUsers.push(userToBlock._id);
+    }
+
+    await currentUser.save();
+    res.status(200).json({ success: true, message: isBlocked ? 'User unblocked' : 'User blocked' });
+  } catch (error) {
+    console.error('Block user error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // @desc    Follow/unfollow a user
 // @route   PUT /api/users/:id/follow

@@ -90,6 +90,26 @@ const getMyActivity = async () => {
   }
 };
 
+const blockUser = async (userId) => {
+  try {
+    const response = await api.put(`/users/${userId}/block`);
+    return response.data;
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    throw error.response?.data || error;
+  }
+};
+
+const getBlockedUsers = async () => {
+  try {
+    const response = await api.get('/users/me/blocked');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching blocked users:', error);
+    throw error.response?.data || error;
+  }
+};
+
 const userService = {
   getPublicProfile,
   toggleSavePost,
@@ -100,6 +120,8 @@ const userService = {
   toggleWishlist,
   getWishlist,
   getMyActivity,
+  blockUser,
+  getBlockedUsers,
 };
 
 export default userService;

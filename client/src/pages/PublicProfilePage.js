@@ -12,7 +12,7 @@ import {
   Tabs,
   Tab,
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   Button,
   Stack,
@@ -20,6 +20,8 @@ import {
 import { format, formatDistanceToNow } from 'date-fns';
 import CommentIcon from '@mui/icons-material/Comment';
 import PostAddIcon from '@mui/icons-material/PostAdd';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import BlockIcon from '@mui/icons-material/Block';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -78,6 +80,21 @@ const PublicProfilePage = () => {
     }
   };
 
+  const handleBlockToggle = async () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/user/${username}`);
+      return;
+    }
+    if (window.confirm(`Are you sure you want to block ${user.username}? You will no longer see their content or be able to message them.`)) {
+      try {
+        await userService.blockUser(user._id);
+        navigate('/community'); // Redirect away from the profile after blocking
+      } catch (err) {
+        alert('Failed to block user.');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -128,13 +145,32 @@ const PublicProfilePage = () => {
           </Box>
           <Box sx={{ ml: 'auto', alignSelf: 'flex-start' }}>
             {isAuthenticated && currentUser?.username !== user.username && (
+              <>
+                <Button
+                  variant={isFollowing ? 'outlined' : 'contained'}
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                >
+                  {isFollowing ? 'Unfollowing' : 'Follow'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<MailOutlineIcon />}
+                  onClick={() => navigate('/messages', { state: { newConversationWith: user } })}
+                  sx={{ ml: 1 }}
+                >
+                  Message
+                </Button>
               <Button
-                variant={isFollowing ? 'outlined' : 'contained'}
-                onClick={handleFollowToggle}
-                disabled={followLoading}
+                variant="outlined"
+                color="error"
+                startIcon={<BlockIcon />}
+                onClick={handleBlockToggle}
+                sx={{ ml: 1 }}
               >
-                {isFollowing ? 'Unfollowing' : 'Follow'}
+                Block
               </Button>
+              </>
             )}
           </Box>
         </Box>
@@ -154,9 +190,8 @@ const PublicProfilePage = () => {
             {posts.length > 0 ? (
               <List>
                 {posts.map((post) => (
-                  <ListItem
+                  <ListItemButton
                     key={post._id}
-                    button
                     component={RouterLink}
                     to={`/post/${post._id}`}
                     divider
@@ -165,7 +200,7 @@ const PublicProfilePage = () => {
                       primary={post.title}
                       secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`}
                     />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             ) : (
@@ -182,9 +217,8 @@ const PublicProfilePage = () => {
             {comments.length > 0 ? (
               <List>
                 {comments.map((comment) => (
-                  <ListItem
+                  <ListItemButton
                     key={comment._id}
-                    button
                     component={RouterLink}
                     to={`/post/${comment.post._id}`}
                     divider
@@ -204,7 +238,7 @@ const PublicProfilePage = () => {
                       }
                       secondary={`Commented on "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`}
                     />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             ) : (

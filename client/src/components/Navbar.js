@@ -36,6 +36,8 @@ import {
   Bookmark as BookmarkIcon,
   Favorite as FavoriteIcon,
   History as HistoryIcon,
+  Mail as MailIcon,
+  Block as BlockIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import NotificationsMenu from "./NotificationsMenu"; // New
@@ -227,9 +229,15 @@ export default function Navbar() {
         fetchNotifications(); // Refetch to update the list with the new broadcast
       });
 
+      socket.on('new_private_message', (message) => {
+        showSnackbar(`New message from ${message.sender.username}`, 'info');
+        // Here you could also update a global unread message count if you add one
+      });
+
       return () => {
         socket.off('new_notification');
         socket.off('broadcast_received');
+        socket.off('new_private_message');
       };
     }
   }, [socket, showSnackbar, fetchNotifications]);
@@ -605,6 +613,19 @@ export default function Navbar() {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
+                      navigate("/messages");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <MailIcon fontSize="small" />
+                    </ListItemIcon>
+                    Messages
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
                       navigate("/profile/my-activity");
                     }}
                     sx={{ borderRadius: 2, px: 3 }}
@@ -613,6 +634,19 @@ export default function Navbar() {
                       <HistoryIcon fontSize="small" />
                     </ListItemIcon>
                     My Activity
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/blocked-users");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <BlockIcon fontSize="small" />
+                    </ListItemIcon>
+                    Blocked Users
                   </MenuItem>
 
                   <MenuItem

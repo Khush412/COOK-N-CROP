@@ -10,7 +10,7 @@ import {
   Tabs,
   Tab,
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
 } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
@@ -82,9 +82,9 @@ const MyActivityPage = () => {
             {posts.length > 0 ? (
               <List>
                 {posts.map((post) => (
-                  <ListItem key={post._id} button component={RouterLink} to={`/post/${post._id}`} divider>
+                  <ListItemButton key={post._id} component={RouterLink} to={`/post/${post._id}`} divider>
                     <ListItemText primary={post.title} secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`} />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             ) : (
@@ -99,12 +99,12 @@ const MyActivityPage = () => {
             {comments.length > 0 ? (
               <List>
                 {comments.map((comment) => (
-                  <ListItem key={comment._id} button component={RouterLink} to={`/post/${comment.post._id}`} divider>
+                  <ListItemButton key={comment._id} component={RouterLink} to={`/post/${comment.post._id}`} divider>
                     <ListItemText
                       primary={<Typography sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{comment.content}</Typography>}
                       secondary={`Commented on "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`}
                     />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             ) : (
