@@ -118,9 +118,9 @@ const CreatePostForm = ({ onSubmit, onCancel, loading }) => {
           <Box sx={{ border: '1px dashed', borderColor: 'divider', p: 2, borderRadius: 1 }}>
             <Typography variant="h6" gutterBottom>Recipe Details</Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-              <TextField label="Prep Time" name="prepTime" value={recipeDetails.prepTime} onChange={handleRecipeDetailChange} fullWidth />
-              <TextField label="Cook Time" name="cookTime" value={recipeDetails.cookTime} onChange={handleRecipeDetailChange} fullWidth />
-              <TextField label="Servings" name="servings" value={recipeDetails.servings} onChange={handleRecipeDetailChange} fullWidth />
+              <TextField label="Prep Time (minutes)" name="prepTime" type="number" value={recipeDetails.prepTime} onChange={handleRecipeDetailChange} fullWidth />
+              <TextField label="Cook Time (minutes)" name="cookTime" type="number" value={recipeDetails.cookTime} onChange={handleRecipeDetailChange} fullWidth />
+              <TextField label="Servings" name="servings" type="number" value={recipeDetails.servings} onChange={handleRecipeDetailChange} fullWidth />
             </Stack>
 
             <Divider sx={{ my: 2 }} />

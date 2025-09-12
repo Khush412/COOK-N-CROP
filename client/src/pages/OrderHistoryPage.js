@@ -37,6 +37,14 @@ const OrderHistoryPage = () => {
   const [searchTerm, setSearchTerm] = useState(''); // New
   const [sortOption, setSortOption] = useState('dateDesc'); // New
 
+  const statusColors = {
+    Pending: 'warning',
+    Processing: 'info',
+    Shipped: 'primary',
+    Delivered: 'success',
+    Canceled: 'error',
+  };
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -211,10 +219,9 @@ const OrderHistoryPage = () => {
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                           Status: <Chip
-                            label={order.isDelivered ? 'Delivered' : order.isPaid ? 'Paid' : 'Pending'}
-                            color={order.isDelivered ? 'success' : order.isPaid ? 'primary' : 'warning'}
+                            label={order.status}
+                            color={statusColors[order.status] || 'default'}
                             size="small"
-                            sx={{ ml: 1 }}
                           />
                         </Typography>
                         <Box sx={{ mt: 2 }}>

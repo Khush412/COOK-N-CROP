@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Checkbox,
   DialogContent, DialogActions, TextField, MenuItem, Avatar
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import productService from '../../services/productService';
+import adminService from '../../services/adminService';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
@@ -111,18 +112,36 @@ const ManageProducts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await productService.getAllProducts();
-      setProducts(data);
+      const data = await productService.getAllProducts({ page, search: debouncedSearchTerm });
+      setProducts(data.products);
+      setPage(data.page);
+      setTotalPages(data.pages);
+      setSelectedProducts([]); // Clear selection on data refresh
     } catch (err) {
       setError('Failed to fetch products.');
+      setProducts([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, debouncedSearchTerm]);
 
   useEffect(() => {
     fetchProducts();
@@ -169,52 +188,151 @@ const ManageProducts = () => {
     }
   };
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  const handleDeleteSelected = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedProducts.length} selected products?`)) {
+      try {
+        await adminService.deleteMultipleProducts(selectedProducts);
+        fetchProducts(); // Refresh the list
+      } catch (err) {
+        console.error('Failed to delete selected products:', err);
+        alert('Failed to delete selected products.');
+      }
+    }
+  };
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = products.map((n) => n._id);
+      setSelectedProducts(newSelecteds);
+      return;
+    }
+    setSelectedProducts([]);
+  };
+
+  const handleSelectClick = (event, id) => {
+    const selectedIndex = selectedProducts.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selectedProducts, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selectedProducts.slice(1));
+    } else if (selectedIndex === selectedProducts.length - 1) {
+      newSelected = newSelected.concat(selectedProducts.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selectedProducts.slice(0, selectedIndex),
+        selectedProducts.slice(selectedIndex + 1),
+      );
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  const isSelected = (id) => selectedProducts.indexOf(id) !== -1;
+  const numSelected = selectedProducts.length;
+  const rowCount = products.length;
 
   return (
     <Paper sx={{ p: 3, m: { xs: 1, md: 3 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h4" gutterBottom>Manage Products</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-          Add Product
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            label="Search by Name or Category"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ flexGrow: 1, minWidth: 250 }}
+          />
+          {numSelected > 0 && (
+            <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected}>
+              Delete ({numSelected})
+            </Button>
+          )}
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
+            Add Product
+          </Button>
+        </Box>
       </Box>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map((product) => (
-              <TableRow key={product._id} hover>
-                <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.countInStock}</TableCell>
-                <TableCell align="right">
-                  <Tooltip title="Edit Product">
-                    <IconButton onClick={() => handleOpenDialog(product)}><EditIcon /></IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete Product">
-                    <IconButton onClick={() => handleDeleteProduct(product._id)} color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      indeterminate={numSelected > 0 && numSelected < rowCount}
+                      checked={rowCount > 0 && numSelected === rowCount}
+                      onChange={handleSelectAllClick}
+                      inputProps={{ 'aria-label': 'select all products' }}
+                    />
+                  </TableCell>
+                  <TableCell>Image</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Stock</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.length > 0 ? (
+                  products.map((product) => {
+                    const isItemSelected = isSelected(product._id);
+                    return (
+                      <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={isItemSelected}
+                            inputProps={{ 'aria-labelledby': `product-checkbox-${product._id}` }}
+                          />
+                        </TableCell>
+                        <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
+                        <TableCell id={`product-checkbox-${product._id}`}>{product.name}</TableCell>
+                        <TableCell>{product.category}</TableCell>
+                        <TableCell>${product.price.toFixed(2)}</TableCell>
+                        <TableCell>{product.countInStock}</TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="Edit Product">
+                            <IconButton onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}><EditIcon /></IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Product">
+                            <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error">
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      <Typography color="text.secondary">No products found matching your criteria.</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+              />
+            </Box>
+          )}
+        </>
+      )}
       <ProductFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}

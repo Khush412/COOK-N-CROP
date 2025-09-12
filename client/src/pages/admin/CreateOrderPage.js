@@ -1,0 +1,192 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Paper, Typography, Box, Grid, TextField, Autocomplete, Button, IconButton,
+  List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, CircularProgress, Alert,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import adminService from '../../services/adminService';
+
+const CreateOrderPage = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [userOptions, setUserOptions] = useState([]);
+  const [userLoading, setUserLoading] = useState(false);
+
+  const [product, setProduct] = useState(null);
+  const [productOptions, setProductOptions] = useState([]);
+  const [productLoading, setProductLoading] = useState(false);
+
+  const [orderItems, setOrderItems] = useState([]);
+  const [shippingAddress, setShippingAddress] = useState({
+    fullName: '', street: '', city: '', state: '', zipCode: '', country: '', phone: ''
+  });
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [error, setError] = useState('');
+
+  const subtotal = orderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+
+  useEffect(() => {
+    if (user) {
+      setShippingAddress({
+        fullName: user.username,
+        street: '', city: '', state: '', zipCode: '', country: '', phone: ''
+      });
+    }
+  }, [user]);
+
+  const handleUserSearch = async (event, newValue) => {
+    if (newValue.length < 2) return;
+    setUserLoading(true);
+    try {
+      const users = await adminService.searchUsers(newValue);
+      setUserOptions(users);
+    } catch (err) {
+      console.error("Failed to search users", err);
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const handleProductSearch = async (event, newValue) => {
+    if (newValue.length < 2) return;
+    setProductLoading(true);
+    try {
+      const products = await adminService.searchProductsForAdmin(newValue);
+      setProductOptions(products);
+    } catch (err) {
+      console.error("Failed to search products", err);
+    } finally {
+      setProductLoading(false);
+    }
+  };
+
+  const handleAddProduct = () => {
+    if (!product) return;
+    const existItem = orderItems.find(x => x.product === product._id);
+    if (existItem) {
+      setOrderItems(orderItems.map(x => x.product === existItem.product ? { ...x, qty: x.qty + 1 } : x));
+    } else {
+      setOrderItems([...orderItems, {
+        product: product._id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        qty: 1,
+      }]);
+    }
+    setProduct(null);
+    setProductOptions([]);
+  };
+
+  const handleRemoveItem = (id) => {
+    setOrderItems(orderItems.filter(x => x.product !== id));
+  };
+
+  const handleAddressChange = (e) => {
+    setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
+  };
+
+  const handlePlaceOrder = async () => {
+    setError('');
+    if (!user) {
+      setError('Please select a user.');
+      return;
+    }
+    if (orderItems.length === 0) {
+      setError('Please add products to the order.');
+      return;
+    }
+    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode || !shippingAddress.country) {
+      setError('Please fill in all required shipping address fields.');
+      return;
+    }
+
+    setPlacingOrder(true);
+    try {
+      const orderData = {
+        userId: user._id,
+        orderItems: orderItems.map(item => ({ product: item.product, qty: item.qty })),
+        shippingAddress,
+      };
+      const createdOrder = await adminService.createOrderForUser(orderData);
+      navigate(`/admin/orders`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create order.');
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
+
+  return (
+    <Paper sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>Create New Order</Typography>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      <Grid container spacing={4}>
+        {/* Left Side: User and Products */}
+        <Grid item xs={12} md={7}>
+          <Typography variant="h6" gutterBottom>1. Select User</Typography>
+          <Autocomplete
+            options={userOptions}
+            getOptionLabel={(option) => `${option.username} (${option.email})`}
+            isOptionEqualToValue={(option, value) => option._id === value._id}
+            onChange={(event, newValue) => setUser(newValue)}
+            onInputChange={handleUserSearch}
+            loading={userLoading}
+            renderInput={(params) => (
+              <TextField {...params} label="Search for a user..." variant="outlined"
+                InputProps={{ ...params.InputProps, endAdornment: (<>{userLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+              />
+            )}
+          />
+          {user && <Alert severity="success" sx={{ mt: 2 }}>Selected User: {user.username}</Alert>}
+          <Divider sx={{ my: 3 }} />
+          <Typography variant="h6" gutterBottom>2. Add Products</Typography>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Autocomplete sx={{ flexGrow: 1 }} options={productOptions} getOptionLabel={(option) => option.name}
+              isOptionEqualToValue={(option, value) => option._id === value._id} value={product} onChange={(event, newValue) => setProduct(newValue)}
+              onInputChange={handleProductSearch} loading={productLoading}
+              renderInput={(params) => (
+                <TextField {...params} label="Search for a product..." variant="outlined"
+                  InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                />
+              )}
+            />
+            <Button variant="contained" onClick={handleAddProduct} disabled={!product}>Add</Button>
+          </Box>
+          <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Order Items</Typography>
+          <List>
+            {orderItems.map(item => (
+              <ListItem key={item.product} secondaryAction={<IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product)}><DeleteIcon /></IconButton>}>
+                <ListItemAvatar><Avatar src={item.image} variant="rounded" /></ListItemAvatar>
+                <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - $${(item.price * item.qty).toFixed(2)}`} />
+              </ListItem>
+            ))}
+          </List>
+        </Grid>
+        {/* Right Side: Address and Summary */}
+        <Grid item xs={12} md={5}>
+          <Typography variant="h6" gutterBottom>3. Shipping Address</Typography>
+          <TextField label="Full Name" name="fullName" value={shippingAddress.fullName} onChange={handleAddressChange} fullWidth margin="normal" />
+          <TextField label="Street" name="street" value={shippingAddress.street} onChange={handleAddressChange} fullWidth required margin="normal" />
+          <TextField label="City" name="city" value={shippingAddress.city} onChange={handleAddressChange} fullWidth required margin="normal" />
+          <TextField label="State" name="state" value={shippingAddress.state} onChange={handleAddressChange} fullWidth required margin="normal" />
+          <TextField label="Zip Code" name="zipCode" value={shippingAddress.zipCode} onChange={handleAddressChange} fullWidth required margin="normal" />
+          <TextField label="Country" name="country" value={shippingAddress.country} onChange={handleAddressChange} fullWidth required margin="normal" />
+          <TextField label="Phone (Optional)" name="phone" value={shippingAddress.phone} onChange={handleAddressChange} fullWidth margin="normal" />
+          <Divider sx={{ my: 3 }} />
+          <Typography variant="h6" gutterBottom>Order Summary</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+            <Typography>Subtotal</Typography>
+            <Typography fontWeight="bold">${subtotal.toFixed(2)}</Typography>
+          </Box>
+          <Button variant="contained" color="primary" fullWidth size="large" onClick={handlePlaceOrder} disabled={placingOrder}>
+            {placingOrder ? <CircularProgress size={24} /> : 'Place Order'}
+          </Button>
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+};
+
+export default CreateOrderPage;

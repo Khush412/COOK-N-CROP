@@ -8,6 +8,18 @@ const getPosts = async (sort = 'new', page = 1, options = {}) => {
     if (options.isRecipe) {
       params.append('isRecipe', 'true');
     }
+    if (options.tags && options.tags.length > 0) {
+      params.append('tags', options.tags.join(','));
+    }
+    if (options.search) {
+      params.append('search', options.search);
+    }
+    if (options.maxPrepTime) {
+      params.append('maxPrepTime', options.maxPrepTime);
+    }
+    if (options.minServings) {
+      params.append('minServings', options.minServings);
+    }
     const response = await api.get(`/posts?${params.toString()}`);
     return response.data;
   } catch (error) {

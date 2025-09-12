@@ -1,154 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Button,
-  Box,
-  IconButton,
-  useTheme,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import productService from '../services/productService';
+import React, { useState } from 'react';
+import { Card, CardMedia, CardContent, CardActions, Typography, Button, IconButton, Box, Tooltip } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import userService from '../services/userService';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 const ProductCard = ({ product, showSnackbar }) => {
-  const theme = useTheme();
-  const [quantityInCart, setQuantityInCart] = useState(0);
+  const { user, isAuthenticated, updateUserWishlist } = useAuth();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
+  const [isFavoriting, setIsFavoriting] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  useEffect(() => {
-    const fetchInitialQuantity = async () => {
-      try {
-        const cartData = await productService.getCart();
-        const item = cartData.items.find(item => item.product._id === product._id);
-        if (item) {
-          setQuantityInCart(item.quantity);
-        } else {
-          setQuantityInCart(0);
-        }
-      } catch (error) {
-        console.error("Error fetching initial cart quantity:", error);
-        setQuantityInCart(0);
-      }
-    };
-    fetchInitialQuantity();
-  }, [product._id]);
+  const isWishlisted = user?.wishlist?.includes(product._id);
 
-  const handleAddToCart = async () => {
+  const handleToggleWishlist = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/CropCorner');
+      return;
+    }
+    setIsFavoriting(true);
     try {
-      await productService.addToCart(product._id, 1);
-      const cartData = await productService.getCart();
-      const item = cartData.items.find(item => item.product._id === product._id);
-      setQuantityInCart(item ? item.quantity : 0);
-      showSnackbar('Product added to cart!', 'success');
-    } catch (error) {
-      showSnackbar('Failed to add product to cart.', 'error');
+      const res = await userService.toggleWishlist(product._id);
+      if (res.success) {
+        updateUserWishlist(res.wishlist);
+        showSnackbar(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', 'success');
+      }
+    } catch (err) {
+      showSnackbar('Failed to update wishlist.', 'error');
+    } finally {
+      setIsFavoriting(false);
     }
   };
 
-  const handleIncreaseQuantity = async () => {
-    try {
-      await productService.addToCart(product._id, 1);
-      const cartData = await productService.getCart();
-      const item = cartData.items.find(item => item.product._id === product._id);
-      setQuantityInCart(item ? item.quantity : 0);
-      showSnackbar('Quantity increased!', 'info');
-    } catch (error) {
-      showSnackbar('Failed to increase quantity.', 'error');
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/CropCorner');
+      return;
     }
-  };
-
-  const handleDecreaseQuantity = async () => {
+    setIsAddingToCart(true);
     try {
-      if (quantityInCart > 1) {
-        await productService.updateCartItemQuantity(product._id, quantityInCart - 1);
-      } else if (quantityInCart === 1) {
-        await productService.removeCartItem(product._id);
-      }
-      const cartData = await productService.getCart();
-      const item = cartData.items.find(item => item.product._id === product._id);
-      setQuantityInCart(item ? item.quantity : 0);
-      showSnackbar('Quantity decreased!', 'info');
-    } catch (error) {
-      showSnackbar('Failed to update quantity.', 'error');
+      await addToCart(product._id, 1);
+      showSnackbar(`${product.name} added to cart!`, 'success');
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || 'Failed to add to cart.', 'error');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
   return (
-    <Card
-      sx={{
-        maxWidth: 246, // Smaller width
-        borderRadius: 3, // More rounded corners
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Softer shadow
-        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-        display: 'flex', // Use flexbox for internal layout
-        flexDirection: 'column',
-        height: '100%', // Ensure cards in a row have same height
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-        },
-      }}
-    >
-      <Link to={`/product/${product._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
+      <Box sx={{ position: 'relative' }}>
         <CardMedia
-          component="img"
-          height="160" // Adjusted height for better aspect ratio with smaller width
-          image={product.image || 'https://via.placeholder.com/250x160?text=No+Image'}
-          alt={product.name}
-          sx={{ objectFit: 'cover', borderTopLeftRadius: 3, borderTopRightRadius: 3 }}
+          component={RouterLink}
+          to={`/product/${product._id}`}
+          image={product.image || '/images/placeholder.png'}
+          title={product.name}
+          sx={{ height: 200, cursor: 'pointer' }}
         />
-      </Link>
-      <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        <Typography
-          gutterBottom
-          variant="h6"
-          component="div"
-          sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, lineHeight: 1.2, mb: 1 }}
-        >
-          {product.name}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1.5, minHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-          {product.description}
-        </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-          <Typography variant="h6" color="primary.main" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>
-            ${product.price.toFixed(2)}
-          </Typography>
-          {quantityInCart === 0 ? (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddToCart}
-              sx={{ fontFamily: theme.typography.fontFamily, fontSize: 12, px: 1.5, py: 0.5 }}
+        {isAuthenticated && (
+          <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
+            <IconButton
+              onClick={handleToggleWishlist}
+              disabled={isFavoriting}
+              sx={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(255, 255, 255, 0.7)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.9)' } }}
             >
-              Add to Cart
-            </Button>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid', borderColor: theme.palette.primary.main, borderRadius: 1, overflow: 'hidden' }}>
-              <IconButton
-                size="small"
-                onClick={handleDecreaseQuantity}
-                sx={{ borderRadius: 0, p: 0.5, color: theme.palette.primary.main }}
-              >
-                <RemoveIcon fontSize="small" />
-              </IconButton>
-              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, mx: 0.5 }}>
-                {quantityInCart}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={handleIncreaseQuantity}
-                sx={{ borderRadius: 0, p: 0.5, color: theme.palette.primary.main }}
-              >
-                <AddIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          )}
-        </Box>
+              {isWishlisted ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 'bold' }}>{product.name}</Typography>
+        <Typography variant="body2" color="text.secondary">{product.category}</Typography>
+        <Typography variant="h5" color="primary" sx={{ mt: 1, fontWeight: 'bold' }}>${product.price.toFixed(2)}</Typography>
       </CardContent>
+      <CardActions sx={{ justifyContent: 'center', p: 2 }}>
+        <Button fullWidth variant="contained" startIcon={<AddShoppingCartIcon />} onClick={handleAddToCart} disabled={isAddingToCart || product.countInStock === 0}>
+          {product.countInStock > 0 ? (isAddingToCart ? 'Adding...' : 'Add to Cart') : 'Out of Stock'}
+        </Button>
+      </CardActions>
     </Card>
   );
 };

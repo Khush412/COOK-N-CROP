@@ -201,6 +201,7 @@ const userSchema = new mongoose.Schema({
   },
   // Saved content
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
   // Following/Followers
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -284,6 +285,29 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword) {
   if (!this.password) return false;
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Instance method to get the user object for the client
+userSchema.methods.getClientUserObject = function() {
+  return {
+    id: this._id,
+    username: this.username,
+    email: this.email,
+    bio: this.bio,
+    profilePic: this.profilePic,
+    role: this.role,
+    google: this.google,
+    github: this.github,
+    twitter: this.twitter,
+    preferences: this.preferences,
+    subscription: this.subscription,
+    savedPosts: this.savedPosts,
+    wishlist: this.wishlist,
+    activity: this.activity,
+    createdAt: this.createdAt,
+    lastLogin: this.lastLogin,
+    loginCount: this.loginCount
+  };
 };
 
 // Instance method to get public profile

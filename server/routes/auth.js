@@ -34,22 +34,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     .json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        bio: user.bio,
-        profilePic: user.profilePic,
-        role: user.role,
-        google: user.google,
-        github: user.github,
-        twitter: user.twitter,
-        preferences: user.preferences,
-        subscription: user.subscription,
-        savedPosts: user.savedPosts,
-        activity: user.activity,
-        createdAt: user.createdAt
-      }
+      user: user.getClientUserObject()
     });
 };
 
@@ -91,6 +76,22 @@ router.post('/register', validateRegister, async (req, res) => {
       username: user.username,
       email: user.email,
       createdAt: user.createdAt
+    });
+
+    // Send welcome email
+    const welcomeMessage = `
+      <h1>Welcome to Cook-N-Crop, ${user.username}!</h1>
+      <p>We're thrilled to have you join our community of food lovers.</p>
+      <p>Here's what you can do to get started:</p>
+      <ul>
+        <li><a href="${process.env.CLIENT_URL}/CropCorner">Shop for fresh ingredients</a></li>
+        <li><a href="${process.env.CLIENT_URL}/recipes">Discover new recipes</a></li>
+        <li><a href="${process.env.CLIENT_URL}/community">Join the community discussions</a></li>
+      </ul>
+      <p>Happy cooking!</p>
+    `;
+    sendEmail({ email: user.email, subject: 'Welcome to Cook-N-Crop!', message: welcomeMessage }).catch(err => {
+      console.error('Failed to send welcome email:', err);
     });
     sendTokenResponse(user, 201, res);
   } catch (error) {
@@ -272,24 +273,7 @@ router.get('/me', protect, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        bio: user.bio,
-        profilePic: user.profilePic,
-        role: user.role,
-        google: user.google,
-        github: user.github,
-        twitter: user.twitter,
-        preferences: user.preferences,
-        subscription: user.subscription,
-        savedPosts: user.savedPosts,
-        activity: user.activity,
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin,
-        loginCount: user.loginCount
-      }
+      user: user.getClientUserObject()
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -397,21 +381,7 @@ router.put('/profile', protect, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        bio: user.bio,
-        profilePic: user.profilePic,
-        role: user.role,
-        google: user.google,
-        github: user.github,
-        twitter: user.twitter,
-        preferences: user.preferences,
-        subscription: user.subscription,
-        activity: user.activity,
-        createdAt: user.createdAt
-      }
+      user: user.getClientUserObject()
     });
   } catch (error) {
     console.error('Profile update error:', error);

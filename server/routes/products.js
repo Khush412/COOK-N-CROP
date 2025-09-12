@@ -10,10 +10,86 @@ const upload = require('../middleware/upload');
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const pageSize = 12; // Good for 2, 3, or 4 column grids
+    const page = Number(req.query.page) || 1;
+    const {
+      search = '',
+      category = 'All',
+      minPrice,
+      maxPrice,
+      sort = 'default'
+    } = req.query;
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (category && category !== 'All') {
+      query.category = category;
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    let sortOption = {};
+    switch (sort) {
+      case 'priceAsc':
+        sortOption = { price: 1 };
+        break;
+      case 'priceDesc':
+        sortOption = { price: -1 };
+        break;
+      case 'nameAsc':
+        sortOption = { name: 1 };
+        break;
+      case 'nameDesc':
+        sortOption = { name: -1 };
+        break;
+      default:
+        sortOption = { createdAt: -1 }; // Default sort
+    }
+
+    const count = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort(sortOption)
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+
+    res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Get low stock products
+// @route   GET /api/products/low-stock
+// @access  Private/Admin
+router.get('/low-stock', protect, authorize('admin'), async (req, res) => {
+  try {
+    const threshold = Number(req.query.threshold) || 10;
+    const pageSize = 10;
+    const page = Number(req.query.page) || 1;
+
+    const query = { countInStock: { $lte: threshold } };
+
+    const count = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort({ countInStock: 1 }) // Show lowest stock first
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+
+    res.json({ products, page, pages: Math.ceil(count / pageSize), threshold });
+  } catch (err) {
+    console.error('Get low stock products error:', err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -192,6 +268,30 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     res.json({ message: 'Product removed' });
   } catch (error) {
     console.error('Delete product error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Delete multiple products
+// @route   DELETE /api/products
+// @access  Private/Admin
+router.delete('/', protect, authorize('admin'), async (req, res) => {
+  try {
+    const { productIds } = req.body;
+
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: 'Product IDs are required.' });
+    }
+
+    // Note: This doesn't delete the associated images from the server filesystem.
+    // A more robust implementation would find the products, get their image paths,
+    // delete the files, and then delete the products from the DB.
+
+    const result = await Product.deleteMany({ _id: { $in: productIds } });
+
+    res.json({ message: `${result.deletedCount} products removed successfully.` });
+  } catch (error) {
+    console.error('Bulk delete product error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

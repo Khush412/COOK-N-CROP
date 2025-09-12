@@ -55,6 +55,11 @@ const authReducer = (state, action) => {
         ...state,
         user: state.user ? { ...state.user, savedPosts: action.payload } : null,
       };
+    case 'UPDATE_WISHLIST':
+      return {
+        ...state,
+        user: state.user ? { ...state.user, wishlist: action.payload } : null,
+      };
     default:
       return state;
   }
@@ -230,6 +235,10 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'UPDATE_SAVED_POSTS', payload: savedPosts });
   };
 
+  const updateUserWishlist = (wishlist) => {
+    dispatch({ type: 'UPDATE_WISHLIST', payload: wishlist });
+  };
+
   const value = {
     ...state,
     register,
@@ -241,6 +250,7 @@ export const AuthProvider = ({ children }) => {
     handleOAuthCallback,
     loadUser,
     updateUserSavedPosts,
+    updateUserWishlist,
   };
 
   return (

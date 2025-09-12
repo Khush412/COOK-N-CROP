@@ -1,8 +1,16 @@
 import axios from '../config/axios';
 
-const getAllProducts = async () => {
+const getAllProducts = async ({
+  page = 1,
+  search = '',
+  category = 'All',
+  minPrice = 0,
+  maxPrice = 100,
+  sort = 'default'
+} = {}) => {
   try {
-    const response = await axios.get('/products');
+    const params = new URLSearchParams({ page, search, category, minPrice, maxPrice, sort });
+    const response = await axios.get(`/products?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching products', error);
@@ -115,6 +123,13 @@ const deleteProduct = async (id) => {
   return data;
 };
 
+const addMultipleToCart = async (items) => {
+  // The endpoint should match where you added the backend route
+  const { data } = await axios.post('/cart/add-multiple', { items });
+  return data;
+};
+
+
 const productService = {
   getAllProducts,
   getProductById,
@@ -128,6 +143,7 @@ const productService = {
   createProduct,
   updateProduct,
   deleteProduct,
+  addMultipleToCart,
 };
 
 export default productService;

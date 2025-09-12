@@ -4,7 +4,13 @@ import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(null);
@@ -58,6 +64,12 @@ export const CartProvider = ({ children }) => {
     return updatedCart;
   };
 
+  const addMultipleToCart = async (items) => {
+    const updatedCart = await productService.addMultipleToCart(items);
+    setCart(updatedCart);
+    return updatedCart;
+  };
+
   const value = {
     cart,
     loading,
@@ -67,6 +79,7 @@ export const CartProvider = ({ children }) => {
     updateCartItemQuantity,
     removeCartItem,
     clearCart,
+    addMultipleToCart,
   };
 
   return (

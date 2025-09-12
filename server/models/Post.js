@@ -40,9 +40,9 @@ const PostSchema = new mongoose.Schema({
     default: false,
   },
   recipeDetails: {
-    prepTime: String,
-    cookTime: String,
-    servings: String,
+    prepTime: Number, // Changed to Number for filtering
+    cookTime: Number, // Changed to Number for filtering
+    servings: Number, // Changed to Number for filtering
     ingredients: [String],
     instructions: [String],
   },

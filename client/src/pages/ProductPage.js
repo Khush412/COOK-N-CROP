@@ -24,11 +24,15 @@ import {
   Select,
   MenuItem,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp'; 
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
 import Rating from '../components/Rating';
@@ -37,7 +41,7 @@ const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUserWishlist } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +55,7 @@ const ProductPage = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [upvotingReviewId, setUpvotingReviewId] = useState(null);
+  const [isFavoriting, setIsFavoriting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
   const [filterRating, setFilterRating] = useState(0); // 0 for all
   const [sortOption, setSortOption] = useState('newest'); // 'newest' or 'helpful'
@@ -136,6 +141,25 @@ const ProductPage = () => {
       setSnackbar({ open: true, message: 'Failed to update vote.', severity: 'error' });
     } finally {
       setUpvotingReviewId(null);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/product/${id}`);
+      return;
+    }
+    setIsFavoriting(true);
+    try {
+      const res = await userService.toggleWishlist(product._id);
+      if (res.success) {
+        updateUserWishlist(res.wishlist);
+        setSnackbar({ open: true, message: isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', severity: 'success' });
+      }
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to update wishlist.', severity: 'error' });
+    } finally {
+      setIsFavoriting(false);
     }
   };
 
@@ -225,6 +249,7 @@ const ProductPage = () => {
   }
 
   const hasUserReviewed = product.reviews.some(review => review.user === user?.id);
+  const isWishlisted = user?.wishlist?.includes(product._id);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
@@ -266,7 +291,7 @@ const ProductPage = () => {
                 </Typography>
               )}
             </Typography>
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
               {quantityInCart === 0 ? (
                 <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || product.countInStock === 0}>
                   {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
@@ -281,6 +306,17 @@ const ProductPage = () => {
                     <AddIcon />
                   </IconButton>
                 </Box>
+              )}
+              {isAuthenticated && (
+                <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
+                  <IconButton
+                    onClick={handleToggleWishlist}
+                    disabled={isFavoriting}
+                    size="large"
+                  >
+                    {isWishlisted ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                  </IconButton>
+                </Tooltip>
               )}
             </Box>
           </Grid>

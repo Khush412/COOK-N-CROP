@@ -34,6 +34,8 @@ import {
   Notifications as NotificationsIcon,
   AdminPanelSettings as AdminPanelSettingsIcon,
   Bookmark as BookmarkIcon,
+  Favorite as FavoriteIcon,
+  History as HistoryIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import NotificationsMenu from "./NotificationsMenu"; // New
@@ -194,24 +196,22 @@ export default function Navbar() {
     setSnackbar({ open: true, message, severity });
   }, []);
 
-  // Fetch notifications when user is authenticated
-  useEffect(() => {
+  const fetchNotifications = useCallback(async () => {
     if (isAuthenticated) {
-      const fetchNotifications = async () => {
-        try {
-          const data = await notificationService.getNotifications();
-          setNotifications(data.notifications);
-          setUnreadCount(data.unreadCount);
-        } catch (error) {
-          console.error("Failed to fetch notifications:", error);
-        }
-      };
-      fetchNotifications();
-    } else {
-      setNotifications([]);
-      setUnreadCount(0);
+      try {
+        const data = await notificationService.getNotifications();
+        setNotifications(data.notifications);
+        setUnreadCount(data.unreadCount);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
     }
   }, [isAuthenticated]);
+
+  // Fetch notifications when user is authenticated
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   // Listen for real-time notifications
   useEffect(() => {
@@ -222,11 +222,17 @@ export default function Navbar() {
         setUnreadCount(prev => prev + 1);
       });
 
+      socket.on('broadcast_received', (data) => {
+        showSnackbar(data.message, 'success');
+        fetchNotifications(); // Refetch to update the list with the new broadcast
+      });
+
       return () => {
         socket.off('new_notification');
+        socket.off('broadcast_received');
       };
     }
-  }, [socket, showSnackbar]);
+  }, [socket, showSnackbar, fetchNotifications]);
 
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
@@ -594,6 +600,32 @@ export default function Navbar() {
                       <BookmarkIcon fontSize="small" />
                     </ListItemIcon>
                     Saved Posts
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/my-activity");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <HistoryIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Activity
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/wishlist");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <FavoriteIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Wishlist
                   </MenuItem>
 
                   <MenuItem

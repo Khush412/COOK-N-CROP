@@ -1,7 +1,8 @@
 import api from '../config/axios';
 
-const getAllUsers = async () => {
-  const response = await api.get('/users/all');
+const getAllUsers = async ({ page = 1, search = '' }) => {
+  const params = new URLSearchParams({ page, search });
+  const response = await api.get(`/users/all?${params.toString()}`);
   return response.data;
 };
 
@@ -40,6 +41,11 @@ const toggleUserStatus = async (userId) => {
   return response.data;
 };
 
+const updateMultipleUserStatuses = async (userIds, isActive) => {
+  const response = await api.put('/users/bulk-status', { userIds, isActive });
+  return response.data;
+};
+
 const createProduct = async (formData) => {
   const response = await api.post('/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -59,13 +65,60 @@ const deleteProduct = async (productId) => {
   return response.data;
 };
 
+const deleteMultipleProducts = async (productIds) => {
+  const response = await api.delete('/products', { data: { productIds } }); // Pass IDs in the body
+  return response.data;
+};
+
+const searchUsers = async (query) => {
+  const response = await api.get(`/users/search?q=${query}`);
+  return response.data;
+};
+
+const searchProductsForAdmin = async (query) => {
+  const response = await api.get(`/products?search=${query}&page=1&limit=10`);
+  return response.data.products;
+};
+
+const createOrderForUser = async (orderData) => {
+  const response = await api.post('/orders/admin/create', orderData);
+  return response.data;
+};
+
+const editOrder = async (orderId, orderData) => {
+  const response = await api.put(`/orders/admin/edit/${orderId}`, orderData);
+  return response.data;
+};
+
+const sendBroadcast = async (message, link) => {
+  const response = await api.post('/admin/broadcast', { message, link });
+  return response.data;
+};
+
+const getLowStockProducts = async ({ page = 1, threshold = 10 }) => {
+  const params = new URLSearchParams({ page, threshold });
+  const response = await api.get(`/products/low-stock?${params.toString()}`);
+  return response.data;
+};
+
+const getUserAddresses = async (userId) => {
+  const response = await api.get(`/users/${userId}/addresses`);
+  return response.data;
+};
+
+const deleteUserAddress = async (userId, addressId) => {
+  const response = await api.delete(`/users/${userId}/addresses/${addressId}`);
+  return response.data;
+};
+
 const getDashboardStats = async () => {
   const response = await api.get('/admin/stats');
   return response.data;
 };
 
-const getAllOrders = async () => {
-  const response = await api.get('/orders');
+const getAllOrders = async ({ page = 1, search = '', status = 'All' }) => {
+  const params = new URLSearchParams({ page, search, status });
+  const response = await api.get(`/orders?${params.toString()}`);
   return response.data;
 };
 
@@ -76,6 +129,11 @@ const updateOrderToPaid = async (orderId) => {
 
 const updateOrderToDelivered = async (orderId) => {
   const response = await api.put(`/orders/${orderId}/deliver`);
+  return response.data;
+};
+
+const updateOrderStatus = async (orderId, status) => {
+  const response = await api.put(`/orders/${orderId}/status`, { status });
   return response.data;
 };
 
@@ -95,13 +153,24 @@ const adminService = {
   deleteComment,
   updateUserRole,
   toggleUserStatus,
+  updateMultipleUserStatuses,
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteMultipleProducts,
+  getLowStockProducts,
+  sendBroadcast,
+  getUserAddresses,
+  deleteUserAddress,
   getDashboardStats,
   getAllOrders,
   updateOrderToPaid,
   updateOrderToDelivered,
+  updateOrderStatus,
+  editOrder,
+  searchUsers,
+  searchProductsForAdmin,
+  createOrderForUser,
   exportUsers,
 };
 

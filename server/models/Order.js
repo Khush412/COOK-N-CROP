@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+const orderStatusHistorySchema = new mongoose.Schema({
+    status: {
+        type: String,
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Canceled'],
+        required: true,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+}, { _id: false });
+
 const orderSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -20,11 +32,13 @@ const orderSchema = mongoose.Schema({
         },
     ],
     shippingAddress: {
+        fullName: { type: String },
         street: { type: String, required: true },
         city: { type: String, required: true },
         state: { type: String, required: true },
         zipCode: { type: String, required: true },
         country: { type: String, required: true },
+        phone: { type: String },
     },
     subtotal: {
         type: Number,
@@ -42,6 +56,12 @@ const orderSchema = mongoose.Schema({
         required: true,
         default: 0.0,
     },
+    status: {
+        type: String,
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Canceled'],
+        default: 'Pending',
+    },
+    statusHistory: [orderStatusHistorySchema],
     isPaid: {
         type: Boolean,
         required: true,

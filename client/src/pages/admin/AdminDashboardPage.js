@@ -7,14 +7,20 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import DiscountIcon from '@mui/icons-material/Discount';
+import WarningIcon from '@mui/icons-material/Warning';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 const adminNavItems = [
   { text: 'Dashboard', path: '/admin', icon: <DashboardIcon /> },
   { text: 'Manage Users', path: '/admin/users', icon: <PeopleIcon /> },
   { text: 'Manage Products', path: '/admin/products', icon: <InventoryIcon /> },
+  { text: 'Low Stock', path: '/admin/products/low-stock', icon: <WarningIcon /> },
   { text: 'Manage Orders', path: '/admin/orders', icon: <ReceiptLongIcon /> },
+  { text: 'Create Order', path: '/admin/orders/create', icon: <AddShoppingCartIcon /> },
   { text: 'Manage Coupons', path: '/admin/coupons', icon: <DiscountIcon /> },
   { text: 'Reported Content', path: '/admin/reports', icon: <ReportIcon /> },
+  { text: 'Broadcast', path: '/admin/broadcast', icon: <CampaignIcon /> },
 ];
 
 const AdminDashboardPage = () => {

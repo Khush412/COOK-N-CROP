@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
-const NotificationSchema = new mongoose.Schema({
+const notificationSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['upvote', 'comment', 'follow', 'broadcast'], // Added 'broadcast'
+    required: true,
+  },
   recipient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -12,27 +17,29 @@ const NotificationSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  type: {
-    type: String,
-    enum: ['reply', 'post_upvote', 'comment_upvote'],
-    required: true,
-  },
   post: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post',
-    required: true,
+    // Make 'post' required only for relevant notification types
+    required: function() {
+      return ['upvote', 'comment'].includes(this.type);
+    },
   },
-  comment: { // Only for 'reply' and 'comment_upvote' types
+  comment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  link: {
+    type: String,
   },
   isRead: {
     type: Boolean,
     default: false,
-    index: true,
   },
-}, {
-  timestamps: true,
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Notification', NotificationSchema);
+module.exports = mongoose.model('Notification', notificationSchema);

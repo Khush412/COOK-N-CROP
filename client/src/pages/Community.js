@@ -63,6 +63,9 @@ export default function Community() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [sort, setSort] = useState('new'); // 'new', 'top', 'discussed'
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [trendingTags, setTrendingTags] = useState([]);
 
@@ -73,10 +76,18 @@ export default function Community() {
       behavior: 'smooth',
     });
 
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1);
+    }, 500);
+
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const data = await communityService.getPosts(sort, page);
+        const data = await communityService.getPosts(sort, page, {
+          tags: selectedTags,
+          search: debouncedSearchTerm,
+        });
         setPosts(data.posts);
         setTotalPages(data.pages);
         setError(null);
@@ -88,7 +99,8 @@ export default function Community() {
     };
 
     fetchPosts();
-  }, [sort, page]);
+    return () => clearTimeout(timer);
+  }, [sort, page, selectedTags, searchTerm]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
@@ -204,9 +216,17 @@ export default function Community() {
     setPage(value);
   };
 
-  const handleTagClick = (tag) => {
-    // This functionality is removed for now.
-    setSnackbar({ open: true, message: `Searching for tag "${tag}" is not yet implemented.`, severity: 'info' });
+  const handleTagClick = (tagToToggle) => {
+    setPage(1); // Reset to first page when filters change
+    // If the search term is the same as the tag, clear the search term to avoid redundancy
+    if (searchTerm.toLowerCase() === tagToToggle.toLowerCase()) {
+      setSearchTerm('');
+    }
+    setSelectedTags((prev) =>
+      prev.includes(tagToToggle)
+        ? prev.filter((tag) => tag !== tagToToggle)
+        : [...prev, tagToToggle]
+    );
   };
 
   return (
@@ -242,56 +262,23 @@ export default function Community() {
           </Typography>
         </Box>
 
-        {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
-          {communityStats.map((stat, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card
-                sx={{
-                  height: "100%",
-                  background: `linear-gradient(135deg, ${stat.color}15, ${stat.color}05)`,
-                  border: `1px solid ${stat.color}30`,
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: `0 8px 25px ${stat.color}25`,
-                  },
-                }}
-              >
-                <CardContent sx={{ textAlign: "center", py: 3 }}>
-                  <Box
-                    sx={{
-                      display: "inline-flex",
-                      p: 2,
-                      borderRadius: "50%",
-                      bgcolor: `${stat.color}20`,
-                      color: stat.color,
-                      mb: 2,
-                    }}
-                  >
-                    {stat.icon}
-                  </Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, mb: 1 }}>
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                    {stat.label}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
         <Grid container spacing={4} sx={{ mt: 2 }}>
           {/* Main Content */}
           <Grid item xs={12} md={8}>
             {/* Community Posts */}
             <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, flexGrow: 1 }}>
                   Community Posts
                 </Typography>
+                <TextField
+                  label="Search Posts"
+                  variant="outlined"
+                  size="small"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  sx={{ minWidth: 250 }}
+                />
                 <ToggleButtonGroup
                   value={sort}
                   exclusive
@@ -402,11 +389,20 @@ export default function Community() {
                       label={item.tag}
                       onClick={() => handleTagClick(item.tag)}
                       clickable
-                      color="primary"
-                      variant="outlined"
+                      color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
+                      variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
                     />
                   )) : (
                     <Typography variant="body2" color="text.secondary">No trending tags right now.</Typography>
+                  )}
+                  {selectedTags.length > 0 && (
+                    <Button
+                      size="small"
+                      onClick={() => setSelectedTags([])}
+                      sx={{ ml: 1, textTransform: 'none' }}
+                    >
+                      Clear Filters
+                    </Button>
                   )}
                 </Box>
               </Paper>

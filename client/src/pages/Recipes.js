@@ -12,6 +12,12 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Stack,
+  Paper,
+  Chip,
+  TextField,
+  Slider,
+  Button,
+  Divider,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -19,6 +25,7 @@ import {
   TrendingUp as TrendingUpIcon,
   NewReleases as NewReleasesIcon,
   Forum as ForumIcon,
+  Whatshot as WhatshotIcon,
 } from "@mui/icons-material";
 import communityService from '../services/communityService';
 import userService from '../services/userService';
@@ -34,15 +41,35 @@ const RecipesPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [sort, setSort] = useState('new');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [trendingTags, setTrendingTags] = useState([]);
+  const [prepTime, setPrepTime] = useState(120);
+  const [servings, setServings] = useState(1);
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const data = await communityService.getPosts(sort, page, { isRecipe: true });
+        const data = await communityService.getPosts(sort, page, {
+          isRecipe: true,
+          search: debouncedSearchTerm,
+          tags: selectedTags,
+          maxPrepTime: prepTime < 120 ? prepTime : undefined, // Only send if not max
+          minServings: servings > 1 ? servings : undefined, // Only send if not min
+        });
         setPosts(data.posts);
         setTotalPages(data.pages);
         setError(null);
@@ -54,7 +81,15 @@ const RecipesPage = () => {
     };
 
     fetchRecipes();
-  }, [page, sort]);
+  }, [page, sort, debouncedSearchTerm, selectedTags, prepTime, servings]);
+
+  useEffect(() => {
+    const fetchTrendingTags = async () => {
+      const tags = await communityService.getTrendingTags();
+      setTrendingTags(tags);
+    };
+    fetchTrendingTags().catch(console.error);
+  }, []);
 
   const handleUpvote = async (postId) => {
     if (!isAuthenticated) return;
@@ -115,6 +150,15 @@ const RecipesPage = () => {
     }
   };
 
+  const handleTagClick = (tagToToggle) => {
+    setPage(1);
+    setSelectedTags((prev) =>
+      prev.includes(tagToToggle)
+        ? prev.filter((tag) => tag !== tagToToggle)
+        : [...prev, tagToToggle]
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, mb: 4 }}>
@@ -122,6 +166,14 @@ const RecipesPage = () => {
       </Typography>
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="flex-end" alignItems="center" sx={{ mb: 4 }}>
+        <TextField
+          label="Search Recipes by Title or Tag"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ flexGrow: 1, maxWidth: 400 }}
+        />
         <ToggleButtonGroup
           value={sort}
           exclusive
@@ -142,6 +194,57 @@ const RecipesPage = () => {
           </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
+
+      <Paper sx={{ p: 2, mb: 4 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
+          <WhatshotIcon color="error" sx={{ mr: 1 }} />
+          Filter by Tags
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {trendingTags.length > 0 ? trendingTags.map(item => (
+            <Chip
+              key={item.tag}
+              label={item.tag}
+              onClick={() => handleTagClick(item.tag)}
+              clickable
+              color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
+              variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
+            />
+          )) : (
+            <Typography variant="body2" color="text.secondary">No trending tags right now.</Typography>
+          )}
+          {selectedTags.length > 0 && (
+            <Button size="small" onClick={() => setSelectedTags([])} sx={{ ml: 1, textTransform: 'none' }}>
+              Clear Filters
+            </Button>
+          )}
+        </Box>
+        <Divider sx={{ my: 2 }} />
+        <Box sx={{ px: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+            Max Prep Time: {prepTime < 120 ? `${prepTime} mins` : 'Any'}
+          </Typography>
+          <Slider
+            value={prepTime}
+            onChange={(e, newValue) => setPrepTime(newValue)}
+            step={15}
+            marks={[{ value: 15, label: '15' }, { value: 60, label: '60' }, { value: 120, label: 'Any' }]}
+            min={15}
+            max={120}
+          />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, mt: 2 }}>
+            Min Servings: {servings}
+          </Typography>
+          <Slider
+            value={servings}
+            onChange={(e, newValue) => setServings(newValue)}
+            step={1}
+            marks
+            min={1}
+            max={8}
+          />
+        </Box>
+      </Paper>
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>

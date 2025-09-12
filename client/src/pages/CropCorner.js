@@ -24,6 +24,7 @@ import {
   Radio,
   useTheme,
   useMediaQuery,
+  Pagination,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -41,36 +42,78 @@ export default function CropCorner() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortOrder, setSortOrder] = useState('default');
+
+  // Debounced filter states for API calls
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [debouncedPriceRange, setDebouncedPriceRange] = useState([0, 100]);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1); // Reset to page 1 on new search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Debounce price range
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPriceRange(priceRange);
+      setPage(1); // Reset to page 1 on price change
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [priceRange]);
+
+  // Main data fetching effect
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await productService.getAllProducts();
-        setProducts(data);
-        setLoading(false);
+        const data = await productService.getAllProducts({
+          page,
+          search: debouncedSearchTerm,
+          category: selectedCategory,
+          minPrice: debouncedPriceRange[0],
+          maxPrice: debouncedPriceRange[1],
+          sort: sortOrder,
+        });
+        setProducts(data.products);
+        setTotalPages(data.pages);
       } catch (err) {
         setError('Failed to load products. Please try again.');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [page, debouncedSearchTerm, selectedCategory, debouncedPriceRange, sortOrder]);
+
+  // Reset page when category or sort order changes directly
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategory, sortOrder]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All');
     setPriceRange([0, 100]);
     setSortOrder('default');
+    setPage(1);
   };
 
   const handleDrawerToggle = () => {
@@ -90,25 +133,9 @@ export default function CropCorner() {
     setSnackbarOpen(false);
   };
 
-  const filteredAndSortedProducts = products
-    .filter((product) => {
-      const matchesSearch = searchTerm === '' || product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      return matchesSearch && matchesCategory && matchesPrice;
-    })
-    .sort((a, b) => {
-      if (sortOrder === 'priceAsc') {
-        return a.price - b.price;
-      } else if (sortOrder === 'priceDesc') {
-        return b.price - a.price;
-      } else if (sortOrder === 'nameAsc') {
-        return a.name.localeCompare(b.name);
-      } else if (sortOrder === 'nameDesc') {
-        return b.name.localeCompare(a.name);
-      }
-      return 0;
-    });
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
 
   const filterContent = (
     <Box sx={{ width: 250, p: 2, pt: 0, fontFamily: theme.typography.fontFamily }}>
@@ -269,7 +296,7 @@ export default function CropCorner() {
           <Typography color="error" sx={{ textAlign: 'center', mt: 4, fontFamily: theme.typography.fontFamily }}>
             {error}
           </Typography>
-        ) : filteredAndSortedProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
             <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
               No products found matching your criteria.
@@ -280,7 +307,7 @@ export default function CropCorner() {
           </Box>
         ) : (
           <Grid container spacing={4}>
-            {filteredAndSortedProducts.map((product) => (
+            {products.map((product) => (
               <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
                 <ProductCard product={product} showSnackbar={showSnackbar} />
               </Grid>
@@ -288,6 +315,17 @@ export default function CropCorner() {
           </Grid>
         )}
       </Container>
+
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, pb: 4 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
+      )}
 
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>

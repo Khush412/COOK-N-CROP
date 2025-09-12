@@ -28,6 +28,14 @@ import ReportedContent from "./pages/admin/ReportedContent"; // New
 import SavedPostsPage from "./pages/SavedPostsPage"; // New
 import OrderHistoryPage from "./pages/OrderHistoryPage"; // New: Import OrderHistoryPage
 import ManageCoupons from './pages/admin/ManageCoupons';
+import CouponOrdersPage from './pages/admin/CouponOrdersPage';
+import CreateOrderPage from './pages/admin/CreateOrderPage';
+import EditOrderPage from './pages/admin/EditOrderPage';
+import LowStockPage from './pages/admin/LowStockPage';
+import BroadcastPage from './pages/admin/BroadcastPage';
+import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
+import MyActivityPage from './pages/MyActivityPage';
+import WishlistPage from './pages/WishlistPage';
 
 export default function AppRouter() {
   return (
@@ -47,6 +55,8 @@ export default function AppRouter() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}
       <Route path="/profile/saved-posts" element={<SavedPostsPage />} /> {/* New */}
+      <Route path="/profile/my-activity" element={<MyActivityPage />} />
+      <Route path="/profile/wishlist" element={<WishlistPage />} />
       <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
       <Route path="/subscription" element={<Subscription />} />
       <Route path="/dashboard/*" element={<Dashboard />} />
@@ -55,10 +65,16 @@ export default function AppRouter() {
         <Route path="/admin" element={<AdminDashboardPage />}>
           <Route index element={<AdminOverview />} />
           <Route path="users" element={<ManageUsers />} />
+          <Route path="users/:userId/addresses" element={<AdminUserAddressesPage />} />
           <Route path="orders" element={<ManageOrders />} />
+          <Route path="orders/edit/:id" element={<EditOrderPage />} />
+          <Route path="orders/create" element={<CreateOrderPage />} />
           <Route path="products" element={<ManageProducts />} />
+          <Route path="products/low-stock" element={<LowStockPage />} />
           <Route path="reports" element={<ReportedContent />} />
+          <Route path="broadcast" element={<BroadcastPage />} />
           <Route path="coupons" element={<ManageCoupons />} />
+          <Route path="coupons/:code/orders" element={<CouponOrdersPage />} />
         </Route>
       </Route>
       <Route path="/order/:id" element={<OrderDetailsPage />} /> {/* New: Order Details Page */}

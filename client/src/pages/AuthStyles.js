@@ -122,7 +122,6 @@ export const Overlay = styled.div`
 export const OverlayPanel = styled.div`
   position: absolute; display: flex; align-items: center; justify-content: center;
   flex-direction: column; top: 0; height: 100%; width: 50%;
-  left: ${({ right }) => (right ? "50%" : "0")};
   padding: 0 32px; text-align: center; box-sizing: border-box;
   transition: transform 0.6s ease-in-out;
   color: ${({ theme }) => theme.palette.primary.contrastText};

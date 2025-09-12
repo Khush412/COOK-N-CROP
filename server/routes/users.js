@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const Address = require('../models/Address');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const { validateProfileUpdate, validatePasswordChange, handleValidationErrors } = require('../middleware/validation');
 const upload = require('../middleware/upload');
@@ -164,11 +165,82 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
 // @access  Private/Admin
 router.get('/all', protect, authorize('admin'), async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
-    res.status(200).json({ success: true, count: users.length, data: users });
+    const pageSize = 10;
+    const page = Number(req.query.page) || 1;
+    const search = req.query.search || '';
+
+    const searchRegex = new RegExp(search, 'i');
+    const query = search
+      ? {
+          $or: [
+            { username: searchRegex },
+            { email: searchRegex },
+          ],
+        }
+      : {};
+
+    const count = await User.countDocuments(query);
+    const users = await User.find(query)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+
+    res.status(200).json({ success: true, users, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
     console.error('Get all users error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Bulk update user status (Admin only)
+// @route   PUT /api/users/bulk-status
+// @access  Private/Admin
+router.put('/bulk-status', protect, authorize('admin'), async (req, res) => {
+  try {
+    const { userIds, isActive } = req.body;
+
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || typeof isActive !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'User IDs and a valid status are required.' });
+    }
+
+    // Prevent admin from deactivating themselves in a bulk operation
+    if (!isActive && userIds.includes(req.user.id.toString())) {
+      return res.status(400).json({ success: false, message: 'You cannot deactivate your own account in a bulk operation.' });
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { isActive: isActive } }
+    );
+
+    res.status(200).json({ success: true, message: `${result.modifiedCount} users updated.` });
+  } catch (error) {
+    console.error('Bulk update user status error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Search for users by username or email (Admin only)
+// @route   GET /api/users/search
+// @access  Private/Admin
+router.get('/search', protect, authorize('admin'), async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    if (!query) {
+      return res.json([]);
+    }
+    const searchRegex = new RegExp(query, 'i');
+    const users = await User.find({
+      $or: [{ username: searchRegex }, { email: searchRegex }],
+    })
+    .select('_id username email')
+    .limit(10); // Limit results for performance
+
+    res.json(users);
+  } catch (error) {
+    console.error('User search error:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 
@@ -204,6 +276,52 @@ router.put('/me/posts/save/:postId', protect, async (req, res) => {
   }
 });
 
+// @desc    Toggle a product in user's wishlist
+// @route   PUT /api/users/me/wishlist/:productId
+// @access  Private
+router.put('/me/wishlist/:productId', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const productId = req.params.productId;
+
+    if (!Array.isArray(user.wishlist)) {
+      user.wishlist = [];
+    }
+
+    const productIndex = user.wishlist.indexOf(productId);
+
+    if (productIndex > -1) {
+      user.wishlist.splice(productIndex, 1); // Remove from wishlist
+    } else {
+      user.wishlist.push(productId); // Add to wishlist
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, wishlist: user.wishlist });
+  } catch (error) {
+    console.error('Toggle wishlist error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get user's wishlist
+// @route   GET /api/users/me/wishlist
+// @access  Private
+router.get('/me/wishlist', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('wishlist');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, data: user.wishlist });
+  } catch (error) {
+    console.error('Get wishlist error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Get user's saved posts
 // @route   GET /api/users/me/posts/saved
 // @access  Private
@@ -224,6 +342,37 @@ router.get('/me/posts/saved', protect, async (req, res) => {
     res.status(200).json({ success: true, data: user.savedPosts });
   } catch (error) {
     console.error('Get saved posts error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get current user's activity (posts and comments)
+// @route   GET /api/users/me/activity
+// @access  Private
+router.get('/me/activity', protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Dynamically import Post and Comment models to avoid circular dependencies if any
+    const Post = require('../models/Post');
+    const Comment = require('../models/Comment');
+
+    // Fetch user's recent posts
+    const posts = await Post.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(50) // Limit to a reasonable number
+      .select('title createdAt');
+
+    // Fetch user's recent comments
+    const comments = await Comment.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(50) // Limit to a reasonable number
+      .populate('post', 'title _id') // Populate post title to give context
+      .select('content createdAt post');
+
+    res.status(200).json({ success: true, data: { posts, comments } });
+  } catch (error) {
+    console.error('Get my activity error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -268,6 +417,43 @@ router.get('/profile/:username', optionalAuth, async (req, res) => {
     res.status(200).json({ success: true, data: { user: publicProfile, posts, comments, isFollowing } });
   } catch (error) {
     console.error('Get public profile error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get all addresses for a specific user (Admin only)
+// @route   GET /api/users/:userId/addresses
+// @access  Private/Admin
+router.get('/:userId/addresses', protect, authorize('admin'), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('username');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const addresses = await Address.find({ user: req.params.userId });
+    res.status(200).json({ success: true, data: { username: user.username, addresses: addresses } });
+  } catch (error) {
+    console.error('Get user addresses error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Delete an address for a specific user (Admin only)
+// @route   DELETE /api/users/:userId/addresses/:addressId
+// @access  Private/Admin
+router.delete('/:userId/addresses/:addressId', protect, authorize('admin'), async (req, res) => {
+  try {
+    const address = await Address.findById(req.params.addressId);
+    if (!address) {
+      return res.status(404).json({ success: false, message: 'Address not found' });
+    }
+    if (address.user.toString() !== req.params.userId) {
+      return res.status(403).json({ success: false, message: 'Address does not belong to this user.' });
+    }
+    await address.deleteOne();
+    res.status(200).json({ success: true, message: 'Address deleted successfully' });
+  } catch (error) {
+    console.error('Delete user address error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

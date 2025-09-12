@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { useParams } from 'react-router-dom';
+import { format, formatDistanceToNow } from 'date-fns';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -20,18 +20,36 @@ import {
   Chip,
   ListItemAvatar,
   Avatar,
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
 } from '@mui/material';
 import orderService from '../services/orderService';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const theme = useTheme();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [error, setError] = useState(null);
+  const [reordering, setReordering] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+
+  const statusColors = {
+    Pending: 'warning',
+    Processing: 'info',
+    Shipped: 'primary',
+    Delivered: 'success',
+    Canceled: 'error',
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -63,6 +81,30 @@ const OrderDetailsPage = () => {
       return;
     }
     setSnackbarOpen(false);
+  };
+
+  const { addMultipleToCart } = useCart();
+
+  const handleReorder = async () => {
+    if (!order || !order.orderItems) return;
+    setReordering(true);
+    try {
+      const itemsToReorder = order.orderItems.map(item => ({
+        productId: item.product,
+        quantity: item.qty,
+      }));
+      await addMultipleToCart(itemsToReorder);
+      showSnackbar('Items added back to your cart!', 'success');
+      navigate('/cart');
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to re-order items.';
+      const unavailable = err.response?.data?.unavailableItems;
+      // Create a more detailed error message if the backend provides details
+      const detailedMessage = unavailable ? `${message} The following items may be out of stock: ${unavailable.map(i => i.name).join(', ')}.` : message;
+      showSnackbar(detailedMessage, 'error');
+    } finally {
+      setReordering(false);
+    }
   };
 
   if (loading) {
@@ -114,12 +156,30 @@ const OrderDetailsPage = () => {
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <Typography variant="body1" fontWeight="bold">Status:</Typography>
-                {order.isDelivered ? (
-                  <Chip label="Delivered" color="success" size="medium" sx={{ fontWeight: 'bold' }} />
-                ) : order.isPaid ? (
-                  <Chip label="Paid" color="info" size="medium" sx={{ fontWeight: 'bold' }} />
-                ) : (
-                  <Chip label="Pending" color="warning" size="medium" sx={{ fontWeight: 'bold' }} />
+                <Chip
+                  label={order.status}
+                  color={statusColors[order.status] || 'default'}
+                  size="medium" sx={{ fontWeight: 'bold' }}
+                />
+              </Grid>
+              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={reordering ? <CircularProgress size={20} color="inherit" /> : <ReplayIcon />}
+                  onClick={handleReorder}
+                  disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
+                  sx={{
+                    fontFamily: theme.typography.fontFamily,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {reordering ? 'Adding to Cart...' : 'Re-order'}
+                </Button>
+                {user?.role === 'admin' && (
+                  <Button component={RouterLink} to={`/admin/orders/edit/${order._id}`} variant="outlined" sx={{ ml: 2 }}>
+                    Edit Order
+                  </Button>
                 )}
               </Grid>
             </Grid>
@@ -188,6 +248,34 @@ const OrderDetailsPage = () => {
             </Card>
           </Grid>
 
+          {/* Order History Timeline */}
+          {order.statusHistory && order.statusHistory.length > 0 && (
+            <Grid item xs={12}>
+              <Card elevation={2} sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.secondary.main }}>
+                    Order History
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <List>
+                    {order.statusHistory.slice().reverse().map((historyItem, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={
+                            <Typography fontWeight="bold">
+                              {historyItem.status}
+                            </Typography>
+                          }
+                          secondary={`${format(new Date(historyItem.timestamp), 'PPP p')} (${formatDistanceToNow(new Date(historyItem.timestamp))} ago)`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+
           {/* Order Items */}
           <Grid item xs={12}>
             <Card elevation={2} sx={{ borderRadius: 2 }}>
@@ -227,6 +315,7 @@ const OrderDetailsPage = () => {
                               </Typography>
                             </Box>
                           }
+                          secondaryTypographyProps={{ component: 'div' }}
                         />
                       </ListItem>
                       <Divider component="li" variant="inset" sx={{ ml: '100px' }} />

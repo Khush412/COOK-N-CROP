@@ -9,8 +9,9 @@ const validateCoupon = async (code, cartTotal) => {
 
 // --- Admin Functions ---
 
-const getAllCoupons = async () => {
-    const { data } = await api.get(API_URL);
+const getAllCoupons = async ({ page = 1, search = '' } = {}) => {
+    const params = new URLSearchParams({ page, search });
+    const { data } = await api.get(`${API_URL}?${params.toString()}`);
     return data;
 };
 
@@ -29,12 +30,18 @@ const deleteCoupon = async (id) => {
     return data;
 };
 
+const getOrdersByCoupon = async (code, page = 1) => {
+    const { data } = await api.get(`${API_URL}/${code}/orders?page=${page}`);
+    return data;
+};
+
 const couponService = {
   validateCoupon,
   getAllCoupons,
   createCoupon,
   updateCoupon,
   deleteCoupon,
+  getOrdersByCoupon,
 };
 
 export default couponService;

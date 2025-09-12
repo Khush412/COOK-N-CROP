@@ -36,7 +36,7 @@ router.post('/', protect, async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const { sort = 'new', page = 1, limit = 9, isRecipe, search } = req.query;
+    const { sort = 'new', page = 1, limit = 9, isRecipe, search, tags, maxPrepTime, minServings } = req.query;
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
@@ -50,6 +50,20 @@ router.get('/', async (req, res) => {
 
     if (search) {
       matchConditions.$text = { $search: search };
+    }
+
+    if (tags) {
+      const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      if (tagsArray.length > 0) {
+        matchConditions.tags = { $in: tagsArray };
+      }
+    }
+
+    if (maxPrepTime) {
+      matchConditions['recipeDetails.prepTime'] = { $lte: Number(maxPrepTime) };
+    }
+    if (minServings) {
+      matchConditions['recipeDetails.servings'] = { $gte: Number(minServings) };
     }
 
     if (Object.keys(matchConditions).length > 0) {
@@ -292,7 +306,7 @@ router.put('/:id/upvote', protect, async (req, res) => {
         const newNotification = await Notification.create({
           recipient: post.user,
           sender: req.user.id,
-          type: 'post_upvote',
+          type: 'upvote',
           post: post._id,
         });
         const recipientSocketId = req.onlineUsers[post.user.toString()];
@@ -350,7 +364,7 @@ router.post('/:id/comments', protect, async (req, res) => {
       const newNotification = await Notification.create({
         recipient: recipientId,
         sender: req.user.id,
-        type: 'reply',
+        type: 'comment',
         post: post._id,
         comment: savedComment._id,
       });

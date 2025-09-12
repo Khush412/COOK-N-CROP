@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination,
   DialogContent, DialogActions, TextField, MenuItem, Chip
 } from '@mui/material';
 import { format } from 'date-fns';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import couponService from '../../services/couponService';
+import { Link as RouterLink } from 'react-router-dom';
 
 // Coupon Form Dialog Component
 const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
@@ -84,18 +86,34 @@ const ManageCoupons = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchCoupons = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await couponService.getAllCoupons();
-      setCoupons(data);
+      const data = await couponService.getAllCoupons({ page, search: debouncedSearchTerm });
+      setCoupons(data.coupons);
+      setPage(data.page);
+      setTotalPages(data.pages);
     } catch (err) {
       setError('Failed to fetch coupons.');
+      setCoupons([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, debouncedSearchTerm]);
 
   useEffect(() => {
     fetchCoupons();
@@ -140,63 +158,97 @@ const ManageCoupons = () => {
     }
   };
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
-
   return (
     <Paper sx={{ p: 3, m: { xs: 1, md: 3 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h4" gutterBottom>Manage Coupons</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-          Add Coupon
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            label="Search by Code"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ flexGrow: 1, minWidth: 250 }}
+          />
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
+            Add Coupon
+          </Button>
+        </Box>
       </Box>
-      {coupons.length > 0 ? (
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Code</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Value</TableCell>
-                <TableCell>Expires</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Usage</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {coupons.map((coupon) => {
-                const isExpired = new Date(coupon.expiresAt) < new Date();
-                const status = coupon.isActive && !isExpired ? 'Active' : 'Inactive';
-                return (
-                  <TableRow key={coupon._id} hover>
-                    <TableCell><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
-                    <TableCell>{coupon.discountType}</TableCell>
-                    <TableCell>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}</TableCell>
-                    <TableCell>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
-                    <TableCell>
-                      <Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" />
-                    </TableCell>
-                    <TableCell>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Edit Coupon">
-                        <IconButton onClick={() => handleOpenDialog(coupon)}><EditIcon /></IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Coupon">
-                        <IconButton onClick={() => handleDeleteCoupon(coupon._id)} color="error">
-                          <DeleteIcon />
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Code</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Value</TableCell>
+                  <TableCell>Expires</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Usage</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {coupons.length > 0 ? (
+                  coupons.map((coupon) => {
+                    const isExpired = new Date(coupon.expiresAt) < new Date();
+                    const status = coupon.isActive && !isExpired ? 'Active' : 'Inactive';
+                    return (
+                      <TableRow key={coupon._id} hover>
+                        <TableCell><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
+                        <TableCell>{coupon.discountType}</TableCell>
+                        <TableCell>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}</TableCell>
+                        <TableCell>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
+                        <TableCell>
+                          <Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" />
+                        </TableCell>
+                        <TableCell>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="Edit Coupon">
+                        <IconButton component={RouterLink} to={`/admin/coupons/${coupon.code}/orders`}>
+                          <VisibilityIcon />
                         </IconButton>
                       </Tooltip>
+                      <Tooltip title="Edit Coupon">
+                            <IconButton onClick={() => handleOpenDialog(coupon)}><EditIcon /></IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Coupon">
+                            <IconButton onClick={() => handleDeleteCoupon(coupon._id)} color="error">
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      <Typography color="text.secondary">No coupons found matching your criteria.</Typography>
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Alert severity="info" sx={{ mt: 3 }}>No coupons found. Click "Add Coupon" to create your first one.</Alert>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+              />
+            </Box>
+          )}
+        </>
       )}
       <CouponFormDialog
         open={dialogOpen}

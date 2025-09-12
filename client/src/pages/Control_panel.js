@@ -9,15 +9,19 @@ import PaymentIcon from "@mui/icons-material/Payment";
 import GroupIcon from "@mui/icons-material/Group";
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HomeIcon from '@mui/icons-material/Home';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const pages = [
   { label: "Profile", path: "/profile", icon: AccountCircleIcon, color: "#786fa6" },
   { label: "Subscription", path: "/subscription", icon: PaymentIcon, color: "#4dd0e1" },
   { label: "My Addresses", path: "/profile/addresses", icon: HomeIcon, color: "#ffb94b" },
+  { label: "My Activity", path: "/profile/my-activity", icon: HistoryIcon, color: "#a1887f" },
   { label: "Community", path: "/community", icon: GroupIcon, color: "#4fc3f7" },
   { label: "My Orders", path: "/profile/orders", icon: ReceiptLongIcon, color: "#b8e986" },
   { label: "Settings", path: "/settings", icon: SettingsIcon, color: "#b388ff" },
+  { label: "My Wishlist", path: "/profile/wishlist", icon: FavoriteIcon, color: "#f06292" },
   { label: "Shopping Cart", path: "/cart", icon: ShoppingCartIcon, color: "#ff8a65" },
 ];
 

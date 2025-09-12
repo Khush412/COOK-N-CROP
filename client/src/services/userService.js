@@ -60,6 +60,36 @@ const toggleFollow = async (userId) => {
   }
 };
 
+const toggleWishlist = async (productId) => {
+  try {
+    const response = await api.put(`/users/me/wishlist/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error toggling wishlist:', error);
+    throw error.response?.data || error;
+  }
+};
+
+const getWishlist = async () => {
+  try {
+    const response = await api.get('/users/me/wishlist');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching wishlist:', error);
+    throw error.response?.data || error;
+  }
+};
+
+const getMyActivity = async () => {
+  try {
+    const response = await api.get('/users/me/activity');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching my activity:', error);
+    throw error.response?.data || error;
+  }
+};
+
 const userService = {
   getPublicProfile,
   toggleSavePost,
@@ -67,6 +97,9 @@ const userService = {
   changePassword,
   deleteAccount,
   toggleFollow,
+  toggleWishlist,
+  getWishlist,
+  getMyActivity,
 };
 
 export default userService;
