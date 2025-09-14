@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination,
-  TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button
+  Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination, Container,
+  TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Stack
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import couponService from '../../services/couponService';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const CouponOrdersPage = () => {
   const { code } = useParams();
@@ -13,6 +15,7 @@ const CouponOrdersPage = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const theme = useTheme();
 
   const statusColors = {
     Pending: 'warning',
@@ -41,16 +44,26 @@ const CouponOrdersPage = () => {
   }, [fetchOrders]);
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Orders Using Coupon: <Chip label={code} color="primary" />
-      </Typography>
+    <Container maxWidth="lg">
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Button component={RouterLink} to="/admin/coupons" startIcon={<ArrowBackIcon />} sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+          Back to Manage Coupons
+        </Button>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+          Orders Using Coupon: <Chip label={code} color="primary" sx={{ fontSize: '1.5rem', height: 'auto', p: 0.5 }} />
+        </Typography>
+      </Paper>
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : (
-        <>
+        <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+          {orders.length === 0 ? (
+            <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>No orders found using this coupon.</Typography>
+          ) : (
+            <>
           <TableContainer>
             <Table>
               <TableHead>
@@ -64,34 +77,26 @@ const CouponOrdersPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
-                    <TableRow key={order._id} hover>
-                      <TableCell>
-                        <Tooltip title={order._id}>
-                          <Typography variant="body2" noWrap sx={{ maxWidth: 100 }}>
-                            {order._id}
-                          </Typography>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>{order.user?.username || 'N/A'}</TableCell>
-                      <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>${order.totalPrice.toFixed(2)}</TableCell>
-                      <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
-                      <TableCell align="right">
-                        <Button component={RouterLink} to={`/order/${order._id}`} size="small">
-                          Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <Typography color="text.secondary">No orders found using this coupon.</Typography>
+                {orders.map((order) => (
+                  <TableRow key={order._id} hover>
+                    <TableCell>
+                      <Tooltip title={order._id}>
+                        <Typography variant="body2" noWrap sx={{ maxWidth: 100, fontFamily: theme.typography.fontFamily }}>
+                          {order._id}
+                        </Typography>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{order.user?.username || 'N/A'}</TableCell>
+                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</TableCell>
+                    <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
+                    <TableCell align="right">
+                      <Button component={RouterLink} to={`/order/${order._id}`} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                        Details
+                      </Button>
                     </TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -105,9 +110,11 @@ const CouponOrdersPage = () => {
               />
             </Box>
           )}
-        </>
+            </>
+          )}
+        </Paper>
       )}
-    </Paper>
+    </Container>
   );
 };
 

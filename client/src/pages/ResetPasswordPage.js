@@ -9,13 +9,18 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Stack,
+  Avatar,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { resetPassword } from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
   const { loginWithToken } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -51,41 +56,59 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs" sx={{ mt: 12 }}>
-      <Paper elevation={3} sx={{ p: 4, mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-          Reset Your Password
+    <Container component="main" maxWidth="sm" sx={{ mt: 12, py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Reset Password
         </Typography>
-        {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ width: '100%', mb: 2 }}>{success}</Alert>}
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Choose a new, strong password.
+        </Typography>
+      </Paper>
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, textAlign: 'center' }}>
+        <Avatar sx={{ bgcolor: 'secondary.main', mx: 'auto', mb: 2 }}>
+          <LockResetIcon />
+        </Avatar>
+        <Typography color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+          Enter your new password below.
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ width: '100%', mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ width: '100%', mb: 2, fontFamily: theme.typography.fontFamily }}>{success}</Alert>}
+
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="New Password"
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading || !!success}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="confirmPassword"
-            label="Confirm New Password"
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={loading || !!success}
-          />
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={loading || !!success}>
-            {loading ? <CircularProgress size={24} /> : 'Reset Password'}
-          </Button>
+          <Stack spacing={2} alignItems="center">
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="New Password"
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading || !!success}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <TextField
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm New Password"
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading || !!success}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <Button type="submit" fullWidth variant="contained" disabled={loading || !!success} sx={{ py: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}>
+              {loading ? <CircularProgress size={24} /> : 'Reset Password'}
+            </Button>
+          </Stack>
         </Box>
       </Paper>
     </Container>

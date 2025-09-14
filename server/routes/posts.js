@@ -457,10 +457,29 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
-    const { title, content, tags } = req.body;
+    const { title, content, tags, isRecipe, recipeDetails, taggedProducts } = req.body;
+
     post.title = title || post.title;
     post.content = content || post.content;
     post.tags = tags || post.tags;
+    post.isRecipe = isRecipe === undefined ? post.isRecipe : isRecipe;
+    post.taggedProducts = isRecipe ? taggedProducts : [];
+
+    if (isRecipe && recipeDetails) {
+      const parseNumericDetail = (value) => {
+        if (value === '' || value === null || value === undefined) return null;
+        const num = Number(value);
+        return isNaN(num) ? null : num;
+      };
+      post.recipeDetails = {
+        ...recipeDetails,
+        prepTime: parseNumericDetail(recipeDetails.prepTime),
+        cookTime: parseNumericDetail(recipeDetails.cookTime),
+        servings: parseNumericDetail(recipeDetails.servings),
+      };
+    } else if (!isRecipe) {
+      post.recipeDetails = undefined;
+    }
 
     post = await post.save();
     

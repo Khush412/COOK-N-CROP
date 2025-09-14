@@ -7,7 +7,7 @@ const { protect } = require('../middleware/auth');
 // @route   POST /api/addresses
 // @access  Private
 router.post('/', protect, async (req, res) => {
-    const { street, city, state, zipCode, country, label, isDefault } = req.body;
+    const { fullName, street, city, state, zipCode, country, phone, label, isDefault } = req.body;
 
     try {
         // If this address is set as default, unset all other default addresses for this user
@@ -17,11 +17,13 @@ router.post('/', protect, async (req, res) => {
 
         const address = new Address({
             user: req.user.id,
+            fullName,
             street,
             city,
             state,
             zipCode,
             country,
+            phone,
             label,
             isDefault,
         });
@@ -51,7 +53,7 @@ router.get('/', protect, async (req, res) => {
 // @route   PUT /api/addresses/:id
 // @access  Private
 router.put('/:id', protect, async (req, res) => {
-    const { street, city, state, zipCode, country, label, isDefault } = req.body;
+    const { fullName, street, city, state, zipCode, country, phone, label, isDefault } = req.body;
 
     try {
         let address = await Address.findById(req.params.id);
@@ -70,11 +72,13 @@ router.put('/:id', protect, async (req, res) => {
             await Address.updateMany({ user: req.user.id, isDefault: true }, { isDefault: false });
         }
 
+        address.fullName = fullName || address.fullName;
         address.street = street || address.street;
         address.city = city || address.city;
         address.state = state || address.state;
         address.zipCode = zipCode || address.zipCode;
         address.country = country || address.country;
+        address.phone = phone || address.phone;
         address.label = label || address.label;
         address.isDefault = isDefault !== undefined ? isDefault : address.isDefault;
 

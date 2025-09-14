@@ -47,16 +47,12 @@ const updateMultipleUserStatuses = async (userIds, isActive) => {
 };
 
 const createProduct = async (formData) => {
-  const response = await api.post('/products', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const response = await api.post('/products', formData);
   return response.data;
 };
 
 const updateProduct = async (productId, formData) => {
-  const response = await api.put(`/products/${productId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const response = await api.put(`/products/${productId}`, formData);
   return response.data;
 };
 

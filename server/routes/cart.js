@@ -46,7 +46,8 @@ router.post('/', protect, async (req, res) => {
         cart.items.push({ product: productId, quantity });
       }
       cart = await cart.save();
-      res.json(cart);
+      const populatedCart = await cart.populate('items.product');
+      res.json(populatedCart);
     } else {
       // No cart for user, create new cart
       if (product.countInStock < quantity) {
@@ -58,7 +59,8 @@ router.post('/', protect, async (req, res) => {
         user: req.user.id,
         items: [{ product: productId, quantity }],
       });
-      res.json(newCart);
+      const populatedCart = await newCart.populate('items.product');
+      res.json(populatedCart);
     }
   } catch (error) {
     console.error(error);
@@ -127,7 +129,8 @@ router.put('/item/:productId', protect, async (req, res) => {
         cart.items.splice(itemIndex, 1); // Remove item if quantity is 0 or less
       }
       cart = await cart.save();
-      res.json(cart);
+      const populatedCart = await cart.populate('items.product');
+      res.json(populatedCart);
     } else {
       return res.status(404).json({ message: 'Item not found in cart' });
     }
@@ -157,7 +160,8 @@ router.delete('/item/:productId', protect, async (req, res) => {
     if (itemIndex > -1) {
       cart.items.splice(itemIndex, 1);
       cart = await cart.save();
-      res.json(cart);
+      const populatedCart = await cart.populate('items.product');
+      res.json(populatedCart);
     } else {
       return res.status(404).json({ message: 'Item not found in cart' });
     }

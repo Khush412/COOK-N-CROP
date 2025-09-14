@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
+import { alpha,
   Box,
   Typography,
   Button,
   IconButton,
   List,
+  Stack,
   ListItem,
   ListItemText,
+  Chip,
   Divider,
   CircularProgress,
   Container,
@@ -31,12 +33,17 @@ import {
   DialogContent,
   DialogTitle,
   DialogActions,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { Link, useNavigate } from 'react-router-dom';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
 import orderService from '../services/orderService';     // New: Import order service
@@ -249,8 +256,8 @@ const CartPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, display: 'flex', flexDirection: 'column', minHeight: '70vh' }}>
-       <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily }}>
+      <Box sx={{ p: { xs: 0, sm: 2, md: 4 } }}>
+       <Typography variant="h3" component="h1" fontWeight={800} gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily }}>
           Your Shopping Cart
         </Typography>
 
@@ -261,18 +268,18 @@ const CartPage = () => {
         ) : error ? (
           <Typography color="error" sx={{ my: 4, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{error}</Typography>
         ) : !cart || cart.items.length === 0 ? (
-          <Box sx={{ textAlign: 'center', my: 4, p: 3 }}>
+          <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
             <ShoppingCartOutlinedIcon sx={{ fontSize: 80, color: theme.palette.grey[400] }} />
             <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
               Your cart is empty. Go ahead and add some delicious products!
             </Typography>
-            <Button component={Link} to="/CropCorner" variant="contained" size="large" sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
+            <Button component={RouterLink} to="/CropCorner" variant="contained" size="large" sx={{ mt: 3, fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}>
               Start Shopping
             </Button>
-          </Box>
+          </Paper>
         ) : (
           <Grid container spacing={4}>
-            <Grid item xs={12} lg={7}>
+            <Grid size={{ xs: 12, lg: 7 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Items in your cart ({cart.items.length})</Typography>
                 <Button
@@ -280,31 +287,26 @@ const CartPage = () => {
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={handleClearCart}
-                  sx={{ ml: 2, fontFamily: theme.typography.fontFamily }}
+                  sx={{ ml: 2, fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
                 >
                   Clear Cart
                 </Button>
               </Box>
               <List sx={{ width: '100%' }}>
                 {cart.items.map((item) => (
-                  <Card key={item.product._id} sx={{ display: 'flex', mb: 2, boxShadow: 3, borderRadius: 2 }}>
-                    <CardMedia
-                      component="img"
-                      sx={{ width: 150, height: 150, objectFit: 'cover', borderRadius: '8px 0 0 8px' }}
+                  <Paper key={item.product._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative' }}>
+                    <CardMedia component="img" sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, mr: 2 }}
                       image={item.product.image || 'https://via.placeholder.com/150?text=No+Image'}
-                      alt={item.product.name}
-                    />
-                    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <CardContent sx={{ flex: '1 0 auto', pb: 1 }}>
-                        <Typography component="div" variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                      alt={item.product.name} />
+                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
+                        <Typography component={RouterLink} to={`/product/${item.product._id}`} variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}>
                           {item.product.name}
                         </Typography>
-                        <Typography variant="body1" color="primary" sx={{ fontWeight: 'bold', mt: 1, fontFamily: theme.typography.fontFamily }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
                           ${item.product.price.toFixed(2)} each
                         </Typography>
-                      </CardContent>
-                      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
                           <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity - 1)} disabled={item.quantity === 1}>
                             <RemoveIcon fontSize="small" />
                           </IconButton>
@@ -312,152 +314,113 @@ const CartPage = () => {
                           <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity + 1)} disabled={item.quantity >= item.product.countInStock}>
                             <AddIcon fontSize="small" />
                           </IconButton>
+                          </Box>
+                          <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            ${(item.product.price * item.quantity).toFixed(2)}
+                          </Typography>
                         </Box>
-                        <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                          ${(item.product.price * item.quantity).toFixed(2)}
-                        </Typography>
-                        <IconButton
-                          color="error"
-                          size="medium"
-                          onClick={() => handleRemoveItem(item.product._id)}
-                          aria-label="delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </CardActions>
                     </Box>
-                  </Card>
+                    <IconButton color="error" size="small" onClick={() => handleRemoveItem(item.product._id)} aria-label="delete" sx={{ position: 'absolute', top: 8, right: 8 }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Paper>
                 ))}
               </List>
             </Grid>
-            <Grid item xs={12} lg={5}>
-              <Paper elevation={2} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>
+            <Grid size={{ xs: 12, lg: 5 }}>
+              <Paper elevation={2} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-                    Order Summary
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ maxHeight: 150, overflowY: 'auto', pr: 1 }}>
-                    <List dense>
-                      {cart.items.map((item) => (
-                        <ListItem key={item.product._id} disablePadding>
-                          <ListItemText
-                            primary={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{item.product.name} x {item.quantity}</Typography>}
-                            secondary={<Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.product.price * item.quantity).toFixed(2)}</Typography>}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                  <Divider sx={{ my: 2 }} />
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <TextField
-                        label="Coupon Code"
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        error={!!couponError}
-                        helperText={couponError}
-                        disabled={isApplyingCoupon}
-                    />
-                    <Button
-                        variant="contained"
-                        onClick={handleApplyCoupon}
-                        disabled={isApplyingCoupon}
-                        sx={{ height: '40px' }}
-                    >
-                        {isApplyingCoupon ? <CircularProgress size={24} /> : 'Apply'}
-                    </Button>
-                  </Box>
-                  {appliedCoupon && <Alert severity="success" sx={{ mt: 2 }}>Coupon "{appliedCoupon.code}" applied! You saved ${appliedCoupon.discountAmount.toFixed(2)}.</Alert>}
-                </Box>
-                <Box sx={{ flexShrink: 0, mt: 2, borderTop: '1px solid', borderColor: theme.palette.divider, pt: 2 }}>
-                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-                    Shipping Address
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  {showAddressForm ? (
-                    <AddressForm onSubmit={handleAddAddress} onCancel={() => setShowAddressForm(false)} />
-                  ) : (
-                    <>
-                      {addresses.length > 0 ? (
-                        <FormControl component="fieldset" fullWidth>
-                          <FormLabel component="legend">Select an address</FormLabel>
-                          <RadioGroup
-                            aria-label="shipping-address"
-                            name="shipping-address-group"
-                            value={selectedAddress ? selectedAddress._id : ''}
-                            onChange={handleAddressChange}
-                          >
-                            {addresses.map((addr) => (
-                              <FormControlLabel
-                                key={addr._id}
-                                value={addr._id}
-                                control={<Radio />}
-                                label={
-                                  <Box>
-                                    <Typography variant="body2">{addr.street}, {addr.city}</Typography>
-                                    <Typography variant="body2" color="text.secondary">{addr.state}, {addr.zipCode}, {addr.country}</Typography>
-                                    {addr.label && <Typography variant="caption" color="text.hint">({addr.label})</Typography>}
-                                  </Box>
-                                }
-                              />
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping Address</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      {showAddressForm ? (
+                        <AddressForm onSubmit={handleAddAddress} onCancel={() => setShowAddressForm(false)} />
                       ) : (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>No saved addresses. Please add one.</Typography>
+                        <>
+                          {addresses.length > 0 ? (
+                            <FormControl component="fieldset" fullWidth>
+                              <RadioGroup value={selectedAddress?._id || ''} onChange={handleAddressChange}>
+                                {addresses.map((addr) => (
+                                  <Paper key={addr._id} variant="outlined" sx={{ p: 1.5, mb: 1, borderRadius: 2, display: 'flex', alignItems: 'center', cursor: 'pointer', bgcolor: selectedAddress?._id === addr._id ? alpha(theme.palette.primary.main, 0.1) : 'transparent' }}>
+                                    <Radio value={addr._id} />
+                                    <Box>
+                                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.street}, {addr.city}</Typography>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.state}, {addr.zipCode}, {addr.country}</Typography>
+                                      {addr.label && <Chip label={addr.label} size="small" sx={{ mt: 0.5 }} />}
+                                    </Box>
+                                  </Paper>
+                                ))}
+                              </RadioGroup>
+                            </FormControl>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>No saved addresses. Please add one.</Typography>
+                          )}
+                          <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setShowAddressForm(true)} sx={{ mt: 1, fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                            Add New Address
+                          </Button>
+                        </>
                       )}
-                      <Button
-                        variant="outlined"
-                        startIcon={<AddIcon />}
-                        onClick={() => setShowAddressForm(true)}
-                        sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}
-                      >
-                        Add New Address
-                      </Button>
-                    </>
-                  )}
+                    </AccordionDetails>
+                  </Accordion>
 
-                 <Typography variant="h5" gutterBottom sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
-                    Order Total
-                 </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Apply Coupon</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                        <TextField
+                          label="Coupon Code" variant="outlined" size="small" fullWidth value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)} error={!!couponError} helperText={couponError}
+                          disabled={isApplyingCoupon} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                        />
+                        <Button variant="contained" onClick={handleApplyCoupon} disabled={isApplyingCoupon} sx={{ height: '40px', fontFamily: theme.typography.fontFamily }}>
+                          {isApplyingCoupon ? <CircularProgress size={24} /> : 'Apply'}
+                        </Button>
+                      </Box>
+                      {appliedCoupon && <Alert severity="success" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Coupon "{appliedCoupon.code}" applied! You saved ${appliedCoupon.discountAmount.toFixed(2)}.</Alert>}
+                    </AccordionDetails>
+                  </Accordion>
+                </Box>
+                <Box sx={{ flexShrink: 0, mt: 2 }}>
+                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Summary</Typography>
+                  <Stack spacing={1.5} sx={{ my: 2 }}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
+                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
                       ${calculateSubtotal().toFixed(2)}
-                    </Typography>
-                  </Box>
-                  {appliedCoupon && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, color: 'success.main' }}>
+                      </Typography>
+                    </Stack>
+                    {appliedCoupon && (
+                      <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
                         <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({appliedCoupon.code})</Typography>
                         <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
                         -${appliedCoupon.discountAmount.toFixed(2)}
                         </Typography>
-                    </Box>
-                  )}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography>
-                  </Box>
+                      </Stack>
+                    )}
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography>
+                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography>
+                    </Stack>
+                  </Stack>
                   <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                     <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography>
                     <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
                       ${calculateTotal()}
                     </Typography>
-                  </Box>
+                  </Stack>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     size="large"
                     fullWidth
                     onClick={handlePlaceOrder}
                     disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
-                    sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5 }}
+                    sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5, borderRadius: '50px', fontWeight: 'bold' }}
                   >
                     {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Place Order'}
                   </Button>
@@ -466,16 +429,19 @@ const CartPage = () => {
             </Grid>
           </Grid>
         )}
-      </Paper>
+      </Box>
       <Dialog
         open={orderSuccessDialogOpen}
         onClose={() => setOrderSuccessDialogOpen(false)}
         aria-labelledby="order-success-dialog-title"
         aria-describedby="order-success-dialog-description"
       >
-        <DialogTitle id="order-success-dialog-title">{"Order Placed Successfully!"}</DialogTitle>
+        <DialogTitle id="order-success-dialog-title" sx={{ textAlign: 'center' }}>
+          <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 1 }} />
+          <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily }}>Order Placed Successfully!</Typography>
+        </DialogTitle>
         <DialogContent>
-          <Typography id="order-success-dialog-description" sx={{ mb: 2 }}>
+          <Typography id="order-success-dialog-description" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
             Your order has been placed successfully. Thank you for your purchase!
           </Typography>
           <Typography>
@@ -492,7 +458,7 @@ const CartPage = () => {
             }}
             autoFocus
             variant="contained"
-            color="primary"
+            color="secondary"
           >
             View Order Details
           </Button>

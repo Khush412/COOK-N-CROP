@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
+  alpha,
   Box,
   Typography,
   CircularProgress,
@@ -15,15 +16,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
+  Divider,
   Chip,
+  Stack,
+  AvatarGroup,
+  Avatar,
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import orderService from '../services/orderService';
 import SearchIcon from '@mui/icons-material/Search';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const OrderHistoryPage = () => {
   const theme = useTheme();
@@ -35,7 +37,7 @@ const OrderHistoryPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
   const [searchTerm, setSearchTerm] = useState(''); // New
-  const [sortOption, setSortOption] = useState('dateDesc'); // New
+  const [dateFilter, setDateFilter] = useState('all'); // New
 
   const statusColors = {
     Pending: 'warning',
@@ -72,18 +74,18 @@ const OrderHistoryPage = () => {
     const now = new Date();
     let startDate = null;
 
-    switch (sortOption) {
+    switch (dateFilter) {
       case 'currentYear':
         startDate = new Date(now.getFullYear(), 0, 1); // January 1st of current year
         break;
       case 'last9Months':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 8, 1); // 9 months ago
+        startDate = new Date(now.getFullYear(), now.getMonth() - 9, now.getDate());
         break;
       case 'last6Months':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1); // 6 months ago
+        startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
         break;
       case 'last3Months':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1); // 3 months ago
+        startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
         break;
       case 'all':
       default:
@@ -99,7 +101,7 @@ const OrderHistoryPage = () => {
     filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return filtered;
-  }, [orders, searchTerm, sortOption]);
+  }, [orders, searchTerm, dateFilter]);
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -132,23 +134,28 @@ const OrderHistoryPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2, minHeight: '70vh' }}>
-        <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Your Order History
         </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Track your past purchases and reorder your favorites.
+        </Typography>
+      </Paper>
 
         {orders.length === 0 ? (
-          <Box sx={{ textAlign: 'center', my: 4, p: 3 }}>
+          <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+            <ReceiptLongIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
               You haven't placed any orders yet.
             </Typography>
-            <Button component={Link} to="/CropCorner" variant="contained" size="large" sx={{ mt: 3, fontFamily: theme.typography.fontFamily }}>
+            <Button component={RouterLink} to="/CropCorner" variant="contained" size="large" sx={{ mt: 3, fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}>
               Start Shopping
             </Button>
-          </Box>
+          </Paper>
         ) : (
           <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+            <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
               <TextField
                 label="Search Orders"
                 variant="outlined"
@@ -156,105 +163,91 @@ const OrderHistoryPage = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
                 }}
-                sx={{ flexGrow: 1, maxWidth: 300 }}
+                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
+                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
               <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Sort By</InputLabel>
+                <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter by Date</InputLabel>
                 <Select
-                  value={sortOption}
-                  label="Sort By"
-                  onChange={(e) => setSortOption(e.target.value)}
+                  value={dateFilter}
+                  label="Filter by Date"
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
                 >
-                  <MenuItem value="all">All Orders</MenuItem>
-                  <MenuItem value="currentYear">Current Year</MenuItem>
-                  <MenuItem value="last9Months">Last 9 Months</MenuItem>
-                  <MenuItem value="last6Months">Last 6 Months</MenuItem>
-                  <MenuItem value="last3Months">Last 3 Months</MenuItem>
+                  <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All Orders</MenuItem>
+                  <MenuItem value="last3Months" sx={{ fontFamily: theme.typography.fontFamily }}>Last 3 Months</MenuItem>
+                  <MenuItem value="last6Months" sx={{ fontFamily: theme.typography.fontFamily }}>Last 6 Months</MenuItem>
+                  <MenuItem value="last9Months" sx={{ fontFamily: theme.typography.fontFamily }}>Last 9 Months</MenuItem>
+                  <MenuItem value="currentYear" sx={{ fontFamily: theme.typography.fontFamily }}>This Year</MenuItem>
                 </Select>
               </FormControl>
-            </Box>
+            </Paper>
 
             {/* Orders Display - Will be replaced with cards */}
-            <Grid container spacing={3}>
+            <Stack spacing={3}>
               {filteredAndSortedOrders.length === 0 ? (
-                <Grid item xs={12}>
-                  <Box sx={{ textAlign: 'center', my: 4, p: 3 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-                      No orders found matching your criteria.
-                    </Typography>
-                  </Box>
-                </Grid>
+                <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3 }}>
+                  <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
+                    No orders found matching your criteria.
+                  </Typography>
+                </Paper>
               ) : (
                 filteredAndSortedOrders.map((order) => (
-                  <Grid item xs={12} sm={6} md={4} key={order._id}>
-                    <Card
-                      elevation={2}
+                  <Paper
+                      key={order._id}
+                      elevation={3}
                       sx={{
-                        borderRadius: 2,
+                        p: 2,
+                        borderRadius: 3,
                         transition: '0.3s',
                         '&:hover': {
-                          boxShadow: 6,
-                          transform: 'translateY(-4px)',
+                          boxShadow: 8,
                         },
-                        display: 'flex',
-                        flexDirection: 'column',
-                        height: '100%',
                       }}
                     >
-                      <CardContent sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                          Order ID: {order._id}
-                        </Typography>
-                        <Typography variant="h6" component="div" sx={{ mb: 1.5, fontFamily: theme.typography.fontFamily }}>
-                          Total: ${order.totalPrice.toFixed(2)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Date: {new Date(order.createdAt).toLocaleDateString()}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          Status: <Chip
+                      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={1} mb={2}>
+                        <Box>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER PLACED</Typography>
+                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>TOTAL</Typography>
+                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography>
+                        </Box>
+                        <Box sx={{ minWidth: 150 }}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER # {order._id}</Typography>
+                          <Chip
                             label={order.status}
                             color={statusColors[order.status] || 'default'}
                             size="small"
+                            sx={{ fontWeight: 'bold' }}
                           />
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" fontWeight="bold">Items:</Typography>
-                          {order.orderItems.slice(0, 2).map((item) => (
-                            <Typography key={item.product} variant="body2" color="text.secondary">
-                              - {item.name} ({item.qty})
-                            </Typography>
-                          ))}
-                          {order.orderItems.length > 2 && (
-                            <Typography variant="body2" color="text.secondary">
-                              ...and {order.orderItems.length - 2} more items
-                            </Typography>
+                        </Box>
+                      </Stack>
+                      <Divider />
+                      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2} mt={2}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 60, height: 60, border: `2px solid ${theme.palette.background.paper}` } }}>
+                            {order.orderItems.map(item => (
+                              <Avatar key={item.product} src={item.image} alt={item.name} />
+                            ))}
+                          </AvatarGroup>
+                          {order.orderItems.length > 4 && (
+                            <Typography variant="body2" sx={{ ml: 1, fontFamily: theme.typography.fontFamily }}>+ {order.orderItems.length - 4} more</Typography>
                           )}
                         </Box>
-                      </CardContent>
-                      <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          onClick={() => navigate(`/order/${order._id}`)}
-                        >
-                          View Details
+                        <Button variant="contained" size="small" onClick={() => navigate(`/order/${order._id}`)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                          View Order Details
                         </Button>
-                      </CardActions>
-                    </Card>
-                  </Grid>
+                      </Stack>
+                  </Paper>
                 ))
               )}
-            </Grid>
+            </Stack>
           </>
         )}
-      </Paper>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbarMessage}

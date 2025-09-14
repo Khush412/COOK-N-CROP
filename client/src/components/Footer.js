@@ -14,7 +14,7 @@ export default function Footer() {
         color: theme.palette.getContrastText(theme.palette.primary.main),
         pt: 2,
         pb: 2,
-        mt: 8,
+        mt: 0,
         borderTop: `2.5px solid ${theme.palette.secondary.main}`,
         fontSize: 14,
         userSelect: "none",
@@ -23,7 +23,7 @@ export default function Footer() {
       <Container maxWidth="lg">
         <Grid container spacing={2} alignItems="center" justifyContent="space-between">
           {/* Brand & Copyright */}
-          <Grid item xs={12} md={4} sx={{ textAlign: { xs: "center", md: "left" } }}>
+          <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: "center", md: "left" } }}>
             <Typography
               variant="h6"
               sx={{
@@ -43,7 +43,7 @@ export default function Footer() {
           </Grid>
 
           {/* Useful Links */}
-          <Grid item xs={12} md={5} sx={{ textAlign: { xs: "center", md: "center" } }}>
+          <Grid size={{ xs: 12, md: 5 }} sx={{ textAlign: { xs: "center", md: "center" } }}>
             <Stack
               direction="row"
               gap={3}
@@ -79,7 +79,7 @@ export default function Footer() {
           </Grid>
 
           {/* Socials & Contact */}
-          <Grid item xs={12} md={3} sx={{ textAlign: { xs: "center", md: "right" } }}>
+          <Grid size={{ xs: 12, md: 3 }} sx={{ textAlign: { xs: "center", md: "right" } }}>
             <Stack direction="row" spacing={1} justifyContent={{ xs: "center", md: "flex-end" }} mb={0.5}>
               {[Facebook, Twitter, LinkedIn, Instagram].map((Icon, idx) => (
                 <IconButton

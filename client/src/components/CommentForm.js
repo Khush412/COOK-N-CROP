@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, CircularProgress, Stack, Avatar } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '@mui/material/styles';
 
 const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Post' }) => {
   const { user } = useAuth();
+  const theme = useTheme();
   const [content, setContent] = useState(initialContent);
 
   useEffect(() => {
@@ -32,12 +34,13 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={loading}
+          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
         />
         <Button
           type="submit"
           variant="contained"
           disabled={loading || !content.trim()}
-          sx={{ height: 'fit-content', py: 1.5 }}
+          sx={{ height: 'fit-content', py: 1.5, fontFamily: theme.typography.fontFamily }}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : submitLabel}
         </Button>

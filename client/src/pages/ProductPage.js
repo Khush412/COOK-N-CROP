@@ -26,6 +26,7 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -130,10 +131,12 @@ const ProductPage = () => {
       ? (reviewToUpdate.upvotes || []).filter(uid => uid !== user.id)
       : [...(reviewToUpdate.upvotes || []), user.id];
 
-    const newProductState = { ...product };
-    newProductState.reviews[reviewIndex] = reviewToUpdate;
-    setProduct(newProductState);
+    // Create a new reviews array to ensure React detects the change
+    const newReviews = [...product.reviews];
+    newReviews[reviewIndex] = reviewToUpdate;
 
+    const newProductState = { ...product, reviews: newReviews };
+    setProduct(newProductState);
     try {
       await productService.toggleReviewUpvote(id, reviewId);
     } catch (err) {
@@ -253,55 +256,62 @@ const ProductPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Box
-              component="img"
-              src={product.image}
-              alt={product.name}
-              sx={{ width: '100%', borderRadius: 2, boxShadow: theme.shadows[4] }}
-            />
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+              <Box
+                component="img"
+                src={product.image}
+                alt={product.name}
+                sx={{ width: '100%', display: 'block' }}
+              />
+            </Paper>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              {product.category}
+            </Typography>
+            <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
               {product.name}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Rating value={product.rating} readOnly />
-              <Typography sx={{ ml: 1.5 }} color="text.secondary">
+              <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">
                 ({product.numReviews} reviews)
               </Typography>
             </Box>
-            <Typography variant="h5" color="primary" fontWeight="bold" sx={{ mb: 2 }}>
+            <Typography variant="h4" color="primary" fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
               ${product.price.toFixed(2)}
             </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Divider sx={{ mb: 3 }} />
+            <Typography variant="body1" color="text.secondary" paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
               {product.description}
             </Typography>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
               Status: {product.countInStock > 0 ? (
                 <Chip label="In Stock" color="success" />
               ) : (
                 <Chip label="Out of Stock" color="error" />
               )}
               {product.countInStock > 0 && product.countInStock <= 10 && (
-                <Typography variant="caption" color="warning.main" sx={{ ml: 1, fontWeight: 'bold' }}>
+                <Typography variant="caption" color="warning.main" sx={{ ml: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
                   (Only {product.countInStock} left!)
                 </Typography>
               )}
             </Typography>
-            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 4 }}>
               {quantityInCart === 0 ? (
-                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || product.countInStock === 0}>
+                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', px: 4, py: 1.5, borderRadius: '50px' }}>
                   {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
               ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 0.5, maxWidth: 'fit-content' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px', p: 0.5 }}>
                   <IconButton size="small" onClick={handleDecreaseQuantity} disabled={cartLoading}>
                     <RemoveIcon />
                   </IconButton>
-                  <Typography variant="h6" sx={{ px: 2, minWidth: '30px', textAlign: 'center' }}>{quantityInCart}</Typography>
+                  <Typography variant="h6" sx={{ px: 2, minWidth: '30px', textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{quantityInCart}</Typography>
                   <IconButton size="small" onClick={handleIncreaseQuantity} disabled={cartLoading || quantityInCart >= product.countInStock}>
                     <AddIcon />
                   </IconButton>
@@ -309,103 +319,93 @@ const ProductPage = () => {
               )}
               {isAuthenticated && (
                 <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
-                  <IconButton
-                    onClick={handleToggleWishlist}
-                    disabled={isFavoriting}
-                    size="large"
-                  >
+                  <IconButton onClick={handleToggleWishlist} disabled={isFavoriting} size="large" sx={{ border: `1px solid ${theme.palette.divider}` }}>
                     {isWishlisted ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
                   </IconButton>
                 </Tooltip>
               )}
-            </Box>
+            </Stack>
           </Grid>
         </Grid>
+      </Paper>
 
-        <Divider sx={{ my: 5 }} />
-
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
         <Grid container spacing={5}>
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-              <Typography variant="h5" fontWeight="bold">
+              <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
                 Customer Reviews ({filteredAndSortedReviews.length})
               </Typography>
               <Stack direction="row" spacing={2}>
                 <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel>Filter by Rating</InputLabel>
+                  <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter by Rating</InputLabel>
                   <Select
                     value={filterRating}
                     label="Filter by Rating"
                     onChange={(e) => setFilterRating(e.target.value)}
+                    sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
                   >
-                    <MenuItem value={0}>All Ratings</MenuItem>
-                    <MenuItem value={5}>5 Stars</MenuItem>
-                    <MenuItem value={4}>4 Stars</MenuItem>
-                    <MenuItem value={3}>3 Stars</MenuItem>
-                    <MenuItem value={2}>2 Stars</MenuItem>
-                    <MenuItem value={1}>1 Star</MenuItem>
+                    <MenuItem value={0} sx={{ fontFamily: theme.typography.fontFamily }}>All Ratings</MenuItem>
+                    <MenuItem value={5} sx={{ fontFamily: theme.typography.fontFamily }}>5 Stars</MenuItem>
+                    <MenuItem value={4} sx={{ fontFamily: theme.typography.fontFamily }}>4 Stars</MenuItem>
+                    <MenuItem value={3} sx={{ fontFamily: theme.typography.fontFamily }}>3 Stars</MenuItem>
+                    <MenuItem value={2} sx={{ fontFamily: theme.typography.fontFamily }}>2 Stars</MenuItem>
+                    <MenuItem value={1} sx={{ fontFamily: theme.typography.fontFamily }}>1 Star</MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel>Sort by</InputLabel>
-                  <Select value={sortOption} label="Sort by" onChange={(e) => setSortOption(e.target.value)}>
-                    <MenuItem value="newest">Newest</MenuItem>
-                    <MenuItem value="helpful">Most Helpful</MenuItem>
+                  <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort by</InputLabel>
+                  <Select value={sortOption} label="Sort by" onChange={(e) => setSortOption(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
+                    <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest</MenuItem>
+                    <MenuItem value="helpful" sx={{ fontFamily: theme.typography.fontFamily }}>Most Helpful</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>
             </Box>
             {product.reviews.length === 0 && (
-              <Alert severity="info">No reviews yet. Be the first to review this product!</Alert>
+              <Alert severity="info" sx={{ fontFamily: theme.typography.fontFamily }}>No reviews yet. Be the first to review this product!</Alert>
             )}
             {product.reviews.length > 0 && filteredAndSortedReviews.length === 0 && (
-              <Alert severity="info" sx={{ mt: 2 }}>No reviews match your current filters.</Alert>
+              <Alert severity="info" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>No reviews match your current filters.</Alert>
             )}
             {filteredAndSortedReviews.length > 0 && (
               <List>
                 {filteredAndSortedReviews.map((review) => (
-                  <ListItem key={review._id} alignItems="flex-start" divider>
-                    <ListItemAvatar>
-                      <Avatar>{review.name.charAt(0)}</Avatar>
-                    </ListItemAvatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <ListItemText
-                        primary={<Rating value={review.rating} readOnly />}
-                        secondary={
-                          <>
-                            <Typography component="span" variant="body2" color="text.primary" sx={{ display: 'block', my: 1 }}>
-                              {review.comment}
-                            </Typography>
-                            <Typography component="span" variant="caption" color="text.secondary">
-                              by {review.name} on {new Date(review.createdAt).toLocaleDateString()}
-                            </Typography>
-                          </>
-                        }
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', ml: 2 }}>
-                      <IconButton onClick={() => handleReviewUpvote(review._id)} disabled={upvotingReviewId === review._id}>
-                        <ThumbUpIcon color={(review.upvotes || []).includes(user?.id) ? 'primary' : 'action'} />
-                      </IconButton>
-                      <Typography variant="caption" color="text.secondary">
-                        {(review.upvotes || []).length}
-                      </Typography>
-                    </Box>
-                  </ListItem>
+                  <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Avatar src={review.user?.profilePic}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
+                      <Box flexGrow={1}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
+                        <Rating value={review.rating} readOnly />
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <IconButton size="small" onClick={() => handleReviewUpvote(review._id)} disabled={upvotingReviewId === review._id}>
+                          <ThumbUpIcon fontSize="small" color={(review.upvotes || []).includes(user?.id) ? 'primary' : 'action'} />
+                        </IconButton>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          {(review.upvotes || []).length}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Typography variant="body2" sx={{ mt: 1.5, pl: { xs: 0, sm: 7 }, fontFamily: theme.typography.fontFamily }}>{review.comment}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1, fontFamily: theme.typography.fontFamily }}>
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Paper>
                 ))}
               </List>
             )}
           </Grid>
-          <Grid item xs={12} md={5}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
               Write a Review
             </Typography>
             {isAuthenticated ? (
               hasUserReviewed ? (
-                <Alert severity="success">You have already reviewed this product.</Alert>
+                <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily }}>You have already reviewed this product.</Alert>
               ) : (
                 <Box component="form" onSubmit={handleReviewSubmit}>
-                  <Typography component="legend">Your Rating</Typography>
+                  <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
                   <Rating value={rating} onChange={(newValue) => setRating(newValue)} />
                   <TextField
                     label="Your Comment"
@@ -415,22 +415,24 @@ const ProductPage = () => {
                     margin="normal"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                   />
-                  {reviewError && <Alert severity="error" sx={{ mb: 2 }}>{reviewError}</Alert>}
+                  {reviewError && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{reviewError}</Alert>}
                   <Button
                     type="submit"
                     variant="contained"
                     disabled={reviewLoading}
                     startIcon={reviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                    sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
                   >
                     {reviewLoading ? 'Submitting...' : 'Submit Review'}
                   </Button>
                 </Box>
               )
             ) : (
-              <Alert severity="warning">
-                Please <RouterLink to="/login">log in</RouterLink> to write a review.
+              <Alert severity="warning" sx={{ fontFamily: theme.typography.fontFamily }}>
+                Please <RouterLink to="/login" style={{ fontFamily: theme.typography.fontFamily }}>log in</RouterLink> to write a review.
               </Alert>
             )}
           </Grid>
@@ -440,8 +442,11 @@ const ProductPage = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        message={snackbar.message}
-      />
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity || 'success'} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

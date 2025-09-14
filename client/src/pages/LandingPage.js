@@ -250,8 +250,8 @@ export default function LandingPage() {
       <Container maxWidth="lg" sx={{ fontFamily: theme.typography.fontFamily, pb: 10, px: 3 }}>
         <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center" textAlign="center">
           {FEATURES.map(({ icon, title, description }, idx) => (
-            <Grid item
-              xs={12} sm={6} md={4}
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4 }}
               key={idx}
               sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
             >
@@ -309,9 +309,8 @@ export default function LandingPage() {
               icon: <GroupAddIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
               title: "Cook & Share",
               desc: "Follow easy step-by-step instructions, cook a delicious meal, and share your experience with the community.",
-            },
-          ].map(({ icon, title, desc }, idx) => (
-            <Grid item xs={12} sm={4} key={idx}>
+            }].map(({ icon, title, desc }, idx) => (
+            <Grid size={{ xs: 12, sm: 4 }} key={idx}>
               <Paper
                 elevation={4}
                 sx={{

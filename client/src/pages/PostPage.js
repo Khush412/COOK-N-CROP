@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -29,15 +29,15 @@ import {
   DialogContentText,
   DialogTitle,
   Card,
-  ListSubheader,
   TextField,
   ListItemAvatar,
+  alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
   Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon,
-  Timer as TimerIcon, RestaurantMenu as RestaurantMenuIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon
+  Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
@@ -46,51 +46,54 @@ import Rating from '../components/Rating';
 import CommentForm from '../components/CommentForm';
 import productService from '../services/productService';
 import CommentThreadItem from '../components/CommentThreadItem';
-import EditPostForm from '../components/EditPostForm';
+import CreatePostForm from '../components/CreatePostForm';
 import ReportDialog from '../components/ReportDialog';
 
 const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick, isAdding }) => {
   const theme = useTheme();
   return (
     <Box>
-      <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+      <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
         {description}
       </Typography>
-      <Stack direction="row" spacing={3} sx={{ my: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1, justifyContent: 'space-around' }}>
-        {recipe.prepTime && <Box sx={{ textAlign: 'center' }}><TimerIcon /><Typography variant="caption" display="block">Prep: {recipe.prepTime}</Typography></Box>}
-        {recipe.cookTime && <Box sx={{ textAlign: 'center' }}><TimerIcon color="primary" /><Typography variant="caption" display="block">Cook: {recipe.cookTime}</Typography></Box>}
-        {recipe.servings && <Box sx={{ textAlign: 'center' }}><PeopleIcon /><Typography variant="caption" display="block">Serves: {recipe.servings}</Typography></Box>}
-      </Stack>
+      <Paper elevation={0} sx={{ my: 3, p: 2.5, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ justifyContent: 'space-around', textAlign: 'center' }}>
+          {recipe.prepTime && <Box><TimerIcon sx={{ color: 'primary.main' }} /><Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{recipe.prepTime} mins</Typography><Typography variant="caption" display="block" sx={{ fontFamily: theme.typography.fontFamily }}>Prep Time</Typography></Box>}
+          {recipe.cookTime && <Box><TimerIcon sx={{ color: 'primary.main' }} /><Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{recipe.cookTime} mins</Typography><Typography variant="caption" display="block" sx={{ fontFamily: theme.typography.fontFamily }}>Cook Time</Typography></Box>}
+          {recipe.servings && <Box><PeopleIcon sx={{ color: 'primary.main' }} /><Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{recipe.servings}</Typography><Typography variant="caption" display="block" sx={{ fontFamily: theme.typography.fontFamily }}>Servings</Typography></Box>}
+        </Stack>
+      </Paper>
       {shoppableIngredients.length > 0 && (
-        <Box sx={{ mt: 4, mb: 4, p: 2, bgcolor: 'success.lightest', borderRadius: 2, border: '1px solid', borderColor: 'success.light' }}>
-          <Typography variant="h6" gutterBottom sx={{ color: 'success.dark', fontWeight: 'bold' }}>
+        <Paper elevation={2} sx={{ mt: 4, mb: 4, p: 3, borderRadius: 3, background: `linear-gradient(45deg, ${theme.palette.secondary.light}, ${theme.palette.primary.light})` }}>
+          <Typography variant="h5" gutterBottom sx={{ color: theme.palette.primary.contrastText, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
             Shop the Recipe!
           </Typography>
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          <Typography variant="body1" sx={{ mb: 2, color: alpha(theme.palette.primary.contrastText, 0.9), fontFamily: theme.typography.fontFamily }}>
             We found {shoppableIngredients.length} matching ingredients in our store.
           </Typography>
           <Button
             variant="contained"
-            color="success"
+            color="secondary"
             startIcon={isAdding ? <CircularProgress size={20} color="inherit" /> : <ShoppingCartIcon />}
             onClick={onShopClick}
             disabled={isAdding}
+            sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
           >
             {isAdding ? 'Adding to Cart...' : 'Add Ingredients to Cart'}
           </Button>
-        </Box>
+        </Paper>
       )}
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={5}>
-          <Typography variant="h6" gutterBottom>Ingredients</Typography>
-          <List dense>
-            {recipe.ingredients.map((ing, i) => <ListItem key={i} sx={{ py: 0.2 }}><ListItemText primary={`• ${ing}`} /></ListItem>)}
+      <Grid container spacing={5} sx={{ mt: 2 }}>
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Ingredients</Typography>
+          <List sx={{ listStyleType: 'disc', pl: 2, '& .MuiListItem-root': { display: 'list-item' } }}>
+            {recipe.ingredients.map((ing, i) => <ListItem key={i} sx={{ py: 0.5, pl: 1 }}><ListItemText primary={ing} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} /></ListItem>)}
           </List>
         </Grid>
-        <Grid item xs={12} md={7}>
-          <Typography variant="h6" gutterBottom>Instructions</Typography>
-          <List dense>
-            {recipe.instructions.map((inst, i) => <ListItem key={i} alignItems="flex-start" sx={{ py: 0.2 }}><ListItemText primary={`${i + 1}. ${inst}`} /></ListItem>)}
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Instructions</Typography>
+          <List sx={{ listStyleType: 'decimal', pl: 2, '& .MuiListItem-root': { display: 'list-item' } }}>
+            {recipe.instructions.map((inst, i) => <ListItem key={i} alignItems="flex-start" sx={{ py: 0.5, pl: 1 }}><ListItemText primary={inst} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} /></ListItem>)}
           </List>
         </Grid>
       </Grid>
@@ -102,6 +105,7 @@ const TaggedProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+  const theme = useTheme();
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -116,17 +120,17 @@ const TaggedProductCard = ({ product }) => {
   };
 
   return (
-    <Card sx={{ display: 'flex', alignItems: 'center', p: 1.5 }}>
+    <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, transition: 'box-shadow .2s', '&:hover': { boxShadow: theme.shadows[3] } }}>
       <Avatar src={product.image} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="subtitle1" fontWeight="bold">{product.name}</Typography>
-        <Typography variant="body2" color="primary">${product.price.toFixed(2)}</Typography>
+        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</Typography>
+        <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>${product.price.toFixed(2)}</Typography>
       </Box>
-      <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0}>
+      <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
         {product.countInStock > 0 ? (isAdding ? <CircularProgress size={20} /> : 'Add') : 'Out of Stock'}
       </Button>
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ open: false, message: '' })} message={snackbar.message} />
-    </Card>
+    </Paper>
   );
 };
 
@@ -363,7 +367,11 @@ const PostPage = () => {
     try {
       await communityService.deletePost(id);
       setSnackbar({ open: true, message: 'Post deleted successfully.', severity: 'success' });
-      navigate('/community');
+      if (post.isRecipe) {
+        navigate('/recipes');
+      } else {
+        navigate('/community');
+      }
     } catch (err) {
       setSnackbar({ open: true, message: 'Failed to delete post.', severity: 'error' });
       setLoading(false);
@@ -483,43 +491,15 @@ const PostPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
-        {/* Back Button */}
-        <Button component={RouterLink} to="/community" startIcon={<ArrowBackIcon />} sx={{ mb: 3 }}>
-          Back to Community
+        {/* Back Button - uses navigate(-1) to go to the previous page */}
+        <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+          Back
         </Button>
 
         {/* Post Header */}
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2, position: 'relative' }}>
-          <Avatar
-            src={post.user.profilePic}
-            alt={post.user.username}
-            sx={{ width: 56, height: 56 }}
-          >
-            {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h6" component="h1" sx={{ fontWeight: 700 }}>
-              {post.title}
-            </Typography>
-            {post.isRecipe && post.numRecipeReviews > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                <Rating value={post.recipeRating} readOnly precision={0.5} />
-                <Typography sx={{ ml: 1.5 }} color="text.secondary">({post.numRecipeReviews} recipe reviews)</Typography>
-              </Box>
-            )}
-            <Typography variant="body2" color="text.secondary">
-              Posted by{' '}
-              <Typography
-                component={RouterLink}
-                to={`/user/${post.user.username}`}
-                sx={{ fontWeight: 'bold', textDecoration: 'none', color: theme.palette.text.primary, '&:hover': { textDecoration: 'underline' } }}
-              >
-                {post.user.username}
-              </Typography> • {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-            </Typography>
-          </Box>
+        <Box sx={{ position: 'relative', mb: 2 }}>
           {isAuthenticated && (user.id === post.user._id || user.role === 'admin') && (
-            <Box>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
               <IconButton
                 aria-label="settings"
                 id="post-actions-button"
@@ -535,35 +515,68 @@ const PostPage = () => {
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
+                disableScrollLock={true}
+                PaperProps={{
+                  sx: {
+                    borderRadius: 2,
+                    boxShadow: theme.shadows[4],
+                  }
+                }}
                 MenuListProps={{
                   'aria-labelledby': 'post-actions-button',
                 }}
               >
                 <MenuItem onClick={handleEdit}>
                   <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Edit</ListItemText>
+                  <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</ListItemText>
                 </MenuItem>
                 <MenuItem onClick={() => { setDeleteConfirmOpen(true); handleMenuClose(); }}>
                   <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                  <ListItemText sx={{ color: 'error.main' }}>Delete</ListItemText>
+                  <ListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</ListItemText>
                 </MenuItem>
                 <MenuItem onClick={() => handleOpenReportDialog('post', post._id)}>
                   <ListItemIcon><ReportIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Report</ListItemText>
+                  <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</ListItemText>
                 </MenuItem>
               </Menu>
             </Box>
           )}
-        </Stack>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar
+              src={post.user.profilePic} alt={post.user.username} sx={{ width: 56, height: 56 }}
+              component={RouterLink} to={`/user/${post.user.username}`}
+            >
+              {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+                {post.title}
+              </Typography>
+              {post.isRecipe && post.numRecipeReviews > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <Rating value={post.recipeRating} readOnly precision={0.5} />
+                  <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">({post.numRecipeReviews} recipe reviews)</Typography>
+                </Box>
+              )}
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                Posted by{' '}
+                <Typography component={RouterLink} to={`/user/${post.user.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: theme.typography.fontFamily }}>
+                  {post.user.username}
+                </Typography> • {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 
         {isEditing ? (
-          <EditPostForm
+          <CreatePostForm
             initialData={post}
             onSubmit={handleUpdatePost}
             onCancel={() => setIsEditing(false)}
             loading={loading}
+            forceRecipe={post.isRecipe}
           />
         ) : (
           <>
@@ -577,7 +590,7 @@ const PostPage = () => {
                 isAdding={isAddingIngredients}
               />
             ) : (
-              <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+              <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
                 {post.content}
               </Typography>
             )}
@@ -589,11 +602,7 @@ const PostPage = () => {
                   key={index}
                   label={tag}
                   size="small"
-                  sx={{
-                    bgcolor: theme.palette.primary.main + "20",
-                    color: theme.palette.primary.main,
-                    fontWeight: 500,
-                  }}
+                  sx={{ borderRadius: '8px', bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.dark, fontWeight: 600, fontFamily: theme.typography.fontFamily }}
                 />
               ))}
             </Box>
@@ -601,36 +610,40 @@ const PostPage = () => {
             <Divider sx={{ my: 2 }} />
 
             {/* Actions */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
               <Button
+                variant="outlined"
                 startIcon={<ThumbUpIcon color={post.upvotes.includes(user?.id) ? 'primary' : 'action'} />}
                 onClick={() => handleUpvote(post._id)}
                 disabled={isUpvoting}
+                sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
               >
                 {post.upvoteCount} Upvotes
               </Button>
               <Button
-                startIcon={user?.savedPosts?.includes(post._id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                variant="outlined"
+                startIcon={user?.savedPosts?.includes(post._id) ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
                 onClick={() => handleToggleSave(post._id)}
                 disabled={isSaving}
+                sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
               >
                 {user?.savedPosts?.includes(post._id) ? 'Saved' : 'Save'}
               </Button>
-            </Box>
+            </Stack>
           </>
         )}
 
         <Divider sx={{ my: 3 }} />
 
         {/* Tagged Products Section */}
-        {post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
+        {!isEditing && post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
               Products Used in this Recipe
             </Typography>
             <Grid container spacing={2}>
               {post.taggedProducts.map(product => (
-                <Grid item xs={12} sm={6} key={product._id}>
+                <Grid size={{ xs: 12, sm: 6 }} key={product._id}>
                   <TaggedProductCard product={product} />
                 </Grid>
               ))}
@@ -640,69 +653,76 @@ const PostPage = () => {
         )}
 
         {/* Recipe Reviews Section */}
-        {post.isRecipe && (
+        {!isEditing && post.isRecipe && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
               Recipe Reviews
             </Typography>
             {isAuthenticated ? (
               hasUserReviewedRecipe ? (
                 <Alert severity="success">You have already reviewed this recipe.</Alert>
               ) : (
-                <Box component="form" onSubmit={handleRecipeReviewSubmit} sx={{ mb: 4 }}>
-                  <Typography component="legend">Leave a Review</Typography>
-                  <Rating value={recipeRating} onChange={(newValue) => setRecipeRating(newValue)} />
-                  <TextField
-                    label="Your Review Comment"
-                    multiline
-                    rows={3}
-                    fullWidth
-                    margin="normal"
-                    value={recipeComment}
-                    onChange={(e) => setRecipeComment(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={recipeReviewLoading}
-                    startIcon={recipeReviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
-                  >
-                    {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}
-                  </Button>
-                </Box>
+                <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontFamily: theme.typography.fontFamily }}>Leave a Review</Typography>
+                  <Box component="form" onSubmit={handleRecipeReviewSubmit}>
+                    <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
+                    <Rating value={recipeRating} onChange={(newValue) => setRecipeRating(newValue)} />
+                    <TextField
+                      label="Your Review Comment"
+                      multiline
+                      rows={3}
+                      fullWidth
+                      margin="normal"
+                      value={recipeComment}
+                      onChange={(e) => setRecipeComment(e.target.value)}
+                      required
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    />
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={recipeReviewLoading}
+                      startIcon={recipeReviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                      sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
+                    >
+                      {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}
+                    </Button>
+                  </Box>
+                </Paper>
               )
             ) : (
               <Alert severity="info">
-                <RouterLink to={`/login?redirect=/post/${id}`}>Log in</RouterLink> to leave a recipe review.
+                <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> to leave a recipe review.
               </Alert>
             )}
 
             {post.recipeReviews.length > 0 ? (
               <List>
                 {post.recipeReviews.map((review) => (
-                  <ListItem key={review._id} alignItems="flex-start" divider>
-                    <ListItemAvatar>
+                  <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center">
                       <Avatar src={review.user?.profilePic}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={<Rating value={review.rating} readOnly />}
-                      secondary={<>
-                        <Typography component="span" variant="body2" color="text.primary" sx={{ display: 'block', my: 1 }}>{review.comment}</Typography>
-                        <Typography component="span" variant="caption" color="text.secondary">by {review.user?.username || review.name} on {new Date(review.createdAt).toLocaleDateString()}</Typography>
-                      </>}
-                    />
-                  </ListItem>
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
+                        <Rating value={review.rating} readOnly />
+                      </Box>
+                    </Stack>
+                    <Typography variant="body2" sx={{ mt: 1.5, pl: 7, fontFamily: theme.typography.fontFamily }}>{review.comment}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1, fontFamily: theme.typography.fontFamily }}>
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Paper>
                 ))}
               </List>
-            ) : <Typography color="text.secondary" sx={{ mt: 2 }}>No recipe reviews yet.</Typography>}
+            ) : <Typography color="text.secondary" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>No recipe reviews yet.</Typography>}
             <Divider sx={{ my: 3 }} />
           </Box>
         )}
 
         {/* Comments Section */}
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+        <Paper sx={{ p: { xs: 2, sm: 4 }, mt: 4, borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
             Comments ({post.comments.length})
           </Typography>
 
@@ -710,8 +730,8 @@ const PostPage = () => {
             <CommentForm onSubmit={handleCommentSubmit} loading={isCommenting} />
           ) : (
             !isAuthenticated && (
-              <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-                <RouterLink to={`/login?redirect=/post/${id}`}>Log in</RouterLink> or <RouterLink to={`/login?redirect=/post/${id}`}>sign up</RouterLink> to leave a comment.
+              <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> or <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>sign up</RouterLink> to leave a comment.
               </Typography>
             )
           )}
@@ -735,12 +755,12 @@ const PostPage = () => {
                 />
               ))
             ) : (
-              <Typography color="text.secondary" sx={{ mt: 2 }}>
+              <Typography color="text.secondary" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
                 No comments yet. Be the first to share your thoughts!
               </Typography>
             )}
           </List>
-        </Box>
+        </Paper>
       </Paper>
 
       <Snackbar

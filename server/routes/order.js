@@ -88,11 +88,21 @@ router.post('/', protect, async (req, res) => {
                 amount: discountAmount,
             },
             totalPrice: finalPrice,
-            status: 'Pending',
-            statusHistory: [{ status: 'Pending' }],
+            status: 'Processing', // Changed from 'Pending'
+            isPaid: true, // Assuming order is paid on creation
+            paidAt: Date.now(), // Set paid timestamp
+            statusHistory: [{ status: 'Pending' }, { status: 'Processing' }],
         });
 
         const createdOrder = await order.save();
+
+        // Update user's activity stats
+        await User.findByIdAndUpdate(req.user._id, {
+            $inc: {
+                'activity.totalOrders': 1,
+                'activity.totalSpent': finalPrice
+            }
+        });
 
         // If a coupon was successfully applied, increment its usage count
         if (appliedCoupon) {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 import {
   Box,
   ListItem,
@@ -15,6 +16,7 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText as MuiListItemText,
+  alpha,
 } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 import CommentForm from './CommentForm';
@@ -36,6 +38,7 @@ const CommentThreadItem = ({
   onReportComment,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const theme = useTheme();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -74,14 +77,14 @@ const CommentThreadItem = ({
 
   return (
     <ListItem
-      alignItems="flex-start"
       sx={{
-        display: 'block', // To allow full-width children
-        pl: comment.parentComment ? 4 : 0, // Indent replies
+        display: 'block',
         position: 'relative',
-        '&:not(:first-of-type)': {
-          mt: 2
-        }
+        p: 2,
+        mb: 2,
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
       }}
     >
       <Stack direction="row" spacing={2}>
@@ -107,15 +110,15 @@ const CommentThreadItem = ({
               >
                 <MenuItem onClick={handleEdit}>
                   <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                  <MuiListItemText>Edit</MuiListItemText>
+                  <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</MuiListItemText>
                 </MenuItem>
                 <MenuItem onClick={handleDelete}>
                   <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                  <MuiListItemText sx={{ color: 'error.main' }}>Delete</MuiListItemText>
+                  <MuiListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</MuiListItemText>
                 </MenuItem>
                 <MenuItem onClick={handleReport}>
                   <ListItemIcon><ReportIcon fontSize="small" /></ListItemIcon>
-                  <MuiListItemText>Report</MuiListItemText>
+                  <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</MuiListItemText>
                 </MenuItem>
               </Menu>
             </Box>
@@ -129,7 +132,7 @@ const CommentThreadItem = ({
                 initialContent={comment.content}
                 submitLabel="Save"
               />
-              <Button size="small" onClick={() => setIsEditing(false)} disabled={isSubmitting}>Cancel</Button>
+              <Button size="small" onClick={() => setIsEditing(false)} disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
             </Box>
           ) : (
             <ListItemText
@@ -138,7 +141,7 @@ const CommentThreadItem = ({
                   component={RouterLink}
                   to={`/user/${comment.user?.username}`}
                   variant="subtitle2"
-                  sx={{ fontWeight: 600, textDecoration: 'none', color: 'inherit', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ fontWeight: 600, textDecoration: 'none', color: 'inherit', '&:hover': { textDecoration: 'underline' }, fontFamily: theme.typography.fontFamily }}
                 >
                   {comment.user?.username}
                 </Typography>
@@ -150,12 +153,12 @@ const CommentThreadItem = ({
                   component="span"
                   variant="body2"
                   color="text.primary"
-                  sx={{ display: 'block', whiteSpace: 'pre-wrap' }}
+                  sx={{ display: 'block', whiteSpace: 'pre-wrap', fontFamily: theme.typography.fontFamily }}
                 >
                   {comment.content}
                 </Typography>
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                     {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'just now'}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -170,9 +173,9 @@ const CommentThreadItem = ({
                         color={(comment.upvotes || []).includes(user?.id) ? 'primary' : 'action'}
                       />
                     </IconButton>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '12px' }}>{comment.upvoteCount > 0 ? comment.upvoteCount : ''}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '12px', fontFamily: theme.typography.fontFamily }}>{comment.upvoteCount > 0 ? comment.upvoteCount : ''}</Typography>
                   </Box>
-                  <Button size="small" onClick={() => onReply(comment._id)} sx={{ fontSize: '0.75rem', textTransform: 'none' }}>
+                  <Button size="small" onClick={() => onReply(comment._id)} sx={{ fontSize: '0.75rem', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
                     Reply
                   </Button>
                 </Stack>
@@ -183,7 +186,7 @@ const CommentThreadItem = ({
           {isReplying && (
             <Box sx={{ mt: 2 }}>
               <CommentForm onSubmit={onCommentSubmit} loading={isSubmitting} />
-              <Button size="small" onClick={onCancelReply} sx={{ mt: -3, ml: 7, textTransform: 'none' }}>
+              <Button size="small" onClick={onCancelReply} sx={{ mt: -3, ml: 7, textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
                 Cancel
               </Button>
             </Box>
@@ -193,7 +196,7 @@ const CommentThreadItem = ({
 
       {/* Render Replies */}
       {comment.replies && comment.replies.length > 0 && (
-        <List sx={{ pt: 1, pl: 2, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5 }}>
+        <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
           {comment.replies.map((reply) => (
             <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} />
           ))}

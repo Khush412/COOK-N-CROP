@@ -78,10 +78,13 @@ router.get('/', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const query = req.query.q || '';
-    if (query.length < 2) return res.json([]);
+    const findQuery = query ? { name: { $regex: query, $options: 'i' } } : {};
+    // If there's a query, limit to 10 for autocomplete performance.
+    // If no query, don't limit, send all products for initial dropdown.
+    const limit = query ? 10 : 0;
 
-    const products = await Product.find({ name: { $regex: query, $options: 'i' } })
-      .limit(10)
+    const products = await Product.find(findQuery)
+      .limit(limit)
       .select('name image _id');
     res.json(products);
   } catch (err) {
@@ -118,7 +121,7 @@ router.get('/low-stock', protect, authorize('admin'), async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate('reviews.user', 'username profilePic');
 
     if (!product) {
       return res.status(404).json({ msg: 'Product not found' });

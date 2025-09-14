@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, Paper, Grid, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, Divider, TextField, IconButton, CircularProgress, Alert } from '@mui/material';
+import { Box, Paper, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, TextField, IconButton, CircularProgress, Alert, useTheme, useMediaQuery, Drawer, InputAdornment, alpha, Stack } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
+import ChatIcon from '@mui/icons-material/Chat';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import messagingService from '../services/messagingService';
 
 const MessengerPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, fetchUnreadMessageCount } = useAuth();
   const socket = useSocket();
   const location = useLocation();
@@ -19,6 +24,8 @@ const MessengerPage = () => {
   const [loading, setLoading] = useState({ convos: true, messages: false });
   const [error, setError] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [convoSearch, setConvoSearch] = useState('');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -49,6 +56,7 @@ const MessengerPage = () => {
     if (convo.isPlaceholder) {
       return; // Don't fetch messages for a placeholder
     }
+    setConversations(prev => prev.filter(c => !c.isPlaceholder));
     setLoading(prev => ({ ...prev, messages: true }));
     try {
       const data = await messagingService.getMessages(convo._id);
@@ -155,102 +163,155 @@ const MessengerPage = () => {
     }
   };
 
-  return (
-    <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', mt: 8 }}>
-      <Paper sx={{ width: 320, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h6" sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>Inbox</Typography>
-        {loading.convos ? <CircularProgress sx={{ m: 'auto' }} /> : (
-          <List sx={{ overflowY: 'auto', flexGrow: 1 }}>
-            {conversations.map(convo => {
-              const otherParticipant = convo.participants.find(p => p._id !== user.id);
-              return (
-                <ListItemButton
-                  key={convo._id}
-                  onClick={() => handleSelectConversation(convo)}
-                  selected={selectedConversation?._id === convo._id}
-                >
-                  <ListItemAvatar><Avatar src={otherParticipant?.profilePic} /></ListItemAvatar>
-                  <ListItemText
-                    primary={otherParticipant?.username || 'Unknown User'}
-                    secondary={
-                      <Typography noWrap variant="body2" color="text.secondary">
-                        {convo.lastMessage?.sender
-                          ? `${convo.lastMessage.sender.username}: ${convo.lastMessage.content}`
-                          : convo.lastMessage?.content || 'No messages yet'}
-                      </Typography>
-                    }
-                  />
-                  {convo.unreadCount > 0 && <Box sx={{ bgcolor: 'secondary.main', color: 'white', borderRadius: '50%', px: 1, fontSize: '0.75rem' }}>{convo.unreadCount}</Box>}
-                </ListItemButton>
-              );
-            })}
-          </List>
-        )}
-      </Paper>
+  const filteredConversations = conversations.filter(convo => {
+    const otherParticipant = convo.participants.find(p => p._id !== user.id);
+    return otherParticipant?.username.toLowerCase().includes(convoSearch.toLowerCase());
+  });
 
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {selectedConversation ? (
-          <>
-            <Paper sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
-              <Avatar src={selectedConversation.participants.find(p => p._id !== user.id)?.profilePic} sx={{ mr: 2 }} />
-              <Typography variant="h6">{selectedConversation.participants.find(p => p._id !== user.id)?.username}</Typography>
-            </Paper>
-
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: 'background.default' }}>
-              {loading.messages ? <CircularProgress sx={{ display: 'block', m: 'auto' }} /> : (
-                messages.map(msg => (
-                  <Box
-                    key={msg._id}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: msg.sender._id === user.id ? 'flex-end' : 'flex-start',
-                      mb: 2,
-                    }}
-                  >
-                    <Paper
-                      sx={{
-                        p: 1.5,
-                        maxWidth: '70%',
-                        bgcolor: msg.sender._id === user.id ? 'primary.main' : 'background.paper',
-                        color: msg.sender._id === user.id ? 'primary.contrastText' : 'text.primary',
-                        opacity: msg.isSending ? 0.6 : 1,
-                      }}
-                      elevation={2}
-                    >
-                      <Typography variant="body1">{msg.content}</Typography>
-                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5, opacity: 0.7 }}>
-                        {format(new Date(msg.createdAt), 'p')}
-                      </Typography>
-                    </Paper>
-                  </Box>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </Box>
-
-            <Paper sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', alignItems: 'center' }}>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  disabled={isSending}
-                />
-                <IconButton type="submit" color="primary" sx={{ ml: 1 }} disabled={isSending || !newMessage.trim()}>
-                  {isSending ? <CircularProgress size={24} /> : <SendIcon />}
-                </IconButton>
-              </Box>
-            </Paper>
-          </>
-        ) : (
-          <Box sx={{ m: 'auto', textAlign: 'center', color: 'text.secondary' }}>
-            <Typography variant="h5">Select a conversation to start chatting</Typography>
-          </Box>
-        )}
+  const ConversationListContent = (
+    <>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Inbox</Typography>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search conversations..."
+          variant="outlined"
+          value={convoSearch}
+          onChange={(e) => setConvoSearch(e.target.value)}
+          sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '50px' } }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+          }}
+        />
       </Box>
+      {loading.convos ? <CircularProgress sx={{ m: 'auto' }} /> : (
+        <List sx={{ overflowY: 'auto', flexGrow: 1, p: 1 }}>
+          {filteredConversations.map(convo => {
+            const otherParticipant = convo.participants.find(p => p._id !== user.id);
+            return (
+              <ListItemButton
+                key={convo._id}
+                onClick={() => { handleSelectConversation(convo); if (isMobile) setMobileOpen(false); }}
+                selected={selectedConversation?._id === convo._id}
+                sx={{ borderRadius: 2, mb: 0.5 }}
+              >
+                <ListItemAvatar><Avatar src={otherParticipant?.profilePic} /></ListItemAvatar>
+                <ListItemText
+                  primary={<Typography variant="subtitle1" noWrap sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{otherParticipant?.username || 'Unknown User'}</Typography>}
+                  secondary={
+                    <Typography noWrap variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {convo.lastMessage?.sender ? `${convo.lastMessage.sender._id === user.id ? 'You: ' : ''}${convo.lastMessage.content}` : convo.lastMessage?.content || 'No messages yet'}
+                    </Typography>
+                  }
+                />
+                {convo.unreadCount > 0 && <Box sx={{ bgcolor: 'secondary.main', color: 'white', borderRadius: '50%', px: 1, fontSize: '0.75rem' }}>{convo.unreadCount}</Box>}
+              </ListItemButton>
+            );
+          })}
+        </List>
+      )}
+    </>
+  );
+
+  return (
+    <Box sx={{ mt: 8, height: 'calc(100vh - 64px)', display: 'flex' }}>
+      {/* The main container is now a Box that takes the full viewport below the navbar */}
+        <Box sx={{ width: { md: 320, lg: 360 }, height: '100%', display: { xs: 'none', md: 'flex' }, flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
+          {ConversationListContent}
+        </Box>
+
+        {/* Mobile Drawer */}
+        <Drawer open={mobileOpen} onClose={() => setMobileOpen(false)} PaperProps={{ sx: { width: { xs: '80%', sm: 320 } } }}>
+          {ConversationListContent}
+        </Drawer>
+
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          {selectedConversation ? (
+            <>
+              <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                {isMobile && (
+                  <IconButton onClick={() => setMobileOpen(true)} sx={{ mr: 1.5 }}>
+                    <MenuIcon />
+                  </IconButton>
+                )}
+                <Avatar src={selectedConversation.participants.find(p => p._id !== user.id)?.profilePic} sx={{ mr: 2 }} />
+                <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{selectedConversation.participants.find(p => p._id !== user.id)?.username}</Typography>
+              </Paper>
+
+              <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: 'background.default' }}>
+                {loading.messages ? <CircularProgress sx={{ display: 'block', m: 'auto' }} /> : (
+                  messages.map((msg, index) => {
+                    const isSender = msg.sender._id === user.id;
+                    const showAvatar = !isSender && (index === 0 || messages[index - 1].sender._id !== msg.sender._id);
+                    return (
+                      <Box
+                        key={msg._id}
+                        sx={{
+                          display: 'flex',
+                          justifyContent: isSender ? 'flex-end' : 'flex-start',
+                          mb: 1,
+                          gap: 1,
+                          alignItems: 'flex-end',
+                        }}
+                      >
+                        {!isSender && (
+                          <Avatar
+                            src={msg.sender.profilePic}
+                            sx={{ width: 32, height: 32, visibility: showAvatar ? 'visible' : 'hidden' }}
+                          />
+                        )}
+                        <Paper
+                          sx={{
+                            p: 1.5,
+                            maxWidth: '70%',
+                            bgcolor: isSender ? 'primary.main' : 'background.paper',
+                            color: isSender ? 'primary.contrastText' : 'text.primary',
+                            opacity: msg.isSending ? 0.6 : 1,
+                            borderRadius: isSender ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                            boxShadow: theme.shadows[1],
+                          }}
+                        >
+                          <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, whiteSpace: 'pre-wrap' }}>{msg.content}</Typography>
+                          <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5, opacity: 0.7, fontFamily: theme.typography.fontFamily }}>
+                            {format(new Date(msg.createdAt), 'p')}
+                          </Typography>
+                        </Paper>
+                      </Box>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </Box>
+
+              <Paper sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+                <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TextField
+                    fullWidth
+                    variant="filled"
+                    size="small"
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    disabled={isSending}
+                    sx={{ '& .MuiFilledInput-root': { borderRadius: '50px', '&:before, &:after': { display: 'none' } } }}
+                  />
+                  <IconButton type="submit" color="primary" sx={{ ml: 1 }} disabled={isSending || !newMessage.trim()}>
+                    {isSending ? <CircularProgress size={24} /> : <SendIcon />}
+                  </IconButton>
+                </Box>
+              </Paper>
+            </>
+          ) : (
+            <Box sx={{ m: 'auto', textAlign: 'center', color: 'text.secondary' }}>
+              <Stack alignItems="center" spacing={2}>
+                <ChatIcon sx={{ fontSize: 80, color: 'grey.400' }} />
+                <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily }}>Select a conversation</Typography>
+                <Typography sx={{ fontFamily: theme.typography.fontFamily }}>or start a new one from a user's profile.</Typography>
+              </Stack>
+            </Box>
+          )}
+        </Box>
     </Box>
   );
 };

@@ -8,11 +8,16 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Stack,
+  Avatar,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { forgotPassword } from '../services/authService';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 const ForgotPasswordPage = () => {
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', severity: 'info' });
@@ -32,41 +37,55 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs" sx={{ mt: 12 }}>
-      <Paper elevation={3} sx={{ p: 4, mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5" sx={{ mb: 1 }}>
-          Forgot Your Password?
+    <Container component="main" maxWidth="sm" sx={{ mt: 12, py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Forgot Password
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          We'll help you get back into your account.
+        </Typography>
+      </Paper>
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, textAlign: 'center' }}>
+        <Avatar sx={{ bgcolor: 'secondary.main', mx: 'auto', mb: 2 }}>
+          <LockResetIcon />
+        </Avatar>
+        <Typography color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
           No worries! Enter your email and we'll send you a reset link.
         </Typography>
-        {feedback.message && <Alert severity={feedback.severity} sx={{ width: '100%', mb: 2 }}>{feedback.message}</Alert>}
+
+        {feedback.message && <Alert severity={feedback.severity} sx={{ width: '100%', mb: 2, fontFamily: theme.typography.fontFamily }}>{feedback.message}</Alert>}
+
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading || feedback.severity === 'success'}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading || feedback.severity === 'success'}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Send Reset Link'}
-          </Button>
-          <Button component={RouterLink} to="/login" fullWidth>
-            Back to Login
-          </Button>
+          <Stack spacing={2} alignItems="center">
+            <TextField
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading || feedback.severity === 'success'}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={loading || feedback.severity === 'success'}
+              sx={{ py: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Send Reset Link'}
+            </Button>
+            <Button component={RouterLink} to="/login" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Back to Login
+            </Button>
+          </Stack>
         </Box>
       </Paper>
     </Container>

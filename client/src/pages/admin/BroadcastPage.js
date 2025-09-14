@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Paper, Typography, Box, TextField, Button, CircularProgress, Alert,
+  Paper, Typography, Box, TextField, Button, CircularProgress, Alert, Container, Stack,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import adminService from '../../services/adminService';
 
 const BroadcastPage = () => {
+  const theme = useTheme();
   const [message, setMessage] = useState('');
   const [link, setLink] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,45 +36,56 @@ const BroadcastPage = () => {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>Send Broadcast Message</Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        This message will be sent as a notification to all active users.
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <TextField
-          label="Broadcast Message"
-          multiline
-          rows={4}
-          fullWidth
-          required
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          margin="normal"
-          helperText="The main content of your notification."
-        />
-        <TextField
-          label="Optional Link"
-          fullWidth
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          margin="normal"
-          helperText="An optional URL to include (e.g., /recipes/some-recipe-id or https://externalsite.com)."
-        />
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
-        <Button
-          type="submit"
-          variant="contained"
-          size="large"
-          disabled={loading}
-          sx={{ mt: 3 }}
-          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
-        >
-          {loading ? 'Sending...' : 'Send Broadcast'}
-        </Button>
-      </Box>
-    </Paper>
+    <Container maxWidth="md">
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Broadcast Message
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Send a notification to all active users.
+        </Typography>
+      </Paper>
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4 }}>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={3}>
+            <TextField
+              label="Broadcast Message"
+              multiline
+              rows={4}
+              fullWidth
+              required
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              helperText="The main content of your notification. HTML tags like <strong> are supported."
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <TextField
+              label="Optional Link"
+              fullWidth
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              helperText="An optional URL to include (e.g., /recipes/some-recipe-id or https://externalsite.com)."
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            {error && <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily }}>{success}</Alert>}
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CampaignIcon />}
+              sx={{ mt: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 4, alignSelf: 'flex-start' }}
+            >
+              {loading ? 'Sending...' : 'Send Broadcast'}
+            </Button>
+          </Stack>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

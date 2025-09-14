@@ -38,6 +38,10 @@ const searchRoutes = require('./routes/search'); // New: Import search routes
 connectDB();
 
 const app = express();
+
+// Trust the first proxy in the chain (e.g., the React dev server or a reverse proxy in production)
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -149,7 +153,7 @@ app.use((req, res, next) => {
 });
 
 // Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);

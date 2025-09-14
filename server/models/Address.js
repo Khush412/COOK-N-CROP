@@ -6,6 +6,11 @@ const AddressSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    fullName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
     street: {
         type: String,
         required: true,
@@ -32,6 +37,10 @@ const AddressSchema = new mongoose.Schema({
         trim: true,
     },
     label: {
+        type: String,
+        trim: true,
+    },
+    phone: {
         type: String,
         trim: true,
     },

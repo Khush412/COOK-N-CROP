@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination,
-  DialogContent, DialogActions, TextField, MenuItem, Chip
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Container, Stack, Grid,
+  DialogContent, DialogActions, TextField, MenuItem, Chip,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DiscountIcon from '@mui/icons-material/Discount';
 import couponService from '../../services/couponService';
 import { Link as RouterLink } from 'react-router-dom';
 
 // Coupon Form Dialog Component
 const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     code: '',
     discountType: 'percentage',
@@ -55,20 +58,34 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{coupon ? 'Edit Coupon' : 'Add New Coupon'}</DialogTitle>
-      <DialogContent>
-        <Box component="form" id="coupon-form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <TextField name="code" label="Coupon Code" value={formData.code} onChange={handleChange} fullWidth required margin="normal" helperText="Must be unique. Will be uppercased." />
-          <TextField name="discountType" label="Discount Type" select value={formData.discountType} onChange={handleChange} fullWidth required margin="normal">
-            <MenuItem value="percentage">Percentage (%)</MenuItem>
-            <MenuItem value="fixed">Fixed Amount ($)</MenuItem>
-          </TextField>
-          <TextField name="discountValue" label="Discount Value" type="number" value={formData.discountValue} onChange={handleChange} fullWidth required margin="normal" />
-          <TextField name="expiresAt" label="Expires At" type="datetime-local" value={formData.expiresAt} onChange={handleChange} fullWidth required margin="normal" InputLabelProps={{ shrink: true }} />
-          <TextField name="minPurchase" label="Minimum Purchase ($)" type="number" value={formData.minPurchase} onChange={handleChange} fullWidth margin="normal" helperText="Leave blank for no minimum." />
-          <TextField name="usageLimit" label="Usage Limit" type="number" value={formData.usageLimit} onChange={handleChange} fullWidth margin="normal" helperText="Leave blank for unlimited uses." />
+      <DialogContent sx={{ pt: '8px !important' }}>
+        <Box component="form" id="coupon-form" onSubmit={handleSubmit}>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField name="code" label="Coupon Code" value={formData.code} onChange={handleChange} fullWidth required helperText="Must be unique. Will be uppercased." />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField name="discountType" label="Discount Type" select value={formData.discountType} onChange={handleChange} fullWidth required>
+                  <MenuItem value="percentage">Percentage (%)</MenuItem>
+                  <MenuItem value="fixed">Fixed Amount ($)</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField name="discountValue" label="Discount Value" type="number" value={formData.discountValue} onChange={handleChange} fullWidth required />
+              </Grid>
+            </Grid>
+            <TextField name="expiresAt" label="Expires At" type="datetime-local" value={formData.expiresAt} onChange={handleChange} fullWidth required InputLabelProps={{ shrink: true }} />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField name="minPurchase" label="Minimum Purchase ($)" type="number" value={formData.minPurchase} onChange={handleChange} fullWidth helperText="Leave blank for no minimum." />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField name="usageLimit" label="Usage Limit" type="number" value={formData.usageLimit} onChange={handleChange} fullWidth helperText="Leave blank for unlimited uses." />
+              </Grid>
+            </Grid>
+          </Stack>
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} disabled={loading}>Cancel</Button>
         <Button type="submit" form="coupon-form" variant="contained" disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Save'}
@@ -80,6 +97,7 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
 
 // Main ManageCoupons Component
 const ManageCoupons = () => {
+  const theme = useTheme();
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -159,97 +177,101 @@ const ManageCoupons = () => {
   };
 
   return (
-    <Paper sx={{ p: 3, m: { xs: 1, md: 3 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" gutterBottom>Manage Coupons</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField
-            label="Search by Code"
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ flexGrow: 1, minWidth: 250 }}
-          />
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-            Add Coupon
-          </Button>
+    <Container maxWidth="lg">
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Manage Coupons
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Create and manage discount codes for your store.
+        </Typography>
+      </Paper>
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
+            <TextField
+              label="Search by Code"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Box>
+          <Box>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+              Add Coupon
+            </Button>
+          </Box>
         </Box>
-      </Box>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
-      ) : error ? (
-        <Alert severity="error">{error}</Alert>
-      ) : (
-        <>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Code</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Value</TableCell>
-                  <TableCell>Expires</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Usage</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {coupons.length > 0 ? (
-                  coupons.map((coupon) => {
-                    const isExpired = new Date(coupon.expiresAt) < new Date();
-                    const status = coupon.isActive && !isExpired ? 'Active' : 'Inactive';
-                    return (
-                      <TableRow key={coupon._id} hover>
-                        <TableCell><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
-                        <TableCell>{coupon.discountType}</TableCell>
-                        <TableCell>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}</TableCell>
-                        <TableCell>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
-                        <TableCell>
-                          <Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" />
-                        </TableCell>
-                        <TableCell>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
-                        <TableCell align="right">
-                          <Tooltip title="Edit Coupon">
-                        <IconButton component={RouterLink} to={`/admin/coupons/${coupon.code}/orders`}>
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit Coupon">
-                            <IconButton onClick={() => handleOpenDialog(coupon)}><EditIcon /></IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Coupon">
-                            <IconButton onClick={() => handleDeleteCoupon(coupon._id)} color="error">
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography color="text.secondary">No coupons found matching your criteria.</Typography>
-                    </TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Code</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Value</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Expires</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Usage</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(event, value) => setPage(value)}
-                color="primary"
-              />
-            </Box>
-          )}
-        </>
-      )}
+                </TableHead>
+                <TableBody>
+                  {coupons.length > 0 ? (
+                    coupons.map((coupon) => {
+                      const isExpired = new Date(coupon.expiresAt) < new Date();
+                      const status = coupon.isActive && !isExpired ? 'Active' : 'Inactive';
+                      return (
+                        <TableRow key={coupon._id} hover>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
+                          <TableCell><Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" /></TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="View Orders">
+                              <IconButton component={RouterLink} to={`/admin/coupons/${coupon.code}/orders`}><VisibilityIcon /></IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit Coupon">
+                              <IconButton onClick={() => handleOpenDialog(coupon)}><EditIcon /></IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete Coupon">
+                              <IconButton onClick={() => handleDeleteCoupon(coupon._id)} color="error"><DeleteIcon /></IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center">
+                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                          <DiscountIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No coupons found matching your criteria.</Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination count={totalPages} page={page} onChange={(event, value) => setPage(value)} color="primary" />
+              </Box>
+            )}
+          </>
+        )}
+      </Paper>
       <CouponFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
@@ -257,7 +279,7 @@ const ManageCoupons = () => {
         coupon={editingCoupon}
         loading={formLoading}
       />
-    </Paper>
+    </Container>
   );
 };
 

@@ -1,179 +1,158 @@
 import React, { useState, useEffect } from 'react';
-import {Typography,
+import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
-  CircularProgress, Grid, Box, Avatar, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Switch, Alert
+  CircularProgress, Grid, Box, Avatar, MenuItem, Alert, Stack, Divider, Typography,
 } from '@mui/material';
-import adminService from '../services/adminService';
+import { useTheme, alpha } from '@mui/material/styles';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
-const categories = ['Fruits', 'Vegetables', 'Exotic Produce', 'Seasonal Picks', 'Organic / Specials'];
+const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
-const ProductFormDialog = ({ open, onClose, onSubmitSuccess, product }) => {
+const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     description: '',
     category: '',
-    inStock: true,
+    countInStock: '',
     origin: '',
     freshness: '',
   });
-  const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        price: product.price || '',
-        description: product.description || '',
-        category: product.category || '',
-        inStock: product.inStock !== undefined ? product.inStock : true,
-        origin: product.origin || '',
-        freshness: product.freshness || '',
-      });
-      setImagePreview(product.image || '');
-    } else {
-      // Reset form for creation
-      setFormData({
-        name: '', price: '', description: '', category: '', inStock: true, origin: '', freshness: '',
-      });
-      setImage(null);
-      setImagePreview('');
+    if (open) {
+      setError(''); // Clear errors when dialog opens
+      if (product) {
+        setFormData({
+          name: product.name || '',
+          price: product.price || '',
+          description: product.description || '',
+          category: product.category || '',
+          countInStock: product.countInStock || 0,
+          origin: product.origin || '',
+          freshness: product.freshness || '',
+        });
+        setImagePreview(product.image || '');
+        setImageFile(null);
+      } else {
+        setFormData({
+          name: '', price: '', description: '', category: '', countInStock: '', origin: '', freshness: '',
+        });
+        setImageFile(null);
+        setImagePreview('');
+      }
     }
   }, [product, open]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-
-    const data = new FormData();
-    Object.keys(formData).forEach(key => {
-      data.append(key, formData[key]);
-    });
-    if (image) {
-      data.append('image', image);
+    if (!formData.name || !formData.price || !formData.category || formData.countInStock === '') {
+        setError('Please fill in all required fields: Name, Price, Category, and Stock.');
+        return;
     }
 
-    try {
-      if (product) {
-        await adminService.updateProduct(product._id, data);
-      } else {
-        await adminService.createProduct(data);
+    const productData = new FormData();
+    for (const key in formData) {
+      if (formData[key] !== null && formData[key] !== '') {
+        productData.append(key, formData[key]);
       }
-      onSubmitSuccess();
-    } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred.');
-    } finally {
-      setLoading(false);
     }
+    if (imageFile) {
+      productData.append('image', imageFile);
+    }
+    onSave(productData, product?._id, setError);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{product ? 'Edit Product' : 'Create New Product'}</DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Avatar
-                  src={imagePreview}
-                  alt="Product Image"
-                  variant="rounded"
-                  sx={{ width: 150, height: 150, mb: 2 }}
-                />
-                <Button variant="outlined" component="label">
-                  Upload Image
-                  <input type="file" hidden accept="image/*" onChange={handleImageChange} />
-                </Button>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={8}>
-              <TextField
-                name="name"
-                label="Product Name"
-                value={formData.name}
-                onChange={handleChange}
-                fullWidth
-                required
-                margin="normal"
-              />
-              <TextField
-                name="description"
-                label="Description"
-                value={formData.description}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={4}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="price"
-                label="Price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
-                fullWidth
-                required
-                margin="normal"
-                InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>$</Typography> }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  name="category"
-                  value={formData.category}
-                  label="Category"
-                  onChange={handleChange}
+      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+        {product ? 'Edit Product' : 'Add New Product'}
+      </DialogTitle>
+      <Divider />
+      <form onSubmit={handleSubmit} id="product-form">
+        <DialogContent sx={{ py: 3 }}>
+          {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4}>
+              <Stack spacing={2} alignItems="center">
+                <Box
+                  component="label"
+                  htmlFor="product-image-upload"
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    maxWidth: 250,
+                    border: `2px dashed ${theme.palette.divider}`,
+                    borderRadius: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    bgcolor: imagePreview ? 'transparent' : alpha(theme.palette.action.hover, 0.02),
+                    overflow: 'hidden',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                    }
+                  }}
                 >
-                  {categories.map(cat => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  {imagePreview ? (
+                    <Avatar
+                      src={imagePreview}
+                      alt="Product Image"
+                      variant="rounded"
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Stack alignItems="center" spacing={1} color="text.secondary">
+                      <PhotoCamera sx={{ fontSize: 40 }} />
+                      <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>Upload Image</Typography>
+                    </Stack>
+                  )}
+                </Box>
+                <input id="product-image-upload" type="file" hidden accept="image/*" onChange={handleFileChange} />
+              </Stack>
             </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.inStock}
-                    onChange={(e) => setFormData(prev => ({ ...prev, inStock: e.target.checked }))}
-                    name="inStock"
-                  />
-                }
-                label="In Stock"
-              />
+            <Grid item xs={12} md={8}>
+              <Stack spacing={2.5}>
+                <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                <Stack direction="row" spacing={2.5}>
+                  <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                </Stack>
+                <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                <Stack direction="row" spacing={2.5}>
+                  <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
+                    {categories.map(option => <MenuItem key={option} value={option} sx={{ fontFamily: theme.typography.fontFamily }}>{option}</MenuItem>)}
+                  </TextField>
+                  <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                </Stack>
+                <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+              </Stack>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={onClose} disabled={loading}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={loading}>
+        <DialogActions sx={{ p: 2, px: 3 }}>
+          <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
+          <Button type="submit" form="product-form" variant="contained" disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 3 }}>
             {loading ? <CircularProgress size={24} /> : (product ? 'Save Changes' : 'Create Product')}
           </Button>
         </DialogActions>

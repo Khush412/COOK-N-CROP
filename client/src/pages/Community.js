@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Box,
   Container,
   Typography,
-  Card,
-  CardContent,
   Grid,
   Chip,
   Button,
@@ -22,36 +20,66 @@ import {
   TextField,
   Stack,
   Pagination,
+  alpha,
+  Drawer,
+  IconButton,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, styled } from "@mui/material/styles";
 import {
-  People as PeopleIcon,
-  TrendingUp as TrendingUpIcon,
-  Star as StarIcon,
-  Message as MessageIcon,
   Forum as ForumIcon,
   NewReleases as NewReleasesIcon,
+  TrendingUp as TrendingUpIcon,
   Whatshot as WhatshotIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 
-import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import communityService from '../services/communityService'; // Corrected path
-import userService from '../services/userService';
-import CreatePostForm from '../components/CreatePostForm';
-import PostCard from '../components/PostCard';
+import communityService from "../services/communityService";
+import userService from "../services/userService";
+import CreatePostForm from "../components/CreatePostForm";
+import PostCard from "../components/PostCard";
+
+// Styled Search container with round corners and professional look
+const SearchContainer = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius * 4,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`,
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginBottom: theme.spacing(2),
+  marginRight: theme.spacing(2),
+  width: "100%",
+  maxWidth: 300,
+  [theme.breakpoints.up("sm")]: {
+    marginBottom: 0,
+  }
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  position: "absolute",
+  left: theme.spacing(1.5),
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  pointerEvents: "none",
+  color: alpha(theme.palette.common.white, 0.6),
+}));
+
+const StyledInputBase = styled(TextField)(({ theme }) => ({
+  "& .MuiInputBase-input": {
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    color: theme.palette.text.primary,
+    fontWeight: 600,
+  },
+}));
 
 export default function Community() {
   const theme = useTheme();
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
   const navigate = useNavigate();
-
-  const communityStats = [
-    { label: "Food Lovers", value: "2,847", icon: <PeopleIcon />, color: theme.palette.primary.main },
-    { label: "Recipes Shared", value: "1,234", icon: <MenuBookIcon />, color: theme.palette.secondary.main },
-    { label: "Local Farmers", value: "150+", icon: <LocalFloristIcon />, color: theme.palette.success.main },
-    { label: "Discussions", value: "3,456", icon: <MessageIcon />, color: theme.palette.info.main },
-  ];
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,25 +90,26 @@ export default function Community() {
   const [savingPosts, setSavingPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [sort, setSort] = useState('new'); // 'new', 'top', 'discussed'
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [sort, setSort] = useState("new");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [trendingTags, setTrendingTags] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Background image URL for the header - update your file path as needed
+  const headerImageURL = "/images/hero.png";
 
   useEffect(() => {
-    // Scroll to top when page or filters change
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
       setPage(1);
     }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
+  useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
@@ -92,124 +121,104 @@ export default function Community() {
         setPosts(data.posts);
         setTotalPages(data.pages);
         setError(null);
-      } catch (err) {
-        setError('Failed to load community posts.');
+      } catch {
+        setError("Failed to load posts.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchPosts();
-    return () => clearTimeout(timer);
-  }, [sort, page, selectedTags, searchTerm]);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [sort, page, selectedTags, debouncedSearchTerm]);
 
   useEffect(() => {
-    const fetchTrendingTags = async () => {
-        try {
-            const tags = await communityService.getTrendingTags();
-            setTrendingTags(tags);
-        } catch (err) {
-            console.error("Failed to fetch trending tags");
-        }
+    const fetchTags = async () => {
+      try {
+        const tags = await communityService.getTrendingTags();
+        setTrendingTags(tags);
+      } catch {}
     };
-    fetchTrendingTags();
+    fetchTags();
   }, []);
 
-  const handleOpenCreatePost = () => {
-    if (!isAuthenticated) {
-      navigate('/login?redirect=/community');
-    } else {
+  const handleCreateClick = () => {
+    if (!isAuthenticated) navigate("/login?redirect=/community");
+    else {
       setOpenCreatePost(true);
+      setSidebarOpen(false);
     }
   };
 
-  const handleCloseCreatePost = () => {
-    if (isSubmitting) return;
-    setOpenCreatePost(false);
+  const handleCloseCreate = () => {
+    if (!isSubmitting) setOpenCreatePost(false);
   };
 
-  const handleCreatePostSubmit = async (postData) => {
+  const handlePostSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const newPost = await communityService.createPost(postData);
-      setPosts([newPost, ...posts]);
+      const newPost = await communityService.createPost(data);
+      setPosts((prev) => [newPost, ...prev]);
       setOpenCreatePost(false);
-      setSnackbar({ open: true, message: 'Post created successfully!', severity: 'success' });
-    } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to create post. Please try again.', severity: 'error' });
+      setSnackbar({ open: true, message: "Post created successfully!", severity: "success" });
+    } catch {
+      setSnackbar({ open: true, message: "Failed to create post.", severity: "error" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleUpvote = async (postId) => {
-    if (!isAuthenticated) {
-      navigate('/login?redirect=/community');
-      return;
-    }
+    if (!isAuthenticated) return navigate("/login?redirect=/community");
     if (upvotingPosts.includes(postId)) return;
 
     setUpvotingPosts((prev) => [...prev, postId]);
+    const original = [...posts];
+    const index = posts.findIndex((p) => p._id === postId);
+    if (index === -1) return;
 
-    const originalPosts = [...posts];
-    const postIndex = posts.findIndex((p) => p._id === postId);
-    if (postIndex === -1) return;
-
-    const postToUpdate = { ...posts[postIndex] };
-    const hasUpvoted = postToUpdate.upvotes.includes(user.id);
-
-    // Optimistic UI update
+    const post = posts[index];
+    const userHasUpvoted = post.upvotes.includes(user.id);
     const updatedPost = {
-      ...postToUpdate,
-      upvotes: hasUpvoted
-        ? postToUpdate.upvotes.filter((id) => id !== user.id)
-        : [...postToUpdate.upvotes, user.id],
-      upvoteCount: hasUpvoted
-        ? postToUpdate.upvoteCount - 1
-        : postToUpdate.upvoteCount + 1,
+      ...post,
+      upvotes: userHasUpvoted ? post.upvotes.filter((id) => id !== user.id) : [...post.upvotes, user.id],
+      upvoteCount: userHasUpvoted ? post.upvoteCount - 1 : post.upvoteCount + 1,
     };
-
     const newPosts = [...posts];
-    newPosts[postIndex] = updatedPost;
+    newPosts[index] = updatedPost;
     setPosts(newPosts);
 
     try {
       await communityService.toggleUpvote(postId);
-    } catch (err) {
-      setPosts(originalPosts); // Revert on error
-      setSnackbar({ open: true, message: 'Failed to update vote.', severity: 'error' });
+    } catch {
+      setPosts(original);
+      setSnackbar({ open: true, message: "Failed to update vote.", severity: "error" });
     } finally {
       setUpvotingPosts((prev) => prev.filter((id) => id !== postId));
     }
   };
 
   const handleToggleSave = async (postId) => {
-    if (!isAuthenticated) {
-      navigate('/login?redirect=/community');
-      return;
-    }
-    setSavingPosts(prev => [...prev, postId]);
+    if (!isAuthenticated) return navigate("/login?redirect=/community");
+    setSavingPosts((prev) => [...prev, postId]);
     try {
       const res = await userService.toggleSavePost(postId);
-      if (res.success) {
-        updateUserSavedPosts(res.savedPosts);
-      }
-    } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to save post.', severity: 'error' });
+      if (res.success) updateUserSavedPosts(res.savedPosts);
+    } catch {
+      setSnackbar({ open: true, message: "Failed to save post.", severity: "error" });
     } finally {
-      setSavingPosts(prev => prev.filter(id => id !== postId));
+      setSavingPosts((prev) => prev.filter((id) => id !== postId));
     }
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setSnackbar({ ...snackbar, open: false });
   };
 
   const handleSortChange = (event, newSort) => {
     if (newSort !== null) {
-      setPage(1); // Reset to first page on sort change
       setSort(newSort);
+      setPage(1);
     }
   };
 
@@ -217,105 +226,240 @@ export default function Community() {
     setPage(value);
   };
 
-  const handleTagClick = (tagToToggle) => {
-    setPage(1); // Reset to first page when filters change
-    // If the search term is the same as the tag, clear the search term to avoid redundancy
-    if (searchTerm.toLowerCase() === tagToToggle.toLowerCase()) {
-      setSearchTerm('');
-    }
+  const handleTagClick = (tag) => {
+    setPage(1);
+    if (searchTerm.toLowerCase() === tag.toLowerCase()) setSearchTerm("");
     setSelectedTags((prev) =>
-      prev.includes(tagToToggle)
-        ? prev.filter((tag) => tag !== tagToToggle)
-        : [...prev, tagToToggle]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
-  return (
-    <Box sx={{ minHeight: "100vh", bgcolor: theme.palette.background.default, py: 4 }}>
-      <Container maxWidth="lg">
-        {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography
-            variant="h2"
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              color: theme.palette.text.primary,
-              mb: 2,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Cook-N-Crop Community
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: theme.palette.text.secondary,
-              maxWidth: 600,
-              mx: "auto",
-              lineHeight: 1.6,
-            }}
-          >
-            Connect with food lovers, share recipes, and get tips from local farmers and chefs.
-          </Typography>
-        </Box>
+  // Sidebar content reused inside drawer and desktop sidebar
+  const SidebarContent = (
+    <Stack
+      spacing={4}
+      sx={{
+        minWidth: 230,
+        maxWidth: 340,
+        p: 3,
+      }}
+    >
+      <Paper
+        sx={{
+          p: 3,
+          textAlign: "center",
+          backgroundImage: `url(${headerImageURL})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.85)",
+          bgcolor: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          color: theme.palette.common.white,
+          borderRadius: 3,
+          boxShadow: theme.shadows[3],
+        }}
+      >
+        <ForumIcon fontSize="large" sx={{ mb: 1.5 }} />
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+          Join the Conversation!
+        </Typography>
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          size="large"
+          onClick={handleCreateClick}
+          sx={{ borderRadius: 20, py: 1.3, fontWeight: 700, fontFamily: theme.typography.fontFamily, textTransform: "none" }}
+        >
+          Create Post
+        </Button>
+        <Typography variant="body2" sx={{ mt: 1, opacity: 0.9, fontFamily: theme.typography.fontFamily }}>
+          Share your experiences, ask questions, and connect!
+        </Typography>
+      </Paper>
+    </Stack>
+  );
 
-        <Grid container spacing={4} sx={{ mt: 2 }}>
-          {/* Main Content */}
-          <Grid item xs={12} md={8}>
-            {/* Community Posts */}
-            <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, flexGrow: 1 }}>
-                  Community Posts
-                </Typography>
-                <TextField
-                  label="Search Posts"
-                  variant="outlined"
-                  size="small"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{ minWidth: 250 }}
-                />
+  return (
+    <Box
+      sx={{
+        bgcolor: theme.palette.background.default,
+        minHeight: "100vh",
+        paddingTop: { xs: 8, md: 12 },
+        paddingBottom: 4,
+        fontFamily: theme.typography.fontFamily,
+      }}
+    >
+      <Container maxWidth="lg" disableGutters>
+        {/* Header with background image */}
+        <Paper
+          sx={{
+            position: "relative",
+            height: { xs: 180, sm: 225, md: 280 },
+            borderRadius: 6,
+            overflow: "hidden",
+            marginBottom: 6,
+            boxShadow: theme.shadows[5],
+            cursor: "default",
+            userSelect: "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            color: "#fff",
+            fontFamily: theme.typography.fontFamily,
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${"/images/hero.png"})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "brightness(0.55)",
+              zIndex: 1,
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              bgcolor: "rgba(28,16,56,0.56)",
+              zIndex: 2,
+            }}
+          />
+          <Box sx={{ position: "relative", p: { xs: 2, sm: 3 }, zIndex: 3 }}>
+            <Typography
+              variant="h2"
+              component="h1"
+              sx={{
+                fontSize: { xs: "1.8rem", sm: "2.6rem", md: "3rem" },
+                fontWeight: 900,
+                letterSpacing: 1.2,
+                textShadow: "0 0 10px rgba(0,0,0,0.6)",
+                lineHeight: 1.15,
+                fontFamily: theme.typography.fontFamily,
+              }}
+            >
+              Cook-N-Connect
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                marginTop: 1,
+                fontWeight: 400,
+                opacity: 0.9,
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: "1.05rem", sm: "1.15rem" },
+                textShadow: "0 0 7px rgba(0,0,0,0.5)",
+                maxWidth: 680,
+                mx: "auto",
+              }}
+            >
+              Connect with food lovers, share recipes, and get tips from local farmers and chefs.
+            </Typography>
+          </Box>
+        </Paper>
+
+        {/* Main grid */}
+        <Grid
+          container
+          spacing={{ xs: 0, md: 4 }}
+          sx={{
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: "flex-start",
+          }}
+        >
+          {/* Posts area */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mb: 3 }}>
+              {/* Search and sort */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  alignItems: "center",
+                  marginBottom: 2,
+                }}
+              >
+                <SearchContainer>
+                  <SearchIconWrapper>
+                    <SearchIcon />
+                  </SearchIconWrapper>
+                  <StyledInputBase
+                    fullWidth
+                    placeholder="Search posts"
+                    variant="standard"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    inputProps={{ "aria-label": "search posts" }}
+                    sx={{ "input": { pl: 5, py: 0.8, fontWeight: 700, fontFamily: theme.typography.fontFamily } }}
+                  />
+                </SearchContainer>
                 <ToggleButtonGroup
                   value={sort}
                   exclusive
                   onChange={handleSortChange}
-                  aria-label="post sorting"
+                  aria-label="Sort posts"
+                  sx={{
+                    "& .MuiToggleButton-root": {
+                      fontWeight: 600,
+                      padding: "5px 14px",
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: 14,
+                    },
+                  }}
                 >
-                  <ToggleButton value="new" aria-label="sort by new">
-                    <NewReleasesIcon sx={{ mr: 1 }} />
+                  <ToggleButton value="new" aria-label="Sort by new">
+                    <NewReleasesIcon sx={{ mr: 0.7, fontSize: 20 }} />
                     New
                   </ToggleButton>
-                  <ToggleButton value="top" aria-label="sort by top">
-                    <TrendingUpIcon sx={{ mr: 1 }} />
+                  <ToggleButton value="top" aria-label="Sort by top">
+                    <TrendingUpIcon sx={{ mr: 0.7, fontSize: 20 }} />
                     Top
                   </ToggleButton>
-                  <ToggleButton value="discussed" aria-label="sort by most discussed">
-                    <ForumIcon sx={{ mr: 1 }} />
+                  <ToggleButton value="discussed" aria-label="Sort by discussed">
+                    <ForumIcon sx={{ mr: 0.7, fontSize: 20 }} />
                     Discussed
                   </ToggleButton>
                 </ToggleButtonGroup>
+                <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }} />
+                <Button
+                  variant="contained"
+                  onClick={handleCreateClick}
+                  startIcon={<ForumIcon />}
+                  sx={{ display: { xs: 'none', md: 'flex' } }}
+                >
+                  Create Post
+                </Button>
+                {/* This button will be visible on mobile to open the sidebar */}
+                <IconButton
+                  onClick={() => setSidebarOpen(true)}
+                  sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}
+                  aria-label="open filters and actions"
+                >
+                  <MenuIcon />
+                </IconButton>
               </Box>
 
+              {/* Content states */}
               {loading && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                <Box sx={{ textAlign: "center", py: 4 }}>
                   <CircularProgress />
                 </Box>
               )}
               {error && <Alert severity="error">{error}</Alert>}
-
               {!loading && !error && posts.length === 0 && (
-                <Typography sx={{ textAlign: 'center', color: 'text.secondary', my: 4 }}>
+                <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 18, py: 4 }}>
                   No posts yet. Be the first to start a conversation!
                 </Typography>
               )}
+
+              {/* Posts Grid */}
               <Grid container spacing={3}>
-                {!loading && !error && posts.map((post) => (
-                  <Grid item xs={12} lg={6} key={post._id}>
+                {posts.map((post) => (
+                  <Grid size={{ xs: 12, sm: 6 }} key={post._id} sx={{ display: "flex" }}>
                     <PostCard
                       post={post}
                       user={user}
@@ -327,109 +471,59 @@ export default function Community() {
                   </Grid>
                 ))}
               </Grid>
-            </Box>
 
-            {/* Pagination Controls */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+              {/* Pagination */}
               {totalPages > 1 && (
-                <Pagination
-                  count={totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="large"
-                />
+                <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+                  <Pagination
+                    color="primary"
+                    size="large"
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                  />
+                </Box>
               )}
             </Box>
           </Grid>
-
-          {/* Sidebar */}
-          <Grid item xs={12} md={4}>
-            <Stack spacing={4} sx={{ position: 'sticky', top: 100 }}>
-              {/* Call to Action */}
-              <Paper
-                sx={{
-                  p: 3,
-                  textAlign: "center",
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
-                  border: `1px solid ${theme.palette.primary.main}30`,
-                }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: theme.palette.text.primary }}>
-                  Join the Conversation
-                </Typography>
-                <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 3, maxWidth: 500, mx: "auto" }}>
-                  Share your favorite recipes, ask for cooking advice, and connect with other foodies.
-                </Typography>
-                <Button
-                  variant="contained"
-                  onClick={handleOpenCreatePost}
-                  size="large"
-                  sx={{
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 600,
-                    textTransform: "none",
-                    borderRadius: 2,
-                  }}
-                >
-                  Create a Post
-                </Button>
-              </Paper>
-
-              {/* Trending Tags */}
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
-                  <WhatshotIcon color="error" sx={{ mr: 1 }} />
-                  Trending Tags
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {trendingTags.length > 0 ? trendingTags.map(item => (
-                    <Chip
-                      key={item.tag}
-                      label={item.tag}
-                      onClick={() => handleTagClick(item.tag)}
-                      clickable
-                      color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
-                      variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
-                    />
-                  )) : (
-                    <Typography variant="body2" color="text.secondary">No trending tags right now.</Typography>
-                  )}
-                  {selectedTags.length > 0 && (
-                    <Button
-                      size="small"
-                      onClick={() => setSelectedTags([])}
-                      sx={{ ml: 1, textTransform: 'none' }}
-                    >
-                      Clear Filters
-                    </Button>
-                  )}
-                </Box>
-              </Paper>
-            </Stack>
-          </Grid>
         </Grid>
 
-        <Dialog open={openCreatePost} onClose={handleCloseCreatePost} maxWidth="sm" fullWidth>
+        {/* Mobile Sidebar Drawer */}
+        <Drawer
+          anchor="right"
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          PaperProps={{ sx: { width: "90vw", maxWidth: 360 } }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+            <IconButton edge="end" onClick={() => setSidebarOpen(false)} aria-label="close sidebar">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          {SidebarContent}
+        </Drawer>
+
+        {/* Create Post Dialog */}
+        <Dialog open={openCreatePost} onClose={handleCloseCreate} fullWidth maxWidth="sm">
           <DialogTitle sx={{ fontWeight: 700 }}>Create a New Post</DialogTitle>
           <DialogContent>
-            <CreatePostForm
-              onSubmit={handleCreatePostSubmit}
-              onCancel={handleCloseCreatePost}
-              loading={isSubmitting}
-              forceRecipe={false}
+            <CreatePostForm 
+              onSubmit={handlePostSubmit} 
+              onCancel={handleCloseCreate} 
+              loading={isSubmitting} 
+              forceRecipe={false} 
             />
           </DialogContent>
         </Dialog>
 
+        {/* Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
           onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
             {snackbar.message}
           </Alert>
         </Snackbar>

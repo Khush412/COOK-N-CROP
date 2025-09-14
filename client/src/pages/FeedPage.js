@@ -12,11 +12,13 @@ import {
   Button,
   Paper,
   Snackbar,
+  alpha,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import communityService from '../services/communityService';
 import userService from '../services/userService';
 import PostCard from '../components/PostCard';
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
 
 const FeedPage = () => {
   const theme = useTheme();
@@ -120,12 +122,13 @@ const FeedPage = () => {
 
     if (posts.length === 0) {
       return (
-        <Paper sx={{ p: 4, textAlign: 'center', mt: 4 }}>
-          <Typography variant="h6" color="text.secondary">Your feed is empty.</Typography>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
+        <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+          <DynamicFeedIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Your feed is empty.</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
             Follow some users to see their posts here.
           </Typography>
-          <Button component={RouterLink} to="/community" variant="contained" sx={{ mt: 2 }}>
+          <Button component={RouterLink} to="/community" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
             Explore Community
           </Button>
         </Paper>
@@ -136,7 +139,7 @@ const FeedPage = () => {
       <>
         <Grid container spacing={3}>
           {posts.map((post) => (
-            <Grid item xs={12} sm={6} md={4} key={post._id}>
+            <Grid size={{ xs: 12, sm: 6 }} key={post._id}>
               <PostCard
                 post={post}
                 user={user}
@@ -164,10 +167,15 @@ const FeedPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, mb: 4 }}>
-        My Feed
-      </Typography>
+    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          My Feed
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Posts from the creators you follow.
+        </Typography>
+      </Paper>
       {renderContent()}
       <Snackbar
         open={snackbar.open}
@@ -175,7 +183,7 @@ const FeedPage = () => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

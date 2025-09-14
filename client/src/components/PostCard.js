@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
-import { Paper, Box, Avatar, Typography, Chip, Divider, IconButton, Button, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { Link as RouterLink } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { ThumbUp as ThumbUpIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, MenuBook as MenuBookIcon, Star as StarIcon } from '@mui/icons-material';
-import communityService from '../services/communityService';
+import React, { useState } from "react";
+import {
+  Paper,
+  Box,
+  Avatar,
+  Typography,
+  Chip,
+  Divider,
+  IconButton,
+  Button,
+  Tooltip,
+  Stack,
+  alpha,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { Link as RouterLink } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import {
+  ThumbUp as ThumbUpIcon,
+  Bookmark as BookmarkIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  MenuBook as MenuBookIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+} from "@mui/icons-material";
+import communityService from "../services/communityService";
 
-const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPosts }) => {
+const CARD_HEIGHT = 320; // Fixed card height to keep all equal size
+
+const PostCard = ({
+  post,
+  user,
+  onUpvote,
+  upvotingPosts,
+  onToggleSave,
+  savingPosts,
+}) => {
   const theme = useTheme();
   const [isFeatured, setIsFeatured] = useState(post.isFeatured);
   const isSaved = user?.savedPosts?.includes(post._id);
@@ -14,142 +42,251 @@ const PostCard = ({ post, user, onUpvote, upvotingPosts, onToggleSave, savingPos
   return (
     <Paper
       sx={{
-        p: 3,
-        height: "100%",
-        display: 'flex',
-        flexDirection: 'column',
-        border: isFeatured ? `2px solid ${theme.palette.secondary.main}` : `1px solid ${theme.palette.divider}`,
-        position: 'relative',
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        p: 2,
+        height: CARD_HEIGHT,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        borderRadius: 3,
+        border: isFeatured
+          ? `2px solid ${theme.palette.secondary.main}`
+          : `1px solid transparent`,
+        position: "relative",
+        boxSizing: "border-box",
+        boxShadow: theme.shadows[3],
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
         "&:hover": {
-          transform: "translateY(-2px)",
+          transform: "translateY(-3px)",
           boxShadow: theme.shadows[8],
         },
+        width: "100%",
+        fontFamily: theme.typography.fontFamily,
+        backgroundColor: theme.palette.background.paper,
       }}
     >
+      {/* Featured Star */}
       {isFeatured && (
         <Tooltip title="Featured Post">
-          <StarIcon sx={{ position: 'absolute', top: 8, right: 8, color: 'secondary.main' }} />
+          <StarIcon
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              color: theme.palette.secondary.main,
+              fontSize: 24,
+              zIndex: 10,
+            }}
+          />
         </Tooltip>
       )}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+
+      {/* User Info */}
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        sx={{
+          flexWrap: "wrap",
+          mb: 1.5,
+          fontFamily: theme.typography.fontFamily,
+        }}
+      >
         <Avatar
           src={post.user.profilePic}
-          sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, mr: 2, fontWeight: 600 }}
+          sx={{
+            bgcolor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+            width: 40,
+            height: 40,
+            fontSize: 20,
+          }}
           component={RouterLink}
           to={`/user/${post.user.username}`}
         >
           {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
         </Avatar>
-        <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 600, textDecoration: 'none', color: 'inherit', '&:hover': { textDecoration: 'underline' } }}
-            component={RouterLink}
-            to={`/user/${post.user.username}`}
-          >
-            {post.user.username}
-          </Typography>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-          </Typography>
+        <Box minWidth={0} sx={{ flexGrow: 1 }}>
+          <Stack direction="row" alignItems="baseline" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            <Typography
+              variant="subtitle2"
+              component={RouterLink}
+              to={`/user/${post.user.username}`}
+              sx={{
+                fontWeight: 700,
+                color: theme.palette.text.primary,
+                textDecoration: "none",
+                "&:hover": { textDecoration: "underline" },
+                fontSize: 14,
+                fontFamily: theme.typography.fontFamily,
+              }}
+            >
+              {post.user.username}
+            </Typography>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+              • {formatDistanceToNow(new Date(post.createdAt), {
+                addSuffix: true,
+              })}
+            </Typography>
+          </Stack>
         </Box>
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      {/* Title */}
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ flexWrap: "wrap", mb: 1, fontFamily: theme.typography.fontFamily }}
+      >
         {post.isRecipe && (
-          <MenuBookIcon color="action" sx={{ fontSize: '1.2rem' }} />
+          <MenuBookIcon
+            color="action"
+            sx={{ fontSize: 18, verticalAlign: "middle", mb: -0.5 }}
+          />
         )}
-        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+        <Typography
+          variant="subtitle1"
+          noWrap
+          sx={{
+            fontWeight: 700,
+            color: theme.palette.text.primary,
+            fontSize: 16,
+            flexGrow: 1,
+            minWidth: 0,
+            fontFamily: theme.typography.fontFamily,
+          }}
+        >
           {post.title}
         </Typography>
-      </Box>
+      </Stack>
 
+      {/* Content */}
       <Typography
         variant="body2"
         sx={{
           color: theme.palette.text.secondary,
-          mb: 2,
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
+          fontSize: 13,
+          lineHeight: 1.4,
           flexGrow: 1,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: "vertical",
+          mb: 1.5,
+          fontFamily: theme.typography.fontFamily,
         }}
       >
         {post.content}
       </Typography>
 
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-        {post.tags.map((tag, index) => (
+      {/* Tags */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
+        {(post.tags || []).map((tag, index) => (
           <Chip
             key={index}
             label={tag}
             size="small"
             sx={{
-              bgcolor: theme.palette.primary.main + "20",
+              borderRadius: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.12),
               color: theme.palette.primary.main,
               fontWeight: 500,
+              fontSize: 12,
+              fontFamily: theme.typography.fontFamily,
             }}
           />
         ))}
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 1 }} />
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      {/* Actions */}
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ flexWrap: "wrap", gap: 1, fontFamily: theme.typography.fontFamily }}
+      >
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
             <IconButton
               size="small"
               onClick={() => onUpvote(post._id)}
               disabled={upvotingPosts.includes(post._id)}
               aria-label="upvote post"
+              sx={{
+                color: post.upvotes?.includes(user?.id)
+                  ? theme.palette.primary.main
+                  : theme.palette.action.active,
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.15),
+                },
+              }}
             >
-              <ThumbUpIcon
-                fontSize="small"
-                color={(post.upvotes || []).includes(user?.id) ? 'primary' : 'action'}
-              />
+              <ThumbUpIcon fontSize="small" />
             </IconButton>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>{post.upvoteCount}</Typography>
-          </Box>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: 'flex', alignItems: 'center' }}>
-            💬 {post.commentCount} comments
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              {post.upvoteCount}
+            </Typography>
+          </Stack>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+            💬 {post.commentCount}
           </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton
+        </Stack>
+
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <IconButton
+            size="small"
+            onClick={() => onToggleSave(post._id)}
+            disabled={savingPosts.includes(post._id)}
+            aria-label="save post"
+            sx={{
+              color: isSaved ? theme.palette.secondary.main : theme.palette.action.active,
+              "&:hover": {
+                bgcolor: alpha(theme.palette.secondary.main, 0.12),
+              },
+            }}
+          >
+            {isSaved ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
+          </IconButton>
+          <Button
+            component={RouterLink}
+            to={`/post/${post._id}`}
+            size="small"
+            variant="outlined"
+            sx={{
+              fontWeight: 600,
+              textTransform: "none",
+              fontSize: 13,
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.5,
+              "&:hover": {
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.main,
+                bgcolor: alpha(theme.palette.secondary.main, 0.05),
+              },
+            }}
+          >
+            Read More
+          </Button>
+          {user?.role === "admin" && (
+            <Tooltip title={isFeatured ? "Unfeature Post" : "Feature Post"}>
+              <IconButton
                 size="small"
-                onClick={() => onToggleSave(post._id)}
-                disabled={savingPosts.includes(post._id)}
-                aria-label="save post"
-            >
-                {isSaved ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
-            </IconButton>
-            <Button
-                size="small"
-                variant="outlined"
-                component={RouterLink}
-                to={`/post/${post._id}`}
-            >
-                Read More
-            </Button>
-            {user?.role === 'admin' && (
-              <Button
-                size="small"
+                sx={{ ml: 0.5 }}
                 onClick={async () => {
                   const res = await communityService.toggleFeaturePost(post._id);
-                  if (res.success) {
-                    setIsFeatured(res.isFeatured);
-                  }
+                  if (res.success) setIsFeatured(res.isFeatured);
                 }}
-                color={isFeatured ? 'secondary' : 'primary'}
               >
-                {isFeatured ? 'Unfeature' : 'Feature'}
-              </Button>
-            )}
-        </Box>
-      </Box>
+                {isFeatured ? <StarIcon color="secondary" /> : <StarBorderIcon />}
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+      </Stack>
     </Paper>
   );
 };

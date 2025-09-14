@@ -30,7 +30,7 @@ router.get('/', optionalAuth, async (req, res) => {
     const postsPromise = Post.find(postMatchQuery)
       .limit(limit)
       .populate('user', 'username profilePic')
-      .select('title content user upvoteCount commentCount createdAt isFeatured')
+      .select('title content user tags upvoteCount commentCount createdAt isFeatured')
       .lean();
 
     const productsPromise = Product.find({
@@ -82,6 +82,7 @@ router.get('/posts', optionalAuth, async (req, res) => {
       .limit(limitNum)
       .skip(skip)
       .populate('user', 'username profilePic')
+      .select('title content user tags upvoteCount commentCount createdAt isFeatured')
       .lean();
 
     const totalPosts = await Post.countDocuments(postMatchQuery);

@@ -83,10 +83,7 @@ export default function ControlPanel() {
         {pages.map(({ label, path, icon: Icon, color }) => (
           <Grid
             key={label}
-            item
-            xs={12}
-            sm={6}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
             sx={{
               display: "flex",
               justifyContent: "center",

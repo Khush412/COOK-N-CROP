@@ -2,52 +2,55 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Function to ensure directory exists
-const ensureDirExists = (dirPath) => {
-  // Use path.resolve to get an absolute path from the project root
-  const absolutePath = path.resolve(dirPath);
-  if (!fs.existsSync(absolutePath)) {
-    fs.mkdirSync(absolutePath, { recursive: true });
-  }
-};
+// Define storage paths
+const profilePicsDir = path.join(__dirname, '..', 'public', 'uploads', 'profilePics');
+const productImagesDir = path.join(__dirname, '..', 'public', 'uploads', 'productImages');
 
-// Define storage for different upload types
+// Ensure directories exist
+fs.mkdirSync(profilePicsDir, { recursive: true });
+fs.mkdirSync(productImagesDir, { recursive: true });
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    let uploadPath;
-    // Route-specific subdirectories
-    if (req.baseUrl.includes('/users')) {
-      uploadPath = 'uploads/profilePics/';
-    } else if (req.baseUrl.includes('/products')) {
-      uploadPath = 'uploads/productImages/';
+    // Dynamically set destination based on the fieldname of the upload
+    if (file.fieldname === 'profilePic') {
+      cb(null, profilePicsDir);
+    } else if (file.fieldname === 'image') {
+      cb(null, productImagesDir);
     } else {
-      // Fallback directory
-      uploadPath = 'uploads/general/';
+      // Fallback or error
+      cb(new Error('Invalid upload fieldname for file storage.'), null);
     }
-    
-    ensureDirExists(uploadPath);
-    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    // Create a unique filename to avoid overwrites
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-// File filter to accept only images
-const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      return cb(new Error('Only image files are allowed!'), false);
+function checkFileType(file, cb) {
+  // Allowed ext
+  const filetypes = /jpeg|jpg|png|gif|webp/;
+  // Check ext
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  // Check mime
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Error: Images Only!'));
   }
-  cb(null, true);
-};
+}
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
-  fileFilter: fileFilter
+  limits: {
+    fileSize: 1024 * 1024 * 5 // 5MB file size limit
+  },
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  }
 });
 
 module.exports = upload;

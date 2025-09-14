@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef, useCallback } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import { InputBase,
+import {
   AppBar,
   Toolbar,
   Typography,
@@ -21,6 +21,11 @@ import { InputBase,
   styled,
   alpha,
   Fade,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
 import {
   Palette as PaletteIcon,
@@ -36,21 +41,20 @@ import {
   Bookmark as BookmarkIcon,
   Favorite as FavoriteIcon,
   History as HistoryIcon,
-  Search as SearchIcon,
   Mail as MailIcon,
   Block as BlockIcon,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
-import NotificationsMenu from "./NotificationsMenu"; // New
-import notificationService from "../services/notificationService"; // New
-import { useSocket } from "../contexts/SocketContext"; // New
+import NotificationsMenu from "./NotificationsMenu";
+import notificationService from "../services/notificationService";
+import { useSocket } from "../contexts/SocketContext";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
-import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
+import GlobalSearch from './GlobalSearch';
 
-
-// Navigation link styles
+// Navigation link styles adjusted for reduced padding except first nav item
 const NavLink = styled(Button)(({ theme, active }) => ({
   color: active ? theme.palette.secondary.main : theme.palette.common.white,
   fontWeight: 600,
@@ -62,6 +66,8 @@ const NavLink = styled(Button)(({ theme, active }) => ({
   textTransform: "uppercase",
   background: "none",
   minWidth: 70,
+  paddingLeft: theme.spacing(1),
+  paddingRight: theme.spacing(1),
   transition: "color 0.3s ease",
   borderBottom: active ? `2px solid ${theme.palette.secondary.main}` : "2px solid transparent",
   "&:hover, &:focus": {
@@ -76,7 +82,6 @@ const NavLink = styled(Button)(({ theme, active }) => ({
   },
 }));
 
-// Site name
 const SiteName = styled(Typography)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
   color: theme.palette.common.white,
@@ -88,9 +93,9 @@ const SiteName = styled(Typography)(({ theme }) => ({
   fontSize: "1.6rem",
   textTransform: "uppercase",
   cursor: "pointer",
+  paddingRight: theme.spacing(6), // Increased padding after site name for clarity
 }));
 
-// Profile container
 const ProfileContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -113,7 +118,6 @@ const DropdownArrow = styled(ArrowDropDownIcon)(({ theme }) => ({
   pointerEvents: "none",
 }));
 
-// Styled menu with modern glass look
 const BaseMenu = styled(Menu)(({ theme }) => ({
   "& .MuiPaper-root": {
     borderRadius: 16,
@@ -123,8 +127,7 @@ const BaseMenu = styled(Menu)(({ theme }) => ({
     paddingBottom: theme.spacing(1),
     background: alpha(theme.palette.background.paper, 0.8),
     backdropFilter: "blur(12px)",
-    boxShadow:
-      "rgba(0, 0, 0, 0.24) 0px 3px 10px, rgba(0,0,0,0.12) 0px 0px 5px",
+    boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 10px, rgba(0,0,0,0.12) 0px 0px 5px",
     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     fontFamily: theme.typography.fontFamily,
     fontSize: theme.typography.pxToRem(14),
@@ -134,7 +137,6 @@ const BaseMenu = styled(Menu)(({ theme }) => ({
     paddingTop: 0,
     paddingBottom: 0,
   },
-  // Ensure MenuItem texts inherit theme typography
   "& .MuiMenuItem-root": {
     fontFamily: theme.typography.fontFamily,
     fontSize: theme.typography.pxToRem(14),
@@ -151,14 +153,12 @@ const BaseMenu = styled(Menu)(({ theme }) => ({
     background: alpha(theme.palette.background.paper, 0.8),
     backdropFilter: "blur(12px)",
     transform: "rotate(45deg)",
-    boxShadow:
-      "rgba(0, 0, 0, 0.1) -1px -1px 2px, rgba(0, 0, 0, 0.05) 1px 1px 1px",
+    boxShadow: "rgba(0, 0, 0, 0.1) -1px -1px 2px, rgba(0, 0, 0, 0.05) 1px 1px 1px",
     borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     zIndex: 0,
   },
 }));
-
 
 const StyledMenu = forwardRef((props, ref) => {
   return (
@@ -173,46 +173,6 @@ const StyledMenu = forwardRef((props, ref) => {
   );
 });
 
-// Search component styles
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-}));
-
 export default function Navbar() {
   const theme = useTheme();
   const location = useLocation();
@@ -221,13 +181,13 @@ export default function Navbar() {
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
-  const socket = useSocket(); // New
-  const [anchorElNotifications, setAnchorElNotifications] = useState(null); // New
-  const [notifications, setNotifications] = useState([]); // New
-  const [unreadCount, setUnreadCount] = useState(0); // New
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' }); // New
+  const socket = useSocket();
+  const [anchorElNotifications, setAnchorElNotifications] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
   const [hasShadow, setHasShadow] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setHasShadow(window.scrollY > 20);
@@ -251,52 +211,42 @@ export default function Navbar() {
     }
   }, [isAuthenticated]);
 
-  // Fetch notifications when user is authenticated
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Fetch unread message count
   useEffect(() => {
     fetchUnreadMessageCount();
   }, [fetchUnreadMessageCount]);
 
-  // Listen for real-time notifications
   useEffect(() => {
     if (socket) {
-      socket.on('new_notification', (newNotification) => {
-        showSnackbar(`New notification from ${newNotification.sender.username}`, 'info');
-        setNotifications(prev => [newNotification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+      socket.on("new_notification", (newNotification) => {
+        showSnackbar(`New notification from ${newNotification.sender.username}`, "info");
+        setNotifications((prev) => [newNotification, ...prev]);
+        setUnreadCount((prev) => prev + 1);
       });
 
-      socket.on('broadcast_received', (data) => {
-        showSnackbar(data.message, 'success');
-        fetchNotifications(); // Refetch to update the list with the new broadcast
+      socket.on("broadcast_received", (data) => {
+        showSnackbar(data.message, "success");
+        fetchNotifications();
       });
 
-      socket.on('new_private_message', (message) => {
-        showSnackbar(`New message from ${message.sender.username}`, 'info');
-        fetchUnreadMessageCount(); // Refetch count on new message
+      socket.on("new_private_message", (message) => {
+        showSnackbar(`New message from ${message.sender.username}`, "info");
+        fetchUnreadMessageCount();
       });
 
       return () => {
-        socket.off('new_notification');
-        socket.off('broadcast_received');
-        socket.off('new_private_message');
+        socket.off("new_notification");
+        socket.off("broadcast_received");
+        socket.off("new_private_message");
       };
     }
   }, [socket, showSnackbar, fetchNotifications, fetchUnreadMessageCount]);
 
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
-
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/search?q=${searchQuery.trim()}`);
-      setSearchQuery(''); // Optional: clear search bar after search
-    }
-  };
 
   const handleLogout = async () => {
     handleCloseUserMenu();
@@ -317,6 +267,10 @@ export default function Navbar() {
   const isActive = (path) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const handleOpenNotificationsMenu = (event) => {
     setAnchorElNotifications(event.currentTarget);
   };
@@ -328,8 +282,10 @@ export default function Navbar() {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await notificationService.markAsRead(notificationId);
-      setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
@@ -338,7 +294,7 @@ export default function Navbar() {
   const handleMarkAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
@@ -346,9 +302,34 @@ export default function Navbar() {
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setSnackbar({ ...snackbar, open: false });
   };
+
+  const navItems = [
+    { label: 'Home', path: '/' },
+    { label: 'Community', path: '/community' },
+    { label: "Crop'Corner", path: '/CropCorner' },
+    { label: 'Recipes', path: '/recipes' },
+  ];
+
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', p: 2 }}>
+      <Typography variant="h6" sx={{ my: 2, fontWeight: 'bold' }}>
+        Cook'n'Crop
+      </Typography>
+      <Divider />
+      <List>
+        {navItems.map((item) => (
+          <ListItem key={item.label} disablePadding>
+            <ListItemButton sx={{ textAlign: 'center' }} component={RouterLink} to={item.path}>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
     <>
@@ -362,7 +343,6 @@ export default function Navbar() {
           width: "100vw",
           left: 0,
           top: 0,
-          zIndex: 1400,
         }}
         elevation={hasShadow ? 6 : 0}
         enableColorOnDark
@@ -370,15 +350,23 @@ export default function Navbar() {
         <Toolbar
           sx={{
             px: 2,
-            maxWidth: 1500, // Increased for more space
+            maxWidth: 1500,
             margin: "auto",
-            width: '100%',
+            width: "100%",
             alignItems: "center",
-            display: 'flex',
+            display: "flex",
           }}
         >
-          {/* Site Name */}
-          
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { xs: 'block', lg: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+          {/* Site Name with increased padding */}
           <SiteName sx={{ display: "flex", flexShrink: 0 }}>
             <Typography
               component={RouterLink}
@@ -401,77 +389,29 @@ export default function Navbar() {
             </Typography>
           </SiteName>
 
-          {/* Navigation Links */}
+          {/* Navigation Links with reduced padding and smaller gap between Recipes and Search */}
           <Box
-              component="nav"
-              aria-label="main navigation"
-              sx={{
-                display: { xs: "none", lg: "flex" }, // Hide on smaller screens to make space
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <NavLink
-                component={RouterLink}
-                to="/"
-                active={isActive("/") ? 1 : 0}
-                tabIndex={0}
-              >
-                Home
+            component="nav"
+            aria-label="main navigation"
+            sx={{
+              display: { xs: "none", lg: "flex" },
+              alignItems: "center",
+              gap: 2,
+              mr: 1, // decrease gap before search bar
+            }}
+          >
+            {navItems.map((item) => (
+              <NavLink key={item.label} component={RouterLink} to={item.path} active={isActive(item.path) ? 1 : 0}>
+                {item.label}
               </NavLink>
-              <NavLink
-                component={RouterLink}
-                to="/community"
-                active={isActive("/community") ? 1 : 0}
-                tabIndex={0}
-              >
-                Community
-              </NavLink>
-              <NavLink
-                component={RouterLink}
-                to="/CropCorner"
-                active={isActive("/CropCorner") ? 1 : 0}
-                tabIndex={0}
-              >
-                Crop'Corner
-              </NavLink>
-              <NavLink
-                component={RouterLink}
-                to="/recipes"
-                active={isActive("/recipes") ? 1 : 0}
-                tabIndex={0}
-              >
-                Recipes
-              </NavLink>
-              {isAuthenticated && (
-                <NavLink
-                  component={RouterLink}
-                  to="/feed"
-                  active={isActive("/feed") ? 1 : 0}
-                  tabIndex={0}
-                >
-                  My Feed
-                </NavLink>
-              )}
-            </Box>
+            ))}
+          </Box>
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Search Bar */}
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ 'aria-label': 'search' }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
-            />
-          </Search>
+          <GlobalSearch />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {/* Cart Button */}
             <Tooltip title="Shopping Cart" arrow>
               <IconButton
@@ -589,13 +529,37 @@ export default function Navbar() {
                       borderColor: "divider",
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{fontFamily: theme.typography.fontFamily, fontWeight: 700, mb: 0.5 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700, mb: 0.5 }}
+                    >
                       {user?.username || "User"}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" noWrap sx={{fontFamily: theme.typography.fontFamily}}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      noWrap
+                      sx={{ fontFamily: theme.typography.fontFamily }}
+                    >
                       {user?.email || ""}
                     </Typography>
                   </Box>
+
+                  {/* My Feed inside dropdown */}
+                  {isAuthenticated && (
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseUserMenu();
+                        navigate("/feed");
+                      }}
+                      sx={{ borderRadius: 2, px: 3 }}
+                    >
+                      <ListItemIcon>
+                        <HomeIcon fontSize="small" />
+                      </ListItemIcon>
+                      My Feed
+                    </MenuItem>
+                  )}
 
                   <MenuItem onClick={handleProfile} sx={{ borderRadius: 2, px: 3 }}>
                     <ListItemIcon>
@@ -614,32 +578,6 @@ export default function Navbar() {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
-                      navigate("/dashboard/profile");
-                    }}
-                    sx={{ borderRadius: 2, px: 3 }}
-                  >
-                    <ListItemIcon>
-                      <DashboardCustomizeIcon fontSize="small" /> {/* Changed icon */}
-                    </ListItemIcon>
-                    Control Panel
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseUserMenu();
-                      navigate("/subscription");
-                    }}
-                    sx={{ borderRadius: 2, px: 3 }}
-                  >
-                    <ListItemIcon>
-                      <SubscriptionsIcon fontSize="small" />
-                    </ListItemIcon>
-                    Subscription
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseUserMenu();
                       navigate("/profile/orders");
                     }}
                     sx={{ borderRadius: 2, px: 3 }}
@@ -650,7 +588,7 @@ export default function Navbar() {
                     My Orders
                   </MenuItem>
 
-                  {user?.role === 'admin' && (
+                  {user?.role === "admin" && (
                     <MenuItem
                       onClick={() => {
                         handleCloseUserMenu();
@@ -740,21 +678,23 @@ export default function Navbar() {
                     sx={{ borderRadius: 2, px: 3 }}
                   >
                     <ListItemIcon>
-                      <SettingsIcon fontSize="small" /> {/* This stays the same */}
+                      <SettingsIcon fontSize="small" />
                     </ListItemIcon>
                     Settings
                   </MenuItem>
 
                   <Divider sx={{ my: 1 }} />
 
-                  <MenuItem onClick={handleLogout} sx={{ borderRadius: 2, color: "error.main", px: 3 }}>
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{ borderRadius: 2, color: "error.main", px: 3 }}
+                  >
                     <ListItemIcon>
                       <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
                     </ListItemIcon>
                     Logout
                   </MenuItem>
                 </StyledMenu>
-
               </>
             ) : (
               <Button
@@ -792,6 +732,20 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
 
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'background.default' },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
       {/* Theme Customizer Dialog */}
       <Dialog
         open={themeDialogOpen}
@@ -821,13 +775,12 @@ export default function Navbar() {
         open={snackbar.open}
         autoHideDuration={5000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
-      
     </>
   );
 }

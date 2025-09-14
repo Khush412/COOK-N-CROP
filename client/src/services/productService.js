@@ -100,21 +100,13 @@ const toggleReviewUpvote = async (productId, reviewId) => {
 
 const createProduct = async (productData) => {
   // productData should be FormData
-  const { data } = await axios.post('/products', productData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const { data } = await axios.post('/products', productData);
   return data;
 };
 
 const updateProduct = async (id, productData) => {
   // productData should be FormData
-  const { data } = await axios.put(`/products/${id}`, productData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const { data } = await axios.put(`/products/${id}`, productData);
   return data;
 };
 

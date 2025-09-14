@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -22,6 +22,10 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  alpha,
+  Select,
+  MenuItem,
+  InputLabel,
   useTheme,
   useMediaQuery,
   Pagination,
@@ -37,7 +41,6 @@ const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood'
 
 export default function CropCorner() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,16 @@ export default function CropCorner() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const isFilterApplied = useMemo(() => {
+    return (
+      searchTerm !== '' ||
+      selectedCategory !== 'All' ||
+      priceRange[0] !== 0 ||
+      priceRange[1] !== 100 ||
+      sortOrder !== 'default'
+    );
+  }, [searchTerm, selectedCategory, priceRange, sortOrder]);
 
   // Debounce search term
   useEffect(() => {
@@ -138,200 +151,186 @@ export default function CropCorner() {
   };
 
   const filterContent = (
-    <Box sx={{ width: 250, p: 2, pt: 0, fontFamily: theme.typography.fontFamily }}>
-      <Typography variant="h6" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, pl: 1 }}>Filters</Typography>
+    <Box sx={{ width: '100%', p: { xs: 2, md: 0 }, pt: { xs: 2, md: 0 }, fontFamily: theme.typography.fontFamily }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>Filters</Typography>
+        {isFilterApplied && (
+          <Button
+            size="small"
+            startIcon={<ClearIcon fontSize="small" />}
+            onClick={handleClearFilters}
+            sx={{ fontFamily: theme.typography.fontFamily, textTransform: 'none' }}
+          >
+            Clear All
+          </Button>
+        )}
+      </Box>
       <Divider sx={{ mb: 2 }} />
 
-      <Accordion sx={{ mb: 2, boxShadow: 'none' }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ pl: 1 }}>
-          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Category</Typography>
+      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Category</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ pl: 1 }}>
+        <AccordionDetails>
           <FormControl component="fieldset" fullWidth>
-            <RadioGroup
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
+            <RadioGroup value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
               <FormControlLabel value="All" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>All</Typography>} />
               {categories.map((category) => (
-                <FormControlLabel
-                  key={category}
-                  value={category}
-                  control={<Radio size="small" />}
-                  label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{category}</Typography>}
-                />
+                <FormControlLabel key={category} value={category} control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{category}</Typography>} />
               ))}
             </RadioGroup>
           </FormControl>
         </AccordionDetails>
       </Accordion>
 
-      <Accordion sx={{ mb: 2, boxShadow: 'none' }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ pl: 1 }}>
-          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Price Range</Typography>
+      <Divider />
+
+      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Price Range</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ pl: 1 }}>
-          <Slider
-            value={priceRange}
-            onChange={(e, newValue) => setPriceRange(newValue)}
-            valueLabelDisplay="auto"
-            min={0}
-            max={100}
-            sx={{ mt: 2, mb: 1 }}
-          />
+        <AccordionDetails>
+          <Slider value={priceRange} onChange={(e, newValue) => setPriceRange(newValue)} valueLabelDisplay="auto" min={0} max={100} sx={{ mt: 2, mb: 1 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${priceRange[0]}</Typography>
             <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${priceRange[1]}</Typography>
           </Box>
         </AccordionDetails>
       </Accordion>
-
-      <Accordion sx={{ mb: 2, boxShadow: 'none' }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ pl: 1 }}>
-          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{ pl: 1 }}>
-          <FormControl component="fieldset" fullWidth>
-            <RadioGroup
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
-              <FormControlLabel value="default" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Default</Typography>} />
-              <FormControlLabel value="priceAsc" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Price: Low to High</Typography>} />
-              <FormControlLabel value="priceDesc" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Price: High to Low</Typography>} />
-              <FormControlLabel value="nameAsc" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Name: A-Z</Typography>} />
-              <FormControlLabel value="nameDesc" control={<Radio size="small" />} label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Name: Z-A</Typography>} />
-            </RadioGroup>
-          </FormControl>
-        </AccordionDetails>
-      </Accordion>
-
-      <Button
-        variant="outlined"
-        startIcon={<ClearIcon />}
-        onClick={handleClearFilters}
-        fullWidth
-        sx={{ mt: 2, fontFamily: theme.typography.fontFamily, ml: 1 }}
-      >
-        Clear Filters
-      </Button>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex', pt: { xs: 8, sm: 10 }, flexDirection: isMobile ? 'column' : 'row' }}>
+    <Container maxWidth="xl" sx={{ mt: 12, py: 4 }}>
+      <Paper sx={{
+        position: 'relative',
+        p: { xs: 3, md: 5 },
+        mb: 4,
+        borderRadius: 4,
+        color: '#fff',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: 'url(/images/hero.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'brightness(0.5)',
+          zIndex: 1,
+        },
+        '&::after': { // Overlay
+          content: '""',
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 2,
+        }
+      }}>
+        <Box sx={{ position: 'relative', zIndex: 3 }}>
+          <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+            The Crop'Corner
+          </Typography>
+          <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9, textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+            Freshness delivered from our fields to your kitchen.
+          </Typography>
+        </Box>
+      </Paper>
+
+      <Grid container spacing={4}>
+        {/* Desktop Filter Sidebar */}
+        <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Paper elevation={2} sx={{ p: 2, borderRadius: 3, position: 'sticky', top: 100 }}>
+            {filterContent}
+          </Paper>
+        </Grid>
+
+        {/* Main Content */}
+        <Grid size={{ xs: 12, md: 9 }}>
+          <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
+              }}
+              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+            />
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
+              <Select value={sortOrder} label="Sort By" onChange={(e) => setSortOrder(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
+                <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default</MenuItem>
+                <MenuItem value="priceAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: Low to High</MenuItem>
+                <MenuItem value="priceDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: High to Low</MenuItem>
+                <MenuItem value="nameAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: A-Z</MenuItem>
+                <MenuItem value="nameDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: Z-A</MenuItem>
+              </Select>
+            </FormControl>
+            <IconButton onClick={handleDrawerToggle} sx={{ display: { xs: 'flex', md: 'none' } }}>
+              <MenuIcon />
+            </IconButton>
+          </Paper>
+
+          {loading ? (
+            <Grid container spacing={4}>
+              {[...Array(8)].map((_, index) => (
+                <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+                  <Skeleton />
+                  <Skeleton width="60%" />
+                </Grid>
+              ))}
+            </Grid>
+          ) : error ? (
+            <Typography color="error" sx={{ textAlign: 'center', mt: 4, fontFamily: theme.typography.fontFamily }}>
+              {error}
+            </Typography>
+          ) : products.length === 0 ? (
+            <Box sx={{ textAlign: 'center', mt: 4 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                No products found matching your criteria.
+              </Typography>
+              <Button onClick={handleClearFilters} sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
+                Reset Filters
+              </Button>
+            </Box>
+          ) : (
+            <Grid container spacing={4}>
+              {products.map((product) => (
+                <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <ProductCard product={product} showSnackbar={showSnackbar} />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, pb: 4 }}>
+              <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+            </Box>
+          )}
+        </Grid>
+      </Grid>
+
       {/* Mobile Filter Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 250 },
-        }}
+        sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280 } }}
       >
         {filterContent}
       </Drawer>
-
-      {/* Desktop Filter Sidebar */}
-      <Box
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          width: 300,
-          flexShrink: 0,
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 100 }}>
-          {filterContent}
-        </Paper>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ flexGrow: 1 }}>
-        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
-            <Typography variant="h5" component="h1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: isMobile ? 2 : 0 }}>Our Products</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'space-between' : 'flex-end' }}>
-              {isMobile && (
-                <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
-                  edge="start"
-                  onClick={handleDrawerToggle}
-                  sx={{ mr: 2 }}
-                >
-                  <MenuIcon />
-                </IconButton>
-              )}
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ width: isMobile ? '100%' : 'auto', fontFamily: theme.typography.fontFamily }}
-              />
-            </Box>
-          </Box>
-        </Paper>
-
-        {loading ? (
-          <Grid container spacing={4}>
-            {[...Array(8)].map((_, index) => (
-              <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                <Skeleton />
-                <Skeleton width="60%" />
-              </Grid>
-            ))}
-          </Grid>
-        ) : error ? (
-          <Typography color="error" sx={{ textAlign: 'center', mt: 4, fontFamily: theme.typography.fontFamily }}>
-            {error}
-          </Typography>
-        ) : products.length === 0 ? (
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-              No products found matching your criteria.
-            </Typography>
-            <Button onClick={handleClearFilters} sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
-              Reset Filters
-            </Button>
-          </Box>
-        ) : (
-          <Grid container spacing={4}>
-            {products.map((product) => (
-              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
-                <ProductCard product={product} showSnackbar={showSnackbar} />
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Container>
-
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, pb: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-          />
-        </Box>
-      )}
 
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 }

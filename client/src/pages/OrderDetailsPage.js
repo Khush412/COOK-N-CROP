@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
+  alpha,
   Box,
   Typography,
   CircularProgress,
@@ -15,8 +16,6 @@ import {
   Alert,
   Snackbar,
   useTheme,
-  Card,
-  CardContent,
   Chip,
   ListItemAvatar,
   Avatar,
@@ -24,6 +23,7 @@ import {
   Step,
   StepLabel,
   Button,
+  Stack,
 } from '@mui/material';
 import orderService from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
@@ -133,185 +133,103 @@ const OrderDetailsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>
-        <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom align="center" sx={{ mb: 4, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Order Details
         </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Order #{order._id}
+        </Typography>
+      </Paper>
 
-        {/* Centralized Order Summary */}
-        <Card elevation={2} sx={{ borderRadius: 2, mb: 4 }}>
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body1" fontWeight="bold">Order ID:</Typography>
-                <Typography variant="body2" color="text.secondary">{order._id}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body1" fontWeight="bold">Placed On:</Typography>
-                <Typography variant="body2" color="text.secondary">{format(new Date(order.createdAt), 'PPP p')}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body1" fontWeight="bold">Total Amount:</Typography>
-                <Typography variant="h6" color="primary">${order.totalPrice.toFixed(2)}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Typography variant="body1" fontWeight="bold">Status:</Typography>
-                <Chip
-                  label={order.status}
-                  color={statusColors[order.status] || 'default'}
-                  size="medium" sx={{ fontWeight: 'bold' }}
-                />
-              </Grid>
-              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={reordering ? <CircularProgress size={20} color="inherit" /> : <ReplayIcon />}
-                  onClick={handleReorder}
-                  disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
-                  sx={{
-                    fontFamily: theme.typography.fontFamily,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {reordering ? 'Adding to Cart...' : 'Re-order'}
-                </Button>
-                {user?.role === 'admin' && (
-                  <Button component={RouterLink} to={`/admin/orders/edit/${order._id}`} variant="outlined" sx={{ ml: 2 }}>
-                    Edit Order
-                  </Button>
-                )}
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Placed On</Typography>
+            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(order.createdAt), 'PPP')}</Typography>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Total Amount</Typography>
+            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Status</Typography>
+            <Chip
+              label={order.status}
+              color={statusColors[order.status] || 'default'}
+              size="medium" sx={{ fontWeight: 'bold' }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={reordering ? <CircularProgress size={20} color="inherit" /> : <ReplayIcon />}
+              onClick={handleReorder}
+              disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
+              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}
+            >
+              Re-order
+            </Button>
+            {user?.role === 'admin' && (
+              <Button component={RouterLink} to={`/admin/orders/edit/${order._id}`} variant="outlined" sx={{ borderRadius: '50px' }}>
+                Edit
+              </Button>
+            )}
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Order History Timeline */}
+      {order.statusHistory && order.statusHistory.length > 0 && (
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+            Order Status
+          </Typography>
+          <Stepper activeStep={order.statusHistory.length - 1} alternativeLabel sx={{ mt: 3 }}>
+            {order.statusHistory.map((historyItem) => (
+              <Step key={historyItem.timestamp}>
+                <StepLabel>
+                  <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{historyItem.status}</Typography>
+                  <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(historyItem.timestamp), 'p, PPP')}</Typography>
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
+      )}
 
         <Grid container spacing={4}>
-          {/* Shipping Address */}
-          <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ borderRadius: 2, height: '100%' }}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.secondary.main }}>
-                  Shipping Address
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Typography variant="body1">
-                  {order.shippingAddress.fullName && <Typography component="span" fontWeight="bold">{order.shippingAddress.fullName}</Typography>}
-                </Typography>
-                <Typography variant="body1">
-                  {order.shippingAddress.street}
-                </Typography>
-                <Typography variant="body1">
-                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
-                </Typography>
-                <Typography variant="body1">
-                  {order.shippingAddress.country}
-                </Typography>
-                {order.shippingAddress.phone && (
-                  <Typography variant="body1">
-                    <strong>Phone:</strong> {order.shippingAddress.phone}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Payment and Delivery Details */}
-          <Grid item xs={12} md={6}>
-            <Card elevation={2} sx={{ borderRadius: 2, height: '100%' }}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.secondary.main }}>
-                  Payment & Delivery
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                {order.paymentMethod && (
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Payment Method:</strong> {order.paymentMethod}
-                  </Typography>
-                )}
-                {order.isPaid && (
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Paid On:</strong> {format(new Date(order.paidAt), 'PPP p')}
-                  </Typography>
-                )}
-                {order.isDelivered && (
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Delivered On:</strong> {format(new Date(order.deliveredAt), 'PPP p')}
-                  </Typography>
-                )}
-                {!order.isPaid && !order.isDelivered && (
-                  <Typography variant="body1" color="text.secondary">
-                    No payment or delivery details available yet.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Order History Timeline */}
-          {order.statusHistory && order.statusHistory.length > 0 && (
-            <Grid item xs={12}>
-              <Card elevation={2} sx={{ borderRadius: 2 }}>
-                <CardContent>
-                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.secondary.main }}>
-                    Order History
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <List>
-                    {order.statusHistory.slice().reverse().map((historyItem, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={
-                            <Typography fontWeight="bold">
-                              {historyItem.status}
-                            </Typography>
-                          }
-                          secondary={`${format(new Date(historyItem.timestamp), 'PPP p')} (${formatDistanceToNow(new Date(historyItem.timestamp))} ago)`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-
           {/* Order Items */}
-          <Grid item xs={12}>
-            <Card elevation={2} sx={{ borderRadius: 2 }}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.secondary.main }}>
+          <Grid size={{ xs: 12 }}>
+            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
                   Order Items
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                <List sx={{ maxWidth:330,maxHeight: 340, overflowY: 'auto',overflowX:'auto' }}>
+                <List>
                   {order.orderItems.map((item) => (
                     <React.Fragment key={item.product}>
                       <ListItem alignItems="flex-start" sx={{ py: 1.5 }}>
                         <ListItemAvatar>
-                          <Avatar
-                            alt={item.name}
-                            src={item.image || '/images/placeholder.png'} // Use a placeholder if image is not available
-                            variant="rounded"
-                            sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }}
-                          />
+                          <Avatar alt={item.name} src={item.image || '/images/placeholder.png'} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily }}>
                               {item.name}
                             </Typography>
                           }
                           secondary={
                             <Box>
-                              <Typography variant="body2" color="text.secondary">
-                                Quantity: <Typography component="span" fontWeight="bold">{item.qty}</Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                Quantity: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{item.qty}</Typography>
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                Price: <Typography component="span" fontWeight="bold">${item.price.toFixed(2)}</Typography> each
+                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${item.price.toFixed(2)}</Typography> each
                               </Typography>
-                              <Typography variant="body1" color="text.primary" sx={{ mt: 0.5 }}>
-                                Subtotal: <Typography component="span" fontWeight="bold">${(item.price * item.qty).toFixed(2)}</Typography>
+                              <Typography variant="body1" color="text.primary" sx={{ mt: 0.5, fontFamily: theme.typography.fontFamily }}>
+                                Subtotal: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.price * item.qty).toFixed(2)}</Typography>
                               </Typography>
                             </Box>
                           }
@@ -322,11 +240,43 @@ const OrderDetailsPage = () => {
                     </React.Fragment>
                   ))}
                 </List>
-              </CardContent>
-            </Card>
+            </Paper>
+          </Grid>
+
+          {/* Shipping & Payment Summary */}
+          <Grid size={{ xs: 12 }}>
+            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+              <Grid container spacing={4}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                    Shipping Address
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    {order.shippingAddress.fullName && <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.fullName}</Typography>}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.street}</Typography>
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</Typography>
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.country}</Typography>
+                  {order.shippingAddress.phone && <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}><strong>Phone:</strong> {order.shippingAddress.phone}</Typography>}
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                    Payment Summary
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Stack spacing={1}>
+                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>${order.subtotal.toFixed(2)}</Typography></Stack>
+                    {order.discount?.amount > 0 && <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({order.discount.code}):</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>-${order.discount.amount.toFixed(2)}</Typography></Stack>}
+                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography></Stack>
+                    <Divider sx={{ my: 1 }} />
+                    <Stack direction="row" justifyContent="space-between"><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography></Stack>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
         </Grid>
-      </Paper>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbarMessage}

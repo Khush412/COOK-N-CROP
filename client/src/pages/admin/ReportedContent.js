@@ -1,16 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Alert, Accordion, AccordionSummary, AccordionDetails, Button, Divider, Chip, Paper } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Box, Typography, CircularProgress, Alert, Button, Divider, Chip, Paper, Container, Stack, IconButton, Tooltip,
+} from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import adminService from '../../services/adminService';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+
+const ReportedItemCard = ({ item, type, onDelete }) => {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
+
+  const title = type === 'post'
+    ? `Post: "${item.title}"`
+    : `Comment on "${item.post?.title || 'a post'}"`;
+
+  const author = item.user?.username || 'Unknown User';
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            by {author} • <Chip label={`${item.reports.length} report(s)`} size="small" color="warning" />
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setExpanded(!expanded)}>
+          <ExpandMoreIcon sx={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+        </IconButton>
+      </Stack>
+      {expanded && (
+        <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2, fontStyle: type === 'comment' ? 'italic' : 'normal', bgcolor: alpha(theme.palette.text.primary, 0.05), p: 1.5, borderRadius: 1, fontFamily: theme.typography.fontFamily }}>
+            {type === 'comment' ? `"${item.content}"` : item.content}
+          </Typography>
+          <Divider />
+          <Typography variant="subtitle2" sx={{ mt: 2, mb: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Reports:</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {item.reports.map((report, index) => (
+              <Tooltip key={index} title={`Reported by ${report.user?.username || 'Unknown'}`}>
+                <Chip label={report.reason} variant="outlined" />
+              </Tooltip>
+            ))}
+          </Box>
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+            <Button component={RouterLink} to={`/post/${type === 'post' ? item._id : item.post?._id}`} target="_blank" rel="noopener noreferrer" variant="outlined" sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+              View Content
+            </Button>
+            <Button onClick={() => onDelete(item._id)} color="error" variant="contained" sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+              Delete {type}
+            </Button>
+          </Stack>
+        </Box>
+      )}
+    </Paper>
+  );
+};
 
 const ReportedContent = () => {
+  const theme = useTheme();
   const [reportedPosts, setReportedPosts] = useState([]);
   const [reportedComments, setReportedComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [postsRes, commentsRes] = await Promise.all([
@@ -24,83 +82,73 @@ const ReportedContent = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const handleDismissPost = async (postId) => {
+  const handleDeletePost = async (postId) => {
     if (window.confirm('This will delete the post. Are you sure?')) {
       try {
         await adminService.deletePost(postId);
         fetchData(); // Refresh data
       } catch (err) {
-        alert('Failed to delete post.');
+        setError('Failed to delete post.');
       }
     }
   };
 
-  const handleDismissComment = async (commentId) => {
+  const handleDeleteComment = async (commentId) => {
     if (window.confirm('This will delete the comment. Are you sure?')) {
       try {
         await adminService.deleteComment(commentId);
         fetchData(); // Refresh data
       } catch (err) {
-        alert('Failed to delete comment.');
+        setError('Failed to delete comment.');
       }
     }
   };
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>Reported Content</Typography>
-      
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Reported Posts ({reportedPosts.length})</Typography>
-      {reportedPosts.length > 0 ? reportedPosts.map(post => (
-        <Accordion key={post._id}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography><strong>{post.title}</strong> by {post.user.username} ({post.reports.length} reports)</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>{post.content}</Typography>
-            <Divider />
-            <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Reports:</Typography>
-            {post.reports.map((report, index) => (
-              <Chip key={index} label={`${report.reason} (by ${report.user.username})`} sx={{ mr: 1, mb: 1 }} />
-            ))}
-            <Box sx={{ mt: 2 }}>
-              <Button component={Link} to={`/post/${post._id}`} target="_blank" rel="noopener noreferrer">View Post</Button>
-              <Button onClick={() => handleDismissPost(post._id)} color="error">Delete Post</Button>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      )) : <Typography>No reported posts.</Typography>}
+    <Container maxWidth="lg">
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.error.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Reported Content
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Review and moderate content reported by the community.
+        </Typography>
+      </Paper>
 
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Reported Comments ({reportedComments.length})</Typography>
-      {reportedComments.length > 0 ? reportedComments.map(comment => (
-        <Accordion key={comment._id}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Comment by <strong>{comment.user.username}</strong> on "{comment.post.title}" ({comment.reports.length} reports)</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2, fontStyle: 'italic' }}>"{comment.content}"</Typography>
-            <Divider />
-            <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Reports:</Typography>
-            {comment.reports.map((report, index) => (
-              <Chip key={index} label={`${report.reason} (by ${report.user.username})`} sx={{ mr: 1, mb: 1 }} />
-            ))}
-            <Box sx={{ mt: 2 }}>
-              <Button component={Link} to={`/post/${comment.post._id}`} target="_blank" rel="noopener noreferrer">View Post</Button>
-              <Button onClick={() => handleDismissComment(comment._id)} color="error">Delete Comment</Button>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      )) : <Typography>No reported comments.</Typography>}
-    </Paper>
+      {error && <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, mb: 3 }}>{error}</Alert>}
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Reported Posts ({reportedPosts.length})</Typography>
+        {reportedPosts.length > 0 ? (
+          reportedPosts.map(post => <ReportedItemCard key={post._id} item={post} type="post" onDelete={handleDeletePost} />)
+        ) : (
+          <Box sx={{ p: 4, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: 2, mt: 2 }}>
+            <ReportProblemOutlinedIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+            <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No posts have been reported.</Typography>
+          </Box>
+        )}
+
+        <Divider sx={{ my: 4 }} />
+
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Reported Comments ({reportedComments.length})</Typography>
+        {reportedComments.length > 0 ? (
+          reportedComments.map(comment => <ReportedItemCard key={comment._id} item={comment} type="comment" onDelete={handleDeleteComment} />)
+        ) : (
+          <Box sx={{ p: 4, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: 2, mt: 2 }}>
+            <ReportProblemOutlinedIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+            <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No comments have been reported.</Typography>
+          </Box>
+        )}
+      </Paper>
+    </Container>
   );
 };
 

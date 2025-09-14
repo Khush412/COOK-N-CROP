@@ -1,112 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Checkbox,
-  DialogContent, DialogActions, TextField, MenuItem, Avatar
+  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,TextField,Avatar,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
+import ProductFormDialog from '../../components/ProductFormDialog';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
-// Product Form Dialog Component
-const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    description: '',
-    category: '',
-    countInStock: '',
-    origin: '',
-    freshness: '',
-    image: null,
-  });
-  const [imagePreview, setImagePreview] = useState('');
-
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        price: product.price || '',
-        description: product.description || '',
-        category: product.category || '',
-        countInStock: product.countInStock || 0,
-        origin: product.origin || '',
-        freshness: product.freshness || '',
-        image: null, // Don't pre-fill file input
-      });
-      setImagePreview(product.image || '');
-    } else {
-      // Reset form for new product
-      setFormData({
-        name: '', price: '', description: '', category: '', countInStock: '', origin: '', freshness: '', image: null,
-      });
-      setImagePreview('');
-    }
-  }, [product, open]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, image: file }));
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const productData = new FormData();
-    for (const key in formData) {
-      if (formData[key] !== null && formData[key] !== '') {
-        productData.append(key, formData[key]);
-      }
-    }
-    onSave(productData, product?._id);
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
-      <DialogContent>
-        <Box component="form" id="product-form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required margin="normal" />
-          <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required margin="normal" />
-          <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required margin="normal" />
-          <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required margin="normal" />
-          <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required margin="normal">
-            {categories.map(option => <MenuItem key={option} value={option}>{option}</MenuItem>)}
-          </TextField>
-          <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth margin="normal" />
-          <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth margin="normal" />
-          <Button variant="contained" component="label" sx={{ mt: 1 }}>
-            Upload Image
-            <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-          </Button>
-          {imagePreview && <Avatar src={imagePreview} sx={{ width: 100, height: 100, mt: 2 }} variant="rounded" />}
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button type="submit" form="product-form" variant="contained" disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : 'Save'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-
 // Main ManageProducts Component
 const ManageProducts = () => {
+  const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -159,7 +70,7 @@ const ManageProducts = () => {
     setEditingProduct(null);
   };
 
-  const handleSaveProduct = async (productData, productId) => {
+  const handleSaveProduct = async (productData, productId, setErrorCallback) => {
     setFormLoading(true);
     try {
       if (productId) {
@@ -170,8 +81,8 @@ const ManageProducts = () => {
       handleCloseDialog();
       fetchProducts(); // Refresh the list
     } catch (err) {
-      console.error('Failed to save product:', err);
-      alert('Failed to save product. Check console for details.');
+      const errorMessage = err.response?.data?.message || 'Failed to save product. Check console for details.';
+      setErrorCallback(errorMessage);
     } finally {
       setFormLoading(false);
     }
@@ -244,111 +155,124 @@ const ManageProducts = () => {
   const rowCount = products.length;
 
   return (
-    <Paper sx={{ p: 3, m: { xs: 1, md: 3 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" gutterBottom>Manage Products</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField
-            label="Search by Name or Category"
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ flexGrow: 1, minWidth: 250 }}
-          />
-          {numSelected > 0 && (
-            <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected}>
-              Delete ({numSelected})
-            </Button>
-          )}
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
+    <Container maxWidth="xl">
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          Manage Products
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          Add, edit, and organize all products in your store.
+        </Typography>
+      </Paper>
+
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
+            <TextField
+              label="Search by Name or Category"
+              variant="outlined"
+              size="small"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: '50px' } }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+            />
+            {numSelected > 0 && (
+              <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+                Delete ({numSelected})
+              </Button>
+            )}
+          </Stack>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
             Add Product
           </Button>
         </Box>
-      </Box>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
-      ) : error ? (
-        <Alert severity="error">{error}</Alert>
-      ) : (
-        <>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={numSelected > 0 && numSelected < rowCount}
-                      checked={rowCount > 0 && numSelected === rowCount}
-                      onChange={handleSelectAllClick}
-                      inputProps={{ 'aria-label': 'select all products' }}
-                    />
-                  </TableCell>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Stock</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {products.length > 0 ? (
-                  products.map((product) => {
-                    const isItemSelected = isSelected(product._id);
-                    return (
-                      <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={isItemSelected}
-                            inputProps={{ 'aria-labelledby': `product-checkbox-${product._id}` }}
-                          />
-                        </TableCell>
-                        <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
-                        <TableCell id={`product-checkbox-${product._id}`}>{product.name}</TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>${product.price.toFixed(2)}</TableCell>
-                        <TableCell>{product.countInStock}</TableCell>
-                        <TableCell align="right">
-                          <Tooltip title="Edit Product">
-                            <IconButton onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
-                              <StarIcon color={product.isFeatured ? "secondary" : "action"} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Edit Product">
-                            <IconButton onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}><EditIcon /></IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Product">
-                            <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error">
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography color="text.secondary">No products found matching your criteria.</Typography>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        indeterminate={numSelected > 0 && numSelected < rowCount}
+                        checked={rowCount > 0 && numSelected === rowCount}
+                        onChange={handleSelectAllClick}
+                        inputProps={{ 'aria-label': 'select all products' }}
+                      />
                     </TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Image</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Stock</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(event, value) => setPage(value)}
-                color="primary"
-              />
-            </Box>
-          )}
-        </>
-      )}
+                </TableHead>
+                <TableBody>
+                  {products.length > 0 ? (
+                    products.map((product) => {
+                      const isItemSelected = isSelected(product._id);
+                      return (
+                        <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={isItemSelected}
+                              inputProps={{ 'aria-labelledby': `product-checkbox-${product._id}` }}
+                            />
+                          </TableCell>
+                          <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
+                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.category}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${product.price.toFixed(2)}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.countInStock}</TableCell>
+                          <TableCell align="right">
+                            <Tooltip title={product.isFeatured ? "Unfeature Product" : "Feature Product"}>
+                              <IconButton onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
+                                <StarIcon color={product.isFeatured ? "secondary" : "action"} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit Product">
+                              <IconButton onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}><EditIcon /></IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete Product">
+                              <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error"><DeleteIcon /></IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center">
+                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                          <Inventory2Icon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No products found matching your criteria.</Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={(event, value) => setPage(value)}
+                  color="primary"
+                />
+              </Box>
+            )}
+          </>
+        )}
+      </Paper>
       <ProductFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
@@ -356,7 +280,7 @@ const ManageProducts = () => {
         product={editingProduct}
         loading={formLoading}
       />
-    </Paper>
+    </Container>
   );
 };
 

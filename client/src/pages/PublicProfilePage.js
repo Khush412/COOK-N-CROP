@@ -11,12 +11,12 @@ import {
   Divider,
   Tabs,
   Tab,
-  List,
-  ListItemButton,
-  ListItemText,
   Button,
   Stack,
+  Grid,
+  Link,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
 import CommentIcon from '@mui/icons-material/Comment';
 import PostAddIcon from '@mui/icons-material/PostAdd';
@@ -25,9 +25,64 @@ import BlockIcon from '@mui/icons-material/Block';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
 
+const ActivityCard = ({ item, type }) => {
+  const theme = useTheme();
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        height: '100%',
+        borderRadius: 2,
+        transition: 'box-shadow .2s, border-color .2s',
+        '&:hover': {
+          boxShadow: theme.shadows[3],
+          borderColor: 'primary.main',
+        },
+      }}
+    >
+      {type === 'post' ? (
+        <>
+          <Typography variant="subtitle1" fontWeight="bold" component={RouterLink} to={`/post/${item._id}`} sx={{ textDecoration: 'none', color: 'text.primary', fontFamily: theme.typography.fontFamily, '&:hover': { color: 'primary.main' }, mb: 0.5, display: 'block' }}>
+            {item.title}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            Posted {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+          </Typography>
+        </>
+      ) : (
+        <>
+          <Typography
+            variant="body2"
+            sx={{
+              fontStyle: 'italic',
+              mb: 1,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              fontFamily: theme.typography.fontFamily,
+            }}
+          >
+            "{item.content}"
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            Commented on{' '}
+            <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
+              {item.post.title}
+            </Link>
+            {' '}{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+          </Typography>
+        </>
+      )}
+    </Paper>
+  );
+};
+
 const PublicProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
   const { user: currentUser, isAuthenticated } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,42 +169,61 @@ const PublicProfilePage = () => {
   const { user, posts, comments } = profileData;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-          <Avatar
-            src={user.profilePic}
-            alt={user.username}
-            sx={{ width: 100, height: 100, fontSize: 48 }}
-          >
-            {!user.profilePic && user.username.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+    <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
+      <Paper
+        elevation={4}
+        sx={{
+          p: { xs: 2, sm: 4 },
+          borderRadius: 4,
+          mb: 4,
+          background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+        }}
+      >
+        <Grid container spacing={{ xs: 2, md: 4 }}>
+          <Grid size={{ xs: 12, md: 'auto' }}>
+            <Avatar
+              src={user.profilePic}
+              alt={user.username}
+              sx={{
+                width: { xs: 100, md: 150 },
+                height: { xs: 100, md: 150 },
+                fontSize: 72,
+                mx: 'auto',
+                boxShadow: theme.shadows[6],
+              }}
+            >
+              {!user.profilePic && user.username.charAt(0).toUpperCase()}
+            </Avatar>
+          </Grid>
+          <Grid size={{ xs: 12, md: 'grow' }} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
               {user.username}
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
               {user.bio || 'No bio provided.'}
             </Typography>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1.5 }}>
-              <Typography variant="body2" color="text.secondary">
-                <strong>{user.followersCount}</strong> Followers
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>{user.followingCount}</strong> Following
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                • Joined {format(new Date(user.createdAt), 'MMM yyyy')}
-              </Typography>
+            <Stack direction="row" spacing={2} alignItems="center" divider={<Divider orientation="vertical" flexItem />} sx={{ mt: 2.5, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+              <Box textAlign="center">
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{user.followersCount}</Typography>
+                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.8rem' }}>Followers</Typography>
+              </Box>
+              <Box textAlign="center">
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{user.followingCount}</Typography>
+                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.8rem' }}>Following</Typography>
+              </Box>
             </Stack>
-          </Box>
-          <Box sx={{ ml: 'auto', alignSelf: 'flex-start' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontFamily: theme.typography.fontFamily, textAlign: { xs: 'center', md: 'left' } }}>
+              Joined {format(new Date(user.createdAt), 'MMM yyyy')}
+            </Typography>
+          </Grid>
+          <Grid size={{ xs: 12, md: 'auto' }} sx={{ display: 'flex', alignItems: 'center' }}>
             {isAuthenticated && currentUser?.username !== user.username && (
-              <Stack direction="row" spacing={1}>
+              <Stack direction={{ xs: 'row', md: 'column' }} spacing={1.5} sx={{ width: '100%', justifyContent: 'center' }}>
                 <Button
                   variant={isFollowing ? 'outlined' : 'contained'}
                   onClick={handleFollowToggle}
                   disabled={followLoading}
+                  sx={{ borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
                 >
                   {isFollowing ? 'Unfollowing' : 'Follow'}
                 </Button>
@@ -157,6 +231,7 @@ const PublicProfilePage = () => {
                   variant="outlined"
                   startIcon={<MailOutlineIcon />}
                   onClick={() => navigate('/messages', { state: { newConversationWith: user } })}
+                  sx={{ borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
                 >
                   Message
                 </Button>
@@ -165,20 +240,21 @@ const PublicProfilePage = () => {
                   color="error"
                   startIcon={<BlockIcon />}
                   onClick={handleBlockToggle}
+                  sx={{ borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
                 >
                   Block
                 </Button>
               </Stack>
             )}
-          </Box>
-        </Box>
+          </Grid>
+        </Grid>
+      </Paper>
 
-        <Divider sx={{ my: 3 }} />
-
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="profile activity tabs">
-            <Tab icon={<PostAddIcon />} iconPosition="start" label={`Posts (${posts.length})`} />
-            <Tab icon={<CommentIcon />} iconPosition="start" label={`Comments (${comments.length})`} />
+          <Tabs value={tabValue} onChange={handleTabChange} aria-label="profile activity tabs" centered>
+            <Tab icon={<PostAddIcon />} iconPosition="start" label={`Posts (${posts.length})`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
+            <Tab icon={<CommentIcon />} iconPosition="start" label={`Comments (${comments.length})`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
           </Tabs>
         </Box>
 
@@ -186,23 +262,15 @@ const PublicProfilePage = () => {
         {tabValue === 0 && (
           <Box sx={{ pt: 3 }}>
             {posts.length > 0 ? (
-              <List>
+              <Grid container spacing={2}>
                 {posts.map((post) => (
-                  <ListItemButton
-                    key={post._id}
-                    component={RouterLink}
-                    to={`/post/${post._id}`}
-                    divider
-                  >
-                    <ListItemText
-                      primary={post.title}
-                      secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`}
-                    />
-                  </ListItemButton>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                    <ActivityCard item={post} type="post" />
+                  </Grid>
                 ))}
-              </List>
+              </Grid>
             ) : (
-              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
+              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>
                 This user hasn't made any posts yet.
               </Typography>
             )}
@@ -213,34 +281,15 @@ const PublicProfilePage = () => {
         {tabValue === 1 && (
           <Box sx={{ pt: 3 }}>
             {comments.length > 0 ? (
-              <List>
+              <Grid container spacing={2}>
                 {comments.map((comment) => (
-                  <ListItemButton
-                    key={comment._id}
-                    component={RouterLink}
-                    to={`/post/${comment.post._id}`}
-                    divider
-                  >
-                    <ListItemText
-                      primary={
-                        <Typography
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          {comment.content}
-                        </Typography>
-                      }
-                      secondary={`Commented on "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`}
-                    />
-                  </ListItemButton>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={comment._id}>
+                    <ActivityCard item={comment} type="comment" />
+                  </Grid>
                 ))}
-              </List>
+              </Grid>
             ) : (
-              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
+              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>
                 This user hasn't made any comments yet.
               </Typography>
             )}
