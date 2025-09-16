@@ -90,7 +90,7 @@ const OrderDetailsPage = () => {
     setReordering(true);
     try {
       const itemsToReorder = order.orderItems.map(item => ({
-        productId: item.product,
+        productId: item.product._id,
         quantity: item.qty,
       }));
       await addMultipleToCart(itemsToReorder);

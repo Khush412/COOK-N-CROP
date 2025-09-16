@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import AppRouter from "./router";
 import Footer from "./components/Footer";
 import { CssBaseline, GlobalStyles } from "@mui/material";
+import Chatbot from "./components/Chatbot";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <main style={{ flexGrow: 1 }}>
                 <AppRouter />
               </main>
+               <Chatbot />
               <Footer />
             </div>
           </ThemeProvider>

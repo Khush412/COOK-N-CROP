@@ -6,7 +6,6 @@ import {
   Container,
   Typography,
   Grid,
-  Chip,
   Button,
   Paper,
   CircularProgress,
@@ -20,62 +19,23 @@ import {
   TextField,
   Stack,
   Pagination,
-  alpha,
   Drawer,
   IconButton,
 } from "@mui/material";
-import { useTheme, styled } from "@mui/material/styles";
+import { useTheme} from "@mui/material/styles";
 import {
   Forum as ForumIcon,
   NewReleases as NewReleasesIcon,
   TrendingUp as TrendingUpIcon,
-  Whatshot as WhatshotIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
-  Search as SearchIcon,
+  Add as AddIcon,
 } from "@mui/icons-material";
 
 import communityService from "../services/communityService";
 import userService from "../services/userService";
 import CreatePostForm from "../components/CreatePostForm";
 import PostCard from "../components/PostCard";
-
-// Styled Search container with round corners and professional look
-const SearchContainer = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius * 4,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginBottom: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  width: "100%",
-  maxWidth: 300,
-  [theme.breakpoints.up("sm")]: {
-    marginBottom: 0,
-  }
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  position: "absolute",
-  left: theme.spacing(1.5),
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  pointerEvents: "none",
-  color: alpha(theme.palette.common.white, 0.6),
-}));
-
-const StyledInputBase = styled(TextField)(({ theme }) => ({
-  "& .MuiInputBase-input": {
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    fontFamily: theme.typography.fontFamily,
-    color: theme.palette.text.primary,
-    fontWeight: 600,
-  },
-}));
 
 export default function Community() {
   const theme = useTheme();
@@ -96,7 +56,8 @@ export default function Community() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-  const [trendingTags, setTrendingTags] = useState([]);
+  // eslint-disable-next-line
+  const [trendingTag, setTrendingTags] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Background image URL for the header - update your file path as needed
@@ -226,7 +187,7 @@ export default function Community() {
   const handlePageChange = (event, value) => {
     setPage(value);
   };
-
+// eslint-disable-next-line
   const handleTagClick = (tag) => {
     setPage(1);
     if (searchTerm.toLowerCase() === tag.toLowerCase()) setSearchTerm("");
@@ -373,76 +334,42 @@ export default function Community() {
         >
           {/* Posts area */}
           <Grid size={{ xs: 12 }}>
-            <Box sx={{ mb: 3 }}>
-              {/* Search and sort */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  alignItems: "center",
-                  marginBottom: 2,
-                }}
-              >
-                <SearchContainer>
-                  <SearchIconWrapper>
-                    <SearchIcon />
-                  </SearchIconWrapper>
-                  <StyledInputBase
-                    fullWidth
-                    placeholder="Search posts"
-                    variant="standard"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    inputProps={{ "aria-label": "search posts" }}
-                    sx={{ "input": { pl: 5, py: 0.8, fontWeight: 700, fontFamily: theme.typography.fontFamily } }}
-                  />
-                </SearchContainer>
-                <ToggleButtonGroup
-                  value={sort}
-                  exclusive
-                  onChange={handleSortChange}
-                  aria-label="Sort posts"
-                  sx={{
-                    "& .MuiToggleButton-root": {
-                      fontWeight: 600,
-                      padding: "5px 14px",
-                      fontFamily: theme.typography.fontFamily,
-                      fontSize: 14,
-                    },
-                  }}
-                >
-                  <ToggleButton value="new" aria-label="Sort by new">
-                    <NewReleasesIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                    New
-                  </ToggleButton>
-                  <ToggleButton value="top" aria-label="Sort by top">
-                    <TrendingUpIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                    Top
-                  </ToggleButton>
-                  <ToggleButton value="discussed" aria-label="Sort by discussed">
-                    <ForumIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                    Discussed
-                  </ToggleButton>
-                </ToggleButtonGroup>
-                <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }} />
+            <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
+              <TextField
+                label="Search Posts"
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              />
+              <ToggleButtonGroup value={sort} exclusive onChange={handleSortChange} aria-label="Sort posts" sx={{ '& .MuiToggleButton-root': { fontFamily: theme.typography.fontFamily } }}>
+                <ToggleButton value="new" aria-label="Sort by new">
+                  <NewReleasesIcon sx={{ mr: 0.7, fontSize: 20 }} />
+                  New
+                </ToggleButton>
+                <ToggleButton value="top" aria-label="Sort by top">
+                  <TrendingUpIcon sx={{ mr: 0.7, fontSize: 20 }} />
+                  Top
+                </ToggleButton>
+                <ToggleButton value="discussed" aria-label="Sort by discussed">
+                  <ForumIcon sx={{ mr: 0.7, fontSize: 20 }} />
+                  Discussed
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <IconButton onClick={() => setSidebarOpen(true)} sx={{ display: { xs: 'flex', md: 'none' } }} aria-label="open filters and actions">
+                <MenuIcon />
+              </IconButton>
                 <Button
                   variant="contained"
                   onClick={handleCreateClick}
-                  startIcon={<ForumIcon />}
-                  sx={{ display: { xs: 'none', md: 'flex' } }}
+                  startIcon={<AddIcon />}
+                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', display: { xs: 'none', md: 'flex' } }}
                 >
                   Create Post
                 </Button>
-                {/* This button will be visible on mobile to open the sidebar */}
-                <IconButton
-                  onClick={() => setSidebarOpen(true)}
-                  sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}
-                  aria-label="open filters and actions"
-                >
-                  <MenuIcon />
-                </IconButton>
-              </Box>
+            </Paper>
 
               {/* Content states */}
               {loading && (
@@ -485,7 +412,6 @@ export default function Community() {
                   />
                 </Box>
               )}
-            </Box>
           </Grid>
         </Grid>
 

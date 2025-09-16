@@ -12,6 +12,7 @@ require('dotenv').config();
 // Debug: Check if environment variables are loaded
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Found' : 'NOT FOUND');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Found' : 'NOT FOUND');
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'Found' : 'NOT FOUND');
 
 // Import database connection
 const connectDB = require('./config/database');
@@ -33,6 +34,7 @@ const notificationRoutes = require('./routes/notifications'); // New: Import not
 const adminRoutes = require('./routes/admin'); // New: Import admin routes
 const messageRoutes = require('./routes/messages'); // New: Import message routes
 const searchRoutes = require('./routes/search'); // New: Import search routes
+const chatbotRoutes = require('./routes/chatbot'); // New: Import chatbot routes
 
 // Connect to database
 connectDB();
@@ -169,6 +171,7 @@ app.use('/api/admin', adminRoutes); // New: Use admin routes
 app.use('/api/notifications', notificationRoutes); // New: Use notification routes
 app.use('/api/messages', messageRoutes); // New: Use message routes
 app.use('/api/search', searchRoutes); // New: Use search routes
+app.use('/api/chatbot', chatbotRoutes); // New: Use chatbot routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
