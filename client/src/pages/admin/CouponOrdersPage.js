@@ -68,12 +68,12 @@ const CouponOrdersPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>User</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Total</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Total</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

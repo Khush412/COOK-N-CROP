@@ -133,19 +133,19 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
             </Grid>
             <Grid item xs={12} md={8}>
               <Stack spacing={2.5}>
-                <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 <Stack direction="row" spacing={2.5}>
-                  <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
-                  <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
-                <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 <Stack direction="row" spacing={2.5}>
-                  <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
+                  <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}>
                     {categories.map(option => <MenuItem key={option} value={option} sx={{ fontFamily: theme.typography.fontFamily }}>{option}</MenuItem>)}
                   </TextField>
-                  <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
-                <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
               </Stack>
             </Grid>
           </Grid>

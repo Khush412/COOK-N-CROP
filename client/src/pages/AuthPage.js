@@ -167,7 +167,8 @@ export default function AuthPage() {
         justifyContent: "center",
         alignItems: "center",
         px: 2,
-        py: 6,
+        pt: { xs: 12, md: 6 },
+        pb: 6,
       }}
     >
       <C.Container>
@@ -372,10 +373,10 @@ export default function AuthPage() {
               }}
             >
               <PersonAddIcon sx={{ fontSize: 24, color: theme.palette.primary.main, mb: 0.5 }} />
-                          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, mb: 1, fontFamily: theme.typography.fontFamily }}>
               Join Cook-N-Crop Today!
             </Typography>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
               Discover fresh ingredients and inspiring recipes from our community!
             </Typography>
             </Box>
@@ -475,12 +476,12 @@ export default function AuthPage() {
                 <WarningIcon sx={{ fontSize: 24, color: "white" }} />
               </Avatar>
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary, fontFamily: theme.typography.fontFamily }}>
               Incorrect Password
             </Typography>
           </DialogTitle>
           <DialogContent sx={{ textAlign: "center", px: 3, pb: 2 }}>
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1, lineHeight: 1.4 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1, lineHeight: 1.4, fontFamily: theme.typography.fontFamily }}>
               The password you entered is incorrect. Please try again.
               <br />
               If you forgot your password, use the Forgot password option.

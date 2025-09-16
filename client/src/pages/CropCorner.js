@@ -256,7 +256,7 @@ export default function CropCorner() {
               InputProps={{
                 startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
               }}
-              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
+              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             />
             <FormControl size="small" sx={{ minWidth: 180 }}>

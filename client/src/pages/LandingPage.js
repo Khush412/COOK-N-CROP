@@ -372,11 +372,13 @@ export default function LandingPage() {
             label="Your Email for Delicious Updates"
             variant="outlined"
             fullWidth
+            InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             InputProps={{
               startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment>,
+              sx: { fontFamily: theme.typography.fontFamily }
             }}
           />
-          <Button type="submit" variant="contained" size="large" sx={{ px: 5, textTransform: "uppercase" }}>
+          <Button type="submit" variant="contained" size="large" sx={{ px: 5, textTransform: "uppercase", fontFamily: theme.typography.fontFamily }}>
             Subscribe
           </Button>
         </Box>

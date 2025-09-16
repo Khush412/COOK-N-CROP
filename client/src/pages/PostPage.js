@@ -676,7 +676,7 @@ const PostPage = () => {
                       value={recipeComment}
                       onChange={(e) => setRecipeComment(e.target.value)}
                       required
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                       InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                     />
                     <Button

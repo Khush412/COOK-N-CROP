@@ -3,6 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
   Box, Typography, CircularProgress, Alert
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import Rating from './Rating';
 import productService from '../services/productService';
 
@@ -11,6 +12,7 @@ const ReviewModal = ({ open, onClose, product, onReviewSubmitted }) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const theme = useTheme();
 
   const handleClose = () => {
     // Reset state on close
@@ -42,10 +44,10 @@ const ReviewModal = ({ open, onClose, product, onReviewSubmitted }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 'bold' }}>Write a Review for {product.name}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Write a Review for {product.name}</DialogTitle>
       <DialogContent>
         <Box component="form" noValidate>
-          <Typography component="legend">Your Rating</Typography>
+          <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
           <Rating value={rating} onChange={(newValue) => setRating(newValue)} />
           <TextField
             label="Your Comment (Optional)"
@@ -55,17 +57,20 @@ const ReviewModal = ({ open, onClose, product, onReviewSubmitted }) => {
             margin="normal"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+            InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
           />
-          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+          {error && <Alert severity="error" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           disabled={loading}
           startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{ fontFamily: theme.typography.fontFamily }}
         >
           {loading ? 'Submitting...' : 'Submit Review'}
         </Button>

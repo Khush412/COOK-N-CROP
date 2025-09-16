@@ -330,7 +330,7 @@ const CartPage = () => {
             <Grid size={{ xs: 12, lg: 5 }}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Accordion>
+                  <Accordion defaultExpanded>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                       <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping Address</Typography>
                     </AccordionSummary>
@@ -365,7 +365,7 @@ const CartPage = () => {
                     </AccordionDetails>
                   </Accordion>
 
-                  <Accordion>
+                  <Accordion defaultExpanded>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                       <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Apply Coupon</Typography>
                     </AccordionSummary>

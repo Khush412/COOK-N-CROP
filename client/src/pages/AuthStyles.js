@@ -14,6 +14,12 @@ export const Container = styled.div`
   min-height: 440px;
   color: ${({ theme }) => theme.palette.text.primary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
+
+  @media (max-width: 768px) {
+    width: 480px;
+    max-width: 95vw;
+    min-height: 920px;
+  }
 `;
 
 export const SignUpContainer = styled.div`
@@ -27,6 +33,16 @@ export const SignUpContainer = styled.div`
       opacity: 1;
       z-index: 5;
     `}
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 50%;
+    ${({ $signingIn }) =>
+      !$signingIn &&
+      css`
+        transform: translateY(100%);
+      `}
+  }
 `;
 
 export const SignInContainer = styled.div`
@@ -38,12 +54,28 @@ export const SignInContainer = styled.div`
     css`
       transform: translateX(100%);
     `}
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 50%;
+    ${({ $signingIn }) =>
+      !$signingIn &&
+      css`
+        transform: translateY(100%);
+      `}
+  }
 `;
 
 export const Form = styled.form`
   background-color: ${({ theme }) => theme.palette.background.default};
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 0 45px; height: 100%; text-align: center;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
 `;
 
 export const Title = styled.h1`
@@ -56,6 +88,7 @@ export const Input = styled.input`
   background-color: ${({ theme }) => theme.palette.mode === "dark" ? "#444" : "#eee"};
   border: none; border-radius: 4px; color: ${({ theme }) => theme.palette.text.primary};
   padding: 12px 15px; margin: 8px 0; width: 100%; box-sizing: border-box;
+  font-family: ${({ theme }) => theme.typography.fontFamily};
   ::placeholder {
     color: ${({ theme }) => theme.palette.mode === "dark" ? "#bbb" : "#666"};
   }
@@ -108,6 +141,14 @@ export const OverlayContainer = styled.div`
   position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
   overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100;
   ${({ $signingIn }) => !$signingIn && css`transform: translateX(-100%);`}
+
+  @media (max-width: 768px) {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    ${({ $signingIn }) => !$signingIn && css`transform: translateY(-100%);`}
+  }
 `;
 
 export const Overlay = styled.div`
@@ -115,8 +156,15 @@ export const Overlay = styled.div`
   color: ${({ theme }) => theme.palette.primary.contrastText};
   position: relative; left: -100%; height: 100%; width: 200%;
   transform: translateX(0); transition: transform 0.6s ease-in-out;
-  display: flex; align-items: stretch; justify-content: stretch;
   ${({ $signingIn }) => !$signingIn && css`transform: translateX(50%);`}
+
+  @media (max-width: 768px) {
+    left: 0;
+    top: -100%;
+    height: 200%;
+    width: 100%;
+    ${({ $signingIn }) => !$signingIn && css`transform: translateY(50%);`}
+  }
 `;
 
 export const OverlayPanel = styled.div`
@@ -125,16 +173,31 @@ export const OverlayPanel = styled.div`
   padding: 0 32px; text-align: center; box-sizing: border-box;
   transition: transform 0.6s ease-in-out;
   color: ${({ theme }) => theme.palette.primary.contrastText};
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 50%;
+  }
 `;
 
 export const LeftOverlayPanel = styled(OverlayPanel)`
-  left: 0; transform: translateX(-20%);
+  transform: translateX(-20%);
   ${({ $signingIn }) => !$signingIn && css`transform: translateX(0);`}
+  @media (max-width: 768px) {
+    transform: translateY(-20%);
+    ${({ $signingIn }) => !$signingIn && css`transform: translateY(0);`}
+  }
 `;
 
 export const RightOverlayPanel = styled(OverlayPanel)`
-  left: 50%; transform: translateX(0);
+  right: 0; transform: translateX(0);
   ${({ $signingIn }) => !$signingIn && css`transform: translateX(20%);`}
+  @media (max-width: 768px) {
+    top: 50%;
+    right: auto;
+    transform: translateY(0);
+    ${({ $signingIn }) => !$signingIn && css`transform: translateY(20%);`}
+  }
 `;
 
 export const Paragraph = styled.p`

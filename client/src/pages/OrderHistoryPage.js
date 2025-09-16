@@ -165,7 +165,7 @@ const OrderHistoryPage = () => {
                 InputProps={{
                   startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
                 }}
-                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
+                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                 InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
               <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -175,6 +175,11 @@ const OrderHistoryPage = () => {
                   label="Filter by Date"
                   onChange={(e) => setDateFilter(e.target.value)}
                   sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } },
+                    },
+                  }}
                 >
                   <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All Orders</MenuItem>
                   <MenuItem value="last3Months" sx={{ fontFamily: theme.typography.fontFamily }}>Last 3 Months</MenuItem>

@@ -34,6 +34,7 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={loading}
+          sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
           InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
         />
         <Button

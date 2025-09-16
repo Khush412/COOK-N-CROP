@@ -57,20 +57,20 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{coupon ? 'Edit Coupon' : 'Add New Coupon'}</DialogTitle>
+      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>{coupon ? 'Edit Coupon' : 'Add New Coupon'}</DialogTitle>
       <DialogContent sx={{ pt: '8px !important' }}>
         <Box component="form" id="coupon-form" onSubmit={handleSubmit}>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField name="code" label="Coupon Code" value={formData.code} onChange={handleChange} fullWidth required helperText="Must be unique. Will be uppercased." />
+            <TextField name="code" label="Coupon Code" value={formData.code} onChange={handleChange} fullWidth required helperText="Must be unique. Will be uppercased." InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="discountType" label="Discount Type" select value={formData.discountType} onChange={handleChange} fullWidth required>
-                  <MenuItem value="percentage">Percentage (%)</MenuItem>
-                  <MenuItem value="fixed">Fixed Amount ($)</MenuItem>
+                <TextField name="discountType" label="Discount Type" select value={formData.discountType} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}>
+                  <MenuItem value="percentage" sx={{ fontFamily: theme.typography.fontFamily }}>Percentage (%)</MenuItem>
+                  <MenuItem value="fixed" sx={{ fontFamily: theme.typography.fontFamily }}>Fixed Amount ($)</MenuItem>
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="discountValue" label="Discount Value" type="number" value={formData.discountValue} onChange={handleChange} fullWidth required />
+                <TextField name="discountValue" label="Discount Value" type="number" value={formData.discountValue} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
               </Grid>
             </Grid>
             <TextField name="expiresAt" label="Expires At" type="datetime-local" value={formData.expiresAt} onChange={handleChange} fullWidth required InputLabelProps={{ shrink: true }} />
@@ -86,8 +86,8 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button type="submit" form="coupon-form" variant="contained" disabled={loading}>
+        <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+        <Button type="submit" form="coupon-form" variant="contained" disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>
           {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>
@@ -197,6 +197,7 @@ const ManageCoupons = () => {
               fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { fontFamily: theme.typography.fontFamily } }}
             />
           </Box>
           <Box>

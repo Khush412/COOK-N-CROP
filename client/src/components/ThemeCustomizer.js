@@ -7,7 +7,7 @@ export default function ThemeCustomizer() {
 
   return (
     <Box sx={{ px: 1, pb: 2 }}>
-      <Typography variant="subtitle1" gutterBottom>
+      <Typography variant="subtitle1" gutterBottom sx={{ fontFamily }}>
         Theme Palette
       </Typography>
       <FormControl fullWidth sx={{ mb: 3 }}>
@@ -35,7 +35,7 @@ export default function ThemeCustomizer() {
         </Select>
       </FormControl>
 
-      <Typography variant="subtitle1" gutterBottom>
+      <Typography variant="subtitle1" gutterBottom sx={{ fontFamily }}>
         Font Family
       </Typography>
       <FormControl fullWidth>

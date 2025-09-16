@@ -71,6 +71,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
 const StyledInputBase = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-input": {
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    fontFamily: theme.typography.fontFamily,
     color: theme.palette.text.primary,
     fontWeight: 600,
   },

@@ -148,6 +148,8 @@ const EditOrderPage = () => {
                 renderInput={(params) => (
                   <TextField {...params} label="Search for a product to add..." variant="outlined"
                     InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                   />
                 )}
               />
@@ -167,13 +169,13 @@ const EditOrderPage = () => {
         <Grid size={{ xs: 12, lg: 4 }}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: 100 }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>3. Shipping Address</Typography>
-            <TextField label="Full Name" name="fullName" value={shippingAddress.fullName || ''} onChange={handleAddressChange} fullWidth margin="normal" />
-            <TextField label="Street" name="street" value={shippingAddress.street || ''} onChange={handleAddressChange} fullWidth required margin="normal" />
-            <TextField label="City" name="city" value={shippingAddress.city || ''} onChange={handleAddressChange} fullWidth required margin="normal" />
-            <TextField label="State" name="state" value={shippingAddress.state || ''} onChange={handleAddressChange} fullWidth required margin="normal" />
-            <TextField label="Zip Code" name="zipCode" value={shippingAddress.zipCode || ''} onChange={handleAddressChange} fullWidth required margin="normal" />
-            <TextField label="Country" name="country" value={shippingAddress.country || ''} onChange={handleAddressChange} fullWidth required margin="normal" />
-            <TextField label="Phone (Optional)" name="phone" value={shippingAddress.phone || ''} onChange={handleAddressChange} fullWidth margin="normal" />
+            <TextField label="Full Name" name="fullName" value={shippingAddress.fullName || ''} onChange={handleAddressChange} fullWidth margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="Street" name="street" value={shippingAddress.street || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="City" name="city" value={shippingAddress.city || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="State" name="state" value={shippingAddress.state || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="Zip Code" name="zipCode" value={shippingAddress.zipCode || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="Country" name="country" value={shippingAddress.country || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+            <TextField label="Phone (Optional)" name="phone" value={shippingAddress.phone || ''} onChange={handleAddressChange} fullWidth margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
             <Divider sx={{ my: 3 }} />
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order Summary</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>

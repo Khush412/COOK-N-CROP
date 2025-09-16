@@ -257,18 +257,18 @@ const ProductPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 6 }}>
+        <Grid container spacing={{ xs: 3, md: 5 }}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <Box
                 component="img"
                 src={product.image}
                 alt={product.name}
-                sx={{ width: '100%', display: 'block' }}
+                sx={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '1 / 1', objectFit: 'cover' }}
               />
             </Paper>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
               {product.category}
             </Typography>
@@ -330,7 +330,7 @@ const ProductPage = () => {
       </Paper>
 
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
-        <Grid container spacing={5}>
+        <Grid container spacing={{ xs: 4, md: 6 }}>
           <Grid size={{ xs: 12, md: 7 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
               <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -344,20 +344,35 @@ const ProductPage = () => {
                     label="Filter by Rating"
                     onChange={(e) => setFilterRating(e.target.value)}
                     sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } },
+                      },
+                    }}
                   >
-                    <MenuItem value={0} sx={{ fontFamily: theme.typography.fontFamily }}>All Ratings</MenuItem>
-                    <MenuItem value={5} sx={{ fontFamily: theme.typography.fontFamily }}>5 Stars</MenuItem>
-                    <MenuItem value={4} sx={{ fontFamily: theme.typography.fontFamily }}>4 Stars</MenuItem>
-                    <MenuItem value={3} sx={{ fontFamily: theme.typography.fontFamily }}>3 Stars</MenuItem>
-                    <MenuItem value={2} sx={{ fontFamily: theme.typography.fontFamily }}>2 Stars</MenuItem>
-                    <MenuItem value={1} sx={{ fontFamily: theme.typography.fontFamily }}>1 Star</MenuItem>
+                    <MenuItem value={0}>All Ratings</MenuItem>
+                    <MenuItem value={5}>5 Stars</MenuItem>
+                    <MenuItem value={4}>4 Stars</MenuItem>
+                    <MenuItem value={3}>3 Stars</MenuItem>
+                    <MenuItem value={2}>2 Stars</MenuItem>
+                    <MenuItem value={1}>1 Star</MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl size="small" sx={{ minWidth: 150 }}>
                   <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort by</InputLabel>
-                  <Select value={sortOption} label="Sort by" onChange={(e) => setSortOption(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
-                    <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest</MenuItem>
-                    <MenuItem value="helpful" sx={{ fontFamily: theme.typography.fontFamily }}>Most Helpful</MenuItem>
+                  <Select
+                    value={sortOption}
+                    label="Sort by"
+                    onChange={(e) => setSortOption(e.target.value)}
+                    sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } },
+                      },
+                    }}
+                  >
+                    <MenuItem value="newest">Newest</MenuItem>
+                    <MenuItem value="helpful">Most Helpful</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>
@@ -415,7 +430,7 @@ const ProductPage = () => {
                     margin="normal"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                     InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                   />
                   {reviewError && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{reviewError}</Alert>}

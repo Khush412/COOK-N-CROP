@@ -386,9 +386,9 @@ const Profile = () => {
               <Fade in={!!passwordFeedback.success}><Alert variant="filled" severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{passwordFeedback.success}</Alert></Fade>
               <Box component="form" onSubmit={savePassword}>
                 <Stack spacing={2}>
-                  <TextField type="password" label="Current Password" name="currentPassword" variant="filled" fullWidth required value={passwordForm.currentPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
-                  <TextField type="password" label="New Password" name="newPassword" variant="filled" fullWidth required value={passwordForm.newPassword} onChange={handlePasswordChange} disabled={passwordLoading} helperText="Min 6 characters." InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
-                  <TextField type="password" label="Confirm New Password" name="confirmPassword" variant="filled" fullWidth required value={passwordForm.confirmPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField type="password" label="Current Password" name="currentPassword" variant="filled" fullWidth required value={passwordForm.currentPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField type="password" label="New Password" name="newPassword" variant="filled" fullWidth required value={passwordForm.newPassword} onChange={handlePasswordChange} disabled={passwordLoading} helperText="Min 6 characters." InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField type="password" label="Confirm New Password" name="confirmPassword" variant="filled" fullWidth required value={passwordForm.confirmPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button type="submit" variant="contained" disabled={passwordLoading} startIcon={passwordLoading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
                       {passwordLoading ? 'Updating...' : 'Change Password'}
@@ -446,11 +446,11 @@ const Profile = () => {
         <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
           <DialogTitle sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Are you absolutely sure?</DialogTitle>
           <DialogContent>
-            <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            <DialogContentText sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
               This action is irreversible. To confirm, please enter your password below.
             </DialogContentText>
             {deleteError && <Alert severity="error" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>{deleteError}</Alert>}
-            <TextField
+            <TextField sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
               autoFocus margin="dense" id="delete-password" label="Your Password" type="password"
               fullWidth variant="standard" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)}
               disabled={deleteLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}

@@ -43,7 +43,10 @@ import {
   History as HistoryIcon,
   Mail as MailIcon,
   Block as BlockIcon,
+  DynamicFeed as DynamicFeedIcon,
   Menu as MenuIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import NotificationsMenu from "./NotificationsMenu";
@@ -93,7 +96,10 @@ const SiteName = styled(Typography)(({ theme }) => ({
   fontSize: "1.6rem",
   textTransform: "uppercase",
   cursor: "pointer",
-  paddingRight: theme.spacing(6), // Increased padding after site name for clarity
+  paddingRight: theme.spacing(2),
+  [theme.breakpoints.up('lg')]: {
+    paddingRight: theme.spacing(6),
+  }
 }));
 
 const ProfileContainer = styled(Box)(({ theme }) => ({
@@ -188,6 +194,7 @@ export default function Navbar() {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
   const [hasShadow, setHasShadow] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setHasShadow(window.scrollY > 20);
@@ -271,6 +278,11 @@ export default function Navbar() {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleDrawerNavigate = (path) => {
+    navigate(path);
+    handleDrawerToggle();
+  };
+
   const handleOpenNotificationsMenu = (event) => {
     setAnchorElNotifications(event.currentTarget);
   };
@@ -313,20 +325,104 @@ export default function Navbar() {
     { label: 'Recipes', path: '/recipes' },
   ];
 
+  const userDrawerLinks = [
+    { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
+    { label: 'My Orders', path: '/profile/orders', icon: <ReceiptLongIcon /> },
+    { label: 'Saved Addresses', path: '/profile/addresses', icon: <HomeIcon /> },
+    { label: 'My Feed', path: '/feed', icon: <DynamicFeedIcon /> },
+    { label: 'Messages', path: '/messages', icon: <Badge badgeContent={unreadMessageCount} color="secondary"><MailIcon /></Badge> },
+    { label: 'My Wishlist', path: '/profile/wishlist', icon: <FavoriteIcon /> },
+    { label: 'Saved Posts', path: '/profile/saved-posts', icon: <BookmarkIcon /> },
+    { label: 'My Activity', path: '/profile/my-activity', icon: <HistoryIcon /> },
+    { label: 'Blocked Users', path: '/profile/blocked-users', icon: <BlockIcon /> },
+  ];
+
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', p: 2 }}>
-      <Typography variant="h6" sx={{ my: 2, fontWeight: 'bold' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Typography variant="h6" sx={{ my: 2, fontWeight: 'bold', textAlign: 'center', fontFamily: theme.typography.fontFamily }}>
         Cook'n'Crop
       </Typography>
       <Divider />
-      <List>
-        {navItems.map((item) => (
-          <ListItem key={item.label} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }} component={RouterLink} to={item.path}>
-              <ListItemText primary={item.label} />
+      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+        <List>
+          {navItems.map((item) => (
+            <ListItem key={item.label} disablePadding>
+              <ListItemButton onClick={() => handleDrawerNavigate(item.path)}>
+                <ListItemText primary={item.label} sx={{ textAlign: 'center' }} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleDrawerNavigate('/cart')}>
+              <ListItemIcon><ShoppingCartIcon sx={{ color: theme.palette.text.secondary }} /></ListItemIcon>
+              <ListItemText primary="Shopping Cart" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
             </ListItemButton>
           </ListItem>
-        ))}
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => { handleDrawerToggle(); setThemeDialogOpen(true); }}>
+              <ListItemIcon><PaletteIcon sx={{ color: theme.palette.text.secondary }} /></ListItemIcon>
+              <ListItemText primary="Customize Theme" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+
+        {isAuthenticated ? (
+          <>
+            <Divider><Typography variant="overline" sx={{ fontFamily: theme.typography.fontFamily }}>My Account</Typography></Divider>
+            <List>
+              {userDrawerLinks.map(item => (
+                <ListItem key={item.label} disablePadding>
+                  <ListItemButton onClick={() => handleDrawerNavigate(item.path)}>
+                    <ListItemIcon sx={{ color: theme.palette.text.secondary }}>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.label} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+              {user?.role === 'admin' && (
+                <ListItem disablePadding>
+                  <ListItemButton onClick={() => handleDrawerNavigate('/admin')}>
+                    <ListItemIcon sx={{ color: theme.palette.text.secondary }}><AdminPanelSettingsIcon /></ListItemIcon>
+                    <ListItemText primary="Admin Dashboard" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                  </ListItemButton>
+                </ListItem>
+              )}
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { handleDrawerToggle(); setThemeDialogOpen(true); }}>
+                  <ListItemIcon sx={{ color: theme.palette.text.secondary }}><SettingsIcon /></ListItemIcon>
+                  <ListItemText primary="Settings" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </>
+        ) : null}
+      </Box>
+
+      <Divider />
+      <List>
+        {isAuthenticated ? (
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => {
+              handleDrawerToggle();
+              // Use a slight delay to allow drawer to close before navigating
+              setTimeout(() => {
+                logout();
+                navigate('/');
+              }, 300);
+            }}>
+              <ListItemIcon><LogoutIcon color="error" /></ListItemIcon>
+              <ListItemText primary="Logout" sx={{ color: 'error.main' }} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+            </ListItemButton>
+          </ListItem>
+        ) : (
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleDrawerNavigate('/login')} sx={{ py: 1.5 }}>
+              <ListItemText primary="Login / Sign Up" sx={{ textAlign: 'center' }} primaryTypographyProps={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }} />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
     </Box>
   );
@@ -335,6 +431,7 @@ export default function Navbar() {
     <>
       <AppBar
         position="fixed"
+        color="primary"
         sx={{
           fontFamily: theme.typography.fontFamily,
           backgroundColor: theme.palette.primary.main,
@@ -345,7 +442,6 @@ export default function Navbar() {
           top: 0,
         }}
         elevation={hasShadow ? 6 : 0}
-        enableColorOnDark
       >
         <Toolbar
           sx={{
@@ -357,39 +453,40 @@ export default function Navbar() {
             display: "flex",
           }}
         >
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { xs: 'block', lg: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          {/* Site Name with increased padding */}
-          <SiteName sx={{ display: "flex", flexShrink: 0 }}>
-            <Typography
-              component={RouterLink}
-              to="/"
-              tabIndex={0}
-              aria-label="Go to homepage"
-              sx={{
-                fontFamily: theme.typography.fontFamily,
-                color: theme.palette.common.white,
-                fontWeight: 600,
-                letterSpacing: "0.18em",
-                textDecoration: "none",
-                userSelect: "none",
-                whiteSpace: "nowrap",
-                fontSize: "1.3rem",
-                cursor: "pointer",
-              }}
+          {/* Left Section */}
+          <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: { xs: 1, sm: 2 }, display: { xs: 'block', lg: 'none' } }}
             >
-              Cook’n’Crop
-            </Typography>
-          </SiteName>
+              <MenuIcon />
+            </IconButton>
+            <SiteName sx={{ display: "flex", flexShrink: 0 }}>
+              <Typography
+                component={RouterLink}
+                to="/"
+                tabIndex={0}
+                aria-label="Go to homepage"
+                sx={{
+                  fontFamily: theme.typography.fontFamily,
+                  color: theme.palette.common.white,
+                  fontWeight: 600,
+                  letterSpacing: "0.18em",
+                  textDecoration: "none",
+                  userSelect: "none",
+                  whiteSpace: "nowrap",
+                  fontSize: "1.3rem",
+                  cursor: "pointer",
+                }}
+              >
+                Cook’n’Crop
+              </Typography>
+            </SiteName>
+          </Box>
 
-          {/* Navigation Links with reduced padding and smaller gap between Recipes and Search */}
           <Box
             component="nav"
             aria-label="main navigation"
@@ -397,7 +494,7 @@ export default function Navbar() {
               display: { xs: "none", lg: "flex" },
               alignItems: "center",
               gap: 2,
-              mr: 1, // decrease gap before search bar
+              mx: 'auto',
             }}
           >
             {navItems.map((item) => (
@@ -407,11 +504,25 @@ export default function Navbar() {
             ))}
           </Box>
 
+          {/* Spacer */}
           <Box sx={{ flexGrow: 1 }} />
 
-          <GlobalSearch />
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {/* Right Section */}
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 1 } }}>
+            {/* Mobile Search Icon */}
+            <Tooltip title="Search">
+              <IconButton // This is now redundant but harmless. The real mobile search is the drawer.
+                onClick={() => setMobileSearchOpen(true)}
+                sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' } }}
+                aria-label="open search"
+              >
+                <SearchIcon />
+              </IconButton>
+            </Tooltip>
+            {/* Desktop Search Bar */}
+            <Box>
+              <GlobalSearch />
+            </Box>
             {/* Cart Button */}
             <Tooltip title="Shopping Cart" arrow>
               <IconButton
@@ -502,6 +613,7 @@ export default function Navbar() {
                       color: theme.palette.primary.main,
                       fontWeight: "bold",
                       fontSize: 14,
+                       fontFamily: theme.typography.fontFamily,
                       userSelect: "none",
                     }}
                   >
@@ -545,34 +657,11 @@ export default function Navbar() {
                     </Typography>
                   </Box>
 
-                  {/* My Feed inside dropdown */}
-                  {isAuthenticated && (
-                    <MenuItem
-                      onClick={() => {
-                        handleCloseUserMenu();
-                        navigate("/feed");
-                      }}
-                      sx={{ borderRadius: 2, px: 3 }}
-                    >
-                      <ListItemIcon>
-                        <HomeIcon fontSize="small" />
-                      </ListItemIcon>
-                      My Feed
-                    </MenuItem>
-                  )}
-
                   <MenuItem onClick={handleProfile} sx={{ borderRadius: 2, px: 3 }}>
                     <ListItemIcon>
                       <PersonIcon fontSize="small" />
                     </ListItemIcon>
                     Profile
-                  </MenuItem>
-
-                  <MenuItem onClick={handleAddresses} sx={{ borderRadius: 2, px: 3 }}>
-                    <ListItemIcon>
-                      <HomeIcon fontSize="small" />
-                    </ListItemIcon>
-                    Saved Addresses
                   </MenuItem>
 
                   <MenuItem
@@ -732,6 +821,41 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
 
+      {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
+      <IconButton
+        onClick={() => setMobileSearchOpen(true)}
+        sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
+        aria-label="open search"
+      ><SearchIcon /></IconButton>
+
+      {/* Mobile Search Drawer */}
+      <Drawer
+        anchor="top"
+        open={mobileSearchOpen}
+        onClose={() => setMobileSearchOpen(false)}
+        PaperProps={{ sx: { bgcolor: 'primary.main' } }}
+      >
+        <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <GlobalSearch fullWidth />
+          </Box>
+          <IconButton
+            onClick={() => setMobileSearchOpen(false)}
+            sx={{ color: 'common.white' }}
+            aria-label="close search"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+      </Drawer>
+
+      {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
+      <IconButton
+        onClick={() => setMobileSearchOpen(true)}
+        sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
+        aria-label="open search"
+      ><SearchIcon /></IconButton>
+
       {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
@@ -746,6 +870,27 @@ export default function Navbar() {
         {drawer}
       </Drawer>
 
+      {/* Mobile Search Drawer */}
+      <Drawer
+        anchor="top"
+        open={mobileSearchOpen}
+        onClose={() => setMobileSearchOpen(false)}
+        PaperProps={{ sx: { bgcolor: 'primary.main' } }}
+      >
+        <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <GlobalSearch fullWidth />
+          </Box>
+          <IconButton
+            onClick={() => setMobileSearchOpen(false)}
+            sx={{ color: 'common.white' }}
+            aria-label="close search"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+      </Drawer>
+
       {/* Theme Customizer Dialog */}
       <Dialog
         open={themeDialogOpen}
@@ -754,9 +899,9 @@ export default function Navbar() {
         fullWidth
         disableScrollLock={true}
         aria-labelledby="theme-dialog-title"
-        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+         PaperProps={{ sx: { borderRadius: 3, p: 2, fontFamily: theme.typography.fontFamily } }}
       >
-        <DialogTitle id="theme-dialog-title" sx={{ fontWeight: 700 }}>
+         <DialogTitle id="theme-dialog-title" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
           Customize Theme
         </DialogTitle>
         <ThemeCustomizer />
@@ -777,7 +922,7 @@ export default function Navbar() {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
+         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%", fontFamily: theme.typography.fontFamily }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

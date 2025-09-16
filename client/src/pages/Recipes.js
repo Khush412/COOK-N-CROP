@@ -240,6 +240,13 @@ const RecipesPage = () => {
               label="Max Prep Time"
               onChange={(e) => setPrepTime(e.target.value)}
               sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily },
+                  },
+                },
+              }}
             >
               <MenuItem value={120} sx={{ fontFamily: theme.typography.fontFamily }}>Any</MenuItem>
               <MenuItem value={15} sx={{ fontFamily: theme.typography.fontFamily }}>Under 15 mins</MenuItem>
@@ -256,6 +263,13 @@ const RecipesPage = () => {
               label="Min Servings"
               onChange={(e) => setServings(e.target.value)}
               sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily },
+                  },
+                },
+              }}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
                 <MenuItem key={s} value={s} sx={{ fontFamily: theme.typography.fontFamily }}>{s} or more</MenuItem>
@@ -295,13 +309,13 @@ const RecipesPage = () => {
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
+              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             />
-            <ToggleButtonGroup value={sort} exclusive onChange={handleSortChange} aria-label="recipe sorting">
-              <ToggleButton value="new" aria-label="sort by new" sx={{ fontFamily: theme.typography.fontFamily }}><NewReleasesIcon sx={{ mr: 1 }} />Newest</ToggleButton>
-              <ToggleButton value="top" aria-label="sort by top" sx={{ fontFamily: theme.typography.fontFamily }}><TrendingUpIcon sx={{ mr: 1 }} />Top Rated</ToggleButton>
-              <ToggleButton value="discussed" aria-label="sort by most discussed" sx={{ fontFamily: theme.typography.fontFamily }}><ForumIcon sx={{ mr: 1 }} />Discussed</ToggleButton>
+            <ToggleButtonGroup value={sort} exclusive onChange={handleSortChange} aria-label="recipe sorting" sx={{ '& .MuiToggleButton-root': { fontFamily: theme.typography.fontFamily } }}>
+              <ToggleButton value="new" aria-label="sort by new"><NewReleasesIcon sx={{ mr: 1 }} />Newest</ToggleButton>
+              <ToggleButton value="top" aria-label="sort by top"><TrendingUpIcon sx={{ mr: 1 }} />Top Rated</ToggleButton>
+              <ToggleButton value="discussed" aria-label="sort by most discussed"><ForumIcon sx={{ mr: 1 }} />Discussed</ToggleButton>
             </ToggleButtonGroup>
             <IconButton onClick={() => setMobileFiltersOpen(true)} sx={{ display: { xs: 'flex', md: 'none' } }}>
               <FilterListIcon />

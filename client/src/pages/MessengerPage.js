@@ -179,10 +179,11 @@ const MessengerPage = () => {
           variant="outlined"
           value={convoSearch}
           onChange={(e) => setConvoSearch(e.target.value)}
-          sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '50px' } }}
+          sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '50px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
           }}
+          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
         />
       </Box>
       {loading.convos ? <CircularProgress sx={{ m: 'auto' }} /> : (
@@ -294,7 +295,7 @@ const MessengerPage = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     disabled={isSending}
-                    sx={{ '& .MuiFilledInput-root': { borderRadius: '50px', '&:before, &:after': { display: 'none' } } }}
+                    sx={{ '& .MuiFilledInput-root': { borderRadius: '50px', '&:before, &:after': { display: 'none' } }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                   />
                   <IconButton type="submit" color="primary" sx={{ ml: 1 }} disabled={isSending || !newMessage.trim()}>
                     {isSending ? <CircularProgress size={24} /> : <SendIcon />}

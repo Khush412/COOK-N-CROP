@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
+  Grid,
   Typography,
   TableContainer,
   Table,
@@ -16,6 +17,10 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -54,7 +59,7 @@ const PLANS = [
 
 export default function SubscriptionPage() {
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, loadUser } = useAuth();
   const [currentPlan, setCurrentPlan] = useState(user?.subscription?.plan || "free");
   const [selectedPlan, setSelectedPlan] = useState(currentPlan);
@@ -121,95 +126,147 @@ export default function SubscriptionPage() {
     }
   };
 
+  const PlanCard = ({ plan, isCurrent, isSelected, onSelect }) => (
+    <Paper
+      elevation={isSelected ? 8 : 3}
+      sx={{
+        p: 3,
+        borderRadius: 3,
+        border: isSelected ? `2px solid ${theme.palette.secondary.main}` : `1px solid ${theme.palette.divider}`,
+        bgcolor: isCurrent ? theme.palette.action.selected : 'background.paper',
+      }}
+    >
+      <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{plan.name}</Typography>
+      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{plan.price}</Typography>
+      <List sx={{ my: 2 }}>
+        {FEATURES.map((feature, i) => (
+          <ListItem key={i} sx={{ py: 0.5, px: 0 }}>
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              {isFeatureIncluded(plan.key, i) ? <CheckCircleIcon color="success" /> : <CancelIcon color="disabled" />}
+            </ListItemIcon>
+            <ListItemText primary={feature} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+          </ListItem>
+        ))}
+      </List>
+      <Button
+        fullWidth
+        variant={isSelected ? "contained" : "outlined"}
+        color={isSelected ? "secondary" : "primary"}
+        disabled={isCurrent || loading}
+        onClick={() => onSelect(plan.key)}
+        sx={{ fontFamily: theme.typography.fontFamily }}
+      >
+        {isCurrent ? "Current Plan" : isSelected ? "Selected" : "Select"}
+      </Button>
+    </Paper>
+  );
+
   return (
     <Box maxWidth={960} mx="auto" my={6} px={2}>
-      <Typography variant="h4" fontWeight={700} gutterBottom align="center">
+      <Typography variant="h4" fontWeight={700} gutterBottom align="center" sx={{ fontFamily: theme.typography.fontFamily }}>
         Choose Your Subscription Plan
       </Typography>
-      <Typography variant="subtitle1" color="textSecondary" gutterBottom align="center">
+      <Typography variant="subtitle1" color="textSecondary" gutterBottom align="center" sx={{ fontFamily: theme.typography.fontFamily }}>
         Select the best plan that fits your needs and upgrade anytime.
       </Typography>
 
-      <TableContainer component={Paper} elevation={4} sx={{ mt: 4 }}>
-        <Table>
-          <TableHead sx={{ bgcolor: theme.palette.primary.main }}>
-            <TableRow>
-              <TableCell sx={{ color: "#fff", fontWeight: "bold", minWidth: 240 }}>
-                Features
-              </TableCell>
-              {PLANS.map((plan) => (
-                <TableCell
-                  key={plan.key}
-                  align="center"
-                  sx={{
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: 18,
-                    userSelect: "none",
-                    bgcolor:
-                      plan.key === currentPlan ? theme.palette.secondary.main : "inherit",
-                  }}
-                >
-                  {plan.name}
-                  <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
-                    {plan.price}
-                  </Typography>
+      {isMobile ? (
+        <Grid container spacing={3} sx={{ mt: 4 }}>
+          {PLANS.map(plan => (
+            <Grid item xs={12} key={plan.key}>
+              <PlanCard
+                plan={plan}
+                isCurrent={plan.key === currentPlan}
+                isSelected={plan.key === selectedPlan}
+                onSelect={handleSelectPlan}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <TableContainer component={Paper} elevation={4} sx={{ mt: 4 }}>
+          <Table>
+            <TableHead sx={{ bgcolor: theme.palette.primary.main }}>
+              <TableRow>
+                <TableCell sx={{ color: "#fff", fontWeight: "bold", minWidth: 240, fontFamily: theme.typography.fontFamily }}>
+                  Features
                 </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {FEATURES.map((feature, i) => (
-              <TableRow key={feature} hover>
-                <TableCell sx={{ py: 1.5, fontWeight: "600" }}>{feature}</TableCell>
                 {PLANS.map((plan) => (
-                  <TableCell key={plan.key + feature} align="center" sx={{ py: 1.5 }}>
-                    {isFeatureIncluded(plan.key, i) ? (
-                      <Tooltip title="Included" arrow>
-                        <CheckCircleIcon color="success" fontSize="large" />
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Not included" arrow>
-                        <CancelIcon color="disabled" fontSize="large" />
-                      </Tooltip>
-                    )}
+                  <TableCell
+                    key={plan.key}
+                    align="center"
+                    sx={{
+                      color: "#fff",
+                      fontWeight: "bold",
+                      fontSize: 18,
+                      userSelect: "none",
+                      bgcolor:
+                        plan.key === currentPlan ? theme.palette.secondary.main : "inherit",
+                      fontFamily: theme.typography.fontFamily,
+                    }}
+                  >
+                    {plan.name}
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontFamily: theme.typography.fontFamily }}>
+                      {plan.price}
+                    </Typography>
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+            </TableHead>
+            <TableBody>
+              {FEATURES.map((feature, i) => (
+                <TableRow key={feature} hover>
+                  <TableCell sx={{ py: 1.5, fontWeight: "600", fontFamily: theme.typography.fontFamily }}>{feature}</TableCell>
+                  {PLANS.map((plan) => (
+                    <TableCell key={plan.key + feature} align="center" sx={{ py: 1.5 }}>
+                      {isFeatureIncluded(plan.key, i) ? (
+                        <Tooltip title="Included" arrow>
+                          <CheckCircleIcon color="success" fontSize="large" />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Not included" arrow>
+                          <CancelIcon color="disabled" fontSize="large" />
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
 
-            <TableRow>
-              <TableCell />
-              {PLANS.map((plan) => {
-                const isCurrent = plan.key === currentPlan;
-                const isSelected = plan.key === selectedPlan;
-                return (
-                  <TableCell key={"btn-" + plan.key} align="center" sx={{ py: 3 }}>
-                    <Button
-                      variant={isSelected ? "contained" : "outlined"}
-                      color={isSelected ? "secondary" : "primary"}
-                      disabled={isCurrent || loading}
-                      onClick={() => handleSelectPlan(plan.key)}
-                      sx={{ minWidth: 140 }}
-                    >
-                      {isCurrent ? "Current Plan" : isSelected ? "Selected" : "Select"}
-                    </Button>
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
+              <TableRow>
+                <TableCell />
+                {PLANS.map((plan) => {
+                  const isCurrent = plan.key === currentPlan;
+                  const isSelected = plan.key === selectedPlan;
+                  return (
+                    <TableCell key={"btn-" + plan.key} align="center" sx={{ py: 3 }}>
+                      <Button
+                        variant={isSelected ? "contained" : "outlined"}
+                        color={isSelected ? "secondary" : "primary"}
+                        disabled={isCurrent || loading}
+                        onClick={() => handleSelectPlan(plan.key)}
+                        sx={{ minWidth: 140, fontFamily: theme.typography.fontFamily }}
+                      >
+                        {isCurrent ? "Current Plan" : isSelected ? "Selected" : "Select"}
+                      </Button>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Box mt={4} display="flex" justifyContent="center" flexWrap="wrap" gap={2}>
         <Button
           variant="contained"
           color="secondary"
-          size={isSmall ? "medium" : "large"}
+          size={isMobile ? "medium" : "large"}
           disabled={selectedPlan === currentPlan || loading}
           onClick={handleConfirmSubscription}
           startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{ fontFamily: theme.typography.fontFamily }}
         >
           {selectedPlan === currentPlan
             ? "Subscribed"
@@ -220,8 +277,9 @@ export default function SubscriptionPage() {
         {selectedPlan !== currentPlan && !loading && (
           <Button
             variant="outlined"
-            size={isSmall ? "medium" : "large"}
+            size={isMobile ? "medium" : "large"}
             onClick={() => setSelectedPlan(currentPlan)}
+            sx={{ fontFamily: theme.typography.fontFamily }}
           >
             Cancel
           </Button>
@@ -237,7 +295,7 @@ export default function SubscriptionPage() {
         <Alert
           onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", fontFamily: theme.typography.fontFamily }}
         >
           {snackbarMessage}
         </Alert>
