@@ -2,6 +2,10 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import CropCorner from "./pages/CropCorner";
+import TermsPage from "./pages/TermsPage"; // New
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage"; // New
+import SupportContactPage from "./pages/SupportContactPage"; // New
+import AboutPage from "./pages/AboutPage";
 import Login from "./pages/AuthPage";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
@@ -11,7 +15,6 @@ import ResetPasswordPage from "./pages/ResetPasswordPage"; // New
 import PostPage from "./pages/PostPage"; // New: Import PostPage
 import FeedPage from "./pages/FeedPage"; // New
 import Community from "./pages/Community";
-import Subscription from "./pages/Subscription";
 import ProductPage from "./pages/ProductPage"; // New
 import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
@@ -22,6 +25,9 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage"; // New
 import AdminOverview from "./pages/admin/AdminOverview"; // New
 import ManageUsers from "./pages/admin/ManageUsers"; // New
 import ManageOrders from "./pages/admin/ManageOrders"; // New
+import MySupportTicketsPage from "./pages/MySupportTicketsPage"; // New
+import SupportTicketDetailsPage from "./pages/SupportTicketDetailsPage"; // New
+import ManageSupport from "./pages/admin/ManageSupport"; // New
 import ManageProducts from "./pages/admin/ManageProducts"; // New
 import ReportedContent from "./pages/admin/ReportedContent"; // New
 import SavedPostsPage from "./pages/SavedPostsPage"; // New
@@ -43,6 +49,10 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/terms" element={<TermsPage />} /> {/* New */}
+      <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* New */}
+      <Route path="/support" element={<SupportContactPage />} /> {/* New */}
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/user/:username" element={<PublicProfilePage />} /> {/* New: Public Profile Page */}
       <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
       <Route path="/feed" element={<FeedPage />} /> {/* New */}
@@ -55,16 +65,24 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/profile/addresses" element={<AddressManagementPage />} /> {/* New: Address Management Page */}
-      <Route path="/profile/saved-posts" element={<SavedPostsPage />} /> {/* New */}
-      <Route path="/profile/my-activity" element={<MyActivityPage />} />
-      <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />
-      <Route path="/profile/wishlist" element={<WishlistPage />} />
-      <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
-      <Route path="/messages" element={<PrivateRoute />}><Route index element={<MessengerPage />} /></Route>
-      <Route path="/subscription" element={<Subscription />} />
-      <Route path="/cart" element={<CartPage />} />
+
+      {/* Authenticated User Routes */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/addresses" element={<AddressManagementPage />} />
+        <Route path="/profile/saved-posts" element={<SavedPostsPage />} />
+        <Route path="/profile/my-activity" element={<MyActivityPage />} />
+        <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />
+        <Route path="/profile/wishlist" element={<WishlistPage />} />
+        <Route path="/profile/support-tickets" element={<MySupportTicketsPage />} />
+        <Route path="/support/ticket/:id" element={<SupportTicketDetailsPage />} />
+        <Route path="/profile/orders" element={<OrderHistoryPage />} />
+        <Route path="/messages" element={<MessengerPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/order/:id" element={<OrderDetailsPage />} />
+      </Route>
+
+      {/* Admin Routes */}
       <Route path="/admin" element={<PrivateRoute roles={['admin']} />}>
         <Route path="/admin" element={<AdminDashboardPage />}>
           <Route index element={<AdminOverview />} />
@@ -73,6 +91,7 @@ export default function AppRouter() {
           <Route path="orders" element={<ManageOrders />} />
           <Route path="orders/edit/:id" element={<EditOrderPage />} />
           <Route path="orders/create" element={<CreateOrderPage />} />
+          <Route path="support" element={<ManageSupport />} /> {/* New */}
           <Route path="products" element={<ManageProducts />} />
           <Route path="products/low-stock" element={<LowStockPage />} />
           <Route path="reports" element={<ReportedContent />} />
@@ -81,7 +100,6 @@ export default function AppRouter() {
           <Route path="coupons/:code/orders" element={<CouponOrdersPage />} />
         </Route>
       </Route>
-      <Route path="/order/:id" element={<OrderDetailsPage />} /> {/* New: Order Details Page */}
       
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" replace />} />

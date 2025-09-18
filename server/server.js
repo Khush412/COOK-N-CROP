@@ -35,6 +35,7 @@ const adminRoutes = require('./routes/admin'); // New: Import admin routes
 const messageRoutes = require('./routes/messages'); // New: Import message routes
 const searchRoutes = require('./routes/search'); // New: Import search routes
 const chatbotRoutes = require('./routes/chatbot'); // New: Import chatbot routes
+const supportRoutes = require('./routes/support'); // New: Import support routes
 
 // Connect to database
 connectDB();
@@ -172,6 +173,7 @@ app.use('/api/notifications', notificationRoutes); // New: Use notification rout
 app.use('/api/messages', messageRoutes); // New: Use message routes
 app.use('/api/search', searchRoutes); // New: Use search routes
 app.use('/api/chatbot', chatbotRoutes); // New: Use chatbot routes
+app.use('/api/support', supportRoutes); // New: Use support routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

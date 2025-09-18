@@ -48,6 +48,7 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
   Search as SearchIcon,
+  SupportAgent as SupportAgentIcon,
   SmartToy as SmartToyIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
@@ -768,6 +769,19 @@ export default function Navbar() {
                       <FavoriteIcon fontSize="small" />
                     </ListItemIcon>
                     My Wishlist
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/support-tickets");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <SupportAgentIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Support Tickets
                   </MenuItem>
 
                   <MenuItem

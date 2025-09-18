@@ -156,8 +156,8 @@ const OrderDetailsPage = () => {
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Status</Typography>
             <Chip
               label={order.status}
-              color={statusColors[order.status] || 'default'}
-              size="medium" sx={{ fontWeight: 'bold' }}
+              color={statusColors[order.status] || 'default'} sx={{ fontFamily: theme.typography.fontFamily }}
+              size="medium"
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>

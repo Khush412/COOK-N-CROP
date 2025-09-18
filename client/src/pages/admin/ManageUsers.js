@@ -247,7 +247,6 @@ const ManageUsers = () => {
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MenuItem value="user" sx={{ fontFamily: theme.typography.fontFamily }}>User</MenuItem>
-                            <MenuItem value="premium" sx={{ fontFamily: theme.typography.fontFamily }}>Premium</MenuItem>
                             <MenuItem value="admin" sx={{ fontFamily: theme.typography.fontFamily }}>Admin</MenuItem>
                           </Select>
                         ) : (

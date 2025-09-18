@@ -291,9 +291,9 @@ const ProductPage = () => {
             <Divider sx={{ my: 3 }} />
             <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
               Status: {product.countInStock > 0 ? (
-                <Chip label="In Stock" color="success" />
+                <Chip label="In Stock" color="success" sx={{ fontFamily: theme.typography.fontFamily }} />
               ) : (
-                <Chip label="Out of Stock" color="error" />
+                <Chip label="Out of Stock" color="error" sx={{ fontFamily: theme.typography.fontFamily }} />
               )}
               {product.countInStock > 0 && product.countInStock <= 10 && (
                 <Typography variant="caption" color="warning.main" sx={{ ml: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
@@ -416,7 +416,7 @@ const ProductPage = () => {
               Write a Review
             </Typography>
             {isAuthenticated ? (
-              hasUserReviewed ? (
+              hasUserReviewed ? ( 
                 <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily }}>You have already reviewed this product.</Alert>
               ) : (
                 <Box component="form" onSubmit={handleReviewSubmit}>

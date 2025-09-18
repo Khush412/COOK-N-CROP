@@ -37,8 +37,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'premium'],
-    default: 'user'
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   isEmailVerified: {
     type: Boolean,
@@ -314,7 +314,6 @@ userSchema.methods.getClientUserObject = function() {
     github: this.github,
     twitter: this.twitter,
     preferences: this.preferences,
-    subscription: this.subscription,
     savedPosts: this.savedPosts,
     wishlist: this.wishlist,
     activity: this.activity,

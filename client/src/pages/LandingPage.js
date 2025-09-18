@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import { ArrowForward, People, FormatQuote, MenuBook, Storefront } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,19 +12,11 @@ const AnimatedSection = React.forwardRef(({ children, sx = {}, id }, ref) => {
   // If no ref is passed from the parent, we still need one for useInView to work.
   const internalRef = useRef(null);
   const targetRef = ref || internalRef;
-  const isInView = useInView(targetRef, { once: true, amount: 0.2 });
 
   return (
     <Box
       ref={targetRef}
       id={id}
-      component={motion.div}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={{
-        hidden: { opacity: 0, y: 60 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
-      }}
       sx={{ py: { xs: 8, md: 12 }, position: 'relative', overflow: 'hidden', ...sx }}
     >
       {children}

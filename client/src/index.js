@@ -9,7 +9,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 
 import { themeFromKey } from "./themeUtils";
 
-const getInitialThemeKey = () => localStorage.getItem("themeKey") || "lightMaroon";
+const getInitialThemeKey = () => localStorage.getItem("themeKey") || "forestMist";
 const themeKey = getInitialThemeKey();
 const theme = themeFromKey(themeKey);
 

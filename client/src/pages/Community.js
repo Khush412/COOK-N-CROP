@@ -443,7 +443,7 @@ export default function Community() {
 
         {/* Create Post Dialog */}
         <Dialog open={openCreatePost} onClose={handleCloseCreate} fullWidth maxWidth="sm">
-          <DialogTitle sx={{ fontWeight: 700 }}>Create a New Post</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Create a New Post</DialogTitle>
           <DialogContent>
             <CreatePostForm 
               onSubmit={handlePostSubmit} 

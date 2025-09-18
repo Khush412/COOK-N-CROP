@@ -801,17 +801,17 @@ const PostPage = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>
           {"Confirm Post Deletion"}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
             Are you sure you want to delete this post? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" autoFocus>
+          <Button onClick={() => setDeleteConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
             Delete
           </Button>
         </DialogActions>
@@ -823,17 +823,17 @@ const PostPage = () => {
         aria-labelledby="alert-dialog-comment-delete-title"
         aria-describedby="alert-dialog-comment-delete-description"
       >
-        <DialogTitle id="alert-dialog-comment-delete-title">
+        <DialogTitle id="alert-dialog-comment-delete-title" sx={{ fontFamily: theme.typography.fontFamily }}>
           {"Confirm Comment Deletion"}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-comment-delete-description">
+          <DialogContentText id="alert-dialog-comment-delete-description" sx={{ fontFamily: theme.typography.fontFamily }}>
             Are you sure you want to delete this comment? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteCommentConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteComment} color="error" autoFocus>
+          <Button onClick={() => setDeleteCommentConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={handleDeleteComment} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
             Delete
           </Button>
         </DialogActions>

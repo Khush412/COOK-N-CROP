@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, useTheme } from '@mui/material';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [searchParams] = useSearchParams();
   const { handleOAuthCallback } = useAuth();
 
@@ -32,11 +33,12 @@ export default function AuthCallback() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 2
+        gap: 2,
+        fontFamily: theme.typography.fontFamily,
       }}
     >
       <CircularProgress size={60} />
-      <Typography variant="h6" color="text.secondary">
+      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: 'inherit' }}>
         Completing authentication...
       </Typography>
     </Box>

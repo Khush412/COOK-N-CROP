@@ -6,6 +6,7 @@ import { useSocket } from '../../contexts/SocketContext';
 import PeopleIcon from '@mui/icons-material/People';
 import ReportIcon from '@mui/icons-material/Report';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import DiscountIcon from '@mui/icons-material/Discount';
@@ -20,6 +21,7 @@ const adminNavItems = [
   { text: 'Manage Products', path: '/admin/products', icon: <InventoryIcon /> },
   { text: 'Low Stock', path: '/admin/products/low-stock', icon: <WarningIcon /> },
   { text: 'Manage Orders', path: '/admin/orders', icon: <ReceiptLongIcon /> },
+  { text: 'Support Tickets', path: '/admin/support', icon: <SupportAgentIcon /> },
   { text: 'Create Order', path: '/admin/orders/create', icon: <AddShoppingCartIcon /> },
   { text: 'Manage Coupons', path: '/admin/coupons', icon: <DiscountIcon /> },
   { text: 'Reported Content', path: '/admin/reports', icon: <ReportIcon /> },

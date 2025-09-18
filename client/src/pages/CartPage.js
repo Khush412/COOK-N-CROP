@@ -344,7 +344,7 @@ const CartPage = () => {
                               <RadioGroup value={selectedAddress?._id || ''} onChange={handleAddressChange}>
                                 {addresses.map((addr) => (
                                   <Paper key={addr._id} variant="outlined" sx={{ p: 1.5, mb: 1, borderRadius: 2, display: 'flex', alignItems: 'center', cursor: 'pointer', bgcolor: selectedAddress?._id === addr._id ? alpha(theme.palette.primary.main, 0.1) : 'transparent' }}>
-                                    <Radio value={addr._id} />
+                                      <Radio value={addr._id} sx={{ '& .MuiSvgIcon-root': { fontFamily: theme.typography.fontFamily } }} />
                                     <Box>
                                       <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.street}, {addr.city}</Typography>
                                       <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.state}, {addr.zipCode}, {addr.country}</Typography>
@@ -438,10 +438,10 @@ const CartPage = () => {
       >
         <DialogTitle id="order-success-dialog-title" sx={{ textAlign: 'center' }}>
           <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 1 }} />
-          <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily }}>Order Placed Successfully!</Typography>
+          <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Placed Successfully!</Typography>
         </DialogTitle>
         <DialogContent>
-          <Typography id="order-success-dialog-description" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+          <Typography id="order-success-dialog-description" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, textAlign: 'center' }}>
             Your order has been placed successfully. Thank you for your purchase!
           </Typography>
           <Typography>
@@ -459,6 +459,7 @@ const CartPage = () => {
             autoFocus
             variant="contained"
             color="secondary"
+            sx={{ fontFamily: theme.typography.fontFamily }}
           >
             View Order Details
           </Button>
