@@ -77,8 +77,20 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [size, setSize] = useState({ width: 360, height: 500 });
+  const [isVisible, setIsVisible] = useState(() => localStorage.getItem('showChatbot') !== 'false');
   const isResizing = useRef(false);
   const resizeRef = useRef(null);
+
+  useEffect(() => {
+    const handleToggle = (event) => {
+      if (open && !event.detail.visible) {
+        setOpen(false);
+      }
+      setIsVisible(event.detail.visible);
+    };
+    window.addEventListener('chatbot-toggle', handleToggle);
+    return () => window.removeEventListener('chatbot-toggle', handleToggle);
+  }, [open]);
 
   const handleResizeMouseMove = useCallback((e) => {
     if (!isResizing.current) return;
@@ -171,6 +183,10 @@ const Chatbot = () => {
     window.addEventListener('mousemove', handleResizeMouseMove);
     window.addEventListener('mouseup', handleResizeMouseUp);
   };
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <>

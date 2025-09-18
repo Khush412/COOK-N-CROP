@@ -121,38 +121,61 @@ router.post('/', protect, async (req, res) => {
         // 5. Send order confirmation email
         try {
             const itemRows = createdOrder.orderItems.map(item => `
-                <tr>
-                    <td>${item.name}</td>
-                    <td style="text-align: center;">${item.qty}</td>
-                    <td style="text-align: right;">$${item.price.toFixed(2)}</td>
-                    <td style="text-align: right;">$${(item.qty * item.price).toFixed(2)}</td>
+                <tr style="border-bottom: 1px solid #eaeaea;">
+                    <td style="padding: 15px; vertical-align: middle;">${item.name}</td>
+                    <td style="padding: 15px; vertical-align: middle; text-align: center;">${item.qty}</td>
+                    <td style="padding: 15px; vertical-align: middle; text-align: right;">$${item.price.toFixed(2)}</td>
+                    <td style="padding: 15px; vertical-align: middle; text-align: right;">$${(item.qty * item.price).toFixed(2)}</td>
                 </tr>
             `).join('');
 
-            const discountRow = createdOrder.discount.amount > 0 ? `
-                <h3>Subtotal: $${createdOrder.subtotal.toFixed(2)}</h3>
-                <h3>Discount (${createdOrder.discount.code}): -$${createdOrder.discount.amount.toFixed(2)}</h3>
+            const summaryRows = createdOrder.discount.amount > 0 ? `
+                <tr>
+                    <td colspan="3" style="text-align: right; padding: 5px 0;">Subtotal:</td>
+                    <td style="text-align: right; padding: 5px 0;">$${createdOrder.subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: right; padding: 5px 0; color: #28a745;">Discount (${createdOrder.discount.code}):</td>
+                    <td style="text-align: right; padding: 5px 0; color: #28a745;">-$${createdOrder.discount.amount.toFixed(2)}</td>
+                </tr>
             ` : '';
 
             const message = `
-                <h1>Thank you for your order!</h1>
-                <p>Hi ${req.user.username},</p>
-                <p>We've received your order #${createdOrder._id} and are getting it ready.</p>
-                <h2>Order Summary</h2>
-                <table width="100%" cellpadding="5" cellspacing="0" border="1">
+              <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+                <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="margin: 0; font-size: 28px;">Thank You For Your Order!</h1>
+                </div>
+                <div style="padding: 25px;">
+                  <p>Hi ${req.user.username},</p>
+                  <p>We've received your order #${createdOrder._id.toString().slice(-6)} and are getting it ready. Here's a summary of your purchase:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
                     <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Subtotal</th>
-                        </tr>
+                      <tr style="background-color: #f9f9f9;">
+                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: left;">Item</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: center;">Quantity</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Price</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Total</th>
+                      </tr>
                     </thead>
                     <tbody>${itemRows}</tbody>
-                </table>
-                ${discountRow}
-                <h3>Total: $${createdOrder.totalPrice.toFixed(2)}</h3>
-                <p>You can view your order details here: <a href="${process.env.CLIENT_URL}/order/${createdOrder._id}">${process.env.CLIENT_URL}/order/${createdOrder._id}</a></p>
+                  </table>
+                  <table style="width: 100%; margin-top: 20px;">
+                    <tbody>
+                      ${summaryRows}
+                      <tr>
+                        <td colspan="3" style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">Grand Total:</td>
+                        <td style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">$${createdOrder.totalPrice.toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div style="text-align: center; margin-top: 30px;">
+                    <a href="${process.env.CLIENT_URL}/order/${createdOrder._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+                  </div>
+                </div>
+                <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
+                  <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                </div>
+              </div>
             `;
             await sendEmail({ email: req.user.email, subject: `Your Cook-N-Crop Order #${createdOrder._id}`, message });
         } catch (emailError) {
@@ -401,10 +424,22 @@ router.put('/:id/pay', protect, authorize('admin'), async (req, res) => { // Thi
       // Send email notification
       try {
         const message = `
-            <h1>Your Order is Being Processed</h1>
-            <p>Hi ${order.user.username},</p>
-            <p>We have confirmed payment for your order #${order._id}. It is now being processed.</p>
-            <p>You can view your order details here: <a href="${process.env.CLIENT_URL}/order/${order._id}">${process.env.CLIENT_URL}/order/${order._id}</a></p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
+            </div>
+            <div style="padding: 25px;">
+              <h2 style="color: #333333;">Your Order is Being Processed</h2>
+              <p>Hi ${order.user.username},</p>
+              <p>We have confirmed payment for your order #${order._id}. It is now being processed.</p>
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+              </div>
+            </div>
+            <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+            </div>
+          </div>
         `;
         await sendEmail({ email: order.user.email, subject: `Your Cook-N-Crop Order #${order._id} is Processing`, message });
       } catch (emailError) {
@@ -448,10 +483,22 @@ router.put('/:id/deliver', protect, authorize('admin'), async (req, res) => { //
       // Send email notification
       try {
         const message = `
-            <h1>Your Order Has Been Delivered!</h1>
-            <p>Hi ${order.user.username},</p>
-            <p>Your order #${order._id} has been marked as delivered. We hope you enjoy your fresh products!</p>
-            <p>You can view your order details here: <a href="${process.env.CLIENT_URL}/order/${order._id}">${process.env.CLIENT_URL}/order/${order._id}</a></p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
+            </div>
+            <div style="padding: 25px;">
+              <h2 style="color: #333333;">Your Order Has Been Delivered!</h2>
+              <p>Hi ${order.user.username},</p>
+              <p>Your order #${order._id} has been marked as delivered. We hope you enjoy your fresh products!</p>
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+              </div>
+            </div>
+            <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+            </div>
+          </div>
         `;
         await sendEmail({ email: order.user.email, subject: `Your Cook-N-Crop Order #${order._id} Has Been Delivered`, message });
       } catch (emailError) {
@@ -539,11 +586,23 @@ router.put('/:id/status', protect, authorize('admin'), async (req, res) => {
         if (oldStatus !== status && order.user && order.user.email) {
             try {
                 const message = `
-                    <h1>Your Order Status has been Updated</h1>
-                    <p>Hi ${order.user.username},</p>
-                    <p>The status of your order #${order._id} has been updated to: <strong>${status}</strong>.</p>
-                    <p>You can view your order details here: <a href="${process.env.CLIENT_URL}/order/${order._id}">${process.env.CLIENT_URL}/order/${order._id}</a></p>
-                    <p>Thank you for shopping with Cook-N-Crop!</p>
+                  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+                    <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                      <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
+                    </div>
+                    <div style="padding: 25px;">
+                      <h2 style="color: #333333;">Your Order Status has been Updated</h2>
+                      <p>Hi ${order.user.username},</p>
+                      <p>The status of your order #${order._id} has been updated to: <strong>${status}</strong>.</p>
+                      <p>Thank you for shopping with Cook-N-Crop!</p>
+                      <div style="text-align: center; margin-top: 30px;">
+                        <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+                      </div>
+                    </div>
+                    <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
+                      <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                    </div>
+                  </div>
                 `;
                 await sendEmail({
                     email: order.user.email,

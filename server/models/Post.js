@@ -25,6 +25,10 @@ const PostSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add content'],
   },
+  image: {
+    type: String,
+    default: null,
+  },
   tags: [
     {
       type: String,

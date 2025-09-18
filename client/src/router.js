@@ -12,7 +12,6 @@ import PostPage from "./pages/PostPage"; // New: Import PostPage
 import FeedPage from "./pages/FeedPage"; // New
 import Community from "./pages/Community";
 import Subscription from "./pages/Subscription";
-import Dashboard from "./pages/Control_panel";
 import ProductPage from "./pages/ProductPage"; // New
 import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
@@ -65,7 +64,6 @@ export default function AppRouter() {
       <Route path="/profile/orders" element={<OrderHistoryPage />} /> {/* New: Order History Page */}
       <Route path="/messages" element={<PrivateRoute />}><Route index element={<MessengerPage />} /></Route>
       <Route path="/subscription" element={<Subscription />} />
-      <Route path="/dashboard/*" element={<Dashboard />} />
       <Route path="/cart" element={<CartPage />} />
       <Route path="/admin" element={<PrivateRoute roles={['admin']} />}>
         <Route path="/admin" element={<AdminDashboardPage />}>

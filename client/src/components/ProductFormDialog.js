@@ -91,7 +91,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
         <DialogContent sx={{ py: 3 }}>
           {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
           <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
+            <Grid item size={{ xs: 12, md: 4 }}>
               <Stack spacing={2} alignItems="center">
                 <Box
                   component="label"
@@ -131,7 +131,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
                 <input id="product-image-upload" type="file" hidden accept="image/*" onChange={handleFileChange} />
               </Stack>
             </Grid>
-            <Grid item xs={12} md={8}>
+            <Grid item size={{ xs: 12, md: 8 }}>
               <Stack spacing={2.5}>
                 <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 <Stack direction="row" spacing={2.5}>

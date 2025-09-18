@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   TextField,
@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { useTheme } from '@mui/material/styles';
 import productService from '../services/productService';
 
@@ -36,6 +37,8 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
   const [taggedProducts, setTaggedProducts] = useState([]);
   const [productSearchOptions, setProductSearchOptions] = useState([]);
   const [productSearchLoading, setProductSearchLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const theme = useTheme();
 
   useEffect(() => {
@@ -62,8 +65,10 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
         // The backend populates this, so we get full product objects
         setTaggedProducts(initialData.taggedProducts);
       }
+      setImagePreview(initialData.image || '');
+      setImage(null);
     }
-  }, [forceRecipe]);
+  }, [forceRecipe, initialData]);
 
   const handleTagKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -83,17 +88,28 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
-    const postData = {
-      title, content, tags, isRecipe,
-      taggedProducts: taggedProducts.map(p => p._id),
-    };
+
+    const postData = new FormData();
+    postData.append('title', title);
+    postData.append('content', content);
+    postData.append('isRecipe', isRecipe);
+
+    if (image) {
+      postData.append('image', image);
+    }
+
+    tags.forEach(tag => postData.append('tags', tag));
+    taggedProducts.forEach(p => postData.append('taggedProducts', p._id));
+
     if (isRecipe) {
-      postData.recipeDetails = {
+      const cleanRecipeDetails = {
         ...recipeDetails,
         ingredients: recipeDetails.ingredients.filter(ing => ing.trim() !== ''),
         instructions: recipeDetails.instructions.filter(inst => inst.trim() !== ''),
       };
+      postData.append('recipeDetails', JSON.stringify(cleanRecipeDetails));
     }
+
     onSubmit(postData);
   };
 
@@ -138,6 +154,14 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     );
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <Stack spacing={3} sx={{ pt: 1 }}>
@@ -180,6 +204,39 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
 
         {isRecipe && (
           <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, bgcolor: alpha(theme.palette.primary.main, 0.03) }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Recipe Image</Typography>
+            <Box
+              component="label"
+              htmlFor="recipe-image-upload"
+              sx={{
+                width: '100%',
+                height: 200,
+                border: `2px dashed ${theme.palette.divider}`,
+                borderRadius: 3,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                bgcolor: imagePreview ? 'transparent' : alpha(theme.palette.action.hover, 0.02),
+                overflow: 'hidden',
+                mb: 2,
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                }
+              }}
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="Recipe preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <Stack alignItems="center" spacing={1} color="text.secondary">
+                  <PhotoCamera sx={{ fontSize: 40 }} />
+                  <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>Upload Image</Typography>
+                </Stack>
+              )}
+            </Box>
+            <input id="recipe-image-upload" type="file" hidden accept="image/*" onChange={handleImageChange} />
+
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Recipe Details</Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
               <TextField label="Prep Time (minutes)" name="prepTime" type="number" value={recipeDetails.prepTime} onChange={handleRecipeDetailChange} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />

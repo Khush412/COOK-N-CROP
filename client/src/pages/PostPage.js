@@ -119,12 +119,19 @@ const TaggedProductCard = ({ product }) => {
     }
   };
 
+  // Add a guard clause in case a product was deleted and populates as null
+  if (!product) {
+    return null;
+  }
+
   return (
     <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, transition: 'box-shadow .2s', '&:hover': { boxShadow: theme.shadows[3] } }}>
       <Avatar src={product.image} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</Typography>
-        <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>${product.price.toFixed(2)}</Typography>
+        <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : 'Price not available'}
+        </Typography>
       </Box>
       <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
         {product.countInStock > 0 ? (isAdding ? <CircularProgress size={20} /> : 'Add') : 'Out of Stock'}
@@ -570,6 +577,20 @@ const PostPage = () => {
 
         <Divider sx={{ my: 2 }} />
 
+        {post.image && (
+          <Box
+            component="img"
+            src={post.image}
+            alt={post.title}
+            sx={{
+              width: '100%',
+              maxHeight: '500px',
+              objectFit: 'cover',
+              borderRadius: 2,
+              mb: 3,
+            }}
+          />
+        )}
         {isEditing ? (
           <CreatePostForm
             initialData={post}
@@ -642,7 +663,7 @@ const PostPage = () => {
               Products Used in this Recipe
             </Typography>
             <Grid container spacing={2}>
-              {post.taggedProducts.map(product => (
+              {post.taggedProducts.filter(p => p).map(product => (
                 <Grid size={{ xs: 12, sm: 6 }} key={product._id}>
                   <TaggedProductCard product={product} />
                 </Grid>

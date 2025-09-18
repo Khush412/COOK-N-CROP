@@ -6,11 +6,37 @@ const Comment = require('../models/Comment');
 const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 const User = require('../models/User'); // Import User model
+const multer = require('multer');
+const path = require('path');
+
+// --- Multer Storage Configuration ---
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, 'public/uploads/recipes'); // Corrected path for recipe images
+  },
+  filename(req, file, cb) {
+    cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+
+function checkFileType(file, cb) {
+  const filetypes = /jpg|jpeg|png|gif/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Images only!'));
+  }
+}
+
+const upload = multer({ storage, fileFilter: function(req, file, cb) { checkFileType(file, cb); } });
 
 // @desc    Create a new post
 // @route   POST /api/posts
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, upload.single('image'), async (req, res) => {
   try {
     const { title, content, tags, isRecipe, recipeDetails, taggedProducts } = req.body;
 
@@ -18,22 +44,28 @@ router.post('/', protect, async (req, res) => {
       user: req.user.id,
       title,
       content,
+      image: req.file ? `/uploads/recipes/${req.file.filename}` : null,
       tags,
       isRecipe,
       taggedProducts: isRecipe ? taggedProducts : [],
     };
 
-    if (isRecipe && recipeDetails) {
+    if (isRecipe && recipeDetails) { // recipeDetails is now a stringified JSON
+      let parsedDetails;
+      try {
+        parsedDetails = JSON.parse(recipeDetails);
+      } catch (e) { return res.status(400).json({ message: 'Invalid recipe details format.' }); }
+
       const parseNumericDetail = (value) => {
         if (value === '' || value === null || value === undefined) return null;
         const num = Number(value);
         return isNaN(num) ? null : num;
       };
       postData.recipeDetails = {
-        ...recipeDetails,
-        prepTime: parseNumericDetail(recipeDetails.prepTime),
-        cookTime: parseNumericDetail(recipeDetails.cookTime),
-        servings: parseNumericDetail(recipeDetails.servings),
+        ...parsedDetails,
+        prepTime: parseNumericDetail(parsedDetails.prepTime),
+        cookTime: parseNumericDetail(parsedDetails.cookTime),
+        servings: parseNumericDetail(parsedDetails.servings),
       };
     }
 
@@ -130,6 +162,7 @@ router.get('/', optionalAuth, async (req, res) => {
     const projectStage = {
       title: 1,
       content: 1,
+      image: 1,
       tags: 1,
       isRecipe: 1,
       isFeatured: 1,
@@ -444,7 +477,7 @@ router.post('/:id/comments', protect, async (req, res) => {
 // @desc    Update a post
 // @route   PUT /api/posts/:id
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, upload.single('image'), async (req, res) => {
   try {
     let post = await Post.findById(req.params.id);
 
@@ -465,17 +498,26 @@ router.put('/:id', protect, async (req, res) => {
     post.isRecipe = isRecipe === undefined ? post.isRecipe : isRecipe;
     post.taggedProducts = isRecipe ? taggedProducts : [];
 
-    if (isRecipe && recipeDetails) {
+    if (req.file) {
+      post.image = `/uploads/recipes/${req.file.filename}`;
+    }
+
+    if (isRecipe && recipeDetails) { // recipeDetails is now a stringified JSON
+      let parsedDetails;
+      try {
+        parsedDetails = JSON.parse(recipeDetails);
+      } catch (e) { return res.status(400).json({ message: 'Invalid recipe details format.' }); }
+
       const parseNumericDetail = (value) => {
         if (value === '' || value === null || value === undefined) return null;
         const num = Number(value);
         return isNaN(num) ? null : num;
       };
       post.recipeDetails = {
-        ...recipeDetails,
-        prepTime: parseNumericDetail(recipeDetails.prepTime),
-        cookTime: parseNumericDetail(recipeDetails.cookTime),
-        servings: parseNumericDetail(recipeDetails.servings),
+        ...parsedDetails,
+        prepTime: parseNumericDetail(parsedDetails.prepTime),
+        cookTime: parseNumericDetail(parsedDetails.cookTime),
+        servings: parseNumericDetail(parsedDetails.servings),
       };
     } else if (!isRecipe) {
       post.recipeDetails = undefined;

@@ -21,7 +21,9 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import searchService from '../services/searchService';
 
-const Search = styled('div')(({ theme, $fullWidth }) => ({
+const Search = styled('div', {
+  shouldForwardProp: (prop) => prop !== '$fullWidth',
+})(({ theme, $fullWidth }) => ({
   position: 'relative',
   borderRadius: '50px',
   backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -50,7 +52,9 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   color: alpha(theme.palette.common.white, 0.7),
 }));
 
-const StyledInputBase = styled(InputBase)(({ theme, $fullWidth }) => ({
+const StyledInputBase = styled(InputBase, {
+  shouldForwardProp: (prop) => prop !== '$fullWidth',
+})(({ theme, $fullWidth }) => ({
   color: 'inherit',
   fontFamily: theme.typography.fontFamily,
   width: '100%',

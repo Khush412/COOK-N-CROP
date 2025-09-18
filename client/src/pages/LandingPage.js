@@ -1,399 +1,345 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import {
-  Box,
-  Typography,
-  Button,
-  Container,
-  Grid,
-  Paper,
-  TextField,
-  InputAdornment,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import EmailIcon from "@mui/icons-material/Email";
-import StorefrontIcon from "@mui/icons-material/Storefront";
-import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-// Hero section image path
-const HERO_IMG = "/images/hero.png";
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { TypeAnimation } from 'react-type-animation';
+import { ArrowForward, People, FormatQuote, MenuBook, Storefront } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
+// Reusable component for animated sections
+const AnimatedSection = React.forwardRef(({ children, sx = {}, id }, ref) => {
+  // If no ref is passed from the parent, we still need one for useInView to work.
+  const internalRef = useRef(null);
+  const targetRef = ref || internalRef;
+  const isInView = useInView(targetRef, { once: true, amount: 0.2 });
 
+  return (
+    <Box
+      ref={targetRef}
+      id={id}
+      component={motion.div}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={{
+        hidden: { opacity: 0, y: 60 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+      }}
+      sx={{ py: { xs: 8, md: 12 }, position: 'relative', overflow: 'hidden', ...sx }}
+    >
+      {children}
+    </Box>
+  );
+});
 
-
-// Features array with 6 features and icons
-const FEATURES = [
+const TESTIMONIALS = [
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        width="48"
-        height="48"
-      >
-        <circle cx="9" cy="21" r="1"/>
-        <circle cx="20" cy="21" r="1"/>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-      </svg>
-    ),
-    title: "Shop Farm-Fresh Produce",
-    description: "Browse our marketplace for the freshest fruits, vegetables, and exotic ingredients, all sourced locally.",
+    quote: "The freshness of the produce is unparalleled. It's like having a farmer's market at my doorstep. My cooking has never been better!",
+    author: "Alex Johnson",
+    role: "Home Chef",
+    avatar: "/images/avatars/avatar-1.jpg",
   },
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        width="48"
-        height="48"
-      >
-        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-      </svg>
-    ),
-    title: "Discover New Recipes",
-    description: "Get inspired with a vast collection of recipes shared by our community, complete with ratings and tips.",
+    quote: "I love the community aspect. I've discovered so many amazing recipes and made friends who share my passion for food.",
+    author: "Samantha Lee",
+    role: "Food Blogger",
+    avatar: "/images/avatars/avatar-2.jpg",
   },
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        width="48"
-        height="48"
-      >
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-    ),
-    title: "Share Your Creations",
-    description: "Upload your own recipes, share cooking tips, and showcase your culinary skills to fellow food enthusiasts.",
-  },
-  {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        width="48"
-        height="48"
-      >
-        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2 4-4"/>
-      </svg>
-    ),
-    title: "Meal Planning Made Easy",
-    description: "Organize your week with our intuitive meal planner and generate shopping lists in one click.",
-  },
-  {
-    icon: (<svg
-   xmlns="http://www.w3.org/2000/svg"
-   fill="none"
-   stroke="currentColor"
-   strokeWidth="2"
-   strokeLinecap="round"
-   strokeLinejoin="round"
-   viewBox="0 0 24 24"
-   width="48"
-   height="48"
->
-<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-<circle cx="12" cy="7" r="4"/>
-</svg>
-),
-    title: "Expert Cooking Tips",
-    description: "Learn from the best with articles and tutorials from experienced chefs and nutritionists.",
-  },
-  {
-    icon: (<svg
-   xmlns="http://www.w3.org/2000/svg"
-   fill="none"
-   stroke="currentColor"
-   strokeWidth="2"
-   strokeLinecap="round"
-   strokeLinejoin="round"
-   viewBox="0 0 24 24"
-   width="48"
-   height="48"
->
-<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-<circle cx="9" cy="7" r="4"/>
-<path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-<path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-</svg>
-),
-    title: "Join the Foodie Community",
-    description: "Engage in discussions, join cooking challenges, and connect with others who share your passion for food.",
+    quote: "As a small-scale farmer, Cook'N'Crop has given me a platform to reach customers who truly appreciate quality and sustainability.",
+    author: "Michael Chen",
+    role: "Local Farmer",
+    avatar: "/images/avatars/avatar-3.jpg",
   },
 ];
 
-
-// Texture URL from Transparent Textures
-const TEXTURE_URL = "https://www.transparenttextures.com/patterns/paper-fibers.png";
-
-
-export default function LandingPage() {
+const LandingPage = () => {
   const theme = useTheme();
-  const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
+  // To use a fixed set of banner images, use this array.
+  // Make sure you place your images in the `public/images/` folder.
+  const bannerImages = [
+    '/images/hero-banner-image-1.png',
+    '/images/hero-banner-image-2.png',
+    '/images/hero-banner-image-3.png',
+    '/images/hero-banner-image-4.png',
+    '/images/hero-banner-image-5.png',
+    '/images/hero-banner-image-6.png',
+    '/images/hero-banner-image-7.png',
+    '/images/hero-banner-image-8.png',
+    '/images/hero-banner-image-9.png',
+    '/images/hero-banner-image-10.png',
+    '/images/hero-banner-image-11.png',
+    '/images/hero-banner-image-12.png',
+  ];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   useEffect(() => {
-    if (location.state?.message) {
-      setSnackbar({
-        open: true,
-        message: location.state.message,
-        severity: location.state.severity || 'success',
-      });
-      // Clear the state from history so it doesn't reappear on back/forward navigation
-      window.history.replaceState({}, document.title);
+    if (isAuthenticated && bannerImages.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
+      }, 7000); // Change image every 7 seconds
+      return () => clearInterval(interval);
     }
-  }, [location.state]);
+  }, [isAuthenticated, bannerImages.length]);
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackbar({ ...snackbar, open: false });
   };
+
   return (
-    <Box
-      sx={{
-        fontFamily: theme.typography.fontFamily,
-        minHeight: "100vh",
-        bgcolor: "background.default",
-        backgroundImage: `url(${TEXTURE_URL})`,
-        backgroundRepeat: "repeat",
-        backgroundBlendMode: "overlay",
-        color: "text.primary",
-        px: 2,
-      }}
+    <Box sx={{
+      width: '100%',
+      bgcolor: 'background.default',
+    }}
     >
-      {/* Hero Section */}
-      <Container
-        maxWidth="lg"
+      {/* The global header from App.js will act as the navbar */}
+      
+      {/* Hero Section - Conditional Rendering */}
+      {isAuthenticated ? (
+        // LOGGED-IN HERO
+        <Box
+          id="home"
+          sx={{
+            position: 'relative',
+            height: '100vh', // Full viewport height
+            width: '100%',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            backgroundColor: theme.palette.grey[900], // Fallback background
+          }}
+        >
+          {bannerImages.length > 0 && (
+            <AnimatePresence>
+              <motion.div
+                key={currentImageIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  backgroundImage: `url(${bannerImages[currentImageIndex]})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  zIndex: 1,
+                }}
+              />
+            </AnimatePresence>
+          )}
+          <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.45)', zIndex: 2 }} />
+          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 3, color: '#fff' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
+            >
+              <Typography variant="h2" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '2rem', sm: '3rem', md: '3.5rem' }, letterSpacing: '0.03em', textShadow: '0px 3px 8px rgba(0,0,0,0.6)', fontFamily: theme.typography.fontFamily }}>
+                Welcome back, {user?.username}!
+              </Typography>
+              <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily }}>
+                What are we cooking today?
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mt: 4 }}>
+                <Button
+                  component={RouterLink}
+                  to="/recipes"
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  endIcon={<ArrowForward />}
+                  sx={{
+                    py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
+                    boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                    transition: 'box-shadow 0.3s ease',
+                    '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` }
+                  }}
+                >
+                  Explore Recipes
+                </Button>
+                <Button
+                  component={RouterLink}
+                  to="/CropCorner"
+                  variant="outlined"
+                  size="large"
+                  endIcon={<ArrowForward />}
+                  sx={{
+                    py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
+                    color: 'white', borderColor: alpha(theme.palette.common.white, 0.5),
+                    '&:hover': { borderColor: 'white', backgroundColor: alpha(theme.palette.common.white, 0.1) }
+                  }}
+                >
+                  Explore Store
+                </Button>
+              </Stack>
+            </motion.div>
+          </Container>
+        </Box>
+      ) : (
+        // LOGGED-OUT HERO (Cinematic Video)
+        <Box id="home" sx={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          <video autoPlay loop muted playsInline style={{ position: 'absolute', width: '100%', height: '100%', left: '50%', top: '50%', objectFit: 'cover', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
+            <source src="/videos/cinematic_video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 2 }} />
+          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 3, color: '#fff' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}>
+              <Typography variant="h1" component="h1" sx={{ fontWeight: 900, fontSize: { xs: '2.5rem', sm: '4rem', md: '5rem' }, letterSpacing: '0.05em', textShadow: '0px 4px 10px rgba(0,0,0,0.7)', fontFamily: theme.typography.fontFamily }}>
+                Cook'N'Crop
+              </Typography>
+              <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily }}>
+                Where Cooking Meets Freshness
+              </Typography>
+              <Button component={RouterLink} to="/register" variant="contained" color="secondary" size="large" endIcon={<ArrowForward />} sx={{ mt: 4, py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` } }}>
+                Get Started
+              </Button>
+            </motion.div>
+          </Container>
+        </Box>
+      )}
+
+      {/* Explore Section */}
+      <AnimatedSection id="explore" sx={{ bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" textAlign="center" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+            Explore Our World
+          </Typography>
+          <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mb: 8 }} />
+          <Grid container spacing={4} justifyContent="center">
+            {[
+              { title: 'Community Hub', description: 'Connect with fellow food lovers, share tips, and join discussions.', icon: <People fontSize="large" />, path: '/community' },
+              { title: 'Recipe Collection', description: 'Discover thousands of recipes from home cooks and professional chefs.', icon: <MenuBook fontSize="large" />, path: '/recipes' },
+              { title: 'Fresh Marketplace', description: 'Shop for the freshest seasonal ingredients delivered to your door.', icon: <Storefront fontSize="large" />, path: '/CropCorner' },
+            ].map((step, index) => (
+              <Grid item size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
+                <Paper
+                  component={motion.div}
+                  whileHover={{ y: -10, boxShadow: theme.shadows[12] }}
+                  sx={{
+                    p: 4,
+                    height: '100%',
+                    borderRadius: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => navigate(step.path)}
+                >
+                  <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), width: 80, height: 80, mb: 3, color: 'primary.main' }}>
+                    {step.icon}
+                  </Avatar>
+                  <Typography variant="h5" fontWeight="bold" sx={{ mb: 1.5, fontFamily: theme.typography.fontFamily }}>{step.title}</Typography>
+                  <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, flexGrow: 1 }}>{step.description}</Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </AnimatedSection>
+
+      {/* Testimonials Section */}
+      <AnimatedSection
+        id="testimonials"
         sx={{
-          fontFamily: theme.typography.fontFamily,
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-          py: 12,
-          px: 3,
+          py: { xs: 10, md: 16 },
+          position: 'relative',
+          backgroundImage: 'url(/images/hero1.png)',
+          backgroundAttachment: 'fixed',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
         }}
       >
-        <Box sx={{ fontFamily: theme.typography.fontFamily, flex: 1, textAlign: { xs: "center", md: "left" } }}>
-          <Typography
-            variant="h3"
-            fontWeight="bold"
-            gutterBottom
-            sx={{ fontSize: { xs: 24, md: 32 }, textTransform: "uppercase", fontFamily: theme.typography.fontFamily }}
-          >
-            Fresh Ingredients, Inspiring Recipes
+        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.6)', zIndex: 1 }} />
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+          <Typography variant="h3" textAlign="center" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily, color: 'white' }}>
+            What Our Community Says
           </Typography>
-          <Typography
-            variant="h6"
-            color="text.secondary"
-            sx={{ fontFamily: theme.typography.fontFamily, mb: 5, maxWidth: 540 }}
-          >
-            Discover the best local produce and connect with a community of food lovers. Your journey to delicious and healthy meals starts here.
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            href="/register"
-            sx={{
-              fontFamily: theme.typography.fontFamily,
-              px: 6,
-              py: 1.5,
-              fontWeight: "bold",
-              textTransform: "uppercase",
-              backgroundColor: "primary.main",
-              "&:hover": { backgroundColor: "primary.dark" },
-            }}
-          >
-            Get Started
-          </Button>
-        </Box>
-        <Box sx={{ fontFamily: theme.typography.fontFamily, flex: 1, pl: { md: 6 }, textAlign: "center" }}>
-          <Box
-            component="img"
-            src={HERO_IMG}
-            alt="A vibrant display of fresh vegetables and fruits"
-            sx={{ fontFamily: theme.typography.fontFamily, width: "65%", borderRadius: 3, boxShadow: 4, maxWidth: 420 }}
-            draggable={false}
-          />
-        </Box>
-      </Container>
+          <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mb: 8 }} />
+          <Grid container spacing={4}>
+            {TESTIMONIALS.map((testimonial, index) => (
+              <Grid item size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
+                <Paper
+                  component={motion.div}
+                  whileHover={{ y: -8, boxShadow: theme.shadows[10] }}
+                  sx={{
+                    p: 4, height: '100%', borderRadius: 4, display: 'flex', flexDirection: 'column', textAlign: 'center',
+                    bgcolor: alpha(theme.palette.background.paper, 0.85),
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <FormatQuote sx={{ fontSize: 48, color: 'secondary.main', transform: 'rotate(180deg)', alignSelf: 'center' }} />
+                  <Typography variant="body1" sx={{ fontStyle: 'italic', flexGrow: 1, my: 2, color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                    {testimonial.quote}
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 2 }}>
+                    <Avatar src={testimonial.avatar} alt={testimonial.author} sx={{ width: 56, height: 56 }} />
+                    <Box textAlign="left">
+                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.primary' }}>{testimonial.author}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{testimonial.role}</Typography>
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
 
-
-      {/* Features Section */}
-      <Container maxWidth="lg" sx={{ fontFamily: theme.typography.fontFamily, pb: 10, px: 3 }}>
-        <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center" textAlign="center">
-          {FEATURES.map(({ icon, title, description }, idx) => (
-            <Grid
-              size={{ xs: 12, sm: 6, md: 4 }}
-              key={idx}
-              sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+          {/* Join CTA merged into parallax section */}
+          <Box sx={{ mt: 12, textAlign: 'center' }}>
+            <Typography variant="h2" sx={{ fontWeight: 900, mb: 2, fontFamily: theme.typography.fontFamily, color: 'white' }}>
+              Join the Cook'n'Crop Family
+            </Typography>
+            <Typography variant="h4" sx={{ fontWeight: 500, mb: 4, fontFamily: theme.typography.fontFamily, color: 'secondary.main' }}>
+              <TypeAnimation
+                sequence={['Share. Cook. Enjoy.', 2000, 'Share. Cook. Connect.', 2000]}
+                wrapper="span"
+                speed={50}
+                repeat={Infinity}
+              />
+            </Typography>
+            <Button
+              component={motion.button}
+              whileHover={{ scale: 1.1, transition: { type: 'spring', stiffness: 300 } }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(isAuthenticated ? '/community' : '/login')}
+              variant="contained"
+              color="secondary"
+              size="large"
+              sx={{ py: 1.5, px: 6, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}
             >
-              <Paper
-                elevation={5}
-                sx={{
-                  fontFamily: theme.typography.fontFamily,
-                  px: 4,
-                  py: 7,
-                  height: "100%",
-                  borderRadius: 3,
-                  boxShadow: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    boxShadow: 8,
-                    transform: "translateY(-10px)",
-                  },
-                }}
-              >
-                <Box sx={{ fontFamily: theme.typography.fontFamily, mb: 3, color: "primary.main" }}>{icon}</Box>
-                <Typography variant="h6" fontWeight={700} gutterBottom sx={{ textTransform: "uppercase", fontFamily: theme.typography.fontFamily }}>
-                  {title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, maxWidth: 320 }}>
-                  {description}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+              Join Now
+            </Button>
+          </Box>
+        </Container>
+      </AnimatedSection>
 
-
-      {/* How It Works Section */}
-      <Container maxWidth="md" sx={{ fontFamily: theme.typography.fontFamily, py: 10 }}>
-        <Typography variant="h4" fontWeight="bold" mb={8} textAlign="center" sx={{ textTransform: "uppercase" }}>
-          Start Your Culinary Adventure
-        </Typography>
-        <Grid container spacing={6} justifyContent="center" textAlign="center">
-          {[
-            {
-              icon: <StorefrontIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
-              title: "Explore the Market",
-              desc: "Fill your cart with fresh, high-quality produce from local farmers and trusted vendors.",
-            },
-            {
-              icon: <EmojiObjectsIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
-              title: "Find Your Inspiration",
-              desc: "Browse thousands of recipes or use our search to find the perfect dish for any occasion.",
-            },
-            {
-              icon: <GroupAddIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />,
-              title: "Cook & Share",
-              desc: "Follow easy step-by-step instructions, cook a delicious meal, and share your experience with the community.",
-            }].map(({ icon, title, desc }, idx) => (
-            <Grid size={{ xs: 12, sm: 4 }} key={idx}>
-              <Paper
-                elevation={4}
-                sx={{
-                  fontFamily: theme.typography.fontFamily,
-                  p: 6,
-                  borderRadius: 4,
-                  transition: "transform 0.3s ease",
-                  "&:hover": { transform: "translateY(-10px)" },
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                {icon}
-                <Typography variant="h6" fontWeight={700} mb={2} sx={{ textTransform: "uppercase" }}>
-                  {title}
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, maxWidth: 280 }}>
-                  {desc}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-
-      {/* Extra Engagement Section */}
-      <Container maxWidth="md" sx={{ fontFamily: theme.typography.fontFamily, py: 10, textAlign: "center" }}>
-        <Typography variant="h4" fontWeight="bold" mb={4} sx={{ textTransform: "uppercase" }}>
-          From Our Kitchen to Yours
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: "auto", mb: 6 }}>
-          Learn how to perfectly roast seasonal vegetables and unlock their amazing flavors. A must-try recipe for any home cook!
-        </Typography>
-        <Button variant="outlined" href="/blog" size="large" sx={{ px: 6, py: 1.5, textTransform: "uppercase" }}>
-          Explore Recipes
-        </Button>
-      </Container>
-
-
-      {/* Email Signup Section */}
-      <Container maxWidth="sm" sx={{ fontFamily: theme.typography.fontFamily, py: 8 }}>
-        <Typography variant="h5" fontWeight="bold" mb={3} textAlign="center" sx={{ textTransform: "uppercase" }}>
-          Join Our Newsletter
-        </Typography>
-        <Box
-          component="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert("Thanks for subscribing to our food community!");
-          }}
-          sx={{ display: "flex", gap: 2, justifyContent: "center" }}
-        >
-          <TextField
-            type="email"
-            required
-            label="Your Email for Delicious Updates"
-            variant="outlined"
-            fullWidth
-            InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-            InputProps={{
-              startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment>,
-              sx: { fontFamily: theme.typography.fontFamily }
-            }}
-          />
-          <Button type="submit" variant="contained" size="large" sx={{ px: 5, textTransform: "uppercase", fontFamily: theme.typography.fontFamily }}>
-            Subscribe
-          </Button>
-        </Box>
-      </Container>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
   );
-}
+};
+
+export default LandingPage;

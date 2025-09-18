@@ -40,7 +40,7 @@ export default function AuthPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, [isAuthenticated, loading, navigate]);
 
@@ -159,7 +159,6 @@ export default function AuthPage() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
         bgcolor: theme.palette.background.default,
         color: theme.palette.text.primary,
         fontFamily: theme.typography.fontFamily,

@@ -18,7 +18,7 @@ export default function AuthCallback() {
     } else if (token) {
       // Handle successful OAuth
       handleOAuthCallback(token);
-      navigate('/dashboard');
+      navigate('/');
     } else {
       // No token or error, redirect to login
       navigate('/login');
@@ -32,7 +32,6 @@ export default function AuthCallback() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
         gap: 2
       }}
     >

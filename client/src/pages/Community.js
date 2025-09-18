@@ -95,10 +95,23 @@ export default function Community() {
 
   useEffect(() => {
     const fetchTags = async () => {
+      const cachedTags = sessionStorage.getItem('trendingTags');
+      const cacheTime = sessionStorage.getItem('trendingTags_time');
+      const fiveMinutes = 5 * 60 * 1000; // 5 minutes cache duration
+
+      if (cachedTags && cacheTime && (Date.now() - cacheTime < fiveMinutes)) {
+        setTrendingTags(JSON.parse(cachedTags));
+        return;
+      }
+
       try {
         const tags = await communityService.getTrendingTags();
         setTrendingTags(tags);
-      } catch {}
+        sessionStorage.setItem('trendingTags', JSON.stringify(tags));
+        sessionStorage.setItem('trendingTags_time', Date.now());
+      } catch (err) {
+        console.error("Error fetching trending tags: ", err);
+      }
     };
     fetchTags();
   }, []);
@@ -245,7 +258,6 @@ export default function Community() {
     <Box
       sx={{
         bgcolor: theme.palette.background.default,
-        minHeight: "100vh",
         paddingTop: { xs: 8, md: 12 },
         paddingBottom: 4,
         fontFamily: theme.typography.fontFamily,
@@ -286,7 +298,6 @@ export default function Community() {
             sx={{
               position: "absolute",
               inset: 0,
-              bgcolor: "rgba(28,16,56,0.56)",
               zIndex: 2,
             }}
           />

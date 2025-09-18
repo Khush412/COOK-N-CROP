@@ -102,10 +102,25 @@ const RecipesPage = () => {
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
-      const tags = await communityService.getTrendingTags();
-      setTrendingTags(tags);
+      const cachedTags = sessionStorage.getItem('trendingTags');
+      const cacheTime = sessionStorage.getItem('trendingTags_time');
+      const fiveMinutes = 5 * 60 * 1000; // 5 minutes cache duration
+
+      if (cachedTags && cacheTime && (Date.now() - cacheTime < fiveMinutes)) {
+        setTrendingTags(JSON.parse(cachedTags));
+        return;
+      }
+
+      try {
+        const tags = await communityService.getTrendingTags();
+        setTrendingTags(tags);
+        sessionStorage.setItem('trendingTags', JSON.stringify(tags));
+        sessionStorage.setItem('trendingTags_time', Date.now());
+      } catch (err) {
+        console.error("Error fetching trending tags: ", err);
+      }
     };
-    fetchTrendingTags().catch(console.error);
+    fetchTrendingTags();
   }, []);
 
   const handleUpvote = useCallback(async (postId) => {
@@ -341,6 +356,7 @@ const RecipesPage = () => {
                   upvotingPosts={upvotingPosts}
                   onToggleSave={handleToggleSave}
                   savingPosts={savingPosts}
+                  displayMode="compact"
                 />
               </Grid>
             ))}

@@ -5,6 +5,7 @@ import {
   Avatar,
   Typography,
   Chip,
+  CardMedia,
   Divider,
   IconButton,
   Button,
@@ -25,8 +26,6 @@ import {
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
 
-const CARD_HEIGHT = 320; // Fixed card height to keep all equal size
-
 const PostCard = ({
   post,
   user,
@@ -34,6 +33,7 @@ const PostCard = ({
   upvotingPosts,
   onToggleSave,
   savingPosts,
+  displayMode = "full", // Add a prop to control display, 'full' or 'compact'
 }) => {
   const theme = useTheme();
   const [isFeatured, setIsFeatured] = useState(post.isFeatured);
@@ -42,11 +42,8 @@ const PostCard = ({
   return (
     <Paper
       sx={{
-        p: 2,
-        height: CARD_HEIGHT,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
         borderRadius: 3,
         border: isFeatured
           ? `2px solid ${theme.palette.secondary.main}`
@@ -62,8 +59,27 @@ const PostCard = ({
         width: "100%",
         fontFamily: theme.typography.fontFamily,
         backgroundColor: theme.palette.background.paper,
+        overflow: "hidden",
       }}
     >
+      {post.image && (
+        <CardMedia
+          component={RouterLink}
+          to={`/post/${post._id}`}
+          image={post.image}
+          title={post.title}
+          sx={{
+            aspectRatio: '16/9',
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.03)',
+            }
+          }}
+        />
+      )}
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
+        <Box>
+
       {/* Featured Star */}
       {isFeatured && (
         <Tooltip title="Featured Post">
@@ -160,43 +176,49 @@ const PostCard = ({
         </Typography>
       </Stack>
 
-      {/* Content */}
-      <Typography
-        variant="body2"
-        sx={{
-          color: theme.palette.text.secondary,
-          fontSize: 13,
-          lineHeight: 1.4,
-          flexGrow: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          display: "-webkit-box",
-          WebkitLineClamp: 4,
-          WebkitBoxOrient: "vertical",
-          mb: 1.5,
-          fontFamily: theme.typography.fontFamily,
-        }}
-      >
-        {post.content}
-      </Typography>
-
-      {/* Tags */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
-        {(post.tags || []).map((tag, index) => (
-          <Chip
-            key={index}
-            label={tag}
-            size="small"
+      {displayMode === "full" && (
+        <>
+          {/* Content */}
+          <Typography
+            variant="body2"
             sx={{
-              borderRadius: 2,
-              bgcolor: alpha(theme.palette.primary.main, 0.12),
-              color: theme.palette.primary.main,
-              fontWeight: 500,
-              fontSize: 12,
+              color: theme.palette.text.secondary,
+              fontSize: 13,
+              lineHeight: 1.4,
+              flexGrow: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: post.image ? 2 : 4,
+              WebkitBoxOrient: "vertical",
+              mb: 1.5,
               fontFamily: theme.typography.fontFamily,
             }}
-          />
-        ))}
+          >
+            {post.content}
+          </Typography>
+
+          {/* Tags */}
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
+            {(post.tags || []).map((tag, index) => (
+              <Chip
+                key={index}
+                label={tag}
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.12),
+                  color: theme.palette.primary.main,
+                  fontWeight: 500,
+                  fontSize: 12,
+                  fontFamily: theme.typography.fontFamily,
+                }}
+              />
+            ))}
+          </Box>
+        </>
+      )}
+
       </Box>
 
       <Divider sx={{ my: 1 }} />
@@ -287,6 +309,7 @@ const PostCard = ({
           )}
         </Stack>
       </Stack>
+    </Box>
     </Paper>
   );
 };

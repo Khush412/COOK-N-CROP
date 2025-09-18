@@ -15,6 +15,7 @@ import {
   Snackbar,
   Alert,
   Badge,
+  Switch,
   Avatar,
   ListItemIcon,
   Divider,
@@ -47,6 +48,7 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
   Search as SearchIcon,
+  SmartToy as SmartToyIcon,
 } from "@mui/icons-material";
 import ThemeCustomizer from "./ThemeCustomizer";
 import NotificationsMenu from "./NotificationsMenu";
@@ -195,6 +197,15 @@ export default function Navbar() {
   const [hasShadow, setHasShadow] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const [showChatbot, setShowChatbot] = useState(() => localStorage.getItem('showChatbot') !== 'false');
+
+  const handleToggleChatbot = () => {
+    const newValue = !showChatbot;
+    setShowChatbot(newValue);
+    localStorage.setItem('showChatbot', String(newValue));
+    window.dispatchEvent(new CustomEvent('chatbot-toggle', { detail: { visible: newValue } }));
+  };
 
   useEffect(() => {
     const onScroll = () => setHasShadow(window.scrollY > 20);
@@ -437,7 +448,7 @@ export default function Navbar() {
           backgroundColor: theme.palette.primary.main,
           boxShadow: hasShadow ? "0 3px 12px rgba(0,0,0,0.35)" : "none",
           transition: "box-shadow 0.3s ease",
-          width: "100vw",
+          width: "100%",
           left: 0,
           top: 0,
         }}
@@ -770,6 +781,22 @@ export default function Navbar() {
                       <SettingsIcon fontSize="small" />
                     </ListItemIcon>
                     Settings
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={handleToggleChatbot}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <SmartToyIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Show Chatbot" />
+                    <Switch
+                      checked={showChatbot}
+                      edge="end"
+                      readOnly
+                      inputProps={{ 'aria-label': 'toggle chatbot visibility' }}
+                    />
                   </MenuItem>
 
                   <Divider sx={{ my: 1 }} />

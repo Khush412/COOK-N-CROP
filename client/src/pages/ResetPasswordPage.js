@@ -46,7 +46,7 @@ const ResetPasswordPage = () => {
       setSuccess('Password reset successfully! Logging you in...');
       setTimeout(() => {
         loginWithToken(res.token, res.user);
-        navigate('/dashboard');
+        navigate('/');
       }, 2000);
     } catch (err) {
       setError(err.message || 'Failed to reset password. The link may be invalid or expired.');
