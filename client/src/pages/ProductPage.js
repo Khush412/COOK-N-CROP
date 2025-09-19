@@ -251,7 +251,7 @@ const ProductPage = () => {
     );
   }
 
-  const hasUserReviewed = product.reviews.some(review => review.user === user?.id);
+  const hasUserReviewed = product.reviews.some(review => review.user?._id === user?.id);
   const isWishlisted = user?.wishlist?.includes(product._id);
 
   return (
@@ -262,7 +262,7 @@ const ProductPage = () => {
             <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <Box
                 component="img"
-                src={product.image}
+                src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
                 alt={product.name}
                 sx={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '1 / 1', objectFit: 'cover' }}
               />
@@ -282,7 +282,12 @@ const ProductPage = () => {
               </Typography>
             </Box>
             <Typography variant="h4" color="primary" fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-              ${product.price.toFixed(2)}
+              {`$${product.price.toFixed(2)}`}
+              {product.unit && (
+                <Typography component="span" variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {` / ${product.unit}`}
+                </Typography>
+              )}
             </Typography>
             <Divider sx={{ mb: 3 }} />
             <Typography variant="body1" color="text.secondary" paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -388,7 +393,7 @@ const ProductPage = () => {
                 {filteredAndSortedReviews.map((review) => (
                   <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
+                      <Avatar src={review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
                       <Box flexGrow={1}>
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
                         <Rating value={review.rating} readOnly />

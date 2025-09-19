@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container, Paper, Typography, Box, Grid, Radio, RadioGroup, FormControlLabel, FormControl, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Divider, List, ListItem, ListItemAvatar, Avatar, ListItemText, useTheme, alpha, Tooltip
@@ -33,7 +33,8 @@ const PaymentPage = () => {
     const fetchCart = async () => {
       try {
         const cartData = await productService.getCart();
-        if (!cartData || cartData.items.length === 0) {
+        const validItems = cartData?.items?.filter(item => item.product) || [];
+        if (validItems.length === 0) {
           navigate('/cart');
         } else {
           setCart(cartData);
@@ -52,7 +53,12 @@ const PaymentPage = () => {
     }
   }, [shippingAddress, navigate]);
 
-  const subtotal = cart?.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0) || 0;
+  const validItems = useMemo(() => {
+    if (!cart?.items) return [];
+    return cart.items.filter(item => item.product);
+  }, [cart]);
+
+  const subtotal = validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0) || 0;
   const discountAmount = appliedCoupon?.discountAmount || 0;
   const total = subtotal - discountAmount;
 
@@ -61,7 +67,7 @@ const PaymentPage = () => {
     setError('');
     try {
       const orderData = {
-        orderItems: cart.items.map(item => ({ product: item.product._id, qty: item.quantity })),
+        orderItems: validItems.map(item => ({ product: item.product._id, qty: item.quantity })),
         shippingAddress: {
           fullName: shippingAddress.fullName,
           street: shippingAddress.street,
@@ -118,14 +124,14 @@ const PaymentPage = () => {
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>Order Items</Typography>
             <List>
-              {cart.items.map(item => (
-                <ListItem key={item.product._id} divider>
+              {validItems.map(item => (
+                <ListItem key={item.product?._id} divider>
                   <ListItemAvatar>
-                    <Avatar src={item.product.image} variant="rounded" />
+                    <Avatar src={item.product.image ? `${process.env.REACT_APP_API_URL}${item.product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" />
                   </ListItemAvatar>
                   <ListItemText
                     primary={item.product.name}
-                    secondary={`Qty: ${item.quantity} x $${item.product.price.toFixed(2)}`}
+                    secondary={`Qty: ${item.quantity} x $${item.product.price.toFixed(2)}${item.product.unit ? ` / ${item.product.unit}` : ''}`}
                     primaryTypographyProps={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}
                     secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}
                   />

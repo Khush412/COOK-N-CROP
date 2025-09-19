@@ -196,7 +196,7 @@ const MessengerPage = () => {
                 selected={selectedConversation?._id === convo._id}
                 sx={{ borderRadius: 2, mb: 0.5 }}
               >
-                <ListItemAvatar><Avatar src={otherParticipant?.profilePic} /></ListItemAvatar>
+                <ListItemAvatar><Avatar src={otherParticipant?.profilePic ? `${process.env.REACT_APP_API_URL}${otherParticipant.profilePic}` : undefined} /></ListItemAvatar>
                 <ListItemText
                   primary={<Typography variant="subtitle1" noWrap sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{otherParticipant?.username || 'Unknown User'}</Typography>}
                   secondary={
@@ -222,7 +222,7 @@ const MessengerPage = () => {
             <ArrowBackIcon />
           </IconButton>
         )}
-        <Avatar src={selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic} sx={{ mr: 2 }} />
+        <Avatar src={selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic ? `${process.env.REACT_APP_API_URL}${selectedConversation.participants.find(p => p._id !== user.id).profilePic}` : undefined} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
           {selectedConversation?.participants.find(p => p._id !== user.id)?.username}
         </Typography>
@@ -246,7 +246,7 @@ const MessengerPage = () => {
               >
                 {!isSender && (
                   <Avatar
-                    src={msg.sender.profilePic}
+                    src={msg.sender.profilePic ? `${process.env.REACT_APP_API_URL}${msg.sender.profilePic}` : undefined}
                     sx={{ width: 32, height: 32, visibility: showAvatar ? 'visible' : 'hidden' }}
                   />
                 )}

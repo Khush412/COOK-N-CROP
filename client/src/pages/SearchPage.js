@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
         },
       }}
     >
-      <Avatar src={user.profilePic} sx={{ width: 80, height: 80, mb: 1 }} />
+      <Avatar src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{ width: 80, height: 80, mb: 1 }} />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6" component={RouterLink} to={`/user/${user.username}`} sx={{ textDecoration: 'none', color: 'text.primary', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, '&:hover': { color: 'primary.main' } }}>
           {user.username}

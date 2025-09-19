@@ -18,10 +18,17 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
     countInStock: '',
     origin: '',
     freshness: '',
+    unit: '',
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState('');
+
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('blob:')) return path;
+    return `${process.env.REACT_APP_API_URL}${path}`;
+  };
 
   useEffect(() => {
     if (open) {
@@ -35,12 +42,13 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           countInStock: product.countInStock || 0,
           origin: product.origin || '',
           freshness: product.freshness || '',
+          unit: product.unit || '',
         });
         setImagePreview(product.image || '');
         setImageFile(null);
       } else {
         setFormData({
-          name: '', price: '', description: '', category: '', countInStock: '', origin: '', freshness: '',
+          name: '', price: '', description: '', category: '', countInStock: '', origin: '', freshness: '', unit: '',
         });
         setImageFile(null);
         setImagePreview('');
@@ -116,7 +124,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
                 >
                   {imagePreview ? (
                     <Avatar
-                      src={imagePreview}
+                      src={getImageUrl(imagePreview)}
                       alt="Product Image"
                       variant="rounded"
                       sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -134,8 +142,9 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
             <Grid item size={{ xs: 12, md: 8 }}>
               <Stack spacing={2.5}>
                 <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                <Stack direction="row" spacing={2.5}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
                   <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField name="unit" label="Unit (e.g., kg, lb, piece)" value={formData.unit} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                   <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
                 <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />

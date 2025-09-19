@@ -86,7 +86,7 @@ const BlockedUsersPage = () => {
             {blockedUsers.map((blockedUser) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={blockedUser._id}>
                 <Paper variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}>
-                  <Avatar src={blockedUser.profilePic} sx={{ width: 56, height: 56 }} />
+                  <Avatar src={blockedUser.profilePic ? `${process.env.REACT_APP_API_URL}${blockedUser.profilePic}` : undefined} sx={{ width: 56, height: 56 }} />
                   <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{blockedUser.username}</Typography>
                   <Button variant="outlined" onClick={() => handleUnblock(blockedUser._id)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Unblock</Button>
                 </Paper>

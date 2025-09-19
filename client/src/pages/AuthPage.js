@@ -116,18 +116,15 @@ export default function AuthPage() {
   };
 
   const handleGoogleSignIn = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL || "http://localhost:5000"
-      }/api/auth/google`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/google`;
   };
 
   const handleGitHubSignIn = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL || "http://localhost:5000"
-      }/api/auth/github`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/github`;
   };
 
   const handleTwitterSignIn = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL || "http://localhost:5000"
-      }/api/auth/twitter`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/twitter`;
   };
 
   // Prevent closing the popup by clicking outside or pressing ESC

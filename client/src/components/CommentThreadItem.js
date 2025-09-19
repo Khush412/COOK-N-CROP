@@ -94,7 +94,7 @@ const CommentThreadItem = ({
     >
       <Stack direction="row" spacing={2}>
         <ListItemAvatar sx={{ minWidth: 'auto', mt: 1 }}>
-          <Avatar src={comment.user?.profilePic} alt={comment.user?.username}>
+          <Avatar src={comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} alt={comment.user?.username}>
             {!comment.user?.profilePic && comment.user?.username?.charAt(0).toUpperCase()}
           </Avatar>
         </ListItemAvatar>
@@ -154,53 +154,53 @@ const CommentThreadItem = ({
               secondaryTypographyProps={{ component: 'div' }}
               secondary={
                 <>
-                <Typography
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ display: 'block', whiteSpace: 'pre-wrap', fontFamily: theme.typography.fontFamily }}
-                >
-                  {comment.content}
-                </Typography>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                    {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'just now'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <IconButton
-                      size="small"
-                      onClick={handleUpvote}
-                      disabled={upvotingComments.includes(comment._id)}
-                      aria-label="upvote comment"
-                    >
-                      <ThumbUpIcon
-                        sx={{ fontSize: '1rem' }}
-                        color={(comment.upvotes || []).includes(user?.id) ? 'primary' : 'action'}
-                      />
-                    </IconButton>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '12px', fontFamily: theme.typography.fontFamily }}>{comment.upvoteCount > 0 ? comment.upvoteCount : ''}</Typography>
-                  </Box>
-                  <Button size="small" onClick={() => onReply(comment._id)} sx={{ fontSize: '0.75rem', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
-                    Reply
-                  </Button>
-                </Stack>
-                {comment.replies && comment.replies.length > 0 && (
-                  <Button
-                    size="small"
-                    onClick={() => setRepliesExpanded(!repliesExpanded)}
-                    startIcon={repliesExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                    sx={{
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      fontFamily: theme.typography.fontFamily,
-                      color: 'text.secondary',
-                      mt: 1,
-                      ml: -1,
-                    }}
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ display: 'block', whiteSpace: 'pre-wrap', fontFamily: theme.typography.fontFamily }}
                   >
-                    {repliesExpanded ? 'Hide' : 'View'} {comment.replies.length} {comment.replies.length > 1 ? 'replies' : 'reply'}
-                  </Button>
-                )}
+                    {comment.content}
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'just now'}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={handleUpvote}
+                        disabled={upvotingComments.includes(comment._id)}
+                        aria-label="upvote comment"
+                      >
+                        <ThumbUpIcon
+                          sx={{ fontSize: '1rem' }}
+                          color={(comment.upvotes || []).includes(user?.id) ? 'primary' : 'action'}
+                        />
+                      </IconButton>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '12px', fontFamily: theme.typography.fontFamily }}>{comment.upvoteCount > 0 ? comment.upvoteCount : ''}</Typography>
+                    </Box>
+                    <Button size="small" onClick={() => onReply(comment._id)} sx={{ fontSize: '0.75rem', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
+                      Reply
+                    </Button>
+                  </Stack>
+                  {comment.replies && comment.replies.length > 0 && (
+                    <Button
+                      size="small"
+                      onClick={() => setRepliesExpanded(!repliesExpanded)}
+                      startIcon={repliesExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                      sx={{
+                        fontSize: '0.75rem',
+                        textTransform: 'none',
+                        fontFamily: theme.typography.fontFamily,
+                        color: 'text.secondary',
+                        mt: 1,
+                        ml: -1,
+                      }}
+                    >
+                      {repliesExpanded ? 'Hide' : 'View'} {comment.replies.length} {comment.replies.length > 1 ? 'replies' : 'reply'}
+                    </Button>
+                  )}
                 </>
               }
             />
@@ -220,10 +220,10 @@ const CommentThreadItem = ({
       {comment.replies && comment.replies.length > 0 && (
         <Collapse in={repliesExpanded} timeout="auto" unmountOnExit>
           <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
-          {comment.replies.map((reply) => (
+            {comment.replies.map((reply) => (
               <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} />
-          ))}
-        </List>
+            ))}
+          </List>
         </Collapse>
       )}
     </ListItem>

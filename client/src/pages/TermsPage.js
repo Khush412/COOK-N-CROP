@@ -131,7 +131,7 @@ const TermsPage = () => {
 
           <Section title="10. Contact Us">
             <Typography paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
-              If you have any questions about these Terms, please contact us at <Link href="mailto:support@cookncrope.com" sx={{ fontFamily: 'inherit' }}>support@cookncrope.com</Link>.
+              If you have any questions about these Terms, please contact us at <Link href="mailto:support@cookncrop.com" sx={{ fontFamily: 'inherit' }}>support@cookncrop.com</Link>.
             </Typography>
           </Section>
         </Box>

@@ -63,9 +63,15 @@ const ActivityCard = ({ item, type }) => {
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
             Commented on{' '}
-            <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
-              {item.post.title}
-            </Link>
+            {item.post ? (
+              <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
+                {item.post.title}
+              </Link>
+            ) : (
+              <Typography component="span" sx={{ fontStyle: 'italic', color: 'text.disabled', fontFamily: theme.typography.fontFamily }}>
+                a deleted post
+              </Typography>
+            )}
             {' '}{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
           </Typography>
         </>

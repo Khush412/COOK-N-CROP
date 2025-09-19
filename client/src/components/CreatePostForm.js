@@ -41,6 +41,12 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
   const [imagePreview, setImagePreview] = useState('');
   const theme = useTheme();
 
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('blob:')) return path;
+    return `${process.env.REACT_APP_API_URL}${path}`;
+  };
+
   useEffect(() => {
     // If forceRecipe is defined, keep the state in sync.
     if (typeof forceRecipe === 'boolean') {
@@ -227,7 +233,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
               }}
             >
               {imagePreview ? (
-                <img src={imagePreview} alt="Recipe preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={getImageUrl(imagePreview)} alt="Recipe preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <Stack alignItems="center" spacing={1} color="text.secondary">
                   <PhotoCamera sx={{ fontSize: 40 }} />

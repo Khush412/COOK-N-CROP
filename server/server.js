@@ -48,25 +48,25 @@ const io = new Server(server, {
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  // console.log(`User connected: ${socket.id}`); // Optional: uncomment for debugging
 
   socket.on("join", (userId) => {
     onlineUsers[userId] = socket.id;
-    console.log("Online users:", Object.keys(onlineUsers));
+    // console.log("Online users:", Object.keys(onlineUsers)); // Optional: uncomment for debugging
   });
 
   // Allow admins to join a special room for admin-only events
   socket.on('join_admin_room', () => {
     socket.join('admin_room');
-    console.log(`Socket ${socket.id} joined admin_room`);
+    // console.log(`Socket ${socket.id} joined admin_room`); // Optional: uncomment for debugging
   });
 
   socket.on("disconnect", () => {
     const userId = Object.keys(onlineUsers).find(key => onlineUsers[key] === socket.id);
     if (userId) {
       delete onlineUsers[userId];
-      console.log(`User ${userId} disconnected. Socket: ${socket.id}`);
-      console.log("Online users:", Object.keys(onlineUsers));
+      // console.log(`User ${userId} disconnected. Socket: ${socket.id}`); // Optional: uncomment for debugging
+      // console.log("Online users:", Object.keys(onlineUsers)); // Optional: uncomment for debugging
     }
   });
 });
@@ -78,11 +78,15 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
+      // Allow images from self (our server) and data URIs.
+      imgSrc: ["'self'", "data:"],
       scriptSrc: ["'self'"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'", "ws:", "wss:"] // Allow websockets for real-time features
     }
-  }
+  },
+  // This is required to allow the frontend (on a different port in dev) to load images from this server
+  // by removing the 'Cross-Origin-Resource-Policy' header.
+  crossOriginResourcePolicy: false,
 }));
 
 // CORS configuration - MUST be placed before routes and rate limiters

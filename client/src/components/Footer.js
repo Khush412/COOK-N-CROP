@@ -27,11 +27,12 @@ export default function Footer() {
             <Typography
               variant="h6"
               sx={{
-                fontFamily: theme.typography.fontFamily,
-                fontWeight: 900,
-                fontSize: "1.3rem",
+                fontFamily: "'Cinzel', serif",
+                fontWeight: 700,
+                fontSize: "1.5rem",
                 mb: 0.5,
-                letterSpacing: "0.08em",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
                 color: theme.palette.getContrastText(theme.palette.primary.main),
               }}
             >
@@ -53,7 +54,6 @@ export default function Footer() {
               {[
                 { label: "About", href: "/about" },
                 { label: "Support", href: "/support" },
-                { label: "Blog", href: "/blog" },
                 { label: "Terms", href: "/terms" },
                 { label: "Privacy", href: "/privacy" },
               ].map(({ label, href }) => (
@@ -84,7 +84,7 @@ export default function Footer() {
                 <IconButton
                   key={idx}
                   aria-label="social media"
-                  href="#"
+                  href="https://www.google.com/search?q=cook+n+crop"
                   size="small"
                   sx={{
                     fontFamily: theme.typography.fontFamily,
@@ -99,8 +99,8 @@ export default function Footer() {
             </Stack>
             <Typography variant="caption" sx={{ display: "block", opacity: 0.8, fontSize: "0.85em" }}>
               <EmailOutlined fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5 }} />
-              <a href="mailto:support@cookncrope.com" style={{ color: "inherit", textDecoration: "none" }}>
-                support@cookncrope.com
+              <a href="mailto:support@cookncrop.com" style={{ color: "inherit", textDecoration: "none" }}>
+                support@cookncrop.com
               </a>
             </Typography>
           </Grid>

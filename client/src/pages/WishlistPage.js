@@ -91,7 +91,7 @@ const WishlistPage = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {wishlist.map((product) => (
+          {wishlist.filter(p => p).map((product) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
               <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
             </Grid>

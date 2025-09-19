@@ -174,11 +174,15 @@ router.post('/:id/reviews', protect, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check if user has purchased this product
-    const orders = await Order.find({ user: req.user._id, 'orderItems.product': req.params.id });
+    // Check if user has a delivered order with this product
+    const orders = await Order.find({
+      user: req.user._id,
+      'orderItems.product': req.params.id,
+      status: 'Delivered'
+    });
 
     if (orders.length === 0) {
-      return res.status(400).json({ message: 'You can only review products you have purchased' });
+      return res.status(400).json({ message: 'You can only review products from a delivered order.' });
     }
 
     const alreadyReviewed = product.reviews.find(
@@ -251,12 +255,13 @@ router.put('/:id/reviews/:reviewId/upvote', protect, async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, countInStock, origin, freshness } = req.body;
+    const { name, price, description, category, countInStock, origin, freshness, unit } = req.body;
 
     const product = new Product({
       name,
       price,
       description,
+      unit,
       category,
       countInStock: Number(countInStock) || 0,
       origin,
@@ -277,7 +282,7 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
 // @access  Private/Admin
 router.put('/:id', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, countInStock, origin, freshness } = req.body;
+    const { name, price, description, category, countInStock, origin, freshness, unit } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -288,6 +293,7 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
     product.name = name || product.name;
     product.price = price || product.price;
     product.description = description || product.description;
+    product.unit = unit || product.unit;
     product.category = category || product.category;
     product.countInStock = countInStock === undefined ? product.countInStock : Number(countInStock);
     product.origin = origin || product.origin;

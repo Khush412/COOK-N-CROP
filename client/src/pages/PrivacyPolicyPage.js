@@ -92,7 +92,7 @@ const PrivacyPolicyPage = () => {
 
           <Section title="5. Contact Us">
             <Typography paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
-              If you have questions or comments about this Privacy Policy, please contact us at <Link href="mailto:support@cookncrope.com" sx={{ fontFamily: 'inherit' }}>support@cookncrope.com</Link>.
+              If you have questions or comments about this Privacy Policy, please contact us at <Link href="mailto:support@cookncrop.com" sx={{ fontFamily: 'inherit' }}>support@cookncrop.com</Link>.
             </Typography>
           </Section>
         </Box>

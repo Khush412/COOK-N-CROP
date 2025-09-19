@@ -29,19 +29,19 @@ const TESTIMONIALS = [
     quote: "The freshness of the produce is unparalleled. It's like having a farmer's market at my doorstep. My cooking has never been better!",
     author: "Alex Johnson",
     role: "Professional Chef",
-    avatar: "/images/avatars/avatar-1.jpg",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-1.jpg`,
   },
   {
     quote: "I love the community aspect. I've discovered so many amazing recipes and made friends who share my passion for food.",
     author: "Samantha Lee",
     role: "Home Chef",
-    avatar: "/images/avatars/avatar-2.jpg",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-2.jpg`,
   },
   {
     quote: "As a small-scale farmer, Cook'N'Crop has given me a platform to reach customers who truly appreciate quality and sustainability.",
     author: "Michael Chen",
     role: "Local Farmer",
-    avatar: "/images/avatars/avatar-3.jpg",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-3.jpg`,
   },
 ];
 
@@ -255,7 +255,7 @@ const LandingPage = () => {
         sx={{
           py: { xs: 10, md: 16 },
           position: 'relative',
-          backgroundImage: `url(${process.env.PUBLIC_URL}/images/hero1.png)`,
+          backgroundImage: `url(${process.env.PUBLIC_URL}/images/parallax.png)`,
           backgroundAttachment: 'fixed',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

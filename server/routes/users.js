@@ -13,7 +13,6 @@ const router = express.Router();
 // @route   GET /api/users/me
 // @access  Private
 router.get('/me', protect, async (req, res) => {
-  console.log('Profile fetch requested by user:', req.user?.id);
   try {
     const user = await User.findById(req.user?.id);
     if (!user) {
@@ -625,7 +624,6 @@ router.put('/:id', protect, validateProfileUpdate, handleValidationErrors, async
     const fieldsToUpdate = {
       username: req.body.username,
       bio: req.body.bio,
-      profilePic: req.body.profilePic,
     };
 
     Object.keys(fieldsToUpdate).forEach((key) => {
@@ -644,23 +642,38 @@ router.put('/:id', protect, validateProfileUpdate, handleValidationErrors, async
   }
 });
 
-// @desc    Delete user by ID
+// @desc    Delete user by ID (Admin only - Anonymizes user)
 // @route   DELETE /api/users/:id
-// @access  Private
-router.delete('/:id', protect, async (req, res) => {
+// @access  Private/Admin
+router.delete('/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (req.user.id !== req.params.id && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete this user' });
+    // Prevent admin from deleting themselves
+    if (user._id.toString() === req.user.id) {
+        return res.status(400).json({ success: false, message: 'Admin cannot delete their own account via this route.' });
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    // Anonymize user data instead of hard deleting
+    user.username = `user_${user._id.toString().slice(-8)}`;
+    user.email = `${user._id}@deleted.co`;
+    user.password = undefined;
+    user.bio = 'This account has been deleted.';
+    user.profilePic = null;
+    user.isActive = false;
+    user.google = undefined;
+    user.github = undefined;
+    user.twitter = undefined;
+    user.savedPosts = [];
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
 
-    res.status(200).json({ success: true, message: 'User deleted successfully' });
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({ success: true, message: 'User account has been anonymized and deactivated.' });
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({ success: false, message: 'Server error during user deletion' });

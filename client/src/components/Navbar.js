@@ -603,7 +603,7 @@ export default function Navbar() {
                   aria-label="User account menu"
                 >
                   <Avatar
-                    src={user?.profilePic || ""}
+                    src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
                     alt={user?.username || "User"}
                     sx={{
                       width: 32,
@@ -674,6 +674,19 @@ export default function Navbar() {
                       <ReceiptLongIcon fontSize="small" />
                     </ListItemIcon>
                     My Orders
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/feed");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <DynamicFeedIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Feed
                   </MenuItem>
 
                   {user?.role === "admin" && (
@@ -779,9 +792,9 @@ export default function Navbar() {
                     sx={{ borderRadius: 2, px: 3 }}
                   >
                     <ListItemIcon>
-                      <SettingsIcon fontSize="small" />
+                      <PaletteIcon fontSize="small" />
                     </ListItemIcon>
-                    Settings
+                    Customize Theme
                   </MenuItem>
 
                   <MenuItem

@@ -1,28 +1,40 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import { Star, StarBorder, StarHalf } from '@mui/icons-material';
 
-const Rating = ({ value, onChange, readOnly = false }) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (i <= value) {
-      stars.push(<Star key={i} onClick={() => !readOnly && typeof onChange === 'function' && onChange(i)} />);
-    } else if (i === Math.ceil(value) && !Number.isInteger(value)) {
-      stars.push(<StarHalf key={i} />);
-    } else {
-      stars.push(<StarBorder key={i} onClick={() => !readOnly && typeof onChange === 'function' && onChange(i)} />);
-    }
-  }
-
+const Rating = ({ value, onChange, readOnly = false, size = 'inherit' }) => {
   return (
     <Box
       sx={{
         display: 'flex',
         color: 'secondary.main',
-        cursor: readOnly ? 'default' : 'pointer',
       }}
     >
-      {stars}
+      {[...Array(5)].map((_, index) => {
+        const starValue = index + 1;
+        const starIcon =
+          value >= starValue ? (
+            <Star fontSize={size} />
+          ) : value >= starValue - 0.5 ? (
+            <StarHalf fontSize={size} />
+          ) : (
+            <StarBorder fontSize={size} />
+          );
+
+        if (readOnly) {
+          return <Box key={starValue} sx={{ display: 'flex' }}>{starIcon}</Box>;
+        }
+
+        return (
+          <Tooltip title={`${starValue} Star${starValue > 1 ? 's' : ''}`} key={starValue}>
+            <IconButton
+              onClick={() => typeof onChange === 'function' && onChange(starValue)}
+              sx={{ p: 0.2, color: 'inherit' }}
+              aria-label={`Rate ${starValue} star`}
+            >{starIcon}</IconButton>
+          </Tooltip>
+        );
+      })}
     </Box>
   );
 };

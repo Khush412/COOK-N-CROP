@@ -68,9 +68,15 @@ const ActivityCard = ({ item, type }) => {
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
             Commented on{' '}
-            <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
-              {item.post.title}
-            </Link>
+            {item.post ? (
+              <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
+                {item.post.title}
+              </Link>
+            ) : (
+              <Typography component="span" sx={{ fontStyle: 'italic', color: 'text.disabled', fontFamily: theme.typography.fontFamily }}>
+                a deleted post
+              </Typography>
+            )}
             {' '}{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
           </Typography>
         </>
@@ -182,7 +188,7 @@ const PublicProfilePage = () => {
         <Grid container spacing={{ xs: 2, md: 4 }}>
           <Grid size={{ xs: 12, md: 'auto' }}>
             <Avatar
-              src={user.profilePic}
+              src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
               alt={user.username}
               sx={{
                 width: { xs: 100, md: 150 },

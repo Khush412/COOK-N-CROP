@@ -90,12 +90,22 @@ const OrderDetailsPage = () => {
     if (!order || !order.orderItems) return;
     setReordering(true);
     try {
-      const itemsToReorder = order.orderItems.map(item => ({
-        productId: item.product._id,
-        quantity: item.qty,
-      }));
+      const itemsToReorder = order.orderItems
+        .filter(item => item.product) // Filter out items where product was deleted
+        .map(item => ({
+          productId: item.product._id,
+          quantity: item.qty,
+        }));
+
+      if (itemsToReorder.length === 0) {
+        showSnackbar('None of the items from this order are currently available to re-order.', 'warning');
+        setReordering(false);
+        return;
+      }
+
       await addMultipleToCart(itemsToReorder);
-      showSnackbar('Items added back to your cart!', 'success');
+      const successMessage = itemsToReorder.length === order.orderItems.length ? 'Items added back to your cart!' : `${itemsToReorder.length} of ${order.orderItems.length} items were added back to your cart. Some may no longer be available.`;
+      showSnackbar(successMessage, 'success');
       navigate('/cart');
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to re-order items.';
@@ -210,20 +220,25 @@ const OrderDetailsPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 <List>
                   {order.orderItems.map((item) => (
-                    <React.Fragment key={item.product._id}>
+                    <React.Fragment key={item._id}>
                       <ListItemButton
-                        component={RouterLink}
-                        to={`/product/${item.product._id}`}
+                        component={item.product ? RouterLink : 'div'}
+                        to={item.product ? `/product/${item.product._id}` : undefined}
                         alignItems="flex-start"
-                        sx={{ py: 1.5, borderRadius: 2, '&:hover': { bgcolor: alpha(theme.palette.action.hover, 0.5) } }}
+                        sx={{
+                          py: 1.5,
+                          borderRadius: 2,
+                          cursor: item.product ? 'pointer' : 'default',
+                          '&:hover': { bgcolor: item.product ? alpha(theme.palette.action.hover, 0.5) : 'transparent' }
+                        }}
                       >
                         <ListItemAvatar>
-                          <Avatar alt={item.name} src={item.image || `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
+                          <Avatar alt={item.name} src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily, color: 'text.primary' }}>
-                              {item.name}
+                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily, color: item.product ? 'text.primary' : 'text.disabled' }}>
+                              {item.name} {!item.product && '(Product no longer available)'}
                             </Typography>
                           }
                           secondary={
@@ -232,7 +247,7 @@ const OrderDetailsPage = () => {
                                 Quantity: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{item.qty}</Typography>
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                                Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${item.price.toFixed(2)}</Typography> each
+                                Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${item.price.toFixed(2)}</Typography>{item.unit ? ` / ${item.unit}` : ''}
                               </Typography>
                               <Typography variant="body1" color="text.primary" sx={{ mt: 0.5, fontFamily: theme.typography.fontFamily }}>
                                 Subtotal: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.price * item.qty).toFixed(2)}</Typography>

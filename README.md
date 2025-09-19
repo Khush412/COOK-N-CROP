@@ -8,7 +8,7 @@ Cook'N'Crop is a feature-rich, modern web platform built with the MERN stack (Mo
 
 ### ✨ Live Demo
 
-*[text](https://cookncrop.onrender.com)*
+*[Live Demo](https://cookncrop.onrender.com)*
 
 ---
 
@@ -104,6 +104,10 @@ Follow these instructions to get a local copy of the project up and running for 
     JWT_SECRET=your_jwt_secret
     JWT_EXPIRE=7d
 
+    # Session Secret (important for security)
+    # Use a long, random string. You can generate one here: https://www.grc.com/passwords.htm
+    SESSION_SECRET=your_super_strong_session_secret
+
     # Client URL
     CLIENT_URL=http://localhost:3000
 
@@ -116,7 +120,7 @@ Follow these instructions to get a local copy of the project up and running for 
     EMAIL_PORT=587
     EMAIL_USER=your_brevo_login_email@example.com # The "Login" value from your Brevo SMTP page
     EMAIL_PASS=your_brevo_smtp_key # The SMTP key you generated
-    EMAIL_FROM=noreply@yourdomain.com
+    FROM_EMAIL=noreply@yourdomain.com
     FROM_NAME=Cook'N'Crop
 
     # Option 2: Mailgun

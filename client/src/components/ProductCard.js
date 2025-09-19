@@ -108,7 +108,7 @@ const ProductCard = ({ product, showSnackbar }) => {
         <CardMedia
           component={RouterLink}
           to={`/product/${product._id}`}
-          image={product.image || `${process.env.PUBLIC_URL}/images/placeholder.png`}
+          image={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
           title={product.name}
           sx={{
             aspectRatio: '4/3',
@@ -168,7 +168,12 @@ const ProductCard = ({ product, showSnackbar }) => {
       <CardActions sx={{ p: 1.5, pt: 0.5, mt: 'auto' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%' }}>
           <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-            ${product.price.toFixed(2)}
+            {`$${product.price.toFixed(2)}`}
+            {product.unit && (
+              <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                {` / ${product.unit}`}
+              </Typography>
+            )}
           </Typography>
           {product.countInStock > 0 ? (
             quantityInCart > 0 ? (

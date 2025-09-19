@@ -59,7 +59,7 @@ export default function Community() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Background image URL for the header - update your file path as needed
-  const headerImageURL = `${process.env.PUBLIC_URL}/images/hero.png`;
+  const headerImageURL = `${process.env.PUBLIC_URL}/images/CooknCrop.png`;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -262,7 +262,7 @@ export default function Community() {
             sx={{
               position: "absolute",
               inset: 0,
-              backgroundImage: `url(${process.env.PUBLIC_URL}/images/hero.png)`,
+              backgroundImage: `url(${headerImageURL})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "brightness(0.55)",

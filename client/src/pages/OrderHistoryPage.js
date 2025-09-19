@@ -242,7 +242,7 @@ const OrderHistoryPage = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 60, height: 60, border: `2px solid ${theme.palette.background.paper}` } }}>
                             {order.orderItems.map(item => (
-                              <Avatar key={item.product} src={item.image} alt={item.name} />
+                              <Avatar key={item._id} src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} alt={item.name} />
                             ))}
                           </AvatarGroup>
                           {order.orderItems.length > 4 && (

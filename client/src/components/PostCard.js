@@ -67,7 +67,7 @@ const PostCard = ({
         <CardMedia
           component={RouterLink}
           to={`/post/${post._id}`}
-          image={post.image}
+          image={`${process.env.REACT_APP_API_URL}${post.image}`}
           title={post.title}
           sx={{
             aspectRatio: '16/9',
@@ -109,7 +109,7 @@ const PostCard = ({
         }}
       >
         <Avatar
-          src={post.user.profilePic}
+          src={post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
           sx={{
             bgcolor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,

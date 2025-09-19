@@ -47,7 +47,8 @@ router.post('/', protect, async (req, res) => {
                 name: matchingItemFromDB.name,
                 qty: itemFromClient.qty,
                 image: matchingItemFromDB.image,
-                price: matchingItemFromDB.price, // Use price from DB
+                price: matchingItemFromDB.price, // Use price from DB,
+                unit: matchingItemFromDB.unit, // Add the unit
                 product: itemFromClient.product,
             };
         });
@@ -246,7 +247,7 @@ router.put('/admin/edit/:id', protect, authorize('admin'), async (req, res) => {
         const itemsFromDB = await Product.find({ _id: { $in: orderItems.map(x => x.product) } });
         const dbOrderItems = orderItems.map(item => {
             const matchingItem = itemsFromDB.find(p => p._id.toString() === item.product.toString());
-            return { name: matchingItem.name, qty: item.qty, image: matchingItem.image, price: matchingItem.price, product: item.product };
+            return { name: matchingItem.name, qty: item.qty, image: matchingItem.image, price: matchingItem.price, unit: matchingItem.unit, product: item.product };
         });
 
         order.orderItems = dbOrderItems;
@@ -295,8 +296,8 @@ router.post('/admin/create', protect, authorize('admin'), async (req, res) => {
                 throw err;
             }
             return {
-                name: matchingItemFromDB.name, qty: itemFromClient.qty, image: matchingItemFromDB.image,
-                price: matchingItemFromDB.price, product: itemFromClient.product,
+                name: matchingItemFromDB.name, qty: itemFromClient.qty, image: matchingItemFromDB.image, unit: matchingItemFromDB.unit,
+                price: matchingItemFromDB.price, product: itemFromClient.product
             };
         });
 

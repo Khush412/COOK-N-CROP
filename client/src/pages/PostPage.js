@@ -126,12 +126,17 @@ const TaggedProductCard = ({ product }) => {
 
   return (
     <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, transition: 'box-shadow .2s', '&:hover': { boxShadow: theme.shadows[3] } }}>
-      <Avatar src={product.image} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
+      <Avatar src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</Typography>
-        <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>
-          {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : 'Price not available'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+          <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : 'Price not available'}
+          </Typography>
+          {product.unit && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>/ {product.unit}</Typography>
+          )}
+        </Box>
       </Box>
       <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
         {product.countInStock > 0 ? (isAdding ? <CircularProgress size={20} /> : 'Add') : 'Out of Stock'}
@@ -489,7 +494,7 @@ const PostPage = () => {
     return null; // Should be handled by error state
   }
 
-  const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews.some(review => review.user === user?.id);
+  const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews.some(review => review.user?._id === user?.id);
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
@@ -550,7 +555,7 @@ const PostPage = () => {
           )}
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
-              src={post.user.profilePic} alt={post.user.username} sx={{ width: 56, height: 56 }}
+              src={post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
               component={RouterLink} to={`/user/${post.user.username}`}
             >
               {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
@@ -580,7 +585,7 @@ const PostPage = () => {
         {post.image && (
           <Box
             component="img"
-            src={post.image}
+            src={`${process.env.REACT_APP_API_URL}${post.image}`}
             alt={post.title}
             sx={{
               width: '100%',
@@ -659,7 +664,7 @@ const PostPage = () => {
         {/* Tagged Products Section */}
         {!isEditing && post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily,fontWeight: 700, mb: 2 }}>
               Products Used in this Recipe
             </Typography>
             <Grid container spacing={2}>
@@ -723,7 +728,7 @@ const PostPage = () => {
                 {post.recipeReviews.map((review) => (
                   <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
+                      <Avatar src={review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
                       <Box>
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
                         <Rating value={review.rating} readOnly />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { alpha,
   Box,
   Typography,
@@ -91,12 +91,24 @@ const CartPage = () => {
     fetchData();
   }, []);
 
-  const showSnackbar = (message, severity) => {
+  const validItems = useMemo(() => {
+    if (!cart?.items) return [];
+    return cart.items.filter(item => item.product);
+  }, [cart]);
+
+  const showSnackbar = useCallback((message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
-  };
+  }, []);
 
+  useEffect(() => {
+    // This effect runs when the cart changes and checks if any items were filtered out.
+    if (cart && validItems.length < cart.items.length) {
+      showSnackbar('Some items in your cart were unavailable and have been removed.', 'warning');
+    }
+  }, [cart, validItems, showSnackbar]);
+  
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -106,14 +118,14 @@ const CartPage = () => {
 
   const calculateTotal = () => {
     if (!cart || !cart.items) return 0;
-    const subtotal = cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    const subtotal = validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
     if (appliedCoupon) {
         return (subtotal - appliedCoupon.discountAmount).toFixed(2);
     }
     return subtotal.toFixed(2);
   };
 
-  const calculateSubtotal = () => cart ? cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0) : 0;
+  const calculateSubtotal = () => cart ? validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0) : 0;
 
   const handleUpdateQuantity = async (productId, quantity) => {
     const item = cart.items.find(i => i.product._id === productId);
@@ -224,7 +236,7 @@ const CartPage = () => {
           </Box>
         ) : error ? (
           <Typography color="error" sx={{ my: 4, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{error}</Typography>
-        ) : !cart || cart.items.length === 0 ? (
+        ) : validItems.length === 0 ? (
           <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
             <ShoppingCartOutlinedIcon sx={{ fontSize: 80, color: theme.palette.grey[400] }} />
             <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -238,7 +250,7 @@ const CartPage = () => {
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, lg: 7 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Items in your cart ({cart.items.length})</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Items in your cart ({validItems.length})</Typography>
                 <Button
                   variant="outlined"
                   color="error"
@@ -250,17 +262,17 @@ const CartPage = () => {
                 </Button>
               </Box>
               <List sx={{ width: '100%' }}>
-                {cart.items.map((item) => (
-                  <Paper key={item.product._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative' }}>
+                {validItems.map((item) => (
+                  <Paper key={item.product?._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative' }}>
                     <CardMedia component="img" sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, mr: 2 }}
-                      image={item.product.image || 'https://via.placeholder.com/150?text=No+Image'}
+                      image={item.product.image ? `${process.env.REACT_APP_API_URL}${item.product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
                       alt={item.product.name} />
                     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
                         <Typography component={RouterLink} to={`/product/${item.product._id}`} variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}>
                           {item.product.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
-                          ${item.product.price.toFixed(2)} each
+                          {`$${item.product.price.toFixed(2)}`}{item.product.unit ? ` / ${item.product.unit}` : ''}
                         </Typography>
                         <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
@@ -376,7 +388,7 @@ const CartPage = () => {
                     size="large"
                     fullWidth
                     onClick={handleProceedToPayment}
-                    disabled={!selectedAddress || cart.items.length === 0}
+                    disabled={!selectedAddress || validItems.length === 0}
                     sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5, borderRadius: '50px', fontWeight: 'bold' }}
                   >
                     Proceed to Payment

@@ -12,7 +12,7 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
     // Update content if the initialContent prop changes (e.g., when opening edit for a different comment)
     setContent(initialContent);
   }, [initialContent]);
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!content.trim()) return;
@@ -23,7 +23,7 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, mb: 4 }}>
       <Stack direction="row" spacing={2} alignItems="flex-start">
-        <Avatar src={user?.profilePic} alt={user?.username}>
+        <Avatar src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} alt={user?.username}>
           {!user?.profilePic && user?.username?.charAt(0).toUpperCase()}
         </Avatar>
         <TextField

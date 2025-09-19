@@ -129,7 +129,7 @@ const SavedPostsPage = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {savedPosts.map((post) => (
+          {savedPosts.filter(p => p).map((post) => (
             <Grid size={{ xs: 12, sm: 6 }} key={post._id}>
               <PostCard
                 post={post}

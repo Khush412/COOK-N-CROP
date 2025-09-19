@@ -178,7 +178,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         <Typography variant="overline" sx={{ px: 2, fontFamily: theme.typography.fontFamily }}>Products</Typography>
                         {results.products.map(product => (
                           <ListItemButton key={`prod-${product._id}`} onClick={() => handleResultClick(`/product/${product._id}`)}>
-                            <ListItemAvatar><Avatar variant="rounded" src={product.image} /></ListItemAvatar>
+                            <ListItemAvatar><Avatar variant="rounded" src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} /></ListItemAvatar>
                             <ListItemText primary={product.name} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                           </ListItemButton>
                         ))}
@@ -201,7 +201,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         <Typography variant="overline" sx={{ px: 2, pt: 1, fontFamily: theme.typography.fontFamily }}>Users</Typography>
                         {results.users.map(user => (
                           <ListItemButton key={`user-${user._id}`} onClick={() => handleResultClick(`/user/${user.username}`)}>
-                            <ListItemAvatar><Avatar src={user.profilePic} /></ListItemAvatar>
+                            <ListItemAvatar><Avatar src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} /></ListItemAvatar>
                             <ListItemText primary={user.username} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                           </ListItemButton>
                         ))}

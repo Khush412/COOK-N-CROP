@@ -64,6 +64,12 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
   const fileInputRef = useRef(null);
   const theme = useTheme();
 
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('blob:')) return path;
+    return `${process.env.REACT_APP_API_URL}${path}`;
+  };
+
   useEffect(() => {
     if (user) {
       setForm({ username: user.username || '', bio: user.bio || '' });
@@ -113,7 +119,7 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 2 }}>
-          <Avatar src={imagePreview} sx={{ width: 120, height: 120, mb: 2 }} />
+          <Avatar src={getImageUrl(imagePreview)} sx={{ width: 120, height: 120, mb: 2 }} />
           <Button variant="outlined" onClick={() => fileInputRef.current?.click()} sx={{ fontFamily: theme.typography.fontFamily }}>Change Picture</Button>
           <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileChange} />
         </Box>
@@ -258,20 +264,9 @@ const Profile = () => {
   return (
     <Box
       component="main"
-      sx={{ flexGrow: 1, py: 4, mt: 8, bgcolor: 'background.default' }}
+      sx={{ flexGrow: 1, py: 4, mt: 2, bgcolor: 'background.default' }}
     >
       <Container maxWidth="lg">
-        <Typography
-          variant={isMobile ? "h4" : "h3"}
-          fontWeight={900}
-          sx={{
-            mb: 4,
-            letterSpacing: 1.2,
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          My Dashboard
-        </Typography>
 
         <Fade in={!!feedback.error}><Alert variant="filled" severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{feedback.error}</Alert></Fade>
         <Fade in={!!feedback.success}><Alert variant="filled" severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }} onClose={() => setFeedback({ ...feedback, success: '' })}>{feedback.success}</Alert></Fade>
@@ -290,7 +285,7 @@ const Profile = () => {
               }}
             >
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 4 }} alignItems="center">
-                <Avatar src={user?.profilePic} sx={{
+                <Avatar src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{
                     width: { xs: 80, sm: 120 },
                     height: { xs: 80, sm: 120 },
                     border: `4px solid ${theme.palette.background.paper}`,
@@ -353,7 +348,12 @@ const Profile = () => {
                 <List>
                   {dashboardData?.recentPosts?.length > 0 ? dashboardData.recentPosts.map(post => (
                     <ListItemButton key={post._id} component={RouterLink} to={`/post/${post._id}`} divider>
-                      <ListItemText primary={post.title} secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                      <ListItemText
+                        primary={post.title}
+                        secondary={`Posted ${formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}`}
+                        primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
+                        secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}
+                      />
                     </ListItemButton>
                   )) : <Typography color="text.secondary" sx={{ p: 2, fontFamily: theme.typography.fontFamily }}>No recent posts.</Typography>}
                 </List>
@@ -361,8 +361,16 @@ const Profile = () => {
               {activityTab === 1 && (
                 <List>
                   {dashboardData?.recentComments?.length > 0 ? dashboardData.recentComments.map(comment => (
-                    <ListItemButton key={comment._id} component={RouterLink} to={`/post/${comment.post._id}`} divider>
-                      <ListItemText primary={`"${comment.content.substring(0, 50)}..."`} secondary={`On "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                    <ListItemButton key={comment._id} component={comment.post ? RouterLink : 'div'} to={comment.post ? `/post/${comment.post._id}` : undefined} divider sx={{ cursor: comment.post ? 'pointer' : 'default' }}>
+                      <ListItemText 
+                        primary={`"${comment.content.substring(0, 50)}..."`} 
+                        secondary={
+                          comment.post 
+                            ? `On "${comment.post.title}" • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`
+                            : `On a deleted post • ${formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}`
+                        }
+                        primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} 
+                        secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily, color: comment.post ? 'text.secondary' : 'text.disabled' }} />
                     </ListItemButton>
                   )) : <Typography color="text.secondary" sx={{ p: 2, fontFamily: theme.typography.fontFamily }}>No recent comments.</Typography>}
                 </List>
