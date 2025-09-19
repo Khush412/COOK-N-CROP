@@ -6,8 +6,6 @@ import { alpha,
   IconButton,
   List,
   Stack,
-  ListItem,
-  ListItemText,
   Chip,
   Divider,
   CircularProgress,
@@ -18,17 +16,10 @@ import { alpha,
   Snackbar,
   Alert,
   useTheme,
-  Card,
-  CardContent,
   TextField,
-  InputAdornment,
-  MenuItem,
-  CardActions,
   Radio,
   RadioGroup,
   FormControl,
-  FormLabel,
-  FormControlLabel,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -41,10 +32,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
-import orderService from '../services/orderService';     // New: Import order service
 import couponService from '../services/couponService';   // New: Import coupon service
 import AddressForm from '../components/AddressForm';     // New: Import AddressForm component
-import { useAuth } from '../contexts/AuthContext';       // New: Import useAuth
 
 const CartPage = () => {
   const theme = useTheme();
@@ -62,7 +51,6 @@ const CartPage = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null); // New: State for applied coupon details
   const [couponError, setCouponError] = useState(''); // New: State for coupon errors
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false); // New: State for coupon apply loading
-  const { user } = useAuth(); // New: Get user for prefill
 
   useEffect(() => {
     const fetchData = async () => {

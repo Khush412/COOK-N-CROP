@@ -10,8 +10,6 @@ import {
   Alert,
   Stack,
   Divider,
-  IconButton,
-  Tooltip,
   Paper,
   Dialog,
   DialogActions,
@@ -23,7 +21,6 @@ import {
   useMediaQuery,
   Grid,
   List,
-  ListItem,
   ListItemButton,
   ListItemText,
   Chip,
@@ -37,8 +34,6 @@ import {
 import { useTheme } from "@mui/material/styles";
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Close';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -66,7 +61,7 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
 
   const getImageUrl = (path) => {
     if (!path) return '';
-    if (path.startsWith('blob:')) return path;
+    if (path.startsWith('blob:') || path.startsWith('http')) return path;
     return `${process.env.REACT_APP_API_URL}${path}`;
   };
 
@@ -136,7 +131,6 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
 
 const Profile = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user, loadUser, logout } = useAuth();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
@@ -285,7 +279,7 @@ const Profile = () => {
               }}
             >
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 4 }} alignItems="center">
-                <Avatar src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{
+                <Avatar src={user?.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{
                     width: { xs: 80, sm: 120 },
                     height: { xs: 80, sm: 120 },
                     border: `4px solid ${theme.palette.background.paper}`,

@@ -23,7 +23,7 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, mb: 4 }}>
       <Stack direction="row" spacing={2} alignItems="flex-start">
-        <Avatar src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} alt={user?.username}>
+        <Avatar src={user?.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} alt={user?.username}>
           {!user?.profilePic && user?.username?.charAt(0).toUpperCase()}
         </Avatar>
         <TextField

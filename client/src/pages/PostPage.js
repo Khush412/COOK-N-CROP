@@ -28,9 +28,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Card,
   TextField,
-  ListItemAvatar,
   alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -555,7 +553,7 @@ const PostPage = () => {
           )}
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
-              src={post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
+              src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
               component={RouterLink} to={`/user/${post.user.username}`}
             >
               {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
@@ -728,7 +726,7 @@ const PostPage = () => {
                 {post.recipeReviews.map((review) => (
                   <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
+                      <Avatar src={review.user?.profilePic && review.user.profilePic.startsWith('http') ? review.user.profilePic : review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
                       <Box>
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
                         <Rating value={review.rating} readOnly />

@@ -188,7 +188,7 @@ const PublicProfilePage = () => {
         <Grid container spacing={{ xs: 2, md: 4 }}>
           <Grid size={{ xs: 12, md: 'auto' }}>
             <Avatar
-              src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
+              src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
               alt={user.username}
               sx={{
                 width: { xs: 100, md: 150 },

@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
         },
       }}
     >
-      <Avatar src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{ width: 80, height: 80, mb: 1 }} />
+      <Avatar src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{ width: 80, height: 80, mb: 1 }} />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6" component={RouterLink} to={`/user/${user.username}`} sx={{ textDecoration: 'none', color: 'text.primary', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, '&:hover': { color: 'primary.main' } }}>
           {user.username}
@@ -48,7 +48,7 @@ const UserCard = ({ user }) => {
 };
 
 const SearchPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth(); // Get current user for PostCard
   const [globalResults, setGlobalResults] = useState({ posts: [], products: [], users: [] });
   const [paginatedResults, setPaginatedResults] = useState({ posts: [], products: [], users: [] });
@@ -96,6 +96,7 @@ const SearchPage = () => {
   }, [query]);
 
   // Effect for tab-specific, paginated search
+  const currentPage = pagination[tab]?.page;
   useEffect(() => {
     if (tab === 'all' || !query) return;
 
@@ -103,7 +104,6 @@ const SearchPage = () => {
       setTabLoading(true);
       try {
         let data;
-        const currentPage = pagination[tab].page;
 
         if (tab === 'posts') {
           data = await searchService.searchPosts(query, currentPage);
@@ -126,7 +126,7 @@ const SearchPage = () => {
     };
 
     fetchPaginatedResults();
-  }, [query, tab, pagination.posts.page, pagination.products.page, pagination.users.page]);
+  }, [query, tab, currentPage]);
 
   const handleTabChange = (event, newValue) => {
     setTab(newValue);

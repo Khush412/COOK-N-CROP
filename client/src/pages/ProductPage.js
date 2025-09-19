@@ -11,10 +11,7 @@ import {
   Button,
   Divider,
   List,
-  ListItem,
-  ListItemAvatar,
   Avatar,
-  ListItemText,
   TextField,
   Snackbar,
   IconButton,
@@ -26,7 +23,6 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -393,7 +389,7 @@ const ProductPage = () => {
                 {filteredAndSortedReviews.map((review) => (
                   <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
+                      <Avatar src={review.user?.profilePic && review.user.profilePic.startsWith('http') ? review.user.profilePic : review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
                       <Box flexGrow={1}>
                         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
                         <Rating value={review.rating} readOnly />

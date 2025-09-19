@@ -57,7 +57,6 @@ import notificationService from "../services/notificationService";
 import { useSocket } from "../contexts/SocketContext";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
-import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import GlobalSearch from './GlobalSearch';
 
 // Navigation link styles adjusted for reduced padding except first nav item
@@ -277,7 +276,7 @@ export default function Navbar() {
     handleCloseUserMenu();
     navigate("/profile");
   };
-
+// eslint-disable-next-line
   const handleAddresses = () => {
     handleCloseUserMenu();
     navigate("/profile/addresses");
@@ -603,7 +602,7 @@ export default function Navbar() {
                   aria-label="User account menu"
                 >
                   <Avatar
-                    src={user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
+                    src={user?.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
                     alt={user?.username || "User"}
                     sx={{
                       width: 32,

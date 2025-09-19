@@ -94,7 +94,7 @@ const CommentThreadItem = ({
     >
       <Stack direction="row" spacing={2}>
         <ListItemAvatar sx={{ minWidth: 'auto', mt: 1 }}>
-          <Avatar src={comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} alt={comment.user?.username}>
+          <Avatar src={comment.user?.profilePic && comment.user.profilePic.startsWith('http') ? comment.user.profilePic : comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} alt={comment.user?.username}>
             {!comment.user?.profilePic && comment.user?.username?.charAt(0).toUpperCase()}
           </Avatar>
         </ListItemAvatar>

@@ -22,12 +22,10 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  alpha,
   Select,
   MenuItem,
   InputLabel,
   useTheme,
-  useMediaQuery,
   Pagination,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';

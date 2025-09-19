@@ -76,7 +76,11 @@ const SupportTicketDetailsPage = () => {
           {/* Original Message */}
           <Box>
             <Stack direction="row" spacing={2} alignItems="center" mb={1}>
-              <Avatar src={(ticket.user?.profilePic || user?.profilePic) ? `${process.env.REACT_APP_API_URL}${ticket.user?.profilePic || user.profilePic}` : undefined}>{ticket.user?.username?.charAt(0) || user?.username.charAt(0)}</Avatar>
+              <Avatar src={
+                (ticket.user?.profilePic || user?.profilePic) && (ticket.user?.profilePic || user?.profilePic).startsWith('http')
+                  ? (ticket.user?.profilePic || user?.profilePic)
+                  : (ticket.user?.profilePic || user?.profilePic) ? `${process.env.REACT_APP_API_URL}${ticket.user?.profilePic || user.profilePic}` : undefined
+              }>{ticket.user?.username?.charAt(0) || user?.username.charAt(0)}</Avatar>
               <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{ticket.user?.username || user?.username} (You)</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(ticket.createdAt), 'PPp')}</Typography>
             </Stack>
@@ -92,7 +96,7 @@ const SupportTicketDetailsPage = () => {
                 // User's own reply
                 <Box>
                   <Stack direction="row" spacing={2} alignItems="center" mb={1}>
-                    <Avatar src={reply.user.profilePic ? `${process.env.REACT_APP_API_URL}${reply.user.profilePic}` : undefined}>{reply.user.username.charAt(0)}</Avatar>
+                    <Avatar src={reply.user.profilePic && reply.user.profilePic.startsWith('http') ? reply.user.profilePic : reply.user.profilePic ? `${process.env.REACT_APP_API_URL}${reply.user.profilePic}` : undefined}>{reply.user.username.charAt(0)}</Avatar>
                     <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{reply.user.username} (You)</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(reply.createdAt), 'PPp')}</Typography>
                   </Stack>
@@ -104,7 +108,7 @@ const SupportTicketDetailsPage = () => {
                 // Admin's reply
                 <Box>
                   <Stack direction="row" spacing={2} alignItems="center" mb={1}>
-                    <Avatar src={reply.user.profilePic ? `${process.env.REACT_APP_API_URL}${reply.user.profilePic}` : undefined}>{reply.user.username.charAt(0)}</Avatar>
+                    <Avatar src={reply.user.profilePic && reply.user.profilePic.startsWith('http') ? reply.user.profilePic : reply.user.profilePic ? `${process.env.REACT_APP_API_URL}${reply.user.profilePic}` : undefined}>{reply.user.username.charAt(0)}</Avatar>
                     <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{reply.user.username} (Support Team)</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(reply.createdAt), 'PPp')}</Typography>
                   </Stack>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, Paper, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, TextField, IconButton, CircularProgress, Alert, useTheme, useMediaQuery, InputAdornment, alpha, Stack, Grid } from '@mui/material';
+import { Box, Paper, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, TextField, IconButton, CircularProgress, useTheme, useMediaQuery, InputAdornment, Stack, Grid } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
@@ -22,7 +22,6 @@ const MessengerPage = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState({ convos: true, messages: false });
-  const [error, setError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [convoSearch, setConvoSearch] = useState('');
   const messagesEndRef = useRef(null);
@@ -38,7 +37,7 @@ const MessengerPage = () => {
       setConversations(data);
       return data;
     } catch (err) {
-      setError('Failed to load conversations.');
+      console.error('Failed to load conversations:', err);
       return [];
     } finally {
       setLoading(prev => ({ ...prev, convos: false }));
@@ -64,7 +63,7 @@ const MessengerPage = () => {
       setConversations(prev => prev.map(c => c._id === convo._id ? { ...c, unreadCount: 0 } : c));
       fetchUnreadMessageCount();
     } catch (err) {
-      setError('Failed to load messages.');
+      console.error('Failed to load messages:', err);
     } finally {
       setLoading(prev => ({ ...prev, messages: false }));
     }
@@ -97,7 +96,7 @@ const MessengerPage = () => {
       }
       navigate(location.pathname, { replace: true });
     }
-  }, [location.state, user, loading.convos, conversations, navigate, handleSelectConversation]);
+  }, [location.state, user, loading.convos, conversations, navigate, handleSelectConversation, location.pathname]);
 
   useEffect(() => {
     if (socket) {
@@ -122,8 +121,7 @@ const MessengerPage = () => {
 
     const recipient = selectedConversation.participants.find(p => p._id !== user.id);
     if (!recipient) {
-      setError('Could not find a recipient for this message.');
-      return;
+      return console.error('Could not find a recipient for this message.');
     }
 
     const isPlaceholder = !!selectedConversation.isPlaceholder;
@@ -155,7 +153,7 @@ const MessengerPage = () => {
         fetchConversations();
       }
     } catch (err) {
-      setError('Failed to send message.');
+      console.error('Failed to send message:', err);
       setMessages(prev => prev.filter(m => m._id !== tempMessage._id));
     } finally {
       setIsSending(false);
@@ -196,7 +194,7 @@ const MessengerPage = () => {
                 selected={selectedConversation?._id === convo._id}
                 sx={{ borderRadius: 2, mb: 0.5 }}
               >
-                <ListItemAvatar><Avatar src={otherParticipant?.profilePic ? `${process.env.REACT_APP_API_URL}${otherParticipant.profilePic}` : undefined} /></ListItemAvatar>
+                <ListItemAvatar><Avatar src={otherParticipant?.profilePic && otherParticipant.profilePic.startsWith('http') ? otherParticipant.profilePic : otherParticipant?.profilePic ? `${process.env.REACT_APP_API_URL}${otherParticipant.profilePic}` : undefined} /></ListItemAvatar>
                 <ListItemText
                   primary={<Typography variant="subtitle1" noWrap sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{otherParticipant?.username || 'Unknown User'}</Typography>}
                   secondary={
@@ -222,7 +220,7 @@ const MessengerPage = () => {
             <ArrowBackIcon />
           </IconButton>
         )}
-        <Avatar src={selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic ? `${process.env.REACT_APP_API_URL}${selectedConversation.participants.find(p => p._id !== user.id).profilePic}` : undefined} sx={{ mr: 2 }} />
+        <Avatar src={selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic && selectedConversation.participants.find(p => p._id !== user.id).profilePic.startsWith('http') ? selectedConversation.participants.find(p => p._id !== user.id).profilePic : selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic ? `${process.env.REACT_APP_API_URL}${selectedConversation.participants.find(p => p._id !== user.id).profilePic}` : undefined} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
           {selectedConversation?.participants.find(p => p._id !== user.id)?.username}
         </Typography>
@@ -246,7 +244,7 @@ const MessengerPage = () => {
               >
                 {!isSender && (
                   <Avatar
-                    src={msg.sender.profilePic ? `${process.env.REACT_APP_API_URL}${msg.sender.profilePic}` : undefined}
+                    src={msg.sender.profilePic && msg.sender.profilePic.startsWith('http') ? msg.sender.profilePic : msg.sender.profilePic ? `${process.env.REACT_APP_API_URL}${msg.sender.profilePic}` : undefined}
                     sx={{ width: 32, height: 32, visibility: showAvatar ? 'visible' : 'hidden' }}
                   />
                 )}

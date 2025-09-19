@@ -201,7 +201,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         <Typography variant="overline" sx={{ px: 2, pt: 1, fontFamily: theme.typography.fontFamily }}>Users</Typography>
                         {results.users.map(user => (
                           <ListItemButton key={`user-${user._id}`} onClick={() => handleResultClick(`/user/${user.username}`)}>
-                            <ListItemAvatar><Avatar src={user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} /></ListItemAvatar>
+                            <ListItemAvatar><Avatar src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} /></ListItemAvatar>
                             <ListItemText primary={user.username} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                           </ListItemButton>
                         ))}

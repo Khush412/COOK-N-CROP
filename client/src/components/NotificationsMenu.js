@@ -37,7 +37,7 @@ const NotificationItem = ({ notification, onClick }) => {
       }}
     >
       <ListItemAvatar sx={{ minWidth: 48, mt: 0.5 }}>
-        <Avatar src={notification.sender?.profilePic ? `${process.env.REACT_APP_API_URL}${notification.sender.profilePic}` : undefined} />
+        <Avatar src={notification.sender?.profilePic && notification.sender.profilePic.startsWith('http') ? notification.sender.profilePic : notification.sender?.profilePic ? `${process.env.REACT_APP_API_URL}${notification.sender.profilePic}` : undefined} />
       </ListItemAvatar>
       <ListItemText
         primary={

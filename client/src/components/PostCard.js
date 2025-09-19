@@ -109,7 +109,7 @@ const PostCard = ({
         }}
       >
         <Avatar
-          src={post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+          src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
           sx={{
             bgcolor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,

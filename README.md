@@ -109,6 +109,8 @@ Follow these instructions to get a local copy of the project up and running for 
     SESSION_SECRET=your_super_strong_session_secret
 
     # Client URL
+    # For local development, use http://localhost:3000
+    # For production, this MUST be your live frontend URL (e.g., https://cookncrop.onrender.com)
     CLIENT_URL=http://localhost:3000
 
     # --- Production Email: Choose ONE of the options below ---
@@ -139,6 +141,24 @@ Follow these instructions to get a local copy of the project up and running for 
     GITHUB_CLIENT_SECRET=your_github_client_secret
     TWITTER_CONSUMER_KEY=your_twitter_api_key
     TWITTER_CONSUMER_SECRET=your_twitter_api_secret_key
+
+    # --- OAuth Setup ---
+    # You can create and manage your OAuth credentials for Google, GitHub, and Twitter
+    # in their respective developer consoles. For Google, go to https://console.cloud.google.com/
+
+    # --- OAuth Callback URLs ---
+    # When setting up your OAuth apps on Google, GitHub, and Twitter,
+    # you must provide these authorized callback URLs. It must be an EXACT match,
+    # including https://
+    #
+    # Google Authorized redirect URI:
+    # https://cookncrop.onrender.com/api/auth/google/callback
+    #
+    # GitHub Authorization callback URL:
+    # https://cookncrop.onrender.com/api/auth/github/callback
+    #
+    # Twitter Callback URI / Redirect URL:
+    # https://cookncrop.onrender.com/api/auth/twitter/callback
     ```
 
 3.  **Set up the Frontend:**
