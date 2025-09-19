@@ -8,7 +8,7 @@ Cook'N'Crop is a feature-rich, modern web platform built with the MERN stack (Mo
 
 ### ✨ Live Demo
 
-*[Link to your deployed site will go here]*
+*[text](https://cookncrop.onrender.com)*
 
 ---
 
@@ -107,16 +107,26 @@ Follow these instructions to get a local copy of the project up and running for 
     # Client URL
     CLIENT_URL=http://localhost:3000
 
-    # --- Production Email (Brevo - Free Tier) ---
-    # 1. Sign up for a free account at brevo.com
-    # 2. Go to your account > SMTP & API to get your credentials.
-    # 3. Create a new SMTP Key. This key is your password.
-    EMAIL_HOST=smtp-relay.brevo.com
+    # --- Production Email: Choose ONE of the options below ---
+
+    # Option 1: Brevo (formerly Sendinblue) - Recommended
+    # Free tier is generous. May require phone verification to prevent spam.
+    # 1. Sign up at brevo.com, go to SMTP & API, create an SMTP Key.
+    EMAIL_HOST=smtp-relay.brevo.com # Brevo SMTP server
     EMAIL_PORT=587
-    EMAIL_USER=your_brevo_account_email@example.com
-    EMAIL_PASS=your_brevo_smtp_key
+    EMAIL_USER=your_brevo_login_email@example.com # The "Login" value from your Brevo SMTP page
+    EMAIL_PASS=your_brevo_smtp_key # The SMTP key you generated
     EMAIL_FROM=noreply@yourdomain.com
     FROM_NAME=Cook'N'Crop
+
+    # Option 2: Mailgun
+    # Also has a free tier. May require a credit card for identity verification (won't be charged on free plan).
+    # 1. Sign up at mailgun.com, add and verify your domain.
+    # 2. Go to Sending > Domain Settings > SMTP credentials to find your details.
+    # EMAIL_HOST=smtp.mailgun.org # Or your region-specific host (e.g., smtp.eu.mailgun.org)
+    # EMAIL_PORT=587
+    # EMAIL_USER=postmaster@your.verified.domain # Your SMTP username from Mailgun
+    # EMAIL_PASS=your_mailgun_smtp_password # The password for that SMTP user
 
     # OAuth Credentials
     GOOGLE_CLIENT_ID=your_google_client_id

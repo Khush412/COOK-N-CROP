@@ -56,12 +56,10 @@ export default function Community() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-  // eslint-disable-next-line
-  const [trendingTag, setTrendingTags] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Background image URL for the header - update your file path as needed
-  const headerImageURL = "/images/hero.png";
+  const headerImageURL = `${process.env.PUBLIC_URL}/images/hero.png`;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,29 +90,6 @@ export default function Community() {
     fetchPosts();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [sort, page, selectedTags, debouncedSearchTerm]);
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      const cachedTags = sessionStorage.getItem('trendingTags');
-      const cacheTime = sessionStorage.getItem('trendingTags_time');
-      const fiveMinutes = 5 * 60 * 1000; // 5 minutes cache duration
-
-      if (cachedTags && cacheTime && (Date.now() - cacheTime < fiveMinutes)) {
-        setTrendingTags(JSON.parse(cachedTags));
-        return;
-      }
-
-      try {
-        const tags = await communityService.getTrendingTags();
-        setTrendingTags(tags);
-        sessionStorage.setItem('trendingTags', JSON.stringify(tags));
-        sessionStorage.setItem('trendingTags_time', Date.now());
-      } catch (err) {
-        console.error("Error fetching trending tags: ", err);
-      }
-    };
-    fetchTags();
-  }, []);
 
   const handleCreateClick = () => {
     if (!isAuthenticated) navigate("/login?redirect=/community");
@@ -208,14 +183,6 @@ export default function Community() {
   const handlePageChange = (event, value) => {
     setPage(value);
   };
-// eslint-disable-next-line
-  const handleTagClick = (tag) => {
-    setPage(1);
-    if (searchTerm.toLowerCase() === tag.toLowerCase()) setSearchTerm("");
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
 
   // Sidebar content reused inside drawer and desktop sidebar
   const SidebarContent = (
@@ -295,7 +262,7 @@ export default function Community() {
             sx={{
               position: "absolute",
               inset: 0,
-              backgroundImage: `url(${"/images/hero.png"})`,
+              backgroundImage: `url(${process.env.PUBLIC_URL}/images/hero.png)`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "brightness(0.55)",

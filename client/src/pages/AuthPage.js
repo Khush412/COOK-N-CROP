@@ -160,7 +160,7 @@ export default function AuthPage() {
         justifyContent: "center",
         alignItems: "center",
         px: 2,
-        pt: { xs: 12, md: 6 },
+        pt: { xs: 12, md: 12 },
         pb: 6,
       }}
     >

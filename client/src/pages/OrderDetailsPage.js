@@ -218,7 +218,7 @@ const OrderDetailsPage = () => {
                         sx={{ py: 1.5, borderRadius: 2, '&:hover': { bgcolor: alpha(theme.palette.action.hover, 0.5) } }}
                       >
                         <ListItemAvatar>
-                          <Avatar alt={item.name} src={item.image || '/images/placeholder.png'} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
+                          <Avatar alt={item.name} src={item.image || `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
                         </ListItemAvatar>
                         <ListItemText
                           primary={

@@ -89,14 +89,14 @@ const NavLink = styled(Button)(({ theme, active }) => ({
 }));
 
 const SiteName = styled(Typography)(({ theme }) => ({
-  fontFamily: theme.typography.fontFamily,
+  fontFamily: "'Cinzel', serif",
   color: theme.palette.common.white,
-  fontWeight: 800,
-  letterSpacing: "0.18em",
+  fontWeight: 700,
+  letterSpacing: "0.1em",
   textDecoration: "none",
   userSelect: "none",
   whiteSpace: "nowrap",
-  fontSize: "1.6rem",
+  fontSize: "1.5rem",
   textTransform: "uppercase",
   cursor: "pointer",
   paddingRight: theme.spacing(2),
@@ -476,26 +476,13 @@ export default function Navbar() {
             >
               <MenuIcon />
             </IconButton>
-            <SiteName sx={{ display: "flex", flexShrink: 0 }}>
-              <Typography
-                component={RouterLink}
-                to="/"
-                tabIndex={0}
-                aria-label="Go to homepage"
-                sx={{
-                  fontFamily: theme.typography.fontFamily,
-                  color: theme.palette.common.white,
-                  fontWeight: 600,
-                  letterSpacing: "0.18em",
-                  textDecoration: "none",
-                  userSelect: "none",
-                  whiteSpace: "nowrap",
-                  fontSize: "1.3rem",
-                  cursor: "pointer",
-                }}
-              >
-                Cook’n’Crop
-              </Typography>
+            <SiteName
+              component={RouterLink}
+              to="/"
+              tabIndex={0}
+              aria-label="Go to homepage"
+            >
+              Cook’n’Crop
             </SiteName>
           </Box>
 
@@ -862,13 +849,6 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
 
-      {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
-      <IconButton
-        onClick={() => setMobileSearchOpen(true)}
-        sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
-        aria-label="open search"
-      ><SearchIcon /></IconButton>
-
       {/* Mobile Search Drawer */}
       <Drawer
         anchor="top"
@@ -893,7 +873,7 @@ export default function Navbar() {
       {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
       <IconButton
         onClick={() => setMobileSearchOpen(true)}
-        sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
+        sx={{ color: 'common.white', display: mobileSearchOpen ? 'none' : { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
         aria-label="open search"
       ><SearchIcon /></IconButton>
 
@@ -909,27 +889,6 @@ export default function Navbar() {
         }}
       >
         {drawer}
-      </Drawer>
-
-      {/* Mobile Search Drawer */}
-      <Drawer
-        anchor="top"
-        open={mobileSearchOpen}
-        onClose={() => setMobileSearchOpen(false)}
-        PaperProps={{ sx: { bgcolor: 'primary.main' } }}
-      >
-        <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ flexGrow: 1 }}>
-            <GlobalSearch fullWidth />
-          </Box>
-          <IconButton
-            onClick={() => setMobileSearchOpen(false)}
-            sx={{ color: 'common.white' }}
-            aria-label="close search"
-          >
-            <CloseIcon />
-          </IconButton>
-        </Toolbar>
       </Drawer>
 
       {/* Theme Customizer Dialog */}

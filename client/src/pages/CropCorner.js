@@ -212,8 +212,8 @@ export default function CropCorner() {
         '&::before': {
           content: '""',
           position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundImage: 'url(/images/hero.png)',
+          top: 0, left: 0, right: 0, bottom: 0,          
+          backgroundImage: `url(${process.env.PUBLIC_URL}/images/hero.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'brightness(0.5)',

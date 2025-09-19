@@ -108,7 +108,7 @@ const ProductCard = ({ product, showSnackbar }) => {
         <CardMedia
           component={RouterLink}
           to={`/product/${product._id}`}
-          image={product.image || '/images/placeholder.png'}
+          image={product.image || `${process.env.PUBLIC_URL}/images/placeholder.png`}
           title={product.name}
           sx={{
             aspectRatio: '4/3',

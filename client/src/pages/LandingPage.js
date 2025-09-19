@@ -54,18 +54,18 @@ const LandingPage = () => {
   // To use a fixed set of banner images, use this array.
   // Make sure you place your images in the `public/images/` folder.
   const bannerImages = [
-    '/images/hero-banner-image-1.png',
-    '/images/hero-banner-image-2.png',
-    '/images/hero-banner-image-3.png',
-    '/images/hero-banner-image-4.png',
-    '/images/hero-banner-image-5.png',
-    '/images/hero-banner-image-6.png',
-    '/images/hero-banner-image-7.png',
-    '/images/hero-banner-image-8.png',
-    '/images/hero-banner-image-9.png',
-    '/images/hero-banner-image-10.png',
-    '/images/hero-banner-image-11.png',
-    '/images/hero-banner-image-12.png',
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-1.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-2.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-3.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-4.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-5.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-6.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-7.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-8.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-9.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-10.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-11.png`,
+    `${process.env.PUBLIC_URL}/images/hero-banner-image-12.png`,
   ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -186,7 +186,7 @@ const LandingPage = () => {
         // LOGGED-OUT HERO (Cinematic Video)
         <Box id="home" sx={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
           <video autoPlay loop muted playsInline style={{ position: 'absolute', width: '100%', height: '100%', left: '50%', top: '50%', objectFit: 'cover', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
-            <source src="/videos/cinematic_video.mp4" type="video/mp4" />
+            <source src={`${process.env.PUBLIC_URL}/videos/cinematic_video.mp4`} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 2 }} />
@@ -255,7 +255,7 @@ const LandingPage = () => {
         sx={{
           py: { xs: 10, md: 16 },
           position: 'relative',
-          backgroundImage: 'url(/images/hero1.png)',
+          backgroundImage: `url(${process.env.PUBLIC_URL}/images/hero1.png)`,
           backgroundAttachment: 'fixed',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

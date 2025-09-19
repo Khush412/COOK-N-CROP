@@ -115,8 +115,8 @@ const AboutPage = () => {
                 '&::before': {
                     content: '""',
                     position: 'absolute',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundImage: 'url(/images/about-hero.jpg)', // A subtle, food-related background image
+                    top: 0, left: 0, right: 0, bottom: 0,                    
+                    backgroundImage: `url(${process.env.PUBLIC_URL}/images/about-hero.jpg)`, // A subtle, food-related background image
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     opacity: theme.palette.mode === 'dark' ? 0.1 : 0.05,
@@ -174,7 +174,7 @@ const AboutPage = () => {
                         <Grid size={{ xs: 12, md: 6 }} component={motion.div} variants={itemVariants}>
                             <Box
                                 component="img"
-                                src="/images/about-story.jpg" // Placeholder image
+                                src={`${process.env.PUBLIC_URL}/images/about-story.jpg`} // Placeholder image
                                 alt="People cooking together in a bright kitchen"
                                 sx={{
                                     width: '100%',
