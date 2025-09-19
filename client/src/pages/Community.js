@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Box,
@@ -142,7 +142,11 @@ export default function Community() {
     }
   };
 
-  const handleUpvote = async (postId) => {
+  const handleUpvote = async (postId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (!isAuthenticated) return navigate("/login?redirect=/community");
     if (upvotingPosts.includes(postId)) return;
 
@@ -172,7 +176,11 @@ export default function Community() {
     }
   };
 
-  const handleToggleSave = async (postId) => {
+  const handleToggleSave = async (postId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (!isAuthenticated) return navigate("/login?redirect=/community");
     setSavingPosts((prev) => [...prev, postId]);
     try {
@@ -398,15 +406,17 @@ export default function Community() {
               {/* Posts Grid */}
               <Grid container spacing={3}>
                 {posts.map((post) => (
-                  <Grid size={{ xs: 12, sm: 6 }} key={post._id} sx={{ display: "flex" }}>
-                    <PostCard
-                      post={post}
-                      user={user}
-                      onUpvote={handleUpvote}
-                      upvotingPosts={upvotingPosts}
-                      onToggleSave={handleToggleSave}
-                      savingPosts={savingPosts}
-                    />
+                  <Grid size={{ xs: 12, sm: 6 }} key={post._id}>
+                    <Box component={RouterLink} to={`/post/${post._id}`} sx={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
+                      <PostCard
+                        post={post}
+                        user={user}
+                        onUpvote={(e) => handleUpvote(post._id, e)}
+                        upvotingPosts={upvotingPosts}
+                        onToggleSave={(e) => handleToggleSave(post._id, e)}
+                        savingPosts={savingPosts}
+                      />
+                    </Box>
                   </Grid>
                 ))}
               </Grid>

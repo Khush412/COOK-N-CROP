@@ -145,6 +145,7 @@ const ManageOrders = () => {
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Date</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Total</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Payment</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
@@ -162,7 +163,10 @@ const ManageOrders = () => {
                         </TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{order.user?.username || 'N/A'}</TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Chip label={order.paymentMethod} size="small" variant="outlined" />
+                        </TableCell>
                         <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
                         <TableCell align="right">
                           <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
@@ -186,7 +190,7 @@ const ManageOrders = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         <Box sx={{ p: 4, textAlign: 'center' }}>
                           <ReceiptLongIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
                           <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No orders found matching your criteria.</Typography>

@@ -13,7 +13,7 @@ const sendEmail = require('../utils/sendEmail');
 // @access  Private
 router.post('/', protect, async (req, res) => {
     try {
-        const { orderItems, shippingAddress, couponCode } = req.body;
+        const { orderItems, shippingAddress, couponCode, paymentMethod } = req.body;
 
         if (!orderItems || orderItems.length === 0) {
             return res.status(400).json({ message: 'No order items' });
@@ -78,20 +78,23 @@ router.post('/', protect, async (req, res) => {
             appliedCoupon = coupon;
         }
 
+        const isPaid = paymentMethod !== 'COD';
+
         const order = new Order({
             user: req.user._id,
             orderItems: dbOrderItems,
             shippingAddress,
+            paymentMethod,
             subtotal: subtotal,
             discount: {
                 code: appliedCoupon ? appliedCoupon.code : undefined,
                 amount: discountAmount,
             },
             totalPrice: finalPrice,
-            status: 'Processing', // Changed from 'Pending'
-            isPaid: true, // Assuming order is paid on creation
-            paidAt: Date.now(), // Set paid timestamp
-            statusHistory: [{ status: 'Pending' }, { status: 'Processing' }],
+            status: 'Processing',
+            isPaid: isPaid,
+            paidAt: isPaid ? Date.now() : null,
+            statusHistory: [{ status: 'Processing' }],
         });
 
         const createdOrder = await order.save();

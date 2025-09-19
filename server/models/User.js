@@ -163,7 +163,7 @@ const userSchema = new mongoose.Schema({
   preferences: {
     theme: {
       type: String,
-      default: 'lightMaroon'
+      default: 'forestMist'
     },
     fontFamily: {
       type: String,

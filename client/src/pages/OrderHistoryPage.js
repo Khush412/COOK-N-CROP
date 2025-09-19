@@ -201,17 +201,23 @@ const OrderHistoryPage = () => {
               ) : (
                 filteredAndSortedOrders.map((order) => (
                   <Paper
-                      key={order._id}
-                      elevation={3}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        transition: '0.3s',
-                        '&:hover': {
-                          boxShadow: 8,
-                        },
-                      }}
-                    >
+                    key={order._id}
+                    component={RouterLink}
+                    to={`/order/${order._id}`}
+                    elevation={3}
+                    sx={{
+                      p: 2,
+                      borderRadius: 3,
+                      transition: '0.3s',
+                      display: 'block',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      '&:hover': {
+                        boxShadow: 8,
+                        cursor: 'pointer',
+                      },
+                    }}
+                  >
                       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={1} mb={2}>
                         <Box>
                           <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER PLACED</Typography>
@@ -243,7 +249,7 @@ const OrderHistoryPage = () => {
                             <Typography variant="body2" sx={{ ml: 1, fontFamily: theme.typography.fontFamily }}>+ {order.orderItems.length - 4} more</Typography>
                           )}
                         </Box>
-                        <Button variant="contained" size="small" onClick={() => navigate(`/order/${order._id}`)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                        <Button variant="contained" size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
                           View Order Details
                         </Button>
                       </Stack>

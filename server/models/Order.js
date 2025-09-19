@@ -40,6 +40,18 @@ const orderSchema = mongoose.Schema({
         country: { type: String, required: true },
         phone: { type: String },
     },
+    paymentMethod: {
+        type: String,
+        required: [true, 'Payment method is required'],
+        enum: ['COD', 'Stripe', 'PayPal'], // Add more as you implement them
+        default: 'COD',
+    },
+    paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String },
+    },
     subtotal: {
         type: Number,
         required: true,

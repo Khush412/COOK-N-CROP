@@ -17,6 +17,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  InputAdornment,
   alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -24,6 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SendIcon from '@mui/icons-material/Send';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import { useAuth } from '../contexts/AuthContext';
+import SearchIcon from '@mui/icons-material/Search';
 import supportService from '../services/supportService';
 
 // Sample FAQs
@@ -55,6 +57,7 @@ const SupportContactPage = () => {
   const { user, isAuthenticated } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
@@ -91,6 +94,12 @@ const SupportContactPage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const filteredFaqs = faqs.filter(
+    (faq) =>
+      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary', pt: { xs: 10, md: 12 }, pb: 8 }}>
       <Container maxWidth="lg">
@@ -119,16 +128,39 @@ const SupportContactPage = () => {
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
               Frequently Asked Questions
             </Typography>
-            {faqs.map((faq, index) => (
-              <Accordion key={index} sx={{ boxShadow: 'none', border: `1px solid ${theme.palette.divider}`, borderRadius: 2, '&:before': { display: 'none' }, mb: 1 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{faq.question}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{faq.answer}</Typography>
-                </AccordionDetails>
-              </Accordion>
-            ))}
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Search FAQs"
+              placeholder="Type to search questions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '50px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+            />
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((faq, index) => (
+                <Accordion key={index} sx={{ boxShadow: 'none', border: `1px solid ${theme.palette.divider}`, borderRadius: 2, '&:before': { display: 'none' }, mb: 1 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{faq.question}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{faq.answer}</Typography>
+                  </AccordionDetails>
+                </Accordion>
+              ))
+            ) : (
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
+                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No FAQs found matching your search.</Typography>
+              </Paper>
+            )}
           </Grid>
 
           {/* Contact Form Section */}

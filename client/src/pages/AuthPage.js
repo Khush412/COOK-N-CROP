@@ -58,29 +58,23 @@ export default function AuthPage() {
 
     try {
       const result = await login(email, password);
-      console.log('Login result:', result); // Debug log
       if (!result.success) {
         const { status, code } = result;
-        console.log('Error details:', { status, code, message: result.message }); // Debug log
 
         if (status === 404 || code === 'USER_NOT_FOUND') {
-          console.log('Showing Account Not Found popup'); // Debug log
           setShowAccountNotFoundPopup(true);
           setLocalError(null);
         } else if (status === 401) {
           const msg = (result.message || '').toLowerCase();
           if (code === 'INCORRECT_PASSWORD' || msg.includes('incorrect password')) {
-            console.log('Showing Incorrect Password popup'); // Debug log
             setShowIncorrectPasswordPopup(true);
             setLocalError(null);
           } else {
             // Fallback: treat generic 401 as user not found to avoid always showing incorrect password
-            console.log('Showing Account Not Found popup (fallback)'); // Debug log
             setShowAccountNotFoundPopup(true);
             setLocalError(null);
           }
         } else {
-          console.log('Showing generic error:', result.message); // Debug log
           setLocalError(result.message);
         }
       }

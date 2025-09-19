@@ -10,6 +10,7 @@ import {
   Paper,
   Grid,
   List,
+  ListItemButton,
   ListItem,
   ListItemText,
   Divider,
@@ -153,7 +154,7 @@ const OrderDetailsPage = () => {
             <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Status</Typography>
+            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', mb: 0.5 }}>Status</Typography>
             <Chip
               label={order.status}
               color={statusColors[order.status] || 'default'} sx={{ fontFamily: theme.typography.fontFamily }}
@@ -209,14 +210,19 @@ const OrderDetailsPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 <List>
                   {order.orderItems.map((item) => (
-                    <React.Fragment key={item.product}>
-                      <ListItem alignItems="flex-start" sx={{ py: 1.5 }}>
+                    <React.Fragment key={item.product._id}>
+                      <ListItemButton
+                        component={RouterLink}
+                        to={`/product/${item.product._id}`}
+                        alignItems="flex-start"
+                        sx={{ py: 1.5, borderRadius: 2, '&:hover': { bgcolor: alpha(theme.palette.action.hover, 0.5) } }}
+                      >
                         <ListItemAvatar>
                           <Avatar alt={item.name} src={item.image || '/images/placeholder.png'} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily, color: 'text.primary' }}>
                               {item.name}
                             </Typography>
                           }
@@ -235,7 +241,7 @@ const OrderDetailsPage = () => {
                           }
                           secondaryTypographyProps={{ component: 'div' }}
                         />
-                      </ListItem>
+                      </ListItemButton>
                       <Divider component="li" variant="inset" sx={{ ml: '100px' }} />
                     </React.Fragment>
                   ))}
@@ -269,6 +275,10 @@ const OrderDetailsPage = () => {
                     <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>${order.subtotal.toFixed(2)}</Typography></Stack>
                     {order.discount?.amount > 0 && <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({order.discount.code}):</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>-${order.discount.amount.toFixed(2)}</Typography></Stack>}
                     <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography></Stack>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Payment Method:</Typography>
+                      <Chip label={order.paymentMethod} size="small" variant="outlined" />
+                    </Stack>
                     <Divider sx={{ my: 1 }} />
                     <Stack direction="row" justifyContent="space-between"><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography></Stack>
                   </Stack>

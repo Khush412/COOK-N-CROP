@@ -29,10 +29,6 @@ import { alpha,
   FormControl,
   FormLabel,
   FormControlLabel,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogActions,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -42,7 +38,6 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
@@ -63,9 +58,6 @@ const CartPage = () => {
   const [addresses, setAddresses] = useState([]); // New: State for user addresses
   const [selectedAddress, setSelectedAddress] = useState(null); // New: State for selected address
   const [showAddressForm, setShowAddressForm] = useState(false); // New: State to toggle address form
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false); // New: State for order placement loading
-  const [orderSuccessDialogOpen, setOrderSuccessDialogOpen] = useState(false); // New: State for order success dialog
-  const [placedOrderId, setPlacedOrderId] = useState(null); // New: State to store placed order ID
   const [couponCode, setCouponCode] = useState(''); // New: State for coupon input
   const [appliedCoupon, setAppliedCoupon] = useState(null); // New: State for applied coupon details
   const [couponError, setCouponError] = useState(''); // New: State for coupon errors
@@ -205,7 +197,7 @@ const CartPage = () => {
   };
 
   // New: Handle order placement
-  const handlePlaceOrder = async () => {
+  const handleProceedToPayment = () => {
     if (!selectedAddress) {
       showSnackbar('Please select a shipping address.', 'warning');
       return;
@@ -214,44 +206,9 @@ const CartPage = () => {
       showSnackbar('Your cart is empty.', 'warning');
       return;
     }
-
-    setIsPlacingOrder(true);
-    try {
-      // The backend should fetch price/name/image from the DB using the product ID
-      // to prevent price tampering on the client. We only need to send ID and quantity.
-      const orderItems = cart.items.map(item => ({
-        product: item.product._id,
-        qty: item.quantity,
-      }));
-
-      const orderData = {
-        orderItems,
-        shippingAddress: {
-          fullName: selectedAddress.fullName,
-          street: selectedAddress.street,
-          city: selectedAddress.city,
-          state: selectedAddress.state,
-          zipCode: selectedAddress.zipCode,
-          country: selectedAddress.country,
-          phone: selectedAddress.phone,
-        },
-        // Pass coupon code only if it has been successfully applied
-        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-      };
-
-      const createdOrder = await orderService.createOrder(orderData);
-
-      // Show success dialog and clear cart
-      setPlacedOrderId(createdOrder._id);
-      setOrderSuccessDialogOpen(true);
-      await productService.clearCart();
-      setCart(null);
-    } catch (err) {
-      showSnackbar(err.response?.data?.message || 'Failed to place order.', 'error');
-      console.error('Order placement error:', err);
-    } finally {
-      setIsPlacingOrder(false);
-    }
+    navigate('/payment', {
+      state: { shippingAddress: selectedAddress, appliedCoupon: appliedCoupon },
+    });
   };
 
   return (
@@ -418,11 +375,11 @@ const CartPage = () => {
                     color="secondary"
                     size="large"
                     fullWidth
-                    onClick={handlePlaceOrder}
-                    disabled={isPlacingOrder || !selectedAddress || cart.items.length === 0}
+                    onClick={handleProceedToPayment}
+                    disabled={!selectedAddress || cart.items.length === 0}
                     sx={{ fontFamily: theme.typography.fontFamily, mt: 2, py: 1.5, borderRadius: '50px', fontWeight: 'bold' }}
                   >
-                    {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Place Order'}
+                    Proceed to Payment
                   </Button>
                 </Box>
               </Paper>
@@ -430,41 +387,6 @@ const CartPage = () => {
           </Grid>
         )}
       </Box>
-      <Dialog
-        open={orderSuccessDialogOpen}
-        onClose={() => setOrderSuccessDialogOpen(false)}
-        aria-labelledby="order-success-dialog-title"
-        aria-describedby="order-success-dialog-description"
-      >
-        <DialogTitle id="order-success-dialog-title" sx={{ textAlign: 'center' }}>
-          <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 1 }} />
-          <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Placed Successfully!</Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography id="order-success-dialog-description" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, textAlign: 'center' }}>
-            Your order has been placed successfully. Thank you for your purchase!
-          </Typography>
-          <Typography>
-            You can view your order details by clicking the button below.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setOrderSuccessDialogOpen(false);
-              if (placedOrderId) {
-                navigate(`/order/${placedOrderId}`);
-              }
-            }}
-            autoFocus
-            variant="contained"
-            color="secondary"
-            sx={{ fontFamily: theme.typography.fontFamily }}
-          >
-            View Order Details
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbarMessage}

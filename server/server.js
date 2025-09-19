@@ -9,11 +9,6 @@ const MongoStore = require('connect-mongo');
 const path = require('path');
 require('dotenv').config();
 
-// Debug: Check if environment variables are loaded
-console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Found' : 'NOT FOUND');
-console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Found' : 'NOT FOUND');
-console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'Found' : 'NOT FOUND');
-
 // Import database connection
 const connectDB = require('./config/database');
 
@@ -36,9 +31,6 @@ const messageRoutes = require('./routes/messages'); // New: Import message route
 const searchRoutes = require('./routes/search'); // New: Import search routes
 const chatbotRoutes = require('./routes/chatbot'); // New: Import chatbot routes
 const supportRoutes = require('./routes/support'); // New: Import support routes
-
-// Connect to database
-connectDB();
 
 const app = express();
 
@@ -104,7 +96,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100000, // limit each IP to 100,000 requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 200 : 10000, // 200 for production, high for dev
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.'
@@ -116,7 +108,7 @@ app.use(limiter);
 // Stricter rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100000, // Increased limit to effectively disable it for development
+  max: process.env.NODE_ENV === 'production' ? 30 : 1000, // 30 for production, high for dev
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'
@@ -155,9 +147,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
@@ -190,6 +179,9 @@ app.get('/api/health', (req, res) => {
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/build');
   
+  // Serve user-uploaded content from server/public/uploads
+  app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
   // Serve static files from the React app
   app.use(express.static(clientBuildPath));
 
@@ -199,6 +191,8 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.resolve(clientBuildPath, 'index.html'));
   });
 } else {
+  // In development, still serve uploads so they work locally
+  app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
   // In development, just show a simple message for the root
   app.get('/', (req, res) => {
     res.send('API is running....');
@@ -261,9 +255,28 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    server.listen(PORT, () => {
+      console.log(`✅ Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ --- FAILED TO START SERVER --- ❌');
+    if (error.message.includes('ETIMEDOUT') || error.message.includes('whitelist')) {
+        console.error('DATABASE CONNECTION FAILED: The connection to MongoDB timed out.');
+        console.error('This is almost always a network or firewall issue. Please check the following:');
+        console.error('1. MongoDB Atlas IP Access List: Your current IP address might not be whitelisted. This is the #1 most common cause.');
+        console.error('2. .env File: Ensure your MONGODB_URI is correct and has the right password.');
+        console.error('3. Local Firewall/VPN: Your network might be blocking the connection to the database port.');
+    } else {
+        console.error('An unexpected error occurred:', error);
+    }
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {

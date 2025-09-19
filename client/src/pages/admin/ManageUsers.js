@@ -210,7 +210,6 @@ const ManageUsers = () => {
                     inputProps={{ 'aria-label': 'select all users' }}
                   />
                 </TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Username</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Role</TableCell>
@@ -222,11 +221,11 @@ const ManageUsers = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center"><CircularProgress /></TableCell>
+                  <TableCell colSpan={7} align="center"><CircularProgress /></TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center"><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></TableCell>
+                  <TableCell colSpan={7} align="center"><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></TableCell>
                 </TableRow>
               ) : users.length > 0 ? (
                 users.map((user) => {
@@ -234,8 +233,7 @@ const ManageUsers = () => {
                   return (
                     <TableRow key={user._id} hover onClick={(event) => handleSelectClick(event, user._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
                       <TableCell padding="checkbox"><Checkbox checked={isItemSelected} /></TableCell>
-                      <TableCell><Tooltip title={user._id}><Typography variant="body2" noWrap sx={{ maxWidth: 80, fontFamily: theme.typography.fontFamily }}>{user._id}</Typography></Tooltip></TableCell>
-                      <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{user.username}</TableCell>
+                      <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{user.username}</TableCell>
                       <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{user.email}</TableCell>
                       <TableCell>
                         {editingUserId === user._id ? (
@@ -263,40 +261,42 @@ const ManageUsers = () => {
                       </TableCell>
                       <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell align="right">
-                        {editingUserId === user._id ? (
-                          <>
-                            <Tooltip title="Save"><IconButton onClick={(e) => { e.stopPropagation(); handleSaveClick(user._id); }} color="success"><SaveIcon /></IconButton></Tooltip>
-                            <Tooltip title="Cancel"><IconButton onClick={(e) => { e.stopPropagation(); handleCancelClick(); }}><CancelIcon /></IconButton></Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <Tooltip title="View Addresses">
-                              <IconButton component={RouterLink} to={`/admin/users/${user._id}/addresses`} onClick={(e) => e.stopPropagation()}><LocationOnIcon /></IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit Role">
-                              <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(user); }} disabled={user._id === currentUser.id}><EditIcon /></IconButton>
-                            </Tooltip>
-                            <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
-                              <span>
-                                <IconButton onClick={(e) => { e.stopPropagation(); handleToggleStatus(user._id, user.isActive); }} disabled={user._id === currentUser.id || user.role === 'admin'} color={user.isActive ? 'warning' : 'success'}>
-                                  {user.isActive ? <BlockIcon /> : <CheckCircleOutlineIcon />}
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                            <Tooltip title="Permanently Delete User">
-                              <span>
-                                <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon /></IconButton>
-                              </span>
-                            </Tooltip>
-                          </>
-                        )}
+                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                          {editingUserId === user._id ? (
+                            <>
+                              <Tooltip title="Save"><IconButton onClick={(e) => { e.stopPropagation(); handleSaveClick(user._id); }} color="success"><SaveIcon /></IconButton></Tooltip>
+                              <Tooltip title="Cancel"><IconButton onClick={(e) => { e.stopPropagation(); handleCancelClick(); }}><CancelIcon /></IconButton></Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <Tooltip title="View Addresses">
+                                <IconButton component={RouterLink} to={`/admin/users/${user._id}/addresses`} onClick={(e) => e.stopPropagation()}><LocationOnIcon /></IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit Role">
+                                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(user); }} disabled={user._id === currentUser.id}><EditIcon /></IconButton>
+                              </Tooltip>
+                              <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                                <span>
+                                  <IconButton onClick={(e) => { e.stopPropagation(); handleToggleStatus(user._id, user.isActive); }} disabled={user._id === currentUser.id || user.role === 'admin'} color={user.isActive ? 'warning' : 'success'}>
+                                    {user.isActive ? <BlockIcon /> : <CheckCircleOutlineIcon />}
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title="Permanently Delete User">
+                                <span>
+                                  <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon /></IconButton>
+                                </span>
+                              </Tooltip>
+                            </>
+                          )}
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
+                  <TableCell colSpan={7} align="center">
                     <Box sx={{ p: 4, textAlign: 'center' }}>
                       <PeopleOutlineIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
                       <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No users found matching your criteria.</Typography>

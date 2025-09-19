@@ -23,6 +23,7 @@ import {
   MenuBook as MenuBookIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
+  ChatBubbleOutlineOutlined as ChatBubbleOutlineOutlinedIcon,
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
 
@@ -252,9 +253,12 @@ const PostCard = ({
               {post.upvoteCount}
             </Typography>
           </Stack>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
-            💬 {post.commentCount}
-          </Typography>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              {post.commentCount}
+            </Typography>
+          </Stack>
         </Stack>
 
         <Stack direction="row" alignItems="center" spacing={0.5}>

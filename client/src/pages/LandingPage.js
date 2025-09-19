@@ -28,13 +28,13 @@ const TESTIMONIALS = [
   {
     quote: "The freshness of the produce is unparalleled. It's like having a farmer's market at my doorstep. My cooking has never been better!",
     author: "Alex Johnson",
-    role: "Home Chef",
+    role: "Professional Chef",
     avatar: "/images/avatars/avatar-1.jpg",
   },
   {
     quote: "I love the community aspect. I've discovered so many amazing recipes and made friends who share my passion for food.",
     author: "Samantha Lee",
-    role: "Food Blogger",
+    role: "Home Chef",
     avatar: "/images/avatars/avatar-2.jpg",
   },
   {

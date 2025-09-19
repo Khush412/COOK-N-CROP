@@ -43,7 +43,6 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @access  Public
 router.post('/register', validateRegister, async (req, res) => {
   try {
-    console.log('Registration request body:', req.body);
     const { username, email, password } = req.body;
 
     // Check if user already exists
@@ -52,7 +51,6 @@ router.post('/register', validateRegister, async (req, res) => {
     });
 
     if (existingUser) {
-      console.log('User already exists:', existingUser.email === email ? 'email' : 'username');
       return res.status(400).json({
         success: false,
         message: existingUser.email === email 
@@ -60,22 +58,12 @@ router.post('/register', validateRegister, async (req, res) => {
           : 'Username is already taken'
       });
     }
-
-    console.log('Creating new user...');
-    console.log('User data:', { username, email, password: '***' });
     
     // Create user
     const user = await User.create({
       username,
       email,
       password
-    });
-
-    console.log('User created successfully:', {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      createdAt: user.createdAt
     });
 
     // Send welcome email
@@ -206,69 +194,61 @@ router.post('/login', validateLogin, async (req, res) => {
 // @route   POST /api/auth/forgot-password
 // @access  Public
 router.post('/forgot-password', async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
+  const user = await User.findOne({ email: req.body.email });
 
-    if (!user) {
-      // We send a success response even if user not found to prevent email enumeration
-      return res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
-    }
+  if (!user) {
+    // We send a success response even if user not found to prevent email enumeration
+    return res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
+  }
 
-    // Get reset token
-    const resetToken = crypto.randomBytes(20).toString('hex');
+  // Get reset token
+  const resetToken = crypto.randomBytes(20).toString('hex');
 
-    // Hash token and set to passwordResetToken field
-    user.passwordResetToken = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
+  // Hash token and set to passwordResetToken field
+  user.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
 
-    // Set expire time (10 minutes)
-    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  // Set expire time (10 minutes)
+  user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
-    await user.save();
-
-    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
-    const message = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-        <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 28px;">Password Reset Request</h1>
-        </div>
-        <div style="padding: 25px;">
-          <h2 style="color: #333333;">Reset Your Password</h2>
-          <p>We received a request to reset the password for your Cook'N'Crop account. Click the button below to set a new password:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" clicktracking=off style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">Reset Your Password</a>
-          </div>
-          <p>This link will expire in 10 minutes. If you did not request a password reset, please ignore this email.</p>
-        </div>
-        <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-          <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
-        </div>
+  const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+  const message = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+      <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 28px;">Password Reset Request</h1>
       </div>
-    `;
+      <div style="padding: 25px;">
+        <h2 style="color: #333333;">Reset Your Password</h2>
+        <p>We received a request to reset the password for your Cook'N'Crop account. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" clicktracking=off style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">Reset Your Password</a>
+        </div>
+        <p>This link will expire in 10 minutes. If you did not request a password reset, please ignore this email.</p>
+      </div>
+      <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+      </div>
+    </div>
+  `;
 
-    try {
+  try {
       await sendEmail({
         email: user.email,
         subject: 'Password Reset Request for Cook-N-Crop',
         message,
       });
-    } catch (err) {
-      console.error('Email sending error:', err);
-      // Clear fields on error to be safe
-    }
 
-    res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    // Clear fields on error to be safe
-    if (user) {
-      user.passwordResetToken = undefined;
-      user.passwordResetExpires = undefined;
+      // Only save the token if the email was sent successfully
       await user.save();
-    }
-    res.status(500).json({ success: false, message: 'Server error' });
+
+      res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
+  } catch (err) {
+      console.error('Email sending error:', err);
+      // Do not save the user with the reset token if email fails.
+      // This allows the user to try again without being locked out.
+      res.status(500).json({ success: false, message: 'Could not send password reset email. Please try again later.' });
   }
 });
 
@@ -389,70 +369,5 @@ router.get('/twitter/callback',
     res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
   }
 );
-
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
-router.put('/profile', protect, async (req, res) => {
-  try {
-    const fieldsToUpdate = {
-      username: req.body.username,
-      bio: req.body.bio,
-      profilePic: req.body.profilePic
-    };
-
-    // Remove undefined fields
-    Object.keys(fieldsToUpdate).forEach(key => 
-      fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
-    );
-
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      fieldsToUpdate,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      user: user.getClientUserObject()
-    });
-  } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during profile update'
-    });
-  }
-});
-
-// @desc    Update user preferences
-// @route   PUT /api/auth/preferences
-// @access  Private
-router.put('/preferences', protect, async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { preferences: req.body.preferences },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      preferences: user.preferences
-    });
-  } catch (error) {
-    console.error('Preferences update error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during preferences update'
-    });
-  }
-});
 
 module.exports = router;

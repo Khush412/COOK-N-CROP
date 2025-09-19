@@ -17,12 +17,15 @@ import {
   ListItemIcon,
   ListItemText as MuiListItemText,
   alpha,
+  Collapse,
 } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 import CommentForm from './CommentForm';
 import { useAuth } from '../contexts/AuthContext';
-import communityService from '../services/communityService';
-import { ThumbUp as ThumbUpIcon, MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, Report as ReportIcon } from '@mui/icons-material';
+import {
+  ThumbUp as ThumbUpIcon, MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, Report as ReportIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon
+} from '@mui/icons-material';
 
 const CommentThreadItem = ({
   comment,
@@ -36,12 +39,14 @@ const CommentThreadItem = ({
   onCommentUpdate,
   onCommentDelete,
   onReportComment,
+  depth = 0,
 }) => {
   const { user, isAuthenticated } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [repliesExpanded, setRepliesExpanded] = useState(depth < 1); // Expand first level of replies by default
   const isReplying = replyingTo === comment._id;
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -179,6 +184,23 @@ const CommentThreadItem = ({
                     Reply
                   </Button>
                 </Stack>
+                {comment.replies && comment.replies.length > 0 && (
+                  <Button
+                    size="small"
+                    onClick={() => setRepliesExpanded(!repliesExpanded)}
+                    startIcon={repliesExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    sx={{
+                      fontSize: '0.75rem',
+                      textTransform: 'none',
+                      fontFamily: theme.typography.fontFamily,
+                      color: 'text.secondary',
+                      mt: 1,
+                      ml: -1,
+                    }}
+                  >
+                    {repliesExpanded ? 'Hide' : 'View'} {comment.replies.length} {comment.replies.length > 1 ? 'replies' : 'reply'}
+                  </Button>
+                )}
                 </>
               }
             />
@@ -196,11 +218,13 @@ const CommentThreadItem = ({
 
       {/* Render Replies */}
       {comment.replies && comment.replies.length > 0 && (
-        <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
+        <Collapse in={repliesExpanded} timeout="auto" unmountOnExit>
+          <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
           {comment.replies.map((reply) => (
-            <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} />
+              <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} />
           ))}
         </List>
+        </Collapse>
       )}
     </ListItem>
   );

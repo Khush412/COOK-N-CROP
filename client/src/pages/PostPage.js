@@ -773,6 +773,7 @@ const PostPage = () => {
                   onCommentUpdate={handleUpdateComment}
                   onCommentDelete={openDeleteCommentConfirm}
                   onReportComment={handleOpenReportDialog}
+                  depth={0}
                 />
               ))
             ) : (
