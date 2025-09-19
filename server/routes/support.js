@@ -219,23 +219,33 @@ router.post('/:id/reply', protect, authorize('admin'), async (req, res) => {
         };
         message.replies.push(reply);
 
+        const ticketUrl = `${process.env.CLIENT_URL}/support/ticket/${message._id}`;
         const emailSubject = `Re: Your Support Ticket - ${message.subject}`;
         const emailMessage = `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                <p>Hi ${message.name},</p>
-                <p>This is a reply to your support request regarding: "<strong>${message.subject}</strong>".</p>
-                <hr style="border: 0; border-top: 1px solid #eee;">
-                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                    <p><strong>Our reply:</strong></p>
-                    <p>${replyContent}</p>
+            <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Update on Your Support Ticket</h1>
                 </div>
-                <hr style="border: 0; border-top: 1px solid #eee;">
-                <p><strong>Your original message:</strong></p>
-                <blockquote style="border-left: 3px solid #ccc; padding-left: 15px; margin-left: 0; color: #666;">
-                    <p>${message.message}</p>
-                </blockquote>
-                <p>If you have any further questions, please reply to this email.</p>
-                <p>Best regards,<br>The Cook'N'Crop Team</p>
+                <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+                    <h2 style="color: #333333; font-weight: 600;">Hi ${message.name},</h2>
+                    <p>A member of our team has replied to your support ticket regarding: <strong>"${message.subject}"</strong>.</p>
+                    <div style="border-left: 4px solid #e8eb14; padding-left: 20px; margin: 25px 0; background-color: #fdfdfd;">
+                    <p style="margin: 0; font-style: italic;">${replyContent}</p>
+                    <p style="margin-top: 10px; font-size: 12px; color: #777;">- Replied by ${req.user.username} (Admin)</p>
+                    </div>
+                    <p>You can view the full conversation and reply by clicking the button below.</p>
+                    <div style="text-align: center; margin: 40px 0;">
+                    <a href="${ticketUrl}" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">View Your Ticket</a>
+                    </div>
+                    <p>Thank you for your patience.</p>
+                    <p><em>- The Cook'N'Crop Team</em></p>
+                </div>
+                <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+                    <p style="margin: 0;">Ticket ID: ${message._id}</p>
+                    <p style="margin-top: 5px;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                </div>
+                </div>
             </div>
         `;
 

@@ -68,26 +68,29 @@ router.post('/register', validateRegister, async (req, res) => {
 
     // Send welcome email
     const welcomeMessage = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-        <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 28px;">Welcome to Cook'N'Crop!</h1>
-        </div>
-        <div style="padding: 25px;">
-          <h2 style="color: #333333;">Hi ${user.username},</h2>
-          <p>We're thrilled to have you join our community of food lovers. Get ready to explore fresh ingredients, discover amazing recipes, and connect with fellow foodies.</p>
-          <p>Here's what you can do to get started:</p>
-          <ul style="list-style-type: none; padding: 0;">
-            <li style="margin-bottom: 10px;"><a href="${process.env.CLIENT_URL}/CropCorner" style="color: #800000; text-decoration: none; font-weight: bold;">Shop for fresh ingredients</a></li>
-            <li style="margin-bottom: 10px;"><a href="${process.env.CLIENT_URL}/recipes" style="color: #800000; text-decoration: none; font-weight: bold;">Discover new recipes</a></li>
-            <li style="margin-bottom: 10px;"><a href="${process.env.CLIENT_URL}/community" style="color: #800000; text-decoration: none; font-weight: bold;">Join the community discussions</a></li>
-          </ul>
-          <div style="text-align: center; margin-top: 30px;">
-            <a href="${process.env.CLIENT_URL}/" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">Explore The Site</a>
+      <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+        <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+          <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Welcome to Cook'N'Crop!</h1>
           </div>
-          <p style="margin-top: 20px;">Happy cooking!</p>
-        </div>
-        <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-          <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+          <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+            <h2 style="color: #333333; font-weight: 600;">Hi ${user.username},</h2>
+            <p>We're thrilled to have you join our community of food lovers. Get ready to explore fresh ingredients, discover amazing recipes, and connect with fellow foodies.</p>
+            <p style="margin-top: 25px;">Here's what you can do to get started:</p>
+            <ul style="list-style-type: '🍳'; padding-left: 20px;">
+              <li style="margin-bottom: 10px; padding-left: 10px;"><a href="${process.env.CLIENT_URL}/CropCorner" style="color: #800000; text-decoration: none; font-weight: bold;">Shop for fresh ingredients</a></li>
+              <li style="margin-bottom: 10px; padding-left: 10px;"><a href="${process.env.CLIENT_URL}/recipes" style="color: #800000; text-decoration: none; font-weight: bold;">Discover new recipes</a></li>
+              <li style="margin-bottom: 10px; padding-left: 10px;"><a href="${process.env.CLIENT_URL}/community" style="color: #800000; text-decoration: none; font-weight: bold;">Join the community discussions</a></li>
+            </ul>
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${process.env.CLIENT_URL}/" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">Explore The Site</a>
+            </div>
+            <p style="margin-top: 20px;">Happy cooking!</p>
+            <p><em>- The Cook'N'Crop Team</em></p>
+          </div>
+          <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+          </div>
         </div>
       </div>
     `;
@@ -215,20 +218,23 @@ router.post('/forgot-password', async (req, res) => {
 
   const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
   const message = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-      <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-        <h1 style="margin: 0; font-size: 28px;">Password Reset Request</h1>
-      </div>
-      <div style="padding: 25px;">
-        <h2 style="color: #333333;">Reset Your Password</h2>
-        <p>We received a request to reset the password for your Cook'N'Crop account. Click the button below to set a new password:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" clicktracking=off style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">Reset Your Password</a>
+    <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+      <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Password Reset Request</h1>
         </div>
-        <p>This link will expire in 10 minutes. If you did not request a password reset, please ignore this email.</p>
-      </div>
-      <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+        <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+          <h2 style="color: #333333; font-weight: 600;">Reset Your Password</h2>
+          <p>We received a request to reset the password for your Cook'N'Crop account. Click the button below to set a new password. This link is only valid for 10 minutes.</p>
+          <div style="text-align: center; margin: 40px 0;">
+            <a href="${resetUrl}" clicktracking=off style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">Reset Your Password</a>
+          </div>
+          <p>If you did not request a password reset, please ignore this email or contact our support if you have concerns.</p>
+          <p><em>- The Cook'N'Crop Team</em></p>
+        </div>
+        <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+          <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+        </div>
       </div>
     </div>
   `;

@@ -31,8 +31,9 @@ router.post('/', protect, async (req, res) => {
             );
 
             if (!matchingItemFromDB) {
-                // Throw an error if a product is not found
-                throw new Error(`Product not found: ${itemFromClient.product}`);
+                const err = new Error(`One of the products in your order could not be found. Please review your cart and try again.`);
+                err.statusCode = 404;
+                throw err;
             }
 
             // Check stock availability
@@ -144,43 +145,45 @@ router.post('/', protect, async (req, res) => {
             ` : '';
 
             const message = `
-              <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-                <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; font-size: 28px;">Thank You For Your Order!</h1>
-                </div>
-                <div style="padding: 25px;">
-                  <p>Hi ${req.user.username},</p>
-                  <p>We've received your order #${createdOrder._id.toString().slice(-6)} and are getting it ready. Here's a summary of your purchase:</p>
-                  <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
-                    <thead>
-                      <tr style="background-color: #f9f9f9;">
-                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: left;">Item</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: center;">Quantity</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Price</th>
-                        <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>${itemRows}</tbody>
-                  </table>
-                  <table style="width: 100%; margin-top: 20px;">
-                    <tbody>
-                      ${summaryRows}
-                      <tr>
-                        <td colspan="3" style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">Grand Total:</td>
-                        <td style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">$${createdOrder.totalPrice.toFixed(2)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div style="text-align: center; margin-top: 30px;">
-                    <a href="${process.env.CLIENT_URL}/order/${createdOrder._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+              <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                  <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Thank You For Your Order!</h1>
                   </div>
-                </div>
-                <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-                  <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                  <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+                    <h2 style="color: #333333; font-weight: 600;">Hi ${req.user.username},</h2>
+                    <p>We've received your order #${createdOrder._id.toString().slice(-6)} and are getting it ready. Here's a summary of your purchase:</p>
+                    <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
+                      <thead>
+                        <tr style="background-color: #f9f9f9;">
+                          <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: left;">Item</th>
+                          <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: center;">Quantity</th>
+                          <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Price</th>
+                          <th style="padding: 12px; border-bottom: 2px solid #eaeaea; text-align: right;">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>${itemRows}</tbody>
+                    </table>
+                    <table style="width: 100%; margin-top: 20px;">
+                      <tbody>
+                        ${summaryRows}
+                        <tr>
+                          <td colspan="3" style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">Grand Total:</td>
+                          <td style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">$${createdOrder.totalPrice.toFixed(2)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div style="text-align: center; margin: 40px 0;">
+                      <a href="${process.env.CLIENT_URL}/order/${createdOrder._id}" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">View Your Order</a>
+                    </div>
+                  </div>
+                  <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+                    <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                  </div>
                 </div>
               </div>
             `;
-            await sendEmail({ email: req.user.email, subject: `Your Cook-N-Crop Order #${createdOrder._id}`, message });
+            await sendEmail({ email: req.user.email, subject: `Your Cook-N-Crop Order #${createdOrder._id.toString().slice(-6)}`, message });
         } catch (emailError) {
             console.error('Could not send order confirmation email:', emailError);
         }
@@ -426,21 +429,24 @@ router.put('/:id/pay', protect, authorize('admin'), async (req, res) => { // Thi
 
       // Send email notification
       try {
+        const orderUrl = `${process.env.CLIENT_URL}/order/${order._id}`;
         const message = `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-            <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
-            </div>
-            <div style="padding: 25px;">
-              <h2 style="color: #333333;">Your Order is Being Processed</h2>
-              <p>Hi ${order.user.username},</p>
-              <p>We have confirmed payment for your order #${order._id}. It is now being processed.</p>
-              <div style="text-align: center; margin-top: 30px;">
-                <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+          <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+              <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Your Order Status has Updated</h1>
               </div>
-            </div>
-            <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-              <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+              <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+                <h2 style="color: #333333; font-weight: 600;">Hi ${order.user.username},</h2>
+                <p>The status of your order #${order._id.toString().slice(-6)} has been updated to: <strong>${order.status}</strong>.</p>
+                <p>Thank you for shopping with Cook-N-Crop!</p>
+                <div style="text-align: center; margin: 40px 0;">
+                  <a href="${orderUrl}" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">View Your Order</a>
+                </div>
+              </div>
+              <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+                <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+              </div>
             </div>
           </div>
         `;
@@ -485,21 +491,23 @@ router.put('/:id/deliver', protect, authorize('admin'), async (req, res) => { //
 
       // Send email notification
       try {
+        const orderUrl = `${process.env.CLIENT_URL}/order/${order._id}`;
         const message = `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-            <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
-            </div>
-            <div style="padding: 25px;">
-              <h2 style="color: #333333;">Your Order Has Been Delivered!</h2>
-              <p>Hi ${order.user.username},</p>
-              <p>Your order #${order._id} has been marked as delivered. We hope you enjoy your fresh products!</p>
-              <div style="text-align: center; margin-top: 30px;">
-                <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+          <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+              <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Your Order Has Been Delivered!</h1>
               </div>
-            </div>
-            <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-              <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+              <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+                <h2 style="color: #333333; font-weight: 600;">Hi ${order.user.username},</h2>
+                <p>Great news! Your order #${order._id.toString().slice(-6)} has been delivered. We hope you enjoy your fresh products!</p>
+                <div style="text-align: center; margin: 40px 0;">
+                  <a href="${orderUrl}" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">View Your Order</a>
+                </div>
+              </div>
+              <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+                <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+              </div>
             </div>
           </div>
         `;
@@ -588,22 +596,24 @@ router.put('/:id/status', protect, authorize('admin'), async (req, res) => {
         // Send email notification if status changed and user has an email
         if (oldStatus !== status && order.user && order.user.email) {
             try {
+                const orderUrl = `${process.env.CLIENT_URL}/order/${order._id}`;
                 const message = `
-                  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-                    <div style="background-color: #800000; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-                      <h1 style="margin: 0; font-size: 28px;">Cook'N'Crop</h1>
-                    </div>
-                    <div style="padding: 25px;">
-                      <h2 style="color: #333333;">Your Order Status has been Updated</h2>
-                      <p>Hi ${order.user.username},</p>
-                      <p>The status of your order #${order._id} has been updated to: <strong>${status}</strong>.</p>
-                      <p>Thank you for shopping with Cook-N-Crop!</p>
-                      <div style="text-align: center; margin-top: 30px;">
-                        <a href="${process.env.CLIENT_URL}/order/${order._id}" style="background-color: #e8eb14d1; color: #333; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">View Your Order</a>
+                  <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
+                    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                      <div style="background-color: #800000; color: white; padding: 20px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                        <h1 style="margin: 0; font-size: 28px; font-family: 'Cinzel', serif;">Your Order Status has Updated</h1>
                       </div>
-                    </div>
-                    <div style="background-color: #f1f1f1; color: #777; padding: 15px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;">
-                      <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                      <div style="padding: 30px 40px; color: #333; line-height: 1.6;">
+                        <h2 style="color: #333333; font-weight: 600;">Hi ${order.user.username},</h2>
+                        <p>The status of your order #${order._id.toString().slice(-6)} has been updated to: <strong>${status}</strong>.</p>
+                        <p>Thank you for shopping with Cook-N-Crop!</p>
+                        <div style="text-align: center; margin: 40px 0;">
+                          <a href="${orderUrl}" style="background-color: #e8eb14; color: #333; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; border: 2px solid #d7d911;">View Your Order</a>
+                        </div>
+                      </div>
+                      <div style="background-color: #fafafa; color: #777; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px; border-top: 1px solid #eaeaea;">
+                        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Cook'N'Crop. All rights reserved.</p>
+                      </div>
                     </div>
                   </div>
                 `;
