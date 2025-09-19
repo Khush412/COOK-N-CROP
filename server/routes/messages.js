@@ -10,29 +10,42 @@ const User = require('../models/User');
 // @access  Private
 router.get('/conversations', protect, async (req, res) => {
   try {
-    const currentUser = await User.findById(req.user.id).select('blockedUsers');
-    const blockedIds = currentUser.blockedUsers;
+    const currentUserId = req.user._id;
+    const myBlockedUsersIds = (req.user.blockedUsers || []).map(id => id.toString());
 
-    const conversations = await Conversation.find({ participants: req.user.id, 'participants': { $nin: blockedIds } })
-      .populate('participants', 'username profilePic')
+    // 1. Get all conversations the user is a participant in.
+    // We populate 'blockedUsers' on the other participants to check for blocks against the current user.
+    const allMyConversations = await Conversation.find({ participants: currentUserId })
+      .populate('participants', 'username profilePic blockedUsers')
       .populate({
         path: 'lastMessage',
         populate: { path: 'sender', select: 'username' }
       })
       .sort({ updatedAt: -1 });
 
-    // Add unread count to each conversation
-    const conversationsWithUnread = await Promise.all(conversations.map(async (convo) => {
+    // 2. Filter out conversations with users who have blocked the current user, or whom the current user has blocked.
+    const filteredConversations = allMyConversations.filter(convo => {
+      const otherParticipant = convo.participants.find(p => p._id.toString() !== currentUserId.toString());
+      if (!otherParticipant) return false; // Should not happen in a 2-person convo
+
+      const iBlockedThem = myBlockedUsersIds.includes(otherParticipant._id.toString());
+      const theyBlockedMe = (otherParticipant.blockedUsers || []).some(blockedId => blockedId.toString() === currentUserId.toString());
+
+      return !iBlockedThem && !theyBlockedMe;
+    });
+
+    // 3. Add unread count to each valid conversation
+    const conversationsWithUnread = await Promise.all(filteredConversations.map(async (convo) => {
       const unreadCount = await Message.countDocuments({
         conversation: convo._id,
-        readBy: { $ne: req.user.id }
+        sender: { $ne: currentUserId }, // Only count messages from others
+        readBy: { $ne: currentUserId }
       });
       // Mongoose documents are immutable, so we convert to a plain object
       const convoObj = convo.toObject();
       convoObj.unreadCount = unreadCount;
       return convoObj;
     }));
-
     res.json(conversationsWithUnread);
   } catch (error) {
     console.error('Get conversations error:', error);
@@ -45,9 +58,24 @@ router.get('/conversations', protect, async (req, res) => {
 // @access  Private
 router.get('/conversations/:conversationId', protect, async (req, res) => {
   try {
-    const conversation = await Conversation.findById(req.params.conversationId);
-    if (!conversation || !conversation.participants.includes(req.user.id)) {
+    const currentUserId = req.user._id;
+    const conversation = await Conversation.findById(req.params.conversationId).populate('participants', 'blockedUsers');
+
+    if (!conversation || !conversation.participants.some(p => p._id.equals(currentUserId))) {
       return res.status(404).json({ message: 'Conversation not found or you are not a participant.' });
+    }
+
+    // --- Security Check: Ensure neither user has blocked the other ---
+    const otherParticipant = conversation.participants.find(p => !p._id.equals(currentUserId));
+    if (otherParticipant) {
+      // Check if the current user has blocked the other participant
+      if (req.user.blockedUsers.some(blockedId => blockedId.equals(otherParticipant._id))) {
+        return res.status(403).json({ message: 'You have blocked this user and cannot view the conversation.' });
+      }
+      // Check if the other participant has blocked the current user
+      if (otherParticipant.blockedUsers.some(blockedId => blockedId.equals(currentUserId))) {
+        return res.status(403).json({ message: 'You cannot view this conversation.' });
+      }
     }
 
     const messages = await Message.find({ conversation: req.params.conversationId })
@@ -55,10 +83,7 @@ router.get('/conversations/:conversationId', protect, async (req, res) => {
       .sort({ createdAt: 'asc' });
 
     // Mark messages as read by the current user
-    await Message.updateMany(
-      { conversation: req.params.conversationId, readBy: { $ne: req.user.id } },
-      { $addToSet: { readBy: req.user.id } }
-    );
+    await Message.updateMany({ conversation: req.params.conversationId, readBy: { $ne: currentUserId } }, { $addToSet: { readBy: currentUserId } });
 
     res.json(messages);
   } catch (error) {
@@ -128,19 +153,31 @@ router.post('/', protect, async (req, res) => {
 // @access  Private
 router.get('/unread-count', protect, async (req, res) => {
   try {
-    // Find all conversations the user is in, excluding those with blocked users
-    const conversations = await Conversation.find({
-      participants: req.user.id,
-      'participants': { $nin: req.user.blockedUsers || [] }
-    }).select('_id');
+    const currentUserId = req.user._id;
+    const myBlockedUsersIds = (req.user.blockedUsers || []).map(id => id.toString());
 
-    const conversationIds = conversations.map(c => c._id);
+    // Get all conversations the user is a participant in
+    const allMyConversations = await Conversation.find({ participants: currentUserId })
+      .populate('participants', 'blockedUsers');
+
+    // Filter out conversations with blocked users (in either direction)
+    const validConversationIds = allMyConversations
+      .filter(convo => {
+        const otherParticipant = convo.participants.find(p => p._id.toString() !== currentUserId.toString());
+        if (!otherParticipant) return false;
+
+        const iBlockedThem = myBlockedUsersIds.includes(otherParticipant._id.toString());
+        const theyBlockedMe = (otherParticipant.blockedUsers || []).some(blockedId => blockedId.toString() === currentUserId.toString());
+
+        return !iBlockedThem && !theyBlockedMe;
+      })
+      .map(convo => convo._id);
 
     // Count messages in those conversations that are not sent by the user and not read by the user
     const unreadCount = await Message.countDocuments({
-      conversation: { $in: conversationIds },
-      sender: { $ne: req.user.id },
-      readBy: { $ne: req.user.id }
+      conversation: { $in: validConversationIds },
+      sender: { $ne: currentUserId },
+      readBy: { $ne: currentUserId }
     });
 
     res.json({ unreadCount });

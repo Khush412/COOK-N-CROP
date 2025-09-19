@@ -206,26 +206,6 @@ const userSchema = new mongoose.Schema({
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  // Subscription and billing
-  subscription: {
-    plan: {
-      type: String,
-      enum: ['free', 'premium', 'pro'],
-      default: 'free'
-    },
-    startDate: {
-      type: Date,
-      default: null
-    },
-    endDate: {
-      type: Date,
-      default: null
-    },
-    isActive: {
-      type: Boolean,
-      default: false
-    }
-  },
   // Activity tracking
   activity: {
     totalOrders: {
@@ -278,7 +258,7 @@ userSchema.pre('save', async function(next) {
       this.profilePic = this.google.picture;
     } else if (this.github?.avatar_url) {
       this.profilePic = this.github.avatar_url;
-    } else if (this.twitter?.profile_image_url) {
+    } else if (this.twitter && this.twitter.profile_image_url) {
       // Twitter URLs can be low-res, get the original size
       this.profilePic = this.twitter.profile_image_url.replace('_normal', '');
     }

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, Paper, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, TextField, IconButton, CircularProgress, Alert, useTheme, useMediaQuery, Drawer, InputAdornment, alpha, Stack } from '@mui/material';
+import { Box, Paper, List, ListItemButton, ListItemAvatar, Avatar, ListItemText, Typography, TextField, IconButton, CircularProgress, Alert, useTheme, useMediaQuery, InputAdornment, alpha, Stack, Grid } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import MenuIcon from '@mui/icons-material/Menu';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 import ChatIcon from '@mui/icons-material/Chat';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import messagingService from '../services/messagingService';
@@ -24,7 +24,6 @@ const MessengerPage = () => {
   const [loading, setLoading] = useState({ convos: true, messages: false });
   const [error, setError] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [convoSearch, setConvoSearch] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -193,7 +192,7 @@ const MessengerPage = () => {
             return (
               <ListItemButton
                 key={convo._id}
-                onClick={() => { handleSelectConversation(convo); if (isMobile) setMobileOpen(false); }}
+                onClick={() => handleSelectConversation(convo)}
                 selected={selectedConversation?._id === convo._id}
                 sx={{ borderRadius: 2, mb: 0.5 }}
               >
@@ -215,104 +214,109 @@ const MessengerPage = () => {
     </>
   );
 
-  return (
-    <Box sx={{ mt: 8, height: 'calc(100vh - 64px)', display: 'flex' }}>
-      {/* The main container is now a Box that takes the full viewport below the navbar */}
-        <Box sx={{ width: { md: 320, lg: 360 }, height: '100%', display: { xs: 'none', md: 'flex' }, flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
-          {ConversationListContent}
-        </Box>
+  const ChatWindow = (
+    <>
+      <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+        {isMobile && (
+          <IconButton onClick={() => setSelectedConversation(null)} sx={{ mr: 1.5 }}>
+            <ArrowBackIcon />
+          </IconButton>
+        )}
+        <Avatar src={selectedConversation?.participants.find(p => p._id !== user.id)?.profilePic} sx={{ mr: 2 }} />
+        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+          {selectedConversation?.participants.find(p => p._id !== user.id)?.username}
+        </Typography>
+      </Paper>
 
-        {/* Mobile Drawer */}
-        <Drawer open={mobileOpen} onClose={() => setMobileOpen(false)} PaperProps={{ sx: { width: { xs: '80%', sm: 320 } } }}>
-          {ConversationListContent}
-        </Drawer>
-
-        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          {selectedConversation ? (
-            <>
-              <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                {isMobile && (
-                  <IconButton onClick={() => setMobileOpen(true)} sx={{ mr: 1.5 }}>
-                    <MenuIcon />
-                  </IconButton>
-                )}
-                <Avatar src={selectedConversation.participants.find(p => p._id !== user.id)?.profilePic} sx={{ mr: 2 }} />
-                <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{selectedConversation.participants.find(p => p._id !== user.id)?.username}</Typography>
-              </Paper>
-
-              <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: 'background.default' }}>
-                {loading.messages ? <CircularProgress sx={{ display: 'block', m: 'auto' }} /> : (
-                  messages.map((msg, index) => {
-                    const isSender = msg.sender._id === user.id;
-                    const showAvatar = !isSender && (index === 0 || messages[index - 1].sender._id !== msg.sender._id);
-                    return (
-                      <Box
-                        key={msg._id}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: isSender ? 'flex-end' : 'flex-start',
-                          mb: 1,
-                          gap: 1,
-                          alignItems: 'flex-end',
-                        }}
-                      >
-                        {!isSender && (
-                          <Avatar
-                            src={msg.sender.profilePic}
-                            sx={{ width: 32, height: 32, visibility: showAvatar ? 'visible' : 'hidden' }}
-                          />
-                        )}
-                        <Paper
-                          sx={{
-                            p: 1.5,
-                            maxWidth: '70%',
-                            bgcolor: isSender ? 'primary.main' : 'background.paper',
-                            color: isSender ? 'primary.contrastText' : 'text.primary',
-                            opacity: msg.isSending ? 0.6 : 1,
-                            borderRadius: isSender ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                            boxShadow: theme.shadows[1],
-                          }}
-                        >
-                          <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, whiteSpace: 'pre-wrap' }}>{msg.content}</Typography>
-                          <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5, opacity: 0.7, fontFamily: theme.typography.fontFamily }}>
-                            {format(new Date(msg.createdAt), 'p')}
-                          </Typography>
-                        </Paper>
-                      </Box>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
-              </Box>
-
-              <Paper sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-                <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TextField
-                    fullWidth
-                    variant="filled"
-                    size="small"
-                    placeholder="Type a message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    disabled={isSending}
-                    sx={{ '& .MuiFilledInput-root': { borderRadius: '50px', '&:before, &:after': { display: 'none' } }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: 'background.default' }}>
+        {loading.messages ? <CircularProgress sx={{ display: 'block', m: 'auto' }} /> : (
+          messages.map((msg, index) => {
+            const isSender = msg.sender._id === user.id;
+            const showAvatar = !isSender && (index === 0 || messages[index - 1].sender._id !== msg.sender._id);
+            return (
+              <Box
+                key={msg._id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: isSender ? 'flex-end' : 'flex-start',
+                  mb: 1,
+                  gap: 1,
+                  alignItems: 'flex-end',
+                }}
+              >
+                {!isSender && (
+                  <Avatar
+                    src={msg.sender.profilePic}
+                    sx={{ width: 32, height: 32, visibility: showAvatar ? 'visible' : 'hidden' }}
                   />
-                  <IconButton type="submit" color="primary" sx={{ ml: 1 }} disabled={isSending || !newMessage.trim()}>
-                    {isSending ? <CircularProgress size={24} /> : <SendIcon />}
-                  </IconButton>
-                </Box>
-              </Paper>
-            </>
-          ) : (
-            <Box sx={{ m: 'auto', textAlign: 'center', color: 'text.secondary' }}>
-              <Stack alignItems="center" spacing={2}>
-                <ChatIcon sx={{ fontSize: 80, color: 'grey.400' }} />
-                <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily }}>Select a conversation</Typography>
-                <Typography sx={{ fontFamily: theme.typography.fontFamily }}>or start a new one from a user's profile.</Typography>
-              </Stack>
-            </Box>
-          )}
+                )}
+                <Paper
+                  sx={{
+                    p: 1.5,
+                    maxWidth: '70%',
+                    bgcolor: isSender ? 'primary.main' : 'background.paper',
+                    color: isSender ? 'primary.contrastText' : 'text.primary',
+                    opacity: msg.isSending ? 0.6 : 1,
+                    borderRadius: isSender ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                    boxShadow: theme.shadows[1],
+                  }}
+                >
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, whiteSpace: 'pre-wrap' }}>{msg.content}</Typography>
+                  <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5, opacity: 0.7, fontFamily: theme.typography.fontFamily }}>
+                    {format(new Date(msg.createdAt), 'p')}
+                  </Typography>
+                </Paper>
+              </Box>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </Box>
+
+      <Paper sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            fullWidth
+            variant="filled"
+            size="small"
+            placeholder="Type a message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            disabled={isSending}
+            sx={{ '& .MuiFilledInput-root': { borderRadius: '50px', '&:before, &:after': { display: 'none' } }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+          />
+          <IconButton type="submit" color="primary" sx={{ ml: 1 }} disabled={isSending || !newMessage.trim()}>
+            {isSending ? <CircularProgress size={24} /> : <SendIcon />}
+          </IconButton>
         </Box>
+      </Paper>
+    </>
+  );
+
+  return (
+    <Box sx={{ mt: 8, height: 'calc(100vh - 64px)' }}>
+      {isMobile ? (
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {selectedConversation ? ChatWindow : ConversationListContent}
+        </Box>
+      ) : (
+        <Grid container sx={{ height: '100%' }}>
+          <Grid size={{ md: 4, lg: 3 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
+            {ConversationListContent}
+          </Grid>
+          <Grid size={{ md: 8, lg: 9 }} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {selectedConversation ? ChatWindow : (
+              <Box sx={{ m: 'auto', textAlign: 'center', color: 'text.secondary' }}>
+                <Stack alignItems="center" spacing={2}>
+                  <ChatIcon sx={{ fontSize: 80, color: 'grey.400' }} />
+                  <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily }}>Select a conversation</Typography>
+                  <Typography sx={{ fontFamily: theme.typography.fontFamily }}>or start a new one from a user's profile.</Typography>
+                </Stack>
+              </Box>
+            )}
+          </Grid>
+        </Grid>
+      )}
     </Box>
   );
 };

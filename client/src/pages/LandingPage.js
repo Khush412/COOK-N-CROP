@@ -219,7 +219,7 @@ const LandingPage = () => {
               { title: 'Recipe Collection', description: 'Discover thousands of recipes from home cooks and professional chefs.', icon: <MenuBook fontSize="large" />, path: '/recipes' },
               { title: 'Fresh Marketplace', description: 'Shop for the freshest seasonal ingredients delivered to your door.', icon: <Storefront fontSize="large" />, path: '/CropCorner' },
             ].map((step, index) => (
-              <Grid item size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
+              <Grid size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
                 <Paper
                   component={motion.div}
                   whileHover={{ y: -10, boxShadow: theme.shadows[12] }}
@@ -270,7 +270,7 @@ const LandingPage = () => {
           <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mb: 8 }} />
           <Grid container spacing={4}>
             {TESTIMONIALS.map((testimonial, index) => (
-              <Grid item size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
+              <Grid size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
                 <Paper
                   component={motion.div}
                   whileHover={{ y: -8, boxShadow: theme.shadows[10] }}

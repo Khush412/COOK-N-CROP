@@ -195,7 +195,7 @@ const PublicProfilePage = () => {
               {!user.profilePic && user.username.charAt(0).toUpperCase()}
             </Avatar>
           </Grid>
-          <Grid size={{ xs: 12, md: 'grow' }} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+          <Grid size={{ xs: 12, md: true }} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             <Typography variant="h3" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
               {user.username}
             </Typography>

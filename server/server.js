@@ -185,47 +185,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Database test endpoint
-app.get('/api/test-db', async (req, res) => {
-  try {
-    const mongoose = require('mongoose');
-    const User = require('./models/User');
-    
-    // Test database connection
-    const connectionState = mongoose.connection.readyState;
-    const connectionStates = {
-      0: 'disconnected',
-      1: 'connected',
-      2: 'connecting',
-      3: 'disconnecting'
-    };
-    
-    // Count users in database
-    const userCount = await User.countDocuments();
-    
-    res.status(200).json({
-      success: true,
-      message: 'Database test successful',
-      connectionState: connectionStates[connectionState],
-      userCount: userCount,
-      databaseName: mongoose.connection.name,
-      host: mongoose.connection.host
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Database test failed',
-      error: error.message
-    });
-  }
-});
+// --- Production Deployment Setup ---
+// This block MUST come after all API routes.
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '../client/build');
+  
+  // Serve static files from the React app
+  app.use(express.static(clientBuildPath));
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
+  // The "catchall" handler: for any request that doesn't
+  // match one of the API routes above, send back React's index.html file.
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(clientBuildPath, 'index.html'));
   });
+} else {
+  // In development, just show a simple message for the root
+  app.get('/', (req, res) => {
+    res.send('API is running....');
+  });
+}
+
+// Custom 404 handler for any API routes that don't exist
+// This will only be hit if a request starts with /api/ but doesn't match any route
+app.use('/api/*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: `API route not found: ${req.originalUrl}`
+    });
 });
 
 // Global error handler

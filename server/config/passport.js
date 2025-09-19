@@ -24,7 +24,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: `${process.env.SERVER_URL}/api/auth/google/callback`
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -55,7 +55,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
       // Create new user
       const newUser = new User({
-        username: profile.displayName.toLowerCase().replace(/\s+/g, '_') + '_' + profile.id.slice(-4),
+        // Sanitize display name to create a valid username
+        username: (profile.displayName || 'user').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() + '_' + profile.id.slice(-4),
         email: profile.emails[0].value,
         google: {
           id: profile.id,
@@ -81,7 +82,8 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "/api/auth/github/callback"
+    callbackURL: `${process.env.SERVER_URL}/api/auth/github/callback`,
+    scope: ['user:email']
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -95,11 +97,11 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
           username: profile.username,
           email: profile.emails?.[0]?.value || user.email,
           name: profile.displayName || profile.username,
-          avatar_url: profile.photos[0]?.value,
-          bio: profile._json.bio,
-          public_repos: profile._json.public_repos,
-          followers: profile._json.followers,
-          following: profile._json.following
+          avatar_url: profile.photos?.[0]?.value,
+          bio: profile._json?.bio,
+          public_repos: profile._json?.public_repos,
+          followers: profile._json?.followers,
+          following: profile._json?.following
         };
         await user.save();
         await user.updateLastActivity();
@@ -118,11 +120,11 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
             username: profile.username,
             email: email,
             name: profile.displayName || profile.username,
-            avatar_url: profile.photos[0]?.value,
-            bio: profile._json.bio,
-            public_repos: profile._json.public_repos,
-            followers: profile._json.followers,
-            following: profile._json.following
+            avatar_url: profile.photos?.[0]?.value,
+            bio: profile._json?.bio,
+            public_repos: profile._json?.public_repos,
+            followers: profile._json?.followers,
+            following: profile._json?.following
           };
           await user.save();
           await user.updateLastActivity();
@@ -130,22 +132,27 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         }
       }
 
+      // If we are here, it's a new user. We MUST have an email to proceed.
+      if (!email) {
+        return done(new Error('Your GitHub account does not have a public email address. Please add one to sign up.'), false);
+      }
+
       // Create new user
       const newUser = new User({
         username: profile.username + '_' + profile.id.slice(-4),
-        email: email || `${profile.username}@github.local`,
+        email: email,
         github: {
           id: profile.id,
           username: profile.username,
           email: email,
           name: profile.displayName || profile.username,
-          avatar_url: profile.photos[0]?.value,
-          bio: profile._json.bio,
-          public_repos: profile._json.public_repos,
-          followers: profile._json.followers,
-          following: profile._json.following
+          avatar_url: profile.photos?.[0]?.value,
+          bio: profile._json?.bio,
+          public_repos: profile._json?.public_repos,
+          followers: profile._json?.followers,
+          following: profile._json?.following
         },
-        isEmailVerified: !!email,
+        isEmailVerified: true,
         lastLogin: new Date(),
         loginCount: 1
       });
@@ -163,7 +170,8 @@ if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
   passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_CONSUMER_KEY,
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: "/api/auth/twitter/callback"
+    callbackURL: `${process.env.SERVER_URL}/api/auth/twitter/callback`,
+    includeEmail: true
   },
   async (token, tokenSecret, profile, done) => {
     try {
@@ -177,10 +185,10 @@ if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
           username: profile.username,
           name: profile.displayName,
           email: profile.emails?.[0]?.value || user.email,
-          profile_image_url: profile.photos[0]?.value,
-          followers_count: profile._json.followers_count,
-          following_count: profile._json.friends_count,
-          tweet_count: profile._json.statuses_count
+          profile_image_url: profile.photos?.[0]?.value,
+          followers_count: profile._json?.followers_count,
+          following_count: profile._json?.friends_count,
+          tweet_count: profile._json?.statuses_count
         };
         await user.save();
         await user.updateLastActivity();
@@ -199,10 +207,10 @@ if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
             username: profile.username,
             name: profile.displayName,
             email: email,
-            profile_image_url: profile.photos[0]?.value,
-            followers_count: profile._json.followers_count,
-            following_count: profile._json.friends_count,
-            tweet_count: profile._json.statuses_count
+            profile_image_url: profile.photos?.[0]?.value,
+            followers_count: profile._json?.followers_count,
+            following_count: profile._json?.friends_count,
+            tweet_count: profile._json?.statuses_count
           };
           await user.save();
           await user.updateLastActivity();
@@ -210,21 +218,26 @@ if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
         }
       }
 
+      // If we are here, it's a new user. We MUST have an email to proceed.
+      if (!email) {
+        return done(new Error('Your Twitter account does not have an email address associated with it. Please add one to sign up.'), false);
+      }
+
       // Create new user
       const newUser = new User({
         username: profile.username + '_' + profile.id.slice(-4),
-        email: email || `${profile.username}@twitter.local`,
+        email: email,
         twitter: {
           id: profile.id,
           username: profile.username,
           name: profile.displayName,
           email: email,
-          profile_image_url: profile.photos[0]?.value,
-          followers_count: profile._json.followers_count,
-          following_count: profile._json.friends_count,
-          tweet_count: profile._json.statuses_count
+          profile_image_url: profile.photos?.[0]?.value,
+          followers_count: profile._json?.followers_count,
+          following_count: profile._json?.friends_count,
+          tweet_count: profile._json?.statuses_count
         },
-        isEmailVerified: !!email,
+        isEmailVerified: true,
         lastLogin: new Date(),
         loginCount: 1
       });

@@ -231,15 +231,15 @@ const ManageSupport = () => {
           {selectedMessage && (
             <Stack spacing={3}>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>From</Typography>
                   <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{selectedMessage.name} ({selectedMessage.email})</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Date</Typography>
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(selectedMessage.createdAt), "PPpp")}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subject</Typography>
                   <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>{selectedMessage.subject}</Typography>
                 </Grid>
