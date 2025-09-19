@@ -255,7 +255,7 @@ const LandingPage = () => {
         sx={{
           py: { xs: 10, md: 16 },
           position: 'relative',
-          backgroundImage: `url(${process.env.PUBLIC_URL}/images/parallax.png)`,
+          backgroundImage: `url(${process.env.PUBLIC_URL}/images/parallax.jpg)`,
           backgroundAttachment: 'fixed',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
