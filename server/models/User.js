@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: function() {
-      return !this.google && !this.github && !this.twitter;
+      return !this.google && !this.github && !this.linkedin;
     },
     minlength: [6, 'Password must be at least 6 characters long']
   },
@@ -125,12 +125,8 @@ const userSchema = new mongoose.Schema({
       default: 0
     }
   },
-  twitter: {
+  linkedin: {
     id: {
-      type: String,
-      default: null
-    },
-    username: {
       type: String,
       default: null
     },
@@ -145,18 +141,6 @@ const userSchema = new mongoose.Schema({
     profile_image_url: {
       type: String,
       default: null
-    },
-    followers_count: {
-      type: Number,
-      default: 0
-    },
-    following_count: {
-      type: Number,
-      default: 0
-    },
-    tweet_count: {
-      type: Number,
-      default: 0
     }
   },
   // User preferences
@@ -230,13 +214,13 @@ const userSchema = new mongoose.Schema({
 // Indexes for better performance (excluding email and username because unique is inline)
 userSchema.index({ 'google.id': 1 });
 userSchema.index({ 'github.id': 1 });
-userSchema.index({ 'twitter.id': 1 });
+userSchema.index({ 'linkedin.id': 1 });
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {
   if (this.google && this.google.name) return this.google.name;
   if (this.github && this.github.name) return this.github.name;
-  if (this.twitter && this.twitter.name) return this.twitter.name;
+  if (this.linkedin && this.linkedin.name) return this.linkedin.name;
   return this.username;
 });
 
@@ -245,7 +229,7 @@ userSchema.virtual('profilePicture').get(function() {
   if (this.profilePic) return this.profilePic;
   if (this.google && this.google.picture) return this.google.picture;
   if (this.github && this.github.avatar_url) return this.github.avatar_url;
-  if (this.twitter && this.twitter.profile_image_url) return this.twitter.profile_image_url;
+  if (this.linkedin && this.linkedin.profile_image_url) return this.linkedin.profile_image_url;
   return null;
 });
 
@@ -258,9 +242,8 @@ userSchema.pre('save', async function(next) {
       this.profilePic = this.google.picture;
     } else if (this.github?.avatar_url) {
       this.profilePic = this.github.avatar_url;
-    } else if (this.twitter && this.twitter.profile_image_url) {
-      // Twitter URLs can be low-res, get the original size
-      this.profilePic = this.twitter.profile_image_url.replace('_normal', '');
+    } else if (this.linkedin && this.linkedin.profile_image_url) {
+      this.profilePic = this.linkedin.profile_image_url;
     }
   }
 
@@ -292,7 +275,7 @@ userSchema.methods.getClientUserObject = function() {
     role: this.role,
     google: this.google,
     github: this.github,
-    twitter: this.twitter,
+    linkedin: this.linkedin,
     preferences: this.preferences,
     savedPosts: this.savedPosts,
     wishlist: this.wishlist,

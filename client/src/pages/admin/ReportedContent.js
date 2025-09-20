@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, CircularProgress, Alert, Button, Divider, Chip, Paper, Container, Stack, IconButton, Tooltip,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import adminService from '../../services/adminService';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -67,6 +69,8 @@ const ReportedContent = () => {
   const [reportedComments, setReportedComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -88,26 +92,35 @@ const ReportedContent = () => {
     fetchData();
   }, []);
 
-  const handleDeletePost = async (postId) => {
-    if (window.confirm('This will delete the post. Are you sure?')) {
-      try {
-        await adminService.deletePost(postId);
-        fetchData(); // Refresh data
-      } catch (err) {
-        setError('Failed to delete post.');
+  const openConfirmDialog = (type, payload, title, message) => {
+    setConfirmAction({ type, payload, title, message });
+    setConfirmDialogOpen(true);
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    const { type, payload } = confirmAction;
+    try {
+      if (type === 'deletePost') {
+        await adminService.deletePost(payload);
+      } else if (type === 'deleteComment') {
+        await adminService.deleteComment(payload);
       }
+      fetchData(); // Refresh data
+    } catch (err) {
+      setError('Failed to delete content.');
+    } finally {
+      setConfirmDialogOpen(false);
+      setConfirmAction(null);
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (window.confirm('This will delete the comment. Are you sure?')) {
-      try {
-        await adminService.deleteComment(commentId);
-        fetchData(); // Refresh data
-      } catch (err) {
-        setError('Failed to delete comment.');
-      }
-    }
+  const handleDeletePost = (postId) => {
+    openConfirmDialog('deletePost', postId, 'Confirm Post Deletion', 'Are you sure you want to permanently delete this post and all its comments?');
+  };
+
+  const handleDeleteComment = (commentId) => {
+    openConfirmDialog('deleteComment', commentId, 'Confirm Comment Deletion', 'Are you sure you want to permanently delete this comment and all its replies?');
   };
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
@@ -148,6 +161,25 @@ const ReportedContent = () => {
           </Box>
         )}
       </Paper>
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+          <WarningAmberIcon color="warning" />
+          {confirmAction?.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            {confirmAction?.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+            Cancel
+          </Button>
+          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+            Confirm Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

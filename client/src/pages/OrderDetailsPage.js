@@ -279,7 +279,7 @@ const OrderDetailsPage = () => {
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.street}</Typography>
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</Typography>
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.country}</Typography>
-                  {order.shippingAddress.phone && <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}><strong>Phone:</strong> {order.shippingAddress.phone}</Typography>}
+                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}><strong>Phone:</strong> {order.shippingAddress.phone}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>

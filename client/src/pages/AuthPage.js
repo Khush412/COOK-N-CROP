@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as C from "./AuthStyles";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaTwitter } from "react-icons/fa";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import {
   Box,
   Typography,
@@ -123,8 +123,8 @@ export default function AuthPage() {
     window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/github`;
   };
 
-  const handleTwitterSignIn = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/twitter`;
+  const handleLinkedInSignIn = () => {
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/linkedin`;
   };
 
   // Prevent closing the popup by clicking outside or pressing ESC
@@ -133,6 +133,7 @@ export default function AuthPage() {
       return;
     }
     setShowAccountNotFoundPopup(false);
+    setShowIncorrectPasswordPopup(false);
   };
 
   const handleCloseAccountNotFoundPopup = () => {
@@ -210,8 +211,8 @@ export default function AuthPage() {
                 <IconButton onClick={handleGitHubSignIn} aria-label="Sign up with GitHub">
                   <FaGithub size={32} color="#333" />
                 </IconButton>
-                <IconButton onClick={handleTwitterSignIn} aria-label="Sign up with Twitter">
-                  <FaTwitter size={32} color="#1DA1F2" />
+                <IconButton onClick={handleLinkedInSignIn} aria-label="Sign up with LinkedIn">
+                  <FaLinkedin size={32} color="#0A66C2" />
                 </IconButton>
               </Box>
             </Box>
@@ -266,8 +267,8 @@ export default function AuthPage() {
                 <IconButton onClick={handleGitHubSignIn} aria-label="Sign in with GitHub">
                   <FaGithub size={32} color="#333" />
                 </IconButton>
-                <IconButton onClick={handleTwitterSignIn} aria-label="Sign in with Twitter">
-                  <FaTwitter size={32} color="#1DA1F2" />
+                <IconButton onClick={handleLinkedInSignIn} aria-label="Sign in with LinkedIn">
+                  <FaLinkedin size={32} color="#0A66C2" />
                 </IconButton>
               </Box>
             </Box>
@@ -419,10 +420,7 @@ export default function AuthPage() {
 
         <Dialog
           open={showIncorrectPasswordPopup}
-          onClose={(e, r) => {
-            if (r === 'backdropClick' || r === 'escapeKeyDown') return;
-            handleCloseIncorrectPasswordPopup();
-          }}
+          onClose={handleDialogClose}
           maxWidth="xs"
           fullWidth
           disableEscapeKeyDown

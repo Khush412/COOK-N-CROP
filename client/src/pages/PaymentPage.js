@@ -116,7 +116,7 @@ const PaymentPage = () => {
               <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{shippingAddress.fullName}</Typography>
               <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{shippingAddress.street}, {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</Typography>
               <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{shippingAddress.country}</Typography>
-              {shippingAddress.phone && <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Phone: {shippingAddress.phone}</Typography>}
+              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Phone: {shippingAddress.phone}</Typography>
             </Box>
             <Button component={RouterLink} to="/cart" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Change Address</Button>
           </Paper>

@@ -276,11 +276,6 @@ export default function Navbar() {
     handleCloseUserMenu();
     navigate("/profile");
   };
-// eslint-disable-next-line
-  const handleAddresses = () => {
-    handleCloseUserMenu();
-    navigate("/profile/addresses");
-  };
 
   const isActive = (path) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
@@ -678,6 +673,19 @@ export default function Navbar() {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
+                      navigate("/profile/addresses");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <HomeIcon fontSize="small" />
+                    </ListItemIcon>
+                    Saved Addresses
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
                       navigate("/feed");
                     }}
                     sx={{ borderRadius: 2, px: 3 }}
@@ -782,20 +790,6 @@ export default function Navbar() {
                     </ListItemIcon>
                     My Support Tickets
                   </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseUserMenu();
-                      setThemeDialogOpen(true);
-                    }}
-                    sx={{ borderRadius: 2, px: 3 }}
-                  >
-                    <ListItemIcon>
-                      <PaletteIcon fontSize="small" />
-                    </ListItemIcon>
-                    Customize Theme
-                  </MenuItem>
-
                   <MenuItem
                     onClick={handleToggleChatbot}
                     sx={{ borderRadius: 2, px: 3 }}
@@ -803,7 +797,10 @@ export default function Navbar() {
                     <ListItemIcon>
                       <SmartToyIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary="Show Chatbot" />
+                    <ListItemText
+                      primary="Show Chatbot"
+                      primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}
+                    />
                     <Switch
                       checked={showChatbot}
                       edge="end"

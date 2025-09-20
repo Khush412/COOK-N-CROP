@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   Grid,
   Stack,
@@ -241,15 +242,15 @@ const AddressManagementPage = () => {
         onClose={() => setDeleteConfirmOpen(false)}
         aria-labelledby="alert-dialog-title"
       >
-        <DialogTitle id="alert-dialog-title">{"Confirm Deletion"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>{"Confirm Deletion"}</DialogTitle>
         <DialogContent>
-          <Typography>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
             Are you sure you want to delete this address?
-          </Typography>
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteAddress} color="error" autoFocus>
+          <Button onClick={() => setDeleteConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={handleDeleteAddress} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
             Delete
           </Button>
         </DialogActions>

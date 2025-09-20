@@ -36,7 +36,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import TwitterIcon from "@mui/icons-material/Twitter";
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -47,7 +47,7 @@ import { useAuth } from "../contexts/AuthContext";
 const SOCIALS = [
   { name: "Google", key: "google", icon: GoogleIcon, color: "#DB4437" },
   { name: "GitHub", key: "github", icon: GitHubIcon, color: "#24292f" },
-  { name: "Twitter", key: "twitter", icon: TwitterIcon, color: "#1DA1F2" },
+  { name: "LinkedIn", key: "linkedin", icon: LinkedInIcon, color: "#0A66C2" },
 ];
 
 const ProfileEditModal = ({ open, onClose, user, onSave }) => {
@@ -151,6 +151,8 @@ const Profile = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [unlinkConfirmOpen, setUnlinkConfirmOpen] = useState(false);
+  const [socialToUnlink, setSocialToUnlink] = useState(null);
 
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
@@ -175,20 +177,28 @@ const Profile = () => {
     setFeedback({ success: "Profile updated successfully.", error: "" });
   };
 
-  const unlinkSocial = async (key) => {
-    if (!window.confirm(`Are you sure you want to unlink your ${key.charAt(0).toUpperCase() + key.slice(1)} account? If you don't have a password set, you may be locked out.`)) return;
+  const handleUnlinkSocial = (key) => {
+    setSocialToUnlink(key);
+    setUnlinkConfirmOpen(true);
+  };
+
+  const confirmUnlinkSocial = async () => {
+    if (!socialToUnlink) return;
     try {
-      await api.delete(`/users/me/social/unlink/${key}`);
+      await api.delete(`/users/me/social/unlink/${socialToUnlink}`);
       await loadUser(); // Reload user context to reflect changes
-      setFeedback({ error: "", success: `${key.charAt(0).toUpperCase() + key.slice(1)} account unlinked successfully.` });
+      setFeedback({ error: "", success: `${socialToUnlink.charAt(0).toUpperCase() + socialToUnlink.slice(1)} account unlinked successfully.` });
     } catch (err) {
-      setFeedback({ error: `Failed to unlink ${key}.`, success: "" });
+      setFeedback({ error: `Failed to unlink ${socialToUnlink}.`, success: "" });
+    } finally {
+      setUnlinkConfirmOpen(false);
+      setSocialToUnlink(null);
     }
   };
 
   const linkSocial = (key) => {
     // Redirect to the backend OAuth endpoint to start the linking process
-    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/${key}`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/${key}`;
   };
 
   const handlePasswordChange = (e) => {
@@ -383,9 +393,13 @@ const Profile = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h5" fontWeight={700} mb={3} sx={{ fontFamily: theme.typography.fontFamily }}>Change Password</Typography>
-              <Fade in={!!passwordFeedback.error}><Alert variant="filled" severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{passwordFeedback.error}</Alert></Fade>
-              <Fade in={!!passwordFeedback.success}><Alert variant="filled" severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{passwordFeedback.success}</Alert></Fade>
+              <Typography variant="h5" fontWeight={700} sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>Change Password</Typography>
+              {passwordFeedback.error && (
+                <Fade in={true}><Alert variant="filled" severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{passwordFeedback.error}</Alert></Fade>
+              )}
+              {passwordFeedback.success && (
+                <Fade in={true}><Alert variant="filled" severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }} onClose={() => setPasswordFeedback({ ...passwordFeedback, success: '' })}>{passwordFeedback.success}</Alert></Fade>
+              )}
               <Box component="form" onSubmit={savePassword}>
                 <Stack spacing={2}>
                   <TextField type="password" label="Current Password" name="currentPassword" variant="filled" fullWidth required value={passwordForm.currentPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
@@ -419,7 +433,7 @@ const Profile = () => {
                       <Icon sx={{ color, mr: 2, fontSize: 28 }} />
                       <Typography variant="subtitle1" fontWeight="bold" flexGrow={1} sx={{ fontFamily: theme.typography.fontFamily }}>{name}</Typography>
                       {linked ? (
-                        <Button variant="outlined" color="error" size="small" onClick={() => unlinkSocial(key)} sx={{ fontFamily: theme.typography.fontFamily }}>Unlink</Button>
+                        <Button variant="outlined" color="error" size="small" onClick={() => handleUnlinkSocial(key)} sx={{ fontFamily: theme.typography.fontFamily }}>Unlink</Button>
                       ) : (
                         <Button variant="contained" size="small" onClick={() => linkSocial(key)} sx={{ fontFamily: theme.typography.fontFamily }}>Link Account</Button>
                       )}
@@ -477,6 +491,22 @@ const Profile = () => {
           onSave={handleProfileSave}
         />
       </Container>
+
+      {/* Unlink Social Confirmation Dialog */}
+      <Dialog open={unlinkConfirmOpen} onClose={() => setUnlinkConfirmOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+          Unlink {socialToUnlink?.charAt(0).toUpperCase() + socialToUnlink?.slice(1)} Account?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            Are you sure? If you don't have a password set for your Cook'N'Crop account, you might be locked out.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUnlinkConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={confirmUnlinkSocial} color="error" variant="contained" sx={{ fontFamily: theme.typography.fontFamily }}>Unlink</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

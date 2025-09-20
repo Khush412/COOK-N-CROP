@@ -79,8 +79,8 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       // Allow images from self (our server) and data URIs.
-      // Also allow images from Google, GitHub, and Twitter for OAuth avatars.
-      imgSrc: ["'self'", "data:", "https://lh3.googleusercontent.com", "https://avatars.githubusercontent.com", "https://pbs.twimg.com"],
+      // Also allow images from Google, GitHub, and LinkedIn for OAuth avatars.
+      imgSrc: ["'self'", "data:", "https://lh3.googleusercontent.com", "https://avatars.githubusercontent.com", "https://media.licdn.com"],
       scriptSrc: ["'self'"],
       connectSrc: ["'self'", "ws:", "wss:"] // Allow websockets for real-time features
     }

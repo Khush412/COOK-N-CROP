@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Box, Container, Typography, Grid, Paper, Avatar, Divider, alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { motion, useInView } from 'framer-motion';
 
 // Icons
 import {
@@ -14,49 +13,6 @@ import {
     ShoppingCartCheckout,
     Duo,
 } from '@mui/icons-material';
-
-// Reusable animation variants for staggering children
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.2,
-            delayChildren: 0.1,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-        y: 0,
-        opacity: 1,
-        transition: {
-            duration: 0.6,
-            ease: 'easeOut',
-        },
-    },
-};
-
-// Component to handle the viewport-triggered animation for a container
-const AnimatedContainer = ({ children, sx = {} }) => {
-    const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, amount: 0.2 });
-
-    return (
-        <Box
-            ref={ref}
-            component={motion.div}
-            variants={containerVariants}
-            initial="hidden"
-            animate={isInView ? 'visible' : 'hidden'}
-            sx={sx}
-        >
-            {children}
-        </Box>
-    );
-};
 
 const AboutPage = () => {
     const theme = useTheme();
@@ -108,7 +64,7 @@ const AboutPage = () => {
             {/* Hero Section */}
             <Box sx={{
                 pt: { xs: 12, md: 16 },
-                pb: { xs: 8, md: 12 },
+                pb: { xs: 2, md: 3 },                
                 bgcolor: 'background.paper',
                 position: 'relative',
                 overflow: 'hidden',
@@ -126,7 +82,7 @@ const AboutPage = () => {
                 }
             }}>
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                    <AnimatedContainer>
+                    <Box>
                         <Paper
                             elevation={4}
                             sx={{
@@ -138,29 +94,29 @@ const AboutPage = () => {
                                 border: `1px solid ${theme.palette.divider}`,
                             }}
                         >
-                            <motion.div variants={itemVariants}>
+                            <Box>
                                 <Typography variant="h2" component="h1" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
                                     Our Journey, Your Kitchen
                                 </Typography>
-                            </motion.div>
-                            <motion.div variants={itemVariants}>
+                            </Box>
+                            <Box>
                                 <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '750px', mx: 'auto', fontFamily: theme.typography.fontFamily }}>
                                     Discover the story behind Cook'N'Crop and our passion for bringing people together through food.
                                 </Typography>
-                            </motion.div>
-                            <motion.div variants={itemVariants}>
+                            </Box>
+                            <Box>
                                 <Divider sx={{ width: '100px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mt: 4 }} />
-                            </motion.div>
+                            </Box>
                         </Paper>
-                    </AnimatedContainer>
+                    </Box>
                 </Container>
             </Box>
 
             {/* Our Story Section */}
             <Container maxWidth="lg" sx={{ py: { xs: 10, md: 16 } }}>
-                <AnimatedContainer>
+                <Box>
                     <Grid container spacing={{ xs: 4, md: 8 }} alignItems="stretch">
-                        <Grid size={{ xs: 12, md: 6 }} component={motion.div} variants={itemVariants}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <Typography variant="h3" component="h2" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
                                 Our Story
                             </Typography>
@@ -171,7 +127,7 @@ const AboutPage = () => {
                                 Today, we are a bustling digital farmers' market and a global kitchen, a community bound by the love for fresh, authentic food.
                             </Typography>
                         </Grid>
-                        <Grid size={{ xs: 12, md: 6 }} component={motion.div} variants={itemVariants}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <Box
                                 component="img"
                                 src={`${process.env.PUBLIC_URL}/images/about-story.jpg`} // Placeholder image
@@ -191,21 +147,19 @@ const AboutPage = () => {
                             />
                         </Grid>
                     </Grid>
-                </AnimatedContainer>
+                </Box>
             </Container>
 
             {/* What We Offer Section */}
             <Box sx={{ bgcolor: 'background.paper', py: { xs: 10, md: 14 } }}>
                 <Container maxWidth="lg">
-                    <AnimatedContainer>
-                        <motion.div variants={itemVariants}>
-                            <Typography variant="h3" component="h2" textAlign="center" sx={{ fontWeight: 700, mb: 8, fontFamily: theme.typography.fontFamily }}>
-                                What We Offer
-                            </Typography>
-                        </motion.div>
+                    <Box>
+                        <Typography variant="h3" component="h2" textAlign="center" sx={{ fontWeight: 700, mb: 8, fontFamily: theme.typography.fontFamily }}>
+                            What We Offer
+                        </Typography>
                         <Grid container spacing={4} alignItems="stretch">
                             {offers.map((offer, index) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} component={motion.div} variants={itemVariants} sx={{ display: 'flex' }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
                                     <Paper
                                         variant="outlined"
                                         sx={{
@@ -255,14 +209,13 @@ const AboutPage = () => {
                                 </Grid>
                             ))}
                         </Grid>
-                    </AnimatedContainer>
+                    </Box>
                 </Container>
             </Box>
 
             {/* Our Mission & Vision Section */}
             <Container maxWidth="md" sx={{ py: { xs: 10, md: 16 }, textAlign: 'center' }}>
-                <AnimatedContainer>
-                    <motion.div variants={itemVariants}>
+                <Box>
                         <Paper
                             elevation={0}
                             sx={{
@@ -287,8 +240,7 @@ const AboutPage = () => {
                                 "A world where food is not just fuel, but a shared experience of joy."
                             </Typography>
                         </Paper>
-                    </motion.div>
-                </AnimatedContainer>
+                </Box>
             </Container>
         </Box>
     );

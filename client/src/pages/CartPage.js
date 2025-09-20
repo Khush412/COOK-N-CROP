@@ -305,6 +305,7 @@ const CartPage = () => {
                                     <Box>
                                       <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.street}, {addr.city}</Typography>
                                       <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{addr.state}, {addr.zipCode}, {addr.country}</Typography>
+                                      {addr.phone && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Phone: {addr.phone}</Typography>}
                                       {addr.label && <Chip label={addr.label} size="small" sx={{ mt: 0.5 }} />}
                                     </Box>
                                   </Paper>

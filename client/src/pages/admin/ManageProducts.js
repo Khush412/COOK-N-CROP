@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,TextField,Avatar,
+  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -8,6 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
@@ -29,6 +31,8 @@ const ManageProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,6 +74,28 @@ const ManageProducts = () => {
     setEditingProduct(null);
   };
 
+  const openConfirmDialog = (type, payload, title, message) => {
+    setConfirmAction({ type, payload, title, message });
+    setConfirmDialogOpen(true);
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    const { type, payload } = confirmAction;
+    try {
+      if (type === 'deleteProduct') {
+        await productService.deleteProduct(payload);
+      } else if (type === 'deleteSelected') {
+        await adminService.deleteMultipleProducts(selectedProducts);
+      }
+      fetchProducts();
+    } catch (err) {
+      alert(`Action failed: ${err.response?.data?.message || err.message}`);
+    }
+    setConfirmDialogOpen(false);
+    setConfirmAction(null);
+  };
+
   const handleSaveProduct = async (productData, productId, setErrorCallback) => {
     setFormLoading(true);
     try {
@@ -88,16 +114,8 @@ const ManageProducts = () => {
     }
   };
 
-  const handleDeleteProduct = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productService.deleteProduct(productId);
-        fetchProducts(); // Refresh the list
-      } catch (err) {
-        console.error('Failed to delete product:', err);
-        alert('Failed to delete product.');
-      }
-    }
+  const handleDeleteProduct = (productId) => {
+    openConfirmDialog('deleteProduct', productId, 'Confirm Product Deletion', 'Are you sure you want to delete this product? This action cannot be undone.');
   };
 
   const handleFeatureToggle = async (productId) => {
@@ -110,16 +128,8 @@ const ManageProducts = () => {
     }
   };
 
-  const handleDeleteSelected = async () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedProducts.length} selected products?`)) {
-      try {
-        await adminService.deleteMultipleProducts(selectedProducts);
-        fetchProducts(); // Refresh the list
-      } catch (err) {
-        console.error('Failed to delete selected products:', err);
-        alert('Failed to delete selected products.');
-      }
-    }
+  const handleDeleteSelected = () => {
+    openConfirmDialog('deleteSelected', null, 'Confirm Bulk Deletion', `Are you sure you want to delete ${selectedProducts.length} selected products?`);
   };
 
   const handleSelectAllClick = (event) => {
@@ -280,6 +290,25 @@ const ManageProducts = () => {
         product={editingProduct}
         loading={formLoading}
       />
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+          <WarningAmberIcon color="warning" />
+          {confirmAction?.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            {confirmAction?.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+            Cancel
+          </Button>
+          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
+  DialogContentText,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Container, Stack, Grid,
   DialogContent, DialogActions, TextField, MenuItem, Chip,
 } from '@mui/material';
@@ -10,6 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DiscountIcon from '@mui/icons-material/Discount';
 import couponService from '../../services/couponService';
 import { Link as RouterLink } from 'react-router-dom';
@@ -108,6 +110,8 @@ const ManageCoupons = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -148,6 +152,26 @@ const ManageCoupons = () => {
     setEditingCoupon(null);
   };
 
+  const openConfirmDialog = (type, payload, title, message) => {
+    setConfirmAction({ type, payload, title, message });
+    setConfirmDialogOpen(true);
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    const { type, payload } = confirmAction;
+    try {
+      if (type === 'deleteCoupon') {
+        await couponService.deleteCoupon(payload);
+        fetchCoupons();
+      }
+    } catch (err) {
+      alert(`Action failed: ${err.response?.data?.message || err.message}`);
+    }
+    setConfirmDialogOpen(false);
+    setConfirmAction(null);
+  };
+
   const handleSaveCoupon = async (couponData, couponId) => {
     setFormLoading(true);
     try {
@@ -165,15 +189,8 @@ const ManageCoupons = () => {
     }
   };
 
-  const handleDeleteCoupon = async (couponId) => {
-    if (window.confirm('Are you sure you want to delete this coupon?')) {
-      try {
-        await couponService.deleteCoupon(couponId);
-        fetchCoupons();
-      } catch (err) {
-        alert('Failed to delete coupon.');
-      }
-    }
+  const handleDeleteCoupon = (couponId) => {
+    openConfirmDialog('deleteCoupon', couponId, 'Confirm Coupon Deletion', 'Are you sure you want to delete this coupon?');
   };
 
   return (
@@ -280,6 +297,25 @@ const ManageCoupons = () => {
         coupon={editingCoupon}
         loading={formLoading}
       />
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+          <WarningAmberIcon color="warning" />
+          {confirmAction?.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            {confirmAction?.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+            Cancel
+          </Button>
+          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

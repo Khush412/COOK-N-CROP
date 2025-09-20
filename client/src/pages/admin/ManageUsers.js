@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,6 +11,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DownloadIcon from '@mui/icons-material/Download';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import adminService from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,6 +29,8 @@ const ManageUsers = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [exporting, setExporting] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // { type, payload, title, message }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -66,37 +69,51 @@ const ManageUsers = () => {
     setEditingUserId(null);
   };
 
+  const openConfirmDialog = (type, payload, title, message) => {
+    setConfirmAction({ type, payload, title, message });
+    setConfirmDialogOpen(true);
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
+    const { type, payload } = confirmAction;
+    try {
+      if (type === 'deleteUser') {
+        await adminService.deleteUser(payload);
+        fetchUsers();
+      } else if (type === 'toggleStatus') {
+        await adminService.toggleUserStatus(payload.userId);
+        setUsers(users.map(u => u._id === payload.userId ? { ...u, isActive: !payload.currentStatus } : u));
+      } else if (type === 'bulkStatusUpdate') {
+        await adminService.updateMultipleUserStatuses(selectedUsers, payload);
+        fetchUsers();
+        setSelectedUsers([]);
+      }
+    } catch (err) {
+      alert(`Action failed: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setConfirmDialogOpen(false);
+      setConfirmAction(null);
+    }
+  };
+
   const handleSaveClick = async (userId) => {
     try {
       await adminService.updateUserRole(userId, selectedRole);
       setUsers(users.map(u => u._id === userId ? { ...u, role: selectedRole } : u));
       setEditingUserId(null);
     } catch (err) {
-      alert('Failed to update role.');
+      alert('Failed to update role.'); // Simple alert for now
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
-      try {
-        await adminService.deleteUser(userId);
-        fetchUsers();
-      } catch (err) {
-        alert('Failed to delete user.');
-      }
-    }
+  const handleDeleteUser = (userId) => {
+    openConfirmDialog('deleteUser', userId, 'Confirm User Deletion', 'Are you sure you want to permanently delete this user? This action cannot be undone.');
   };
 
-  const handleToggleStatus = async (userId, currentStatus) => {
+  const handleToggleStatus = (userId, currentStatus) => {
     const action = currentStatus ? 'deactivate' : 'activate';
-    if (window.confirm(`Are you sure you want to ${action} this user?`)) {
-      try {
-        await adminService.toggleUserStatus(userId);
-        setUsers(users.map(u => u._id === userId ? { ...u, isActive: !currentStatus } : u));
-      } catch (err) {
-        alert(`Failed to ${action} user.`);
-      }
-    }
+    openConfirmDialog('toggleStatus', { userId, currentStatus }, `Confirm User ${action.charAt(0).toUpperCase() + action.slice(1)}`, `Are you sure you want to ${action} this user?`);
   };
 
   const handleExport = async () => {
@@ -146,17 +163,9 @@ const ManageUsers = () => {
     setSelectedUsers(newSelected);
   };
 
-  const handleBulkStatusUpdate = async (isActive) => {
+  const handleBulkStatusUpdate = (isActive) => {
     const action = isActive ? 'activate' : 'deactivate';
-    if (window.confirm(`Are you sure you want to ${action} ${selectedUsers.length} selected users?`)) {
-      try {
-        await adminService.updateMultipleUserStatuses(selectedUsers, isActive);
-        fetchUsers();
-        setSelectedUsers([]);
-      } catch (err) {
-        alert(`Failed to ${action} selected users.`);
-      }
-    }
+    openConfirmDialog('bulkStatusUpdate', isActive, `Confirm Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}`, `Are you sure you want to ${action} ${selectedUsers.length} selected users?`);
   };
 
   const isSelected = (id) => selectedUsers.indexOf(id) !== -1;
@@ -270,10 +279,10 @@ const ManageUsers = () => {
                           ) : (
                             <>
                               <Tooltip title="View Addresses">
-                                <IconButton component={RouterLink} to={`/admin/users/${user._id}/addresses`} onClick={(e) => e.stopPropagation()}><LocationOnIcon /></IconButton>
+                                <IconButton component={RouterLink} to={`/admin/users/${user._id}/addresses`} onClick={(e) => e.stopPropagation()}><LocationOnIcon fontSize="small" /></IconButton>
                               </Tooltip>
                               <Tooltip title="Edit Role">
-                                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(user); }} disabled={user._id === currentUser.id}><EditIcon /></IconButton>
+                                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(user); }} disabled={user._id === currentUser.id}><EditIcon fontSize="small" /></IconButton>
                               </Tooltip>
                               <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
                                 <span>
@@ -284,7 +293,7 @@ const ManageUsers = () => {
                               </Tooltip>
                               <Tooltip title="Permanently Delete User">
                                 <span>
-                                  <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon /></IconButton>
+                                  <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon fontSize="small" /></IconButton>
                                 </span>
                               </Tooltip>
                             </>
@@ -318,6 +327,25 @@ const ManageUsers = () => {
           </Box>
         )}
       </Paper>
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+          <WarningAmberIcon color="warning" />
+          {confirmAction?.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            {confirmAction?.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+            Cancel
+          </Button>
+          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -78,7 +78,7 @@ const AddressForm = ({ address: initialAddress, onSubmit, onCancel }) => {
                     <TextField label="Country" name="country" value={address.country} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
                 </Grid>
                 <Grid item size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Phone Number (Optional)" name="phone" value={address.phone} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                    <TextField label="Phone Number" name="phone" value={address.phone} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
                 </Grid>
                 <Grid item size={{ xs: 12, sm: 6 }}>
                     <TextField label="Label (e.g., Home, Work)" name="label" value={address.label} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />

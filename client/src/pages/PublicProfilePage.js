@@ -15,6 +15,11 @@ import {
   Stack,
   Grid,
   Link,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -96,6 +101,7 @@ const PublicProfilePage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
 
   const fetchProfile = useCallback(async () => {
       setLoading(true);
@@ -146,13 +152,16 @@ const PublicProfilePage = () => {
       navigate(`/login?redirect=/user/${username}`);
       return;
     }
-    if (window.confirm(`Are you sure you want to block ${profileData.user.username}? You will no longer see their content or be able to message them.`)) {
-      try {
-        await userService.blockUser(profileData.user._id);
-        navigate('/community'); // Redirect away from the profile after blocking
-      } catch (err) {
-        alert('Failed to block user.');
-      }
+    setBlockConfirmOpen(true);
+  };
+
+  const confirmBlockUser = async () => {
+    setBlockConfirmOpen(false);
+    try {
+      await userService.blockUser(profileData.user._id);
+      navigate('/community'); // Redirect away from the profile after blocking
+    } catch (err) {
+      alert('Failed to block user.');
     }
   };
 
@@ -302,6 +311,20 @@ const PublicProfilePage = () => {
           </Box>
         )}
       </Paper>
+      <Dialog open={blockConfirmOpen} onClose={() => setBlockConfirmOpen(false)}>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>Block {profileData?.user?.username}?</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            Are you sure you want to block this user? You will no longer see their content or be able to message them.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBlockConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={confirmBlockUser} color="error" variant="contained" sx={{ fontFamily: theme.typography.fontFamily }}>
+            Block User
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

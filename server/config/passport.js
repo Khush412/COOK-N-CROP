@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
-const TwitterStrategy = require('passport-twitter').Strategy;
+const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const User = require('../models/User');
 
 // Serialize user for session
@@ -32,7 +32,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       let user = await User.findOne({ 'google.id': profile.id });
       
       if (user) {
-        // Update last login
+        // Update last login and Google info
+        user.google.name = profile.displayName;
+        user.google.picture = profile.photos[0]?.value;
+        if (!user.profilePic) { // If user has no custom pic, update from social
+          user.profilePic = profile.photos[0]?.value;
+        }
+        await user.save();
         await user.updateLastActivity();
         return done(null, user);
       }
@@ -139,7 +145,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
       // Create new user
       const newUser = new User({
-        username: profile.username + '_' + profile.id.slice(-4),
+        username: (profile.username || 'user').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() + '_' + profile.id.slice(-4),
         email: email,
         github: {
           id: profile.id,
@@ -165,52 +171,45 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   }));
 }
 
-// Twitter OAuth Strategy
-if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
-  passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: `${process.env.SERVER_URL}/api/auth/twitter/callback`,
-    includeEmail: true
+// LinkedIn OAuth Strategy
+if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
+  passport.use(new LinkedInStrategy({
+    clientID: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    callbackURL: `${process.env.SERVER_URL}/api/auth/linkedin/callback`,
+    scope: ['r_emailaddress', 'r_liteprofile'],
+    state: true // Recommended for security
   },
-  async (token, tokenSecret, profile, done) => {
+  async (accessToken, refreshToken, profile, done) => {
     try {
-      // Check if user already exists with this Twitter ID
-      let user = await User.findOne({ 'twitter.id': profile.id });
+      // Check if user already exists with this LinkedIn ID
+      let user = await User.findOne({ 'linkedin.id': profile.id });
       
       if (user) {
-        // Update Twitter info and last login
-        user.twitter = {
+        // Update last login and potentially other info
+        user.linkedin = {
           id: profile.id,
-          username: profile.username,
           name: profile.displayName,
           email: profile.emails?.[0]?.value || user.email,
           profile_image_url: profile.photos?.[0]?.value,
-          followers_count: profile._json?.followers_count,
-          following_count: profile._json?.friends_count,
-          tweet_count: profile._json?.statuses_count
         };
         await user.save();
         await user.updateLastActivity();
         return done(null, user);
       }
 
-      // Check if user exists with this email
+      // Check if user exists with this email from LinkedIn
       const email = profile.emails?.[0]?.value;
       if (email) {
         user = await User.findOne({ email });
         
         if (user) {
-          // Link Twitter account to existing user
-          user.twitter = {
+          // Link LinkedIn account to existing user
+          user.linkedin = {
             id: profile.id,
-            username: profile.username,
             name: profile.displayName,
             email: email,
             profile_image_url: profile.photos?.[0]?.value,
-            followers_count: profile._json?.followers_count,
-            following_count: profile._json?.friends_count,
-            tweet_count: profile._json?.statuses_count
           };
           await user.save();
           await user.updateLastActivity();
@@ -218,24 +217,20 @@ if (process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_CONSUMER_SECRET) {
         }
       }
 
-      // If we are here, it's a new user. We MUST have an email to proceed.
+      // If we are here, it's a new user. We MUST have an email to proceed
       if (!email) {
-        return done(new Error('Your Twitter account does not have an email address associated with it. Please add one to sign up.'), false);
+        return done(new Error('Your LinkedIn account did not provide an email address. Please ensure your LinkedIn email is public or try another login method.'), false);
       }
 
       // Create new user
       const newUser = new User({
-        username: profile.username + '_' + profile.id.slice(-4),
+        username: (profile.displayName || 'user').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() + '_' + profile.id.slice(-4),
         email: email,
-        twitter: {
+        linkedin: {
           id: profile.id,
-          username: profile.username,
           name: profile.displayName,
           email: email,
           profile_image_url: profile.photos?.[0]?.value,
-          followers_count: profile._json?.followers_count,
-          following_count: profile._json?.friends_count,
-          tweet_count: profile._json?.statuses_count
         },
         isEmailVerified: true,
         lastLogin: new Date(),

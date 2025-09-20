@@ -18,7 +18,7 @@ This project is packed with features designed to create a seamless and engaging 
 
 #### 👤 **Authentication & User Management**
 - **Secure Registration & Login**: Standard email/password authentication with JWT-based sessions.
-- **OAuth 2.0 Integration**: Users can sign up or log in using Google, GitHub, or Twitter.
+- **OAuth 2.0 Integration**: Users can sign up or log in using Google, GitHub, or LinkedIn.
 - **Password Management**: Secure "Forgot Password" and "Reset Password" functionality via email.
 - **User Dashboard**: A private, personalized space for users to manage their profile, view orders, see saved posts, and configure security settings.
 - **Public Profiles**: View other users' profiles, see their posts and comments, and follow them.
@@ -63,7 +63,7 @@ This project is packed with features designed to create a seamless and engaging 
 | **Frontend**   | React, React Router, Material-UI, Styled Components, Axios, Socket.IO Client, Framer Motion |
 | **Backend**    | Node.js, Express.js                                                     |
 | **Database**   | MongoDB with Mongoose                                                   |
-| **Auth**       | Passport.js (JWT, Google, GitHub, Twitter), bcrypt.js                   |
+| **Auth**       | Passport.js (JWT, Google, GitHub, LinkedIn), bcrypt.js                  |
 | **Real-Time**  | Socket.IO                                                               |
 | **Email**      | Nodemailer                                                              |
 
@@ -139,8 +139,8 @@ Follow these instructions to get a local copy of the project up and running for 
     GOOGLE_CLIENT_SECRET=your_google_client_secret
     GITHUB_CLIENT_ID=your_github_client_id
     GITHUB_CLIENT_SECRET=your_github_client_secret
-    TWITTER_CONSUMER_KEY=your_twitter_api_key
-    TWITTER_CONSUMER_SECRET=your_twitter_api_secret_key
+    LINKEDIN_CLIENT_ID=your_linkedin_client_id
+    LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
 
     # --- OAuth Setup ---
     # You can create and manage your OAuth credentials for Google, GitHub, and Twitter
@@ -157,8 +157,8 @@ Follow these instructions to get a local copy of the project up and running for 
     # GitHub Authorization callback URL:
     # https://cookncrop.onrender.com/api/auth/github/callback
     #
-    # Twitter Callback URI / Redirect URL:
-    # https://cookncrop.onrender.com/api/auth/twitter/callback
+    # LinkedIn Authorized redirect URLs:
+    # https://cookncrop.onrender.com/api/auth/linkedin/callback
     ```
 
 3.  **Set up the Frontend:**

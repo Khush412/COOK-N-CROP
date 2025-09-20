@@ -359,16 +359,16 @@ router.get('/github/callback',
   }
 );
 
-// @desc    Twitter OAuth
-// @route   GET /api/auth/twitter
+// @desc    LinkedIn OAuth
+// @route   GET /api/auth/linkedin
 // @access  Public
-router.get('/twitter', passport.authenticate('twitter'));
+router.get('/linkedin', passport.authenticate('linkedin'));
 
-// @desc    Twitter OAuth callback
-// @route   GET /api/auth/twitter/callback
+// @desc    LinkedIn OAuth callback
+// @route   GET /api/auth/linkedin/callback
 // @access  Public
-router.get('/twitter/callback',
-  passport.authenticate('twitter', { failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed` }),
+router.get('/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed` }),
   (req, res) => {
     // Successful authentication, redirect to frontend with token
     const token = generateToken(req.user._id);

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Typography, CircularProgress, Alert, Box, Paper, Grid, IconButton, Tooltip, Button, Container, Stack, Chip
+  Typography, CircularProgress, Alert, Box, Paper, Grid, IconButton, Tooltip, Button, Container, Stack, Chip,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import adminService from '../../services/adminService';
 
 const AddressCard = ({ address, onDelete }) => {
@@ -22,7 +24,7 @@ const AddressCard = ({ address, onDelete }) => {
         <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{address.street}</Typography>
         <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{address.city}, {address.state} {address.zipCode}</Typography>
         <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{address.country}</Typography>
-        {address.phone && <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, mt: 1 }}>Phone: {address.phone}</Typography>}
+        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, mt: 1 }}>Phone: {address.phone}</Typography>
       </Box>
       <Box sx={{ mt: 'auto', textAlign: 'right' }}>
         <Tooltip title="Delete Address">
@@ -42,6 +44,8 @@ const AdminUserAddressesPage = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -60,14 +64,21 @@ const AdminUserAddressesPage = () => {
     fetchAddresses();
   }, [fetchAddresses]);
 
-  const handleDeleteAddress = async (addressId) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
-      try {
-        await adminService.deleteUserAddress(userId, addressId);
-        fetchAddresses(); // Refresh list
-      } catch (err) {
-        alert('Failed to delete address.');
-      }
+  const openDeleteConfirm = (addressId) => {
+    setAddressToDelete(addressId);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmDeleteAddress = async () => {
+    if (!addressToDelete) return;
+    try {
+      await adminService.deleteUserAddress(userId, addressToDelete);
+      fetchAddresses(); // Refresh list
+    } catch (err) {
+      alert('Failed to delete address.');
+    } finally {
+      setConfirmDialogOpen(false);
+      setAddressToDelete(null);
     }
   };
 
@@ -104,13 +115,32 @@ const AdminUserAddressesPage = () => {
         ) : (
           <Grid container spacing={3}>
             {addresses.map(address => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={address._id}>
-                <AddressCard address={address} onDelete={handleDeleteAddress} />
+              <Grid item size={{ xs: 12, sm: 6, md: 4 }} key={address._id}>
+                <AddressCard address={address} onDelete={openDeleteConfirm} />
               </Grid>
             ))}
           </Grid>
         )}
       </Paper>
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+          <WarningAmberIcon color="warning" />
+          Confirm Address Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+            Are you sure you want to permanently delete this address?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteAddress} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

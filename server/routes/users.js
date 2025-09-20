@@ -119,7 +119,7 @@ router.post('/me/delete-account', protect, async (req, res) => {
     user.isActive = false;
     user.google = undefined;
     user.github = undefined;
-    user.twitter = undefined;
+    user.linkedin = undefined;
     user.savedPosts = [];
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
@@ -143,12 +143,12 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const provider = req.params.provider.toLowerCase();
-    if (!['google', 'github', 'twitter'].includes(provider)) {
+    if (!['google', 'github', 'linkedin'].includes(provider)) {
       return res.status(400).json({ success: false, message: 'Invalid provider' });
     }
 
     // Reset OAuth provider info safely
-    user[provider] = {};
+    user[provider] = undefined;
 
     await user.save();
 
@@ -666,7 +666,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     user.isActive = false;
     user.google = undefined;
     user.github = undefined;
-    user.twitter = undefined;
+    user.linkedin = undefined;
     user.savedPosts = [];
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
