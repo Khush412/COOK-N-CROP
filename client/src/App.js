@@ -8,6 +8,7 @@ import AppRouter from "./router";
 import Footer from "./components/Footer";
 import { CssBaseline, GlobalStyles } from "@mui/material";
 import Chatbot from "./components/Chatbot";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
                 <AppRouter />
               </main>
                <Chatbot />
+              <ScrollToTopButton />
               <Footer />
             </div>
           </ThemeProvider>

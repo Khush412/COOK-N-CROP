@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack } from '@mui/material';
+import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,6 +48,7 @@ const TESTIMONIALS = [
 const LandingPage = () => {
   const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
@@ -147,33 +148,19 @@ const LandingPage = () => {
               <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily }}>
                 What are we cooking today?
               </Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mt: 4 }}>
+              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
                 <Button
                   component={RouterLink}
-                  to="/recipes"
+                  to="/CropCorner"
                   variant="contained"
                   color="secondary"
                   size="large"
                   endIcon={<ArrowForward />}
                   sx={{
                     py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
-                    boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
-                    transition: 'box-shadow 0.3s ease',
-                    '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` }
-                  }}
-                >
-                  Explore Recipes
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/CropCorner"
-                  variant="outlined"
-                  size="large"
-                  endIcon={<ArrowForward />}
-                  sx={{
-                    py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
-                    color: 'white', borderColor: alpha(theme.palette.common.white, 0.5),
-                    '&:hover': { borderColor: 'white', backgroundColor: alpha(theme.palette.common.white, 0.1) }
+                    boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.7)}, 0 0 35px ${alpha(theme.palette.secondary.main, 0.5)}`,
+                    transition: 'all 0.3s ease',
+                    '&:hover': { transform: 'scale(1.05)', boxShadow: `0 0 30px ${alpha(theme.palette.secondary.main, 0.9)}, 0 0 50px ${alpha(theme.palette.secondary.main, 0.7)}` }
                   }}
                 >
                   Explore Store
@@ -186,7 +173,7 @@ const LandingPage = () => {
         // LOGGED-OUT HERO (Cinematic Video)
         <Box id="home" sx={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
           <video autoPlay loop muted playsInline style={{ position: 'absolute', width: '100%', height: '100%', left: '50%', top: '50%', objectFit: 'cover', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
-            <source src={`${process.env.PUBLIC_URL}/videos/cinematic_video.mp4`} type="video/mp4" />
+            <source src={isMobile ? `${process.env.PUBLIC_URL}/videos/cinematic_video_mobile.mp4` : `${process.env.PUBLIC_URL}/videos/cinematic_video.mp4`} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 2 }} />
@@ -198,7 +185,7 @@ const LandingPage = () => {
               <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily }}>
                 Where Cooking Meets Freshness
               </Typography>
-              <Button component={RouterLink} to="/register" variant="contained" color="secondary" size="large" endIcon={<ArrowForward />} sx={{ mt: 4, py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` } }}>
+              <Button component={RouterLink} to="/login" variant="contained" color="secondary" size="large" endIcon={<ArrowForward />} sx={{ mt: 4, py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` } }}>
                 Get Started
               </Button>
             </motion.div>

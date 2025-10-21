@@ -17,8 +17,8 @@ const GlobalStyle = createGlobalStyle`
 export const ThemeContext = createContext();
 
 export const ThemeProviderComponent = ({ children }) => {
-  const [themeKey, setThemeKey] = useState(() => localStorage.getItem("themeKey") || "lightMaroon");
-  const [fontFamily, setFontFamily] = useState(() => localStorage.getItem("fontFamily") || fonts[0]);
+  const [themeKey, setThemeKey] = useState(() => localStorage.getItem("themeKey") || "forestMist");
+  const [fontFamily, setFontFamily] = useState(() => localStorage.getItem("fontFamily") || "Merriweather, serif");
 
   useEffect(() => localStorage.setItem("themeKey", themeKey), [themeKey]);
   useEffect(() => localStorage.setItem("fontFamily", fontFamily), [fontFamily]);
