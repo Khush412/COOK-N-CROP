@@ -72,6 +72,20 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET api/products/featured
+// @desc    Get all featured products
+// @access  Public
+router.get('/featured', async (req, res) => {
+  try {
+    // Limit to 12 featured products for the carousel
+    const products = await Product.find({ isFeatured: true }).limit(12);
+    res.json(products);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @desc    Search products for autocomplete
 // @route   GET /api/products/search
 // @access  Public
@@ -159,6 +173,48 @@ router.put('/:id/feature', protect, authorize('admin'), async (req, res) => {
   } catch (error) {
     console.error('Feature product error:', error);
     res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get related products (customers also bought)
+// @route   GET /api/products/:id/related
+// @access  Public
+router.get('/:id/related', async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    // Find orders containing the current product
+    const orders = await Order.find({ 'orderItems.product': productId }).limit(50); // Limit to recent 50 orders for performance
+
+    if (orders.length === 0) {
+      return res.json([]);
+    }
+
+    // Aggregate co-purchased products
+    const relatedProductIds = orders.reduce((acc, order) => {
+      // Check if the order has more than one item type
+      if (order.orderItems.length > 1) {
+        order.orderItems.forEach(item => {
+          const currentItemId = item.product.toString();
+          // Add other items from the same order to the accumulator
+          if (currentItemId !== productId) {
+            acc[currentItemId] = (acc[currentItemId] || 0) + 1;
+          }
+        });
+      }
+      return acc;
+    }, {});
+
+    // Sort by frequency and get top 10
+    const sortedRelatedIds = Object.keys(relatedProductIds)
+      .sort((a, b) => relatedProductIds[b] - relatedProductIds[a])
+      .slice(0, 10);
+
+    const relatedProducts = await Product.find({ _id: { $in: sortedRelatedIds } });
+    res.json(relatedProducts);
+  } catch (err) {
+    console.error('Get related products error:', err.message);
+    res.status(500).send('Server Error');
   }
 });
 

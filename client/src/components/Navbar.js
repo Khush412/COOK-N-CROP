@@ -41,6 +41,7 @@ import {
   AdminPanelSettings as AdminPanelSettingsIcon,
   Bookmark as BookmarkIcon,
   Favorite as FavoriteIcon,
+  CollectionsBookmark as CollectionsBookmarkIcon,
   History as HistoryIcon,
   Mail as MailIcon,
   Block as BlockIcon,
@@ -327,7 +328,7 @@ export default function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Community', path: '/community' },
-    { label: "Crop'Corner", path: '/CropCorner' },
+    { label: "Store", path: '/CropCorner' },
     { label: 'Recipes', path: '/recipes' },
   ];
 
@@ -338,6 +339,7 @@ export default function Navbar() {
     { label: 'My Feed', path: '/feed', icon: <DynamicFeedIcon /> },
     { label: 'Messages', path: '/messages', icon: <Badge badgeContent={unreadMessageCount} color="secondary"><MailIcon /></Badge> },
     { label: 'My Wishlist', path: '/profile/wishlist', icon: <FavoriteIcon /> },
+    { label: 'My Collections', path: '/profile/collections', icon: <CollectionsBookmarkIcon /> },
     { label: 'Saved Posts', path: '/profile/saved-posts', icon: <BookmarkIcon /> },
     { label: 'My Activity', path: '/profile/my-activity', icon: <HistoryIcon /> },
     { label: 'Blocked Users', path: '/profile/blocked-users', icon: <BlockIcon /> },
@@ -668,6 +670,19 @@ export default function Navbar() {
                       <ReceiptLongIcon fontSize="small" />
                     </ListItemIcon>
                     My Orders
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/collections");
+                    }}
+                    sx={{ borderRadius: 2, px: 3 }}
+                  >
+                    <ListItemIcon>
+                      <CollectionsBookmarkIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Collections
                   </MenuItem>
 
                   <MenuItem

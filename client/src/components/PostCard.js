@@ -24,21 +24,25 @@ import {
   Star as StarIcon,
   StarBorder as StarBorderIcon,
   ChatBubbleOutlineOutlined as ChatBubbleOutlineOutlinedIcon,
+  CollectionsBookmark as CollectionsBookmarkIcon,
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
+import AddToCollectionDialog from "./AddToCollectionDialog";
 
 const PostCard = ({
+  showSnackbar,
   post,
   user,
-  onUpvote,
-  upvotingPosts,
-  onToggleSave,
-  savingPosts,
+  onUpvote = () => {},
+  upvotingPosts = [],
+  onToggleSave = () => {},
+  savingPosts = [],
   displayMode = "full", // Add a prop to control display, 'full' or 'compact'
 }) => {
   const theme = useTheme();
   const [isFeatured, setIsFeatured] = useState(post.isFeatured);
-  const isSaved = user?.savedPosts?.includes(post._id);
+  const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
+  const isSaved = user && user.savedPosts && user.savedPosts.includes(post._id);
 
   return (
     <Paper
@@ -261,6 +265,13 @@ const PostCard = ({
           </Stack>
         </Stack>
 
+        <AddToCollectionDialog
+          open={collectionDialogOpen}
+          onClose={() => setCollectionDialogOpen(false)}
+          post={post}
+          showSnackbar={showSnackbar}
+        />
+
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <IconButton
             size="small"
@@ -275,6 +286,18 @@ const PostCard = ({
             }}
           >
             {isSaved ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setCollectionDialogOpen(true);
+            }}
+            aria-label="add to collection"
+            sx={{ "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.12) } }}
+          >
+            <CollectionsBookmarkIcon />
           </IconButton>
           <Button
             component={RouterLink}

@@ -8,7 +8,6 @@ import {
   TextField,
   InputAdornment,
   FormControl,
-  Slider,
   Button,
   Divider,
   IconButton,
@@ -27,13 +26,17 @@ import {
   InputLabel,
   useTheme,
   Pagination,
+  Stack,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import HistoryIcon from '@mui/icons-material/History';
 import ClearIcon from '@mui/icons-material/Clear';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import productService from '../services/productService';
 import ProductCard from '../components/ProductCard';
+import recentlyViewedService from '../services/recentlyViewedService';
+import Slider from 'react-slick';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
@@ -60,6 +63,7 @@ export default function CropCorner() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   const isFilterApplied = useMemo(() => {
     return (
@@ -112,6 +116,9 @@ export default function CropCorner() {
     };
 
     fetchProducts();
+
+    // Fetch recently viewed products from local storage
+    setRecentlyViewed(recentlyViewedService.getProducts());
   }, [page, debouncedSearchTerm, selectedCategory, debouncedPriceRange, sortOrder]);
 
   // Reset page when category or sort order changes directly
@@ -226,7 +233,7 @@ export default function CropCorner() {
       }}>
         <Box sx={{ position: 'relative', zIndex: 3 }}>
           <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-            The Crop'Corner
+            The Store
           </Typography>
           <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9, textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
             Freshness delivered from our fields to your kitchen.
@@ -310,6 +317,27 @@ export default function CropCorner() {
               <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
             </Box>
           )}
+
+          {/* Recently Viewed Section */}
+          {recentlyViewed.length > 0 && (
+            <Box sx={{ mt: 8 }}>
+              <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+                <HistoryIcon />
+                <Typography variant="h5" component="h2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Recently Viewed
+                </Typography>
+              </Stack>
+              <Divider sx={{ mb: 4 }} />
+              <Grid container spacing={4}>
+                {recentlyViewed.slice(0, 4).map((product) => ( // Show up to 4 recently viewed items
+                  <Grid key={`recent-${product._id}`} size={{ xs: 12, sm: 6, md: 3 }}>
+                    <ProductCard product={product} showSnackbar={showSnackbar} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+
         </Grid>
       </Grid>
 

@@ -382,6 +382,7 @@ export default function Community() {
                         upvotingPosts={upvotingPosts}
                         onToggleSave={(e) => handleToggleSave(post._id, e)}
                         savingPosts={savingPosts}
+                        showSnackbar={setSnackbar}
                       />
                     </Box>
                   </Grid>

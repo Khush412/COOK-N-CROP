@@ -27,6 +27,7 @@ const commentRoutes = require('./routes/comments'); // New: Import comment route
 const couponRoutes = require('./routes/couponRoutes'); // New: Import coupon routes
 const notificationRoutes = require('./routes/notifications'); // New: Import notification routes
 const adminRoutes = require('./routes/admin'); // New: Import admin routes
+const collectionRoutes = require('./routes/collections');
 const messageRoutes = require('./routes/messages'); // New: Import message routes
 const searchRoutes = require('./routes/search'); // New: Import search routes
 const chatbotRoutes = require('./routes/chatbot'); // New: Import chatbot routes
@@ -162,6 +163,7 @@ app.use('/api/orders', orderRoutes); // New: Use order routes
 app.use('/api/posts', postRoutes); // New: Use post routes
 app.use('/api/comments', commentRoutes); // New: Use comment routes
 app.use('/api/coupons', couponRoutes); // New: Use coupon routes
+app.use('/api/collections', collectionRoutes);
 app.use('/api/admin', adminRoutes); // New: Use admin routes
 app.use('/api/notifications', notificationRoutes); // New: Use notification routes
 app.use('/api/messages', messageRoutes); // New: Use message routes

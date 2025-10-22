@@ -193,6 +193,46 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
+// @desc    Get featured recipes
+// @route   GET /api/posts/featured-recipes
+// @access  Public
+router.get('/featured-recipes', async (req, res) => {
+  try {
+    const recipes = await Post.aggregate([
+      { $match: { isRecipe: true } },
+      {
+        $addFields: {
+          upvoteCount: { $size: { $ifNull: ['$upvotes', []] } }
+        }
+      },
+      { $sort: { upvoteCount: -1, createdAt: -1 } },
+      { $limit: 8 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          title: 1, content: 1, image: 1, tags: 1, isRecipe: 1, isFeatured: 1, createdAt: 1,
+          upvotes: 1,
+          'user._id': '$user._id', 'user.username': '$user.username', 'user.profilePic': '$user.profilePic',
+          upvoteCount: 1,
+          commentCount: { $size: { $ifNull: ['$comments', []] } }
+        }
+      }
+    ]);
+    res.json(recipes);
+  } catch (error) {
+    console.error('Get featured recipes error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Get all reported posts (Admin only)
 // @route   GET /api/posts/reported
 // @access  Private/Admin

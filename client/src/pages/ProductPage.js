@@ -24,6 +24,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import Slider from 'react-slick';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'; 
@@ -33,6 +34,8 @@ import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
 import Rating from '../components/Rating';
+import recentlyViewedService from '../services/recentlyViewedService';
+import ProductCard from '../components/ProductCard';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -42,6 +45,7 @@ const ProductPage = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [error, setError] = useState(null);
 
   const [quantityInCart, setQuantityInCart] = useState(0);
@@ -63,6 +67,11 @@ const ProductPage = () => {
       const data = await productService.getProductById(id);
       setProduct(data);
 
+      // Add to recently viewed
+      if (data) {
+        recentlyViewedService.addProduct(data);
+      }
+
       // After product loads, check cart status if user is logged in
       if (isAuthenticated) {
         try {
@@ -73,6 +82,15 @@ const ProductPage = () => {
           console.error("Failed to fetch cart status:", cartError);
           // Don't block product page from rendering if cart fails
         }
+      }
+
+      // Fetch related products
+      try {
+        const relatedData = await productService.getRelatedProducts(id);
+        setRelatedProducts(relatedData);
+      } catch (relatedError) {
+        console.error("Failed to fetch related products:", relatedError);
+        // Don't block page render if this fails, just log the error.
       }
     } catch (err) {
       setError('Failed to load product details.');
@@ -463,6 +481,55 @@ const ProductPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h4" component="h2" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
+            Customers Also Bought
+          </Typography>
+          <Divider sx={{ mb: 4 }} />
+          <Box sx={{
+            '.slick-slide': {
+              px: 1.5, // Create spacing between slides
+            },
+            '.slick-list': {
+              mx: -1.5, // Counteract the slide padding
+            },
+            '.slick-dots li button:before': {
+              fontSize: '12px',
+              color: theme.palette.primary.main,
+            },
+            '.slick-dots li.slick-active button:before': {
+              color: theme.palette.secondary.main,
+            }
+          }}>
+            <Slider {...{
+              dots: true,
+              infinite: relatedProducts.length > 4,
+              speed: 500,
+              slidesToShow: 4,
+              slidesToScroll: 1,
+              autoplay: true,
+              autoplaySpeed: 5000,
+              responsive: [
+                { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                { breakpoint: 900, settings: { slidesToShow: 2 } },
+                { breakpoint: 600, settings: { slidesToShow: 1, arrows: false } }
+              ]
+            }}>
+              {relatedProducts.map((relatedProduct) => (
+                <Box key={relatedProduct._id} sx={{ height: '100%' }}>
+                  <ProductCard
+                    product={relatedProduct}
+                    showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })}
+                  />
+                </Box>
+              ))}
+            </Slider>
+          </Box>
+        </Box>
+      )}
     </Container>
   );
 };

@@ -27,6 +27,8 @@ import { alpha,
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -34,6 +36,7 @@ import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
 import couponService from '../services/couponService';   // New: Import coupon service
 import AddressForm from '../components/AddressForm';     // New: Import AddressForm component
+import api from '../config/axios';
 
 const CartPage = () => {
   const theme = useTheme();
@@ -50,6 +53,7 @@ const CartPage = () => {
   const [couponCode, setCouponCode] = useState(''); // New: State for coupon input
   const [appliedCoupon, setAppliedCoupon] = useState(null); // New: State for applied coupon details
   const [couponError, setCouponError] = useState(''); // New: State for coupon errors
+  const [itemLoading, setItemLoading] = useState(null); // For save/move/remove actions
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false); // New: State for coupon apply loading
 
   useEffect(() => {
@@ -82,6 +86,11 @@ const CartPage = () => {
   const validItems = useMemo(() => {
     if (!cart?.items) return [];
     return cart.items.filter(item => item.product);
+  }, [cart]);
+
+  const savedForLaterItems = useMemo(() => {
+    if (!cart?.savedForLater) return [];
+    return cart.savedForLater.filter(item => item.product);
   }, [cart]);
 
   const showSnackbar = useCallback((message, severity) => {
@@ -156,6 +165,45 @@ const CartPage = () => {
       showSnackbar('Failed to clear cart.', 'error');
     }
   };
+
+  const handleSaveForLater = async (productId) => {
+    setItemLoading(productId);
+    try {
+      const { data } = await api.post(`/cart/save-for-later/${productId}`);
+      setCart(data);
+      showSnackbar('Item saved for later!', 'success');
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || 'Failed to save item.', 'error');
+    } finally {
+      setItemLoading(null);
+    }
+  };
+
+  const handleMoveToCart = async (productId) => {
+    setItemLoading(productId);
+    try {
+      const { data } = await api.post(`/cart/move-to-cart/${productId}`);
+      setCart(data);
+      showSnackbar('Item moved to cart!', 'success');
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || 'Failed to move item.', 'error');
+    } finally {
+      setItemLoading(null);
+    }
+  };
+
+  const handleRemoveFromSaved = async (productId) => {
+    setItemLoading(productId);
+    try {
+      const { data } = await api.delete(`/cart/saved-for-later/${productId}`);
+      setCart(data);
+      showSnackbar('Item removed from saved list.', 'info');
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || 'Failed to remove item.', 'error');
+    } finally {
+      setItemLoading(null);
+    }
+  };
   // New: Handle address selection
   const handleAddressChange = (event) => {
     const addressId = event.target.value;
@@ -211,6 +259,10 @@ const CartPage = () => {
     });
   };
 
+  const hasItems = validItems.length > 0;
+  const hasSavedItems = savedForLaterItems.length > 0;
+  const isEmpty = !hasItems && !hasSavedItems;
+
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
       <Box sx={{ p: { xs: 0, sm: 2, md: 4 } }}>
@@ -224,7 +276,7 @@ const CartPage = () => {
           </Box>
         ) : error ? (
           <Typography color="error" sx={{ my: 4, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{error}</Typography>
-        ) : validItems.length === 0 ? (
+        ) : isEmpty ? (
           <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
             <ShoppingCartOutlinedIcon sx={{ fontSize: 80, color: theme.palette.grey[400] }} />
             <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -237,7 +289,7 @@ const CartPage = () => {
         ) : (
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, lg: 7 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              {hasItems && <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Items in your cart ({validItems.length})</Typography>
                 <Button
                   variant="outlined"
@@ -248,8 +300,8 @@ const CartPage = () => {
                 >
                   Clear Cart
                 </Button>
-              </Box>
-              <List sx={{ width: '100%' }}>
+              </Box>}
+              {hasItems && <List sx={{ width: '100%' }}>
                 {validItems.map((item) => (
                   <Paper key={item.product?._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative' }}>
                     <CardMedia component="img" sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, mr: 2 }}
@@ -272,6 +324,14 @@ const CartPage = () => {
                             <AddIcon fontSize="small" />
                           </IconButton>
                           </Box>
+                          <Button
+                            size="small" startIcon={itemLoading === item.product._id ? <CircularProgress size={16} /> : <SaveIcon />}
+                            onClick={() => handleSaveForLater(item.product._id)}
+                            disabled={!!itemLoading}
+                            sx={{ textTransform: 'none', color: 'text.secondary' }}
+                          >
+                            Save for later
+                          </Button>
                           <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
                             ${(item.product.price * item.quantity).toFixed(2)}
                           </Typography>
@@ -282,7 +342,42 @@ const CartPage = () => {
                     </IconButton>
                   </Paper>
                 ))}
-              </List>
+              </List>}
+
+              {hasSavedItems && (
+                <Box mt={4}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>Saved for Later ({savedForLaterItems.length})</Typography>
+                  <List sx={{ width: '100%' }}>
+                    {savedForLaterItems.map((item) => (
+                      <Paper key={item.product?._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative', bgcolor: alpha(theme.palette.action.hover, 0.5) }}>
+                        <CardMedia component="img" sx={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 2, mr: 2 }}
+                          image={item.product.image ? `${process.env.REACT_APP_API_URL}${item.product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
+                          alt={item.product.name} />
+                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
+                          <Typography component={RouterLink} to={`/product/${item.product._id}`} variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}>
+                            {item.product.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                            Saved Quantity: {item.quantity}
+                          </Typography>
+                          <Box sx={{ mt: 'auto' }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<MoveToInboxIcon />}
+                              onClick={() => handleMoveToCart(item.product._id)}
+                              sx={{ textTransform: 'none', borderRadius: '50px', mr: 1 }}
+                            >
+                              Move to Cart
+                            </Button>
+                            <Button size="small" onClick={() => handleRemoveFromSaved(item.product._id)} sx={{ textTransform: 'none', color: 'text.secondary' }}>Remove</Button>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    ))}
+                  </List>
+                </Box>
+              )}
             </Grid>
             <Grid size={{ xs: 12, lg: 5 }}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>

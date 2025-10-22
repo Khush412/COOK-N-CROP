@@ -43,6 +43,8 @@ import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SearchPage from './pages/SearchPage';
+import MyCollectionsPage from './pages/MyCollectionsPage'; // New
+import CollectionDetailsPage from './pages/CollectionDetailsPage'; // New
 import MessengerPage from './pages/MessengerPage';
 import WishlistPage from './pages/WishlistPage';
 
@@ -58,6 +60,7 @@ export default function AppRouter() {
       <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
       <Route path="/feed" element={<FeedPage />} /> {/* New */}
       <Route path="/community" element={<Community />} />
+      <Route path="/collection/:id" element={<CollectionDetailsPage />} /> {/* New */}
       <Route path="/product/:id" element={<ProductPage />} /> {/* New */}
       <Route path="/CropCorner" element={<CropCorner />} />
       <Route path="/recipes" element={<Recipes />} />
@@ -71,6 +74,7 @@ export default function AppRouter() {
       <Route element={<PrivateRoute />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/addresses" element={<AddressManagementPage />} />
+        <Route path="/profile/collections" element={<MyCollectionsPage />} /> {/* New */}
         <Route path="/profile/saved-posts" element={<SavedPostsPage />} />
         <Route path="/profile/my-activity" element={<MyActivityPage />} />
         <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />

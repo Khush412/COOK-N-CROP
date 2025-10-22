@@ -73,7 +73,9 @@ router.post('/', protect, async (req, res) => {
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
+    const cart = await Cart.findOne({ user: req.user.id })
+      .populate('items.product')
+      .populate('savedForLater.product');
 
     if (!cart) {
       // Instead of a 404, return a 200 with a default empty cart structure.
@@ -82,6 +84,7 @@ router.get('/', protect, async (req, res) => {
         _id: null,
         user: req.user.id,
         items: [],
+        savedForLater: [],
         __v: 0,
       });
     }
@@ -129,7 +132,7 @@ router.put('/item/:productId', protect, async (req, res) => {
         cart.items.splice(itemIndex, 1); // Remove item if quantity is 0 or less
       }
       cart = await cart.save();
-      const populatedCart = await cart.populate('items.product');
+      const populatedCart = await cart.populate(['items.product', 'savedForLater.product']);
       res.json(populatedCart);
     } else {
       return res.status(404).json({ message: 'Item not found in cart' });
@@ -160,7 +163,7 @@ router.delete('/item/:productId', protect, async (req, res) => {
     if (itemIndex > -1) {
       cart.items.splice(itemIndex, 1);
       cart = await cart.save();
-      const populatedCart = await cart.populate('items.product');
+      const populatedCart = await cart.populate(['items.product', 'savedForLater.product']);
       res.json(populatedCart);
     } else {
       return res.status(404).json({ message: 'Item not found in cart' });
@@ -251,12 +254,111 @@ router.post('/add-multiple', protect, async (req, res) => {
         }
         
         const updatedCart = await cart.save();
-        const populatedCart = await updatedCart.populate('items.product');
+        const populatedCart = await updatedCart.populate(['items.product', 'savedForLater.product']);
         res.json(populatedCart);
     } catch (error) {
         console.error('Error adding multiple items to cart:', error);
         res.status(500).json({ message: 'Server Error' });
     }
+});
+
+// @desc    Move an item from cart to saved for later
+// @route   POST /api/cart/save-for-later/:productId
+// @access  Private
+router.post('/save-for-later/:productId', protect, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const cart = await Cart.findOne({ user: req.user.id });
+
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    if (itemIndex === -1) return res.status(404).json({ message: 'Item not in cart' });
+
+    const [itemToSave] = cart.items.splice(itemIndex, 1);
+
+    const savedItemIndex = cart.savedForLater.findIndex(item => item.product.toString() === productId);
+    if (savedItemIndex > -1) {
+      // If item already exists in saved list, just update quantity
+      cart.savedForLater[savedItemIndex].quantity += itemToSave.quantity;
+    } else {
+      cart.savedForLater.push(itemToSave);
+    }
+
+    const updatedCart = await cart.save();
+    const populatedCart = await updatedCart.populate(['items.product', 'savedForLater.product']);
+    res.json(populatedCart);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Move an item from saved for later to cart
+// @route   POST /api/cart/move-to-cart/:productId
+// @access  Private
+router.post('/move-to-cart/:productId', protect, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const cart = await Cart.findOne({ user: req.user.id });
+
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    const savedItemIndex = cart.savedForLater.findIndex(item => item.product.toString() === productId);
+    if (savedItemIndex === -1) return res.status(404).json({ message: 'Item not in saved list' });
+
+    const [itemToMove] = cart.savedForLater.splice(savedItemIndex, 1);
+
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ message: 'Product no longer exists' });
+
+    const cartItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    let totalQty = itemToMove.quantity;
+    if (cartItemIndex > -1) {
+      totalQty += cart.items[cartItemIndex].quantity;
+    }
+
+    if (product.countInStock < totalQty) {
+      // Not enough stock, move it back to saved list and inform user
+      cart.savedForLater.push(itemToMove);
+      await cart.save();
+      return res.status(400).json({ message: `Not enough stock for ${product.name}. Only ${product.countInStock} available.` });
+    }
+
+    if (cartItemIndex > -1) {
+      cart.items[cartItemIndex].quantity = totalQty;
+    } else {
+      cart.items.push(itemToMove);
+    }
+
+    const updatedCart = await cart.save();
+    const populatedCart = await updatedCart.populate(['items.product', 'savedForLater.product']);
+    res.json(populatedCart);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Remove item from saved for later list
+// @route   DELETE /api/cart/saved-for-later/:productId
+// @access  Private
+router.delete('/saved-for-later/:productId', protect, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const cart = await Cart.findOne({ user: req.user.id });
+
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    const savedItemIndex = cart.savedForLater.findIndex(item => item.product.toString() === productId);
+    if (savedItemIndex === -1) return res.status(404).json({ message: 'Item not in saved list' });
+
+    cart.savedForLater.splice(savedItemIndex, 1);
+
+    const updatedCart = await cart.save();
+    const populatedCart = await updatedCart.populate(['items.product', 'savedForLater.product']);
+    res.json(populatedCart);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 module.exports = router;

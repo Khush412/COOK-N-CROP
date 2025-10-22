@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery } from '@mui/material';
+import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
-import { ArrowForward, People, FormatQuote, MenuBook, Storefront } from '@mui/icons-material';
+import Slider from 'react-slick';
+import { ArrowForward, FormatQuote, MenuBook } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../config/axios';
+import FeaturedProductCard from '../components/FeaturedProductCard';
+import PostCard from '../components/PostCard';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 // Reusable component for animated sections
 const AnimatedSection = React.forwardRef(({ children, sx = {}, id }, ref) => {
@@ -51,6 +57,8 @@ const LandingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [featuredProducts, setFeaturedProducts] = useState({ loading: true, data: [], error: null });
+  const [featuredRecipes, setFeaturedRecipes] = useState({ loading: true, data: [], error: null });
 
   // To use a fixed set of banner images, use this array.
   // Make sure you place your images in the `public/images/` folder.
@@ -78,6 +86,29 @@ const LandingPage = () => {
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, bannerImages.length]);
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const res = await api.get('/products/featured');
+        setFeaturedProducts({ loading: false, data: res.data, error: null });
+      } catch (err) {
+        setFeaturedProducts({ loading: false, data: [], error: 'Could not load featured products.' });
+      }
+    };
+    fetchFeaturedProducts();
+
+    const fetchFeaturedRecipes = async () => {
+      try {
+        const res = await api.get('/posts/featured-recipes');
+        setFeaturedRecipes({ loading: false, data: res.data, error: null });
+      } catch (err) {
+        setFeaturedRecipes({ loading: false, data: [], error: 'Could not load featured recipes.' });
+      }
+    };
+    fetchFeaturedRecipes();
+
+  }, []);
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -193,46 +224,131 @@ const LandingPage = () => {
         </Box>
       )}
 
-      {/* Explore Section */}
-      <AnimatedSection id="explore" sx={{ bgcolor: 'background.paper' }}>
+      {/* Featured Products Section */}
+      <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Typography variant="h3" textAlign="center" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
-            Explore Our World
+            Featured Products
           </Typography>
           <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mb: 8 }} />
-          <Grid container spacing={4} justifyContent="center">
-            {[
-              { title: 'Community Hub', description: 'Connect with fellow food lovers, share tips, and join discussions.', icon: <People fontSize="large" />, path: '/community' },
-              { title: 'Recipe Collection', description: 'Discover thousands of recipes from home cooks and professional chefs.', icon: <MenuBook fontSize="large" />, path: '/recipes' },
-              { title: 'Fresh Marketplace', description: 'Shop for the freshest seasonal ingredients delivered to your door.', icon: <Storefront fontSize="large" />, path: '/CropCorner' },
-            ].map((step, index) => (
-              <Grid size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
-                <Paper
-                  component={motion.div}
-                  whileHover={{ y: -10, boxShadow: theme.shadows[12] }}
-                  sx={{
-                    p: 4,
-                    height: '100%',
-                    borderRadius: 4,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => navigate(step.path)}
-                >
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), width: 80, height: 80, mb: 3, color: 'primary.main' }}>
-                    {step.icon}
-                  </Avatar>
-                  <Typography variant="h5" fontWeight="bold" sx={{ mb: 1.5, fontFamily: theme.typography.fontFamily }}>{step.title}</Typography>
-                  <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, flexGrow: 1 }}>{step.description}</Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+          {featuredProducts.loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
+          ) : featuredProducts.error ? (
+            <Alert severity="error">{featuredProducts.error}</Alert>
+          ) : (
+            <Box sx={{
+              '.slick-slide': {
+                px: 1.5, // Create spacing between slides
+              },
+              '.slick-list': {
+                mx: -1.5, // Counteract the slide padding
+              },
+              '.slick-dots li button:before': {
+                fontSize: '12px',
+                color: theme.palette.primary.main,
+              },
+              '.slick-dots li.slick-active button:before': {
+                color: theme.palette.secondary.main,
+              }
+            }}>
+              <Slider {...{
+                dots: true,
+                infinite: featuredProducts.data.length > 4,
+                speed: 500,
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 4000,
+                responsive: [
+                  { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                  { breakpoint: 900, settings: { slidesToShow: 2 } },
+                  { breakpoint: 600, settings: { slidesToShow: 1, arrows: false } }
+                ]
+              }}>
+                {featuredProducts.data.map((product) => (
+                  <Box key={product._id} sx={{ height: '100%' }}>
+                    <FeaturedProductCard product={product} showSnackbar={showSnackbar} />
+                  </Box>
+                ))}
+              </Slider>
+            </Box>
+          )}
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Button
+              component={RouterLink}
+              to="/CropCorner"
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForward />}
+              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 5, py: 1.5,
+                boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                transition: 'box-shadow 0.3s ease',
+                '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.primary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.primary.main, 0.6)}` }
+              }}
+            >
+              Explore The Full Store
+            </Button>
+          </Box>
+        </Container>
+      </AnimatedSection>
+
+      {/* Featured Recipes Section */}
+      <AnimatedSection id="featured-recipes">
+        <Container maxWidth="lg">
+          <Typography variant="h3" textAlign="center" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+            Community Favorites
+          </Typography>
+          <Divider sx={{ width: '80px', height: '4px', bgcolor: 'primary.main', mx: 'auto', mb: 8 }} />
+          {featuredRecipes.loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
+          ) : featuredRecipes.error ? (
+            <Alert severity="error">{featuredRecipes.error}</Alert>
+          ) : (
+            <Box sx={{
+              '.slick-slide': { px: 1.5 },
+              '.slick-list': { mx: -1.5 },
+              '.slick-dots li button:before': { fontSize: '12px', color: theme.palette.primary.main },
+              '.slick-dots li.slick-active button:before': { color: theme.palette.secondary.main }
+            }}>
+              <Slider {...{
+                dots: true,
+                infinite: featuredRecipes.data.length > 3,
+                speed: 500,
+                slidesToShow: 3,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 5000,
+                responsive: [
+                  { breakpoint: 1200, settings: { slidesToShow: 2 } },
+                  { breakpoint: 900, settings: { slidesToShow: 1 } },
+                  { breakpoint: 600, settings: { slidesToShow: 1, arrows: false } }
+                ]
+              }}>
+                {featuredRecipes.data.map((post) => (
+                  <Box key={post._id} sx={{ height: '100%' }}>
+                    <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} showSnackbar={showSnackbar} />
+                  </Box>
+                ))}
+              </Slider>
+            </Box>
+          )}
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Button
+              component={RouterLink}
+              to="/recipes"
+              variant="contained"
+              color="secondary"
+              size="large"
+              endIcon={<MenuBook />}
+              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 5, py: 1.5,
+                boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                transition: 'box-shadow 0.3s ease',
+                '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` }
+              }}
+            >
+              Discover More Recipes
+            </Button>
+          </Box>
         </Container>
       </AnimatedSection>
 

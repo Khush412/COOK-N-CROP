@@ -356,6 +356,7 @@ const RecipesPage = () => {
                   upvotingPosts={upvotingPosts}
                   onToggleSave={handleToggleSave}
                   savingPosts={savingPosts}
+                  showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })}
                   displayMode="compact"
                 />
               </Grid>

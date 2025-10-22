@@ -126,6 +126,16 @@ const searchProductsForTagging = async (query) => {
   return data;
 };
 
+const getRelatedProducts = async (id) => {
+  try {
+    const response = await axios.get(`/products/${id}/related`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching related products for product ${id}`, error);
+    throw error;
+  }
+};
+
 
 const productService = {
   getAllProducts,
@@ -142,6 +152,7 @@ const productService = {
   deleteProduct,
   addMultipleToCart,
   searchProductsForTagging,
+  getRelatedProducts, // <-- Added this export
 };
 
 export default productService;

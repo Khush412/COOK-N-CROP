@@ -21,6 +21,7 @@ const CartSchema = mongoose.Schema(
       ref: 'User',
     },
     items: [CartItemSchema],
+    savedForLater: [CartItemSchema],
   },
   { timestamps: true }
 );

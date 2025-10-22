@@ -138,6 +138,7 @@ const SavedPostsPage = () => {
                 upvotingPosts={upvotingPosts}
                 onToggleSave={handleToggleSave}
                 savingPosts={savingPosts}
+                showSnackbar={() => {}} // Snackbar not needed here as it's a core action
               />
             </Grid>
           ))}
