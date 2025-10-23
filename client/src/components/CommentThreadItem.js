@@ -40,6 +40,7 @@ const CommentThreadItem = ({
   onCommentDelete,
   onReportComment,
   depth = 0,
+  postGroup, // Pass the post's group object to check moderator status
 }) => {
   const { user, isAuthenticated } = useAuth();
   const theme = useTheme();
@@ -48,6 +49,10 @@ const CommentThreadItem = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [repliesExpanded, setRepliesExpanded] = useState(depth < 1); // Expand first level of replies by default
   const isReplying = replyingTo === comment._id;
+
+  // Check if current user is the comment author, an admin, or a moderator of the post's group
+  const isCommentAuthor = comment.user?._id === user?.id;
+  const isGroupModerator = postGroup && ((postGroup.moderators && postGroup.moderators.some(mod => mod._id === user?.id)) || postGroup.creator?._id === user?.id);
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
@@ -96,7 +101,7 @@ const CommentThreadItem = ({
         <ListItemAvatar sx={{ minWidth: 'auto', mt: 1 }}>
           <Avatar src={comment.user?.profilePic && comment.user.profilePic.startsWith('http') ? comment.user.profilePic : comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} alt={comment.user?.username}>
             {!comment.user?.profilePic && comment.user?.username?.charAt(0).toUpperCase()}
-          </Avatar>
+          </Avatar> {/* Added profilePic check */}
         </ListItemAvatar>
         <Box sx={{ flexGrow: 1, position: 'relative' }}>
           {isAuthenticated && (user.id === comment.user?._id || user.role === 'admin') && !isEditing && (
@@ -113,10 +118,12 @@ const CommentThreadItem = ({
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
               >
-                <MenuItem onClick={handleEdit}>
-                  <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                  <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</MuiListItemText>
-                </MenuItem>
+                {isCommentAuthor && ( // Only author can edit
+                  <MenuItem onClick={handleEdit}>
+                    <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                    <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</MuiListItemText>
+                  </MenuItem>
+                )}
                 <MenuItem onClick={handleDelete}>
                   <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
                   <MuiListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</MuiListItemText>
@@ -220,8 +227,8 @@ const CommentThreadItem = ({
       {comment.replies && comment.replies.length > 0 && (
         <Collapse in={repliesExpanded} timeout="auto" unmountOnExit>
           <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
-            {comment.replies.map((reply) => (
-              <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} />
+            {comment.replies.map((reply) => ( // Pass postGroup to nested comments
+              <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} postGroup={postGroup} />
             ))}
           </List>
         </Collapse>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   TextField,
@@ -13,13 +14,21 @@ import {
   IconButton,
   Paper,
   Autocomplete,
+  Grid,
+  Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   alpha,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import productService from '../services/productService';
+import groupService from '../services/groupService';
 
 const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData }) => {
   const [title, setTitle] = useState('');
@@ -37,14 +46,59 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
   const [taggedProducts, setTaggedProducts] = useState([]);
   const [productSearchOptions, setProductSearchOptions] = useState([]);
   const [productSearchLoading, setProductSearchLoading] = useState(false);
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const theme = useTheme();
+  const location = useLocation();
+
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [userGroups, setUserGroups] = useState([]);
+  const [postFlair, setPostFlair] = useState(''); // This was missing
+  const [availableFlairs, setAvailableFlairs] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
 
   const getImageUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('blob:')) return path;
     return `${process.env.REACT_APP_API_URL}${path}`;
+  };
+
+  useEffect(() => {
+    const fetchUserGroups = async () => {
+      try {
+        setGroupsLoading(true);
+        const subs = await groupService.getMySubscriptions();
+        setUserGroups(subs);
+
+        // Check if we navigated from a specific group page
+        const preselectedGroupId = location.state?.groupId;
+        if (preselectedGroupId && subs.some(g => g._id === preselectedGroupId)) {
+          setSelectedGroup(preselectedGroupId);
+          const selectedGroupData = subs.find(g => g._id === preselectedGroupId);
+          if (selectedGroupData?.flairs) {
+            setAvailableFlairs(selectedGroupData.flairs);
+            if (initialData?.flair && selectedGroupData.flairs.some(f => f.text === initialData.flair)) {
+              setPostFlair(initialData.flair);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch user's groups", error);
+      } finally {
+        setGroupsLoading(false);
+      }
+    };
+    fetchUserGroups();
+  }, [location.state]);
+
+  const handleGroupChange = (e) => {
+    const groupId = e.target.value;
+    setSelectedGroup(groupId);
+    const selectedGroupData = userGroups.find(g => g._id === groupId);
+    setAvailableFlairs(selectedGroupData?.flairs || []);
+    // Reset flair if the new group doesn't have it
+    const currentFlairExistsInNewGroup = (selectedGroupData?.flairs || []).some(f => f.text === postFlair);
+    if (!currentFlairExistsInNewGroup) setPostFlair('');
   };
 
   useEffect(() => {
@@ -67,14 +121,25 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           instructions: initialData.recipeDetails.instructions?.length ? initialData.recipeDetails.instructions : [''],
         });
       }
+      if (initialData.group) {
+        setSelectedGroup(initialData.group._id || initialData.group);
+      }
+      // When editing, find the full group object from user's subscriptions to get its flairs
+      const groupDataForPost = userGroups.find(g => g._id === (initialData.group?._id || initialData.group));
+      if (groupDataForPost?.flairs) {
+        setAvailableFlairs(groupDataForPost.flairs);
+      }
+      if (initialData.flair) {
+        setPostFlair(initialData.flair);
+      }
       if (initialData.taggedProducts) {
         // The backend populates this, so we get full product objects
         setTaggedProducts(initialData.taggedProducts);
-      }
-      setImagePreview(initialData.image || '');
-      setImage(null);
+      } 
+      setPreviews(initialData.media?.map(m => ({ url: getImageUrl(m.url), type: m.mediaType })) || []);
+      setFiles([]);
     }
-  }, [forceRecipe, initialData]);
+  }, [forceRecipe, initialData, userGroups]); // Add userGroups to dependency array
 
   const handleTagKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -93,15 +158,26 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+    if (!title.trim() || !content.trim() || !selectedGroup) return;
 
     const postData = new FormData();
     postData.append('title', title);
     postData.append('content', content);
+    postData.append('group', selectedGroup);
+    if (postFlair) postData.append('flair', postFlair); // Pass flair to backend
     postData.append('isRecipe', isRecipe);
 
-    if (image) {
-      postData.append('image', image);
+    files.forEach(file => {
+      postData.append('media', file);
+    });
+
+    // When editing, we need to send back the media files that were NOT deleted.
+    if (initialData) {
+      const existingMedia = previews
+        .filter(p => !p.url.startsWith('blob:'))
+        // Ensure the 'mediaType' field is sent back, not 'type'
+        .map(({ url, type }) => ({ url, mediaType: type }));
+      postData.append('existingMedia', JSON.stringify(existingMedia));
     }
 
     tags.forEach(tag => postData.append('tags', tag));
@@ -160,17 +236,64 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     );
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(prev => [...prev, ...selectedFiles]);
+
+    const newPreviews = selectedFiles.map(file => ({
+      url: URL.createObjectURL(file),
+      type: file.type.startsWith('image') ? 'image' : 'video',
+      name: file.name,
+    }));
+    setPreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removePreview = (previewUrl) => {
+    const previewToRemove = previews.find(p => p.url === previewUrl);
+    setPreviews(previews.filter(p => p.url !== previewUrl));
+    setFiles(files.filter(f => f.name !== previewToRemove.name));
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <Stack spacing={3} sx={{ pt: 1 }}>
+        <FormControl fullWidth required disabled={loading || groupsLoading}>
+          <InputLabel id="group-select-label">Choose a Group</InputLabel>
+          <Select
+            labelId="group-select-label"
+            id="group-select"
+            value={selectedGroup}
+            label="Choose a Group"
+            onChange={handleGroupChange}
+            sx={{ borderRadius: '12px' }}
+          >
+            {groupsLoading ? (
+              <MenuItem value="" disabled><em>Loading groups...</em></MenuItem>
+            ) : userGroups.length === 0 ? (
+              <MenuItem value="" disabled><em>You haven't joined any groups yet.</em></MenuItem>
+            ) : (
+              userGroups.map(group => (
+                <MenuItem key={group._id} value={group._id}>{group.name}</MenuItem>
+              ))
+            )}
+          </Select>
+        </FormControl>
+        {availableFlairs.length > 0 && (
+          <FormControl fullWidth size="small">
+            <InputLabel id="flair-select-label">Flair (Optional)</InputLabel>
+            <Select
+              labelId="flair-select-label"
+              value={postFlair}
+              label="Flair (Optional)"
+              onChange={(e) => setPostFlair(e.target.value)}
+            >
+              <MenuItem value=""><em>None</em></MenuItem>
+              {availableFlairs.map(flair => (
+                <MenuItem key={flair.text} value={flair.text}>{flair.text}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <TextField
           label="Post Title"
           variant="outlined"
@@ -208,43 +331,58 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           />
         )}
 
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, bgcolor: alpha(theme.palette.primary.main, 0.03) }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Media</Typography>
+          <Box
+            component="label"
+            htmlFor="media-upload"
+            sx={{
+              width: '100%',
+              minHeight: 150,
+              border: `2px dashed ${theme.palette.divider}`,
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              bgcolor: alpha(theme.palette.action.hover, 0.02),
+              overflow: 'hidden',
+              mb: 2,
+              '&:hover': {
+                borderColor: 'primary.main',
+                bgcolor: alpha(theme.palette.primary.main, 0.05),
+              }
+            }}
+          >
+            <Stack alignItems="center" spacing={1} color="text.secondary">
+              <PhotoCamera sx={{ fontSize: 40 }} />
+              <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>Upload Images or Videos (up to 10)</Typography>
+            </Stack>
+          </Box>
+          <input id="media-upload" type="file" multiple hidden accept="image/*,video/*" onChange={handleFileChange} />
+
+          <Grid container spacing={1}>
+            {previews.map((preview, index) => (
+              <Grid size={{}} key={index}>
+                <Paper sx={{ width: 100, height: 100, position: 'relative' }}>
+                  {preview.type === 'image' ? (
+                    <Avatar src={preview.url} variant="rounded" sx={{ width: '100%', height: '100%' }} />
+                  ) : (
+                    <video src={preview.url} width="100" height="100" style={{ objectFit: 'cover' }} />
+                  )}
+                  <IconButton size="small" onClick={() => removePreview(preview.url)} sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'rgba(0,0,0,0.5)', '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' } }}>
+                    <CloseIcon fontSize="small" sx={{ color: 'white' }} />
+                  </IconButton>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+
         {isRecipe && (
           <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, bgcolor: alpha(theme.palette.primary.main, 0.03) }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Recipe Image</Typography>
-            <Box
-              component="label"
-              htmlFor="recipe-image-upload"
-              sx={{
-                width: '100%',
-                height: 200,
-                border: `2px dashed ${theme.palette.divider}`,
-                borderRadius: 3,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                bgcolor: imagePreview ? 'transparent' : alpha(theme.palette.action.hover, 0.02),
-                overflow: 'hidden',
-                mb: 2,
-                '&:hover': {
-                  borderColor: 'primary.main',
-                  bgcolor: alpha(theme.palette.primary.main, 0.05),
-                }
-              }}
-            >
-              {imagePreview ? (
-                <img src={getImageUrl(imagePreview)} alt="Recipe preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <Stack alignItems="center" spacing={1} color="text.secondary">
-                  <PhotoCamera sx={{ fontSize: 40 }} />
-                  <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>Upload Image</Typography>
-                </Stack>
-              )}
-            </Box>
-            <input id="recipe-image-upload" type="file" hidden accept="image/*" onChange={handleImageChange} />
-
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Recipe Details</Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}> {/* Use size prop */}
               <TextField label="Prep Time (minutes)" name="prepTime" type="number" value={recipeDetails.prepTime} onChange={handleRecipeDetailChange} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
               <TextField label="Cook Time (minutes)" name="cookTime" type="number" value={recipeDetails.cookTime} onChange={handleRecipeDetailChange} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
               <TextField label="Servings" name="servings" type="number" value={recipeDetails.servings} onChange={handleRecipeDetailChange} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
@@ -309,7 +447,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
               isOptionEqualToValue={(option, value) => option._id === value._id}
               onOpen={() => {
                 if (productSearchOptions.length === 0) {
-                  handleProductSearch(null, '');
+                  handleProductSearch(null, ''); // Fetch initial options
                 }
               }}
               onInputChange={handleProductSearch}
@@ -376,7 +514,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           <Button
             type="submit"
             variant="contained"
-            disabled={loading || !title.trim() || !content.trim()}
+            disabled={loading || !title.trim() || !content.trim() || !selectedGroup}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
             sx={{ borderRadius: '50px', px: 4, py: 1.2, fontFamily: theme.typography.fontFamily }}
           >

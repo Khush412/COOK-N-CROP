@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  Paper,
+  Paper, 
   Box,
   Avatar,
   Typography,
@@ -14,7 +14,7 @@ import {
   alpha,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import {
   ThumbUp as ThumbUpIcon,
@@ -24,6 +24,7 @@ import {
   Star as StarIcon,
   StarBorder as StarBorderIcon,
   ChatBubbleOutlineOutlined as ChatBubbleOutlineOutlinedIcon,
+  PushPin as PushPinIcon,
   CollectionsBookmark as CollectionsBookmarkIcon,
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
@@ -37,17 +38,26 @@ const PostCard = ({
   upvotingPosts = [],
   onToggleSave = () => {},
   savingPosts = [],
-  displayMode = "full", // Add a prop to control display, 'full' or 'compact'
+  displayMode = "full", // 'full', 'compact', or 'feed'
 }) => {
   const theme = useTheme();
+  const location = useLocation();
   const [isFeatured, setIsFeatured] = useState(post.isFeatured);
+  const [isPinned, setIsPinned] = useState(post.isPinned);
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const isSaved = user && user.savedPosts && user.savedPosts.includes(post._id);
+
+  // Check if the current user is a moderator of the post's group
+  const isModerator = user && post.group && (post.group.moderators?.includes(user.id) || post.group.creator?._id === user.id || post.group.creator === user.id);
+  // Check if the current view is a specific group page
+  const isGroupPage = location.pathname.startsWith('/g/');
+
+  const isAuthenticated = !!user;
 
   return (
     <Paper
       sx={{
-        display: "flex",
+        display: 'flex',
         flexDirection: "column",
         borderRadius: 3,
         border: isFeatured
@@ -56,10 +66,11 @@ const PostCard = ({
         position: "relative",
         boxSizing: "border-box",
         boxShadow: theme.shadows[3],
-        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
         "&:hover": {
           transform: "translateY(-3px)",
           boxShadow: theme.shadows[8],
+          borderColor: theme.palette.primary.light,
         },
         width: "100%",
         fontFamily: theme.typography.fontFamily,
@@ -67,24 +78,52 @@ const PostCard = ({
         overflow: "hidden",
       }}
     >
-      {post.image && (
+      {post.media && post.media.length > 0 && (
         <CardMedia
           component={RouterLink}
           to={`/post/${post._id}`}
-          image={`${process.env.REACT_APP_API_URL}${post.image}`}
           title={post.title}
           sx={{
-            aspectRatio: '16/9',
-            transition: 'transform 0.3s ease',
-            '&:hover': {
-              transform: 'scale(1.03)',
-            }
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            maxHeight: displayMode === 'feed' ? { xs: 300, sm: 400 } : { xs: 350, sm: 400 }, // Use a slightly larger height for feeds
+            overflow: 'hidden',
+            bgcolor: theme.palette.mode === 'dark' ? 'black' : '#f0f2f5',
           }}
-        />
+        >
+          {post.media[0].mediaType === 'image' ? (
+            <img 
+              src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
+              alt={post.title} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            />
+          ) : (
+            <video 
+              src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              controls 
+            />
+          )}
+        </CardMedia>
       )}
-      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-        <Box>
+      <Box sx={{ p: 2, pb: 0 }}>
 
+      {/* Pinned Post Icon */}
+      {isPinned && (
+        <Tooltip title="Pinned Post">
+          <PushPinIcon
+            sx={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              color: theme.palette.text.secondary,
+              fontSize: 22,
+              zIndex: 10,
+            }}
+          />
+        </Tooltip>
+      )}
       {/* Featured Star */}
       {isFeatured && (
         <Tooltip title="Featured Post">
@@ -110,16 +149,14 @@ const PostCard = ({
           flexWrap: "wrap",
           mb: 1.5,
           fontFamily: theme.typography.fontFamily,
+          position: 'relative',
         }}
       >
         <Avatar
           src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
           sx={{
-            bgcolor: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
             width: 40,
             height: 40,
-            fontSize: 20,
           }}
           component={RouterLink}
           to={`/user/${post.user.username}`}
@@ -127,28 +164,46 @@ const PostCard = ({
           {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
         </Avatar>
         <Box minWidth={0} sx={{ flexGrow: 1 }}>
-          <Stack direction="row" alignItems="baseline" spacing={1} sx={{ flexWrap: 'wrap' }}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            {/* Show Group Name if available on the post object */}
+            {post.group?.name && (
+              <Typography
+                variant="subtitle2"
+                component={RouterLink}
+                to={`/g/${post.group.slug}`}
+                sx={{
+                  fontWeight: 700,
+                  color: theme.palette.text.primary,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                  fontSize: 14,
+                  fontFamily: theme.typography.fontFamily,
+                }}
+              >
+                g/{post.group.name}
+              </Typography>
+            )}
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+              • Posted by
+            </Typography>
             <Typography
-              variant="subtitle2"
+              variant="caption"
               component={RouterLink}
               to={`/user/${post.user.username}`}
               sx={{
                 fontWeight: 700,
-                color: theme.palette.text.primary,
+                color: theme.palette.text.secondary,
                 textDecoration: "none",
                 "&:hover": { textDecoration: "underline" },
-                fontSize: 14,
                 fontFamily: theme.typography.fontFamily,
               }}
             >
               {post.user.username}
             </Typography>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
-              • {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-              })}
-            </Typography>
           </Stack>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily, display: 'block' }}>
+            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+          </Typography>
         </Box>
       </Stack>
 
@@ -167,7 +222,9 @@ const PostCard = ({
         )}
         <Typography
           variant="subtitle1"
-          noWrap
+          noWrap={displayMode === 'compact'}
+          component={RouterLink}
+          to={`/post/${post._id}`}
           sx={{
             fontWeight: 700,
             color: theme.palette.text.primary,
@@ -175,13 +232,27 @@ const PostCard = ({
             flexGrow: 1,
             minWidth: 0,
             fontFamily: theme.typography.fontFamily,
+            textDecoration: 'none',
+            '&:hover': { color: 'primary.main' }
           }}
         >
+          {/* Display Flair if available */}
+          {post.flair && (
+            <Chip
+              label={post.flair}
+              size="small"
+              sx={{
+                mr: 1,
+                // In a more advanced version, you'd pass flair color/bg from the group settings
+                bgcolor: alpha(theme.palette.secondary.main, 0.2),
+              }}
+            />
+          )}
           {post.title}
         </Typography>
       </Stack>
 
-      {displayMode === "full" && (
+      {displayMode === "full" && post.content && (
         <>
           {/* Content */}
           <Typography
@@ -193,8 +264,8 @@ const PostCard = ({
               flexGrow: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: post.image ? 2 : 4,
+              display: '-webkit-box',
+              WebkitLineClamp: (post.media && post.media.length > 0) ? 2 : (displayMode === 'feed' ? 6 : 4),
               WebkitBoxOrient: "vertical",
               mb: 1.5,
               fontFamily: theme.typography.fontFamily,
@@ -223,17 +294,16 @@ const PostCard = ({
           </Box>
         </>
       )}
-
       </Box>
 
-      <Divider sx={{ my: 1 }} />
+      <Divider sx={{ mx: 2, my: 1 }} />
 
       {/* Actions */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ flexWrap: "wrap", gap: 1, fontFamily: theme.typography.fontFamily }}
+        sx={{ flexWrap: "wrap", gap: 1, fontFamily: theme.typography.fontFamily, p: 2, pt: 1 }}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -287,18 +357,20 @@ const PostCard = ({
           >
             {isSaved ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
           </IconButton>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setCollectionDialogOpen(true);
-            }}
-            aria-label="add to collection"
-            sx={{ "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.12) } }}
-          >
-            <CollectionsBookmarkIcon />
-          </IconButton>
+          {isAuthenticated && post.isRecipe && (
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCollectionDialogOpen(true);
+              }}
+              aria-label="add to collection"
+              sx={{ "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.12) } }}
+            >
+              <CollectionsBookmarkIcon />
+            </IconButton>
+          )}
           <Button
             component={RouterLink}
             to={`/post/${post._id}`}
@@ -334,9 +406,22 @@ const PostCard = ({
               </IconButton>
             </Tooltip>
           )}
+          {isModerator && isGroupPage && (
+            <Tooltip title={isPinned ? "Unpin Post" : "Pin Post"}>
+              <IconButton
+                size="small"
+                sx={{ ml: 0.5 }}
+                onClick={async () => {
+                  const res = await communityService.togglePinPost(post._id);
+                  if (res.success) setIsPinned(res.isPinned);
+                }}
+              >
+                <PushPinIcon color={isPinned ? "primary" : "action"} />
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
       </Stack>
-    </Box>
     </Paper>
   );
 };

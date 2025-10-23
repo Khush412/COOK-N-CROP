@@ -146,7 +146,7 @@ const FeedPage = () => {
     return (
       <>
         <Grid container spacing={3}>
-          {posts.map((post) => (
+          {posts.map((post) => ( 
             <Grid size={{ xs: 12, sm: 6 }} key={post._id} sx={{ display: 'flex' }}>
               <Box component={RouterLink} to={`/post/${post._id}`} sx={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
                 <PostCard
@@ -156,6 +156,7 @@ const FeedPage = () => {
                   upvotingPosts={upvotingPosts}
                   onToggleSave={(e) => handleToggleSave(post._id, e)}
                   savingPosts={savingPosts}
+                  showSnackbar={setSnackbar}
                 />
               </Box>
             </Grid>

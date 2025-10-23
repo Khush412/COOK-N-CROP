@@ -74,11 +74,12 @@ const CollectionDetailsPage = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {collection.posts.map((post) => (
+          {collection.posts.map((post) => ( 
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
               <PostCard
                 post={post}
                 user={user}
+                // Add default props for onUpvote, upvotingPosts, onToggleSave, savingPosts if not provided
                 showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })}
               />
             </Grid>

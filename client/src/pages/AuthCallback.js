@@ -38,7 +38,7 @@ export default function AuthCallback() {
       }}
     >
       <CircularProgress size={60} />
-      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: 'inherit' }}>
+      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
         Completing authentication...
       </Typography>
     </Box>

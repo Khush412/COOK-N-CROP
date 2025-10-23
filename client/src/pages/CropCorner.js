@@ -242,7 +242,7 @@ export default function CropCorner() {
       </Paper>
 
       <Grid container spacing={4}>
-        {/* Desktop Filter Sidebar */}
+        {/* Desktop Filter Sidebar */} {/* Use size prop */}
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Paper elevation={2} sx={{ p: 2, borderRadius: 3, position: 'sticky', top: 100 }}>
             {filterContent}
@@ -250,7 +250,7 @@ export default function CropCorner() {
         </Grid>
 
         {/* Main Content */}
-        <Grid size={{ xs: 12, md: 9 }}>
+        <Grid size={{ xs: 12, md: 9 }}> {/* Use size prop */}
           <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
             <TextField
               variant="outlined"
@@ -281,8 +281,8 @@ export default function CropCorner() {
 
           {loading ? (
             <Grid container spacing={4}>
-              {[...Array(8)].map((_, index) => (
-                <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              {[...Array(8)].map((_, index) => ( 
+                <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}> {/* Use size prop */}
                   <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
                   <Skeleton />
                   <Skeleton width="60%" />
@@ -328,7 +328,7 @@ export default function CropCorner() {
                 </Typography>
               </Stack>
               <Divider sx={{ mb: 4 }} />
-              <Grid container spacing={4}>
+              <Grid container spacing={4}> {/* Use size prop */}
                 {recentlyViewed.slice(0, 4).map((product) => ( // Show up to 4 recently viewed items
                   <Grid key={`recent-${product._id}`} size={{ xs: 12, sm: 6, md: 3 }}>
                     <ProductCard product={product} showSnackbar={showSnackbar} />

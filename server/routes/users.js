@@ -159,6 +159,25 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
   }
 });
 
+// @desc    Get current user's group subscriptions
+// @route   GET /api/users/me/subscriptions
+// @access  Private
+router.get('/me/subscriptions', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate('subscriptions', 'name slug flairs'); // Populate with flairs
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, data: user.subscriptions });
+  } catch (error) {
+    console.error('Get user subscriptions error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Get all users (Admin only)
 // @route   GET /api/users/all
 // @access  Private/Admin

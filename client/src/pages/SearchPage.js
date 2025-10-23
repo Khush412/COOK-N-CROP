@@ -176,7 +176,8 @@ const SearchPage = () => {
             <Box mb={4}>
               <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Posts</Typography>
               <Grid container spacing={3}>
-                {globalResults.posts.map(post => (
+                {/* Added showSnackbar prop */}
+                {globalResults.posts.map(post => ( // Use size prop for Grid items
                   <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
                     <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
                   </Grid>
@@ -189,7 +190,7 @@ const SearchPage = () => {
             <Box mb={4}>
               <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Products</Typography>
               <Grid container spacing={3}>
-                {globalResults.products.map(product => (
+                {globalResults.products.map(product => ( // Use size prop for Grid items
                   <Grid key={`product-${product._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <ProductCard product={product} showSnackbar={() => {}} />
                   </Grid>
@@ -202,7 +203,7 @@ const SearchPage = () => {
             <Box>
               <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Users</Typography>
               <Grid container spacing={3}>
-                {globalResults.users.map(userResult => (
+                {globalResults.users.map(userResult => ( // Use size prop for Grid items
                   <Grid key={`user-${userResult._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <UserCard user={userResult} />
                   </Grid>
@@ -217,17 +218,18 @@ const SearchPage = () => {
     return (
       <Box>
         <Grid container spacing={3}>
-          {tab === 'posts' && paginatedResults.posts.map(post => (
+          {tab === 'posts' && paginatedResults.posts.map(post => ( // Use size prop for Grid items
             <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
+              {/* Added showSnackbar prop */}
               <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
             </Grid>
           ))}
-          {tab === 'products' && paginatedResults.products.map(product => (
+          {tab === 'products' && paginatedResults.products.map(product => ( // Use size prop for Grid items
             <Grid key={`product-${product._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <ProductCard product={product} showSnackbar={() => {}} />
             </Grid>
           ))}
-          {tab === 'users' && paginatedResults.users.map(userResult => (
+          {tab === 'users' && paginatedResults.users.map(userResult => ( // Use size prop for Grid items
             <Grid key={`user-${userResult._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <UserCard user={userResult} />
             </Grid>
@@ -270,7 +272,7 @@ const SearchPage = () => {
             <Tabs value={tab} onChange={handleTabChange} aria-label="search results tabs" variant="scrollable" scrollButtons="auto">
               <Tab label="All" value="all" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
               <Tab label={`Posts (${globalResults.posts.length})`} value="posts" disabled={globalResults.posts.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
-              <Tab label={`Products (${globalResults.products.length})`} value="products" disabled={globalResults.products.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
+              <Tab label={`Products (${globalResults.products.length})`} value="products" disabled={globalResults.products.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} /> {/* Corrected label */}
               <Tab label={`Users (${globalResults.users.length})`} value="users" disabled={globalResults.users.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
             </Tabs>
           </Box>

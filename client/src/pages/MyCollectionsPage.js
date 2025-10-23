@@ -58,6 +58,7 @@ const CollectionCard = ({ collection, onEdit, onDelete }) => {
 
 const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
   const [formData, setFormData] = useState({ name: '', description: '', isPublic: true });
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -82,20 +83,20 @@ const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{collection ? 'Edit Collection' : 'Create New Collection'}</DialogTitle>
+      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>{collection ? 'Edit Collection' : 'Create New Collection'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField autoFocus name="name" label="Collection Name" value={formData.name} onChange={handleChange} fullWidth required />
-          <TextField name="description" label="Description (Optional)" multiline rows={3} value={formData.description} onChange={handleChange} fullWidth />
+          <TextField autoFocus name="name" label="Collection Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+          <TextField name="description" label="Description (Optional)" multiline rows={3} value={formData.description} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
           <FormControlLabel
             control={<Switch checked={formData.isPublic} onChange={handleChange} name="isPublic" />}
-            label="Public (visible to others)"
+            label={<Typography sx={{ fontFamily: theme.typography.fontFamily }}>Public (visible to others)</Typography>}
           />
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={loading || !formData.name}>
+        <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained" disabled={loading || !formData.name} sx={{ fontFamily: theme.typography.fontFamily }}>
           {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>
@@ -177,19 +178,19 @@ const MyCollectionsPage = () => {
             <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>My Collections</Typography>
             <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Organize your favorite posts and recipes.</Typography>
           </Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => openForm()} sx={{ borderRadius: '50px' }}>Create Collection</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => openForm()} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>Create Collection</Button>
         </Stack>
       </Paper>
 
       {collections.length === 0 ? (
         <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
           <BookmarksIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">You haven't created any collections yet.</Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>You haven't created any collections yet.</Typography>
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {collections.map((collection) => (
-            <Grid item xs={12} sm={6} md={4} key={collection._id}>
+          {collections.map((collection) => ( 
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={collection._id}>
               <CollectionCard collection={collection} onEdit={openForm} onDelete={openDeleteConfirm} />
             </Grid>
           ))}
@@ -199,13 +200,13 @@ const MyCollectionsPage = () => {
       <CollectionFormDialog open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSave} collection={editingCollection} />
 
       <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>Confirm Deletion</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to delete the collection "{collectionToDelete?.name}"?</Typography>
+          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Are you sure you want to delete the collection "{collectionToDelete?.name}"?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleDelete} color="error">Delete</Button>
+          <Button onClick={() => setDeleteConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" sx={{ fontFamily: theme.typography.fontFamily }}>Delete</Button>
         </DialogActions>
       </Dialog>
     </Container>

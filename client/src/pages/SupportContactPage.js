@@ -123,7 +123,7 @@ const SupportContactPage = () => {
         </Paper>
 
         <Grid container spacing={6}>
-          {/* FAQ Section */}
+          {/* FAQ Section */} 
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
               Frequently Asked Questions
@@ -187,7 +187,7 @@ const SupportContactPage = () => {
                         <MenuItem value="Partnership" sx={{ fontFamily: theme.typography.fontFamily }}>Partnership</MenuItem>
                         <MenuItem value="Feedback" sx={{ fontFamily: theme.typography.fontFamily }}>Feedback</MenuItem>
                       </Select>
-                    </FormControl>
+                    </FormControl> {/* Use size prop */}
                   </Grid>
                   <Grid size={{ xs: 12 }}>
                     <TextField fullWidth required multiline rows={6} label="Your Message" name="message" value={form.message} onChange={handleChange} disabled={loading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />

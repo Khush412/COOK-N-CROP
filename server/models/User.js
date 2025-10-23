@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'Bio cannot exceed 500 characters'],
     trim: true
   },
+  flavorPoints: {
+    type: Number,
+    default: 0
+  },
   profilePic: {
     type: String,
     default: null
@@ -186,6 +190,7 @@ const userSchema = new mongoose.Schema({
   // Saved content
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
   wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  subscriptions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
   // Following/Followers
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

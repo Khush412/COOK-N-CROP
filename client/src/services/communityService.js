@@ -183,7 +183,15 @@ const addRecipeReview = async (postId, reviewData) => {
     throw error;
   }
 };
-
+const togglePinPost = async (postId) => {
+  try {
+    const { data } = await api.put(`/posts/${postId}/pin`);
+    return data;
+  } catch (error) {
+    console.error(`Error toggling pin for post ${postId}`, error);
+    throw error;
+  }
+};
 const communityService = {
   getPosts,
   createPost,
@@ -201,6 +209,7 @@ const communityService = {
   getFeedPosts,
   getShoppableIngredients,
   toggleFeaturePost,
+  togglePinPost,
   addRecipeReview,
 };
 

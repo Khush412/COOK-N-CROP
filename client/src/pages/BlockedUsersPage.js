@@ -83,7 +83,7 @@ const BlockedUsersPage = () => {
           </Box>
         ) : (
           <Grid container spacing={2}>
-            {blockedUsers.map((blockedUser) => (
+            {blockedUsers.map((blockedUser) => ( 
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={blockedUser._id}>
                 <Paper variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}>
                   <Avatar src={blockedUser.profilePic && blockedUser.profilePic.startsWith('http') ? blockedUser.profilePic : blockedUser.profilePic ? `${process.env.REACT_APP_API_URL}${blockedUser.profilePic}` : undefined} sx={{ width: 56, height: 56 }} />

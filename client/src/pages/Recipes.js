@@ -15,11 +15,7 @@ import {
   Paper,
   Chip,
   TextField,
-  Button,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
+  Button, Divider,
   alpha,
   Drawer,
   FormControl,
@@ -41,7 +37,6 @@ import communityService from '../services/communityService';
 import { useAuth } from '../contexts/AuthContext';
 import userService from '../services/userService';
 import PostCard from '../components/PostCard';
-import CreatePostForm from '../components/CreatePostForm';
 
 const RecipesPage = () => {
   const theme = useTheme();
@@ -60,8 +55,6 @@ const RecipesPage = () => {
   const [trendingTags, setTrendingTags] = useState([]);
   const [prepTime, setPrepTime] = useState(120);
   const [servings, setServings] = useState(1);
-  const [openCreatePost, setOpenCreatePost] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -192,30 +185,7 @@ const RecipesPage = () => {
   };
 
   const handleOpenCreatePost = () => {
-    if (!isAuthenticated) {
-      navigate('/login?redirect=/recipes');
-    } else {
-      setOpenCreatePost(true);
-    }
-  };
-
-  const handleCloseCreatePost = () => {
-    if (isSubmitting) return;
-    setOpenCreatePost(false);
-  };
-
-  const handleCreatePostSubmit = async (postData) => {
-    setIsSubmitting(true);
-    try {
-      const newPost = await communityService.createPost(postData);
-      setOpenCreatePost(false);
-      setSnackbar({ open: true, message: 'Recipe created successfully!', severity: 'success' });
-      navigate(`/post/${newPost._id}`); // Navigate to the new recipe page
-    } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to create recipe. Please try again.', severity: 'error' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate('/create-recipe');
   };
 
   const FilterSidebar = () => (
@@ -308,15 +278,15 @@ const RecipesPage = () => {
       </Paper>
 
       <Grid container spacing={4}>
-        {/* Filters Sidebar */}
-        <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+        {/* Filters Sidebar */} 
+        <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}> {/* Use size prop */}
           <Box sx={{ position: 'sticky', top: 100 }}>
             <FilterSidebar />
           </Box>
         </Grid>
 
-        {/* Main Content */}
-        <Grid size={{ xs: 12, md: 9 }}>
+        {/* Main Content */} 
+        <Grid size={{ xs: 12, md: 9 }}> {/* Use size prop */}
           <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
             <TextField
               label="Search Recipes"
@@ -374,18 +344,6 @@ const RecipesPage = () => {
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>{snackbar.message}</Alert>
       </Snackbar>
-
-      <Dialog open={openCreatePost} onClose={handleCloseCreatePost} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Create a New Recipe</DialogTitle>
-        <DialogContent>
-          <CreatePostForm
-            onSubmit={handleCreatePostSubmit}
-            onCancel={handleCloseCreatePost}
-            loading={isSubmitting}
-            forceRecipe={true}
-          />
-        </DialogContent>
-      </Dialog>
 
       <Drawer
         anchor="left"

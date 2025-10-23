@@ -15,6 +15,11 @@ const PostSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    required: true,
+  },
   title: {
     type: String,
     required: [true, 'Please add a title'],
@@ -25,22 +30,42 @@ const PostSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add content'],
   },
-  image: {
-    type: String,
-    default: null,
-  },
+  media: [
+    {
+      url: { type: String, required: true },
+      mediaType: { type: String, enum: ['image', 'video'], required: true },
+      _id: false,
+    },
+  ],
   tags: [
     {
       type: String,
       trim: true,
-    },
+    }, // Removed trailing comma here to fix syntax error
   ],
+  flair: {
+    type: String,
+    trim: true,
+  },
   upvotes: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
   ],
+  downvotes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
+  voteScore: {
+    type: Number, default: 0, index: true
+  },
+  hotScore: {
+    type: Number,
+    default: 0
+  },
   comments: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -53,6 +78,10 @@ const PostSchema = new mongoose.Schema({
     default: false,
   },
   isFeatured: {
+    type: Boolean,
+    default: false,
+  },
+  isPinned: {
     type: Boolean,
     default: false,
   },

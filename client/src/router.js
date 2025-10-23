@@ -43,6 +43,11 @@ import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SearchPage from './pages/SearchPage';
+import ExploreGroupsPage from './pages/ExploreGroupsPage'; // New
+import CreateGroupPage from './pages/CreateGroupPage'; // New
+import GroupPage from './pages/GroupPage'; // New
+import EditGroupPage from './pages/EditGroupPage'; // New
+import CreatePostPage from './pages/CreatePostPage'; // New
 import MyCollectionsPage from './pages/MyCollectionsPage'; // New
 import CollectionDetailsPage from './pages/CollectionDetailsPage'; // New
 import MessengerPage from './pages/MessengerPage';
@@ -60,6 +65,8 @@ export default function AppRouter() {
       <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
       <Route path="/feed" element={<FeedPage />} /> {/* New */}
       <Route path="/community" element={<Community />} />
+      <Route path="/g/:slug" element={<GroupPage />} /> {/* New */}
+      <Route path="/community/explore" element={<ExploreGroupsPage />} /> {/* New */}
       <Route path="/collection/:id" element={<CollectionDetailsPage />} /> {/* New */}
       <Route path="/product/:id" element={<ProductPage />} /> {/* New */}
       <Route path="/CropCorner" element={<CropCorner />} />
@@ -79,6 +86,10 @@ export default function AppRouter() {
         <Route path="/profile/my-activity" element={<MyActivityPage />} />
         <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />
         <Route path="/profile/wishlist" element={<WishlistPage />} />
+        <Route path="/g/:slug/edit" element={<EditGroupPage />} /> {/* Moved inside PrivateRoute */} {/* Corrected PrivateRoute usage */}
+        <Route path="/community/create" element={<CreateGroupPage />} /> {/* New */}
+        <Route path="/create-post" element={<CreatePostPage />} /> {/* New */}
+        <Route path="/create-recipe" element={<CreatePostPage />} /> {/* New */}
         <Route path="/profile/support-tickets" element={<MySupportTicketsPage />} />
         <Route path="/support/ticket/:id" element={<SupportTicketDetailsPage />} />
         <Route path="/profile/orders" element={<OrderHistoryPage />} />

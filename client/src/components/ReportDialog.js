@@ -75,7 +75,7 @@ const ReportDialog = ({ open, onClose, onSubmit, loading, contentType = 'content
             value={details}
             onChange={(e) => setDetails(e.target.value)}
             InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
           />
         </Stack>
       </DialogContent>

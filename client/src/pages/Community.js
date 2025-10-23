@@ -8,11 +8,8 @@ import {
   Grid,
   Button,
   Paper,
-  CircularProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
+  CircularProgress, Alert,
+  Divider,
   Snackbar,
   ToggleButton,
   ToggleButtonGroup,
@@ -20,22 +17,59 @@ import {
   Stack,
   Pagination,
   Drawer,
+  Chip,
   IconButton,
+  Avatar,
 } from "@mui/material";
-import { useTheme} from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import {
   Forum as ForumIcon,
   NewReleases as NewReleasesIcon,
   TrendingUp as TrendingUpIcon,
+  Whatshot as WhatshotIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
   Add as AddIcon,
+  People as PeopleIcon,
 } from "@mui/icons-material";
 
 import communityService from "../services/communityService";
 import userService from "../services/userService";
-import CreatePostForm from "../components/CreatePostForm";
 import PostCard from "../components/PostCard";
+import groupService from '../services/groupService';
+
+const GroupCard = ({ group }) => {
+  const theme = useTheme();
+  return (
+    <Paper
+      component={RouterLink}
+      to={`/g/${group.slug}`}
+      variant="outlined"
+      sx={{
+        p: 1.5,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        borderRadius: 2,
+        textDecoration: 'none',
+        color: 'inherit',
+        transition: 'box-shadow .2s, border-color .2s',
+        '&:hover': { boxShadow: theme.shadows[3], borderColor: 'primary.light' }
+      }}
+    >
+      <Avatar
+        src={group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`}
+        alt={group.name}
+        variant="rounded"
+        sx={{ width: 48, height: 48 }}
+      />
+      <Box>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{group.name}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{group.memberCount} members</Typography>
+      </Box>
+    </Paper>
+  );
+};
 
 export default function Community() {
   const theme = useTheme();
@@ -45,8 +79,6 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [openCreatePost, setOpenCreatePost] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -55,8 +87,10 @@ export default function Community() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
+  const [trendingTags, setTrendingTags] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [groups, setGroups] = useState([]); // For the Discover Groups sidebar
 
   // Background image URL for the header - update your file path as needed
   const headerImageURL = `${process.env.PUBLIC_URL}/images/CooknCrop.png`;
@@ -91,30 +125,25 @@ export default function Community() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [sort, page, selectedTags, debouncedSearchTerm]);
 
+  useEffect(() => {
+    const fetchTrendingTags = async () => {
+      try {
+        const tags = await communityService.getTrendingTags();
+        setTrendingTags(tags);
+      } catch (err) { console.error("Error fetching trending tags: ", err); }
+    };
+    const fetchGroups = async () => {
+      try {
+        const groupData = await groupService.getAllGroups();
+        setGroups(groupData);
+      } catch (err) { console.error("Error fetching groups: ", err); }
+    };
+    fetchTrendingTags();
+    fetchGroups();
+  }, []);
+
   const handleCreateClick = () => {
-    if (!isAuthenticated) navigate("/login?redirect=/community");
-    else {
-      setOpenCreatePost(true);
-      setSidebarOpen(false);
-    }
-  };
-
-  const handleCloseCreate = () => {
-    if (!isSubmitting) setOpenCreatePost(false);
-  };
-
-  const handlePostSubmit = async (data) => {
-    setIsSubmitting(true);
-    try {
-      const newPost = await communityService.createPost(data);
-      setPosts((prev) => [newPost, ...prev]);
-      setOpenCreatePost(false);
-      setSnackbar({ open: true, message: "Post created successfully!", severity: "success" });
-    } catch {
-      setSnackbar({ open: true, message: "Failed to create post.", severity: "error" });
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate('/create-post');
   };
 
   const handleUpvote = async (postId, event) => {
@@ -184,6 +213,14 @@ export default function Community() {
     setPage(value);
   };
 
+  const handleTagClick = (tagToToggle) => {
+    setPage(1);
+    setSelectedTags((prev) =>
+      prev.includes(tagToToggle)
+        ? prev.filter((tag) => tag !== tagToToggle)
+        : [tagToToggle] // Only allow one tag at a time for simplicity in this view
+    );
+  };
   // Sidebar content reused inside drawer and desktop sidebar
   const SidebarContent = (
     <Stack
@@ -198,8 +235,8 @@ export default function Community() {
         sx={{
           p: 3,
           textAlign: "center",
-          backgroundImage: `url(${headerImageURL})`,
-          backgroundSize: "cover",
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${headerImageURL})`,
+          backgroundSize: "contain",
           backgroundPosition: "center",
           filter: "brightness(0.85)",
           bgcolor: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -225,6 +262,32 @@ export default function Community() {
         <Typography variant="body2" sx={{ mt: 1, opacity: 0.9, fontFamily: theme.typography.fontFamily }}>
           Share your experiences, ask questions, and connect!
         </Typography>
+      </Paper>
+      <Paper sx={{ p: 2, borderRadius: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
+          <WhatshotIcon color="error" sx={{ mr: 1 }} />
+          Trending Topics
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {trendingTags.length > 0 ? trendingTags.map(item => (
+            <Chip
+              key={item.tag}
+              label={item.tag}
+              onClick={() => handleTagClick(item.tag)}
+              clickable
+              color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
+              variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
+              sx={{ fontFamily: theme.typography.fontFamily }}
+            />
+          )) : (
+            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No trending topics right now.</Typography>
+          )}
+          {selectedTags.length > 0 && (
+            <Button size="small" onClick={() => setSelectedTags([])} sx={{ ml: 'auto', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
+              Clear Filter
+            </Button>
+          )}
+        </Box>
       </Paper>
     </Stack>
   );
@@ -318,13 +381,18 @@ export default function Community() {
             alignItems: "flex-start",
           }}
         >
-          {/* Posts area */}
-          <Grid size={{ xs: 12 }}>
+          {/* Desktop Left Sidebar (for Trending Topics and Create Post) */}
+          <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ position: 'sticky', top: 100 }}>
+              {SidebarContent}
+            </Box>
+          </Grid>
+
+          {/* Main Feed */}
+          <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: -1, md: 0 } }}>
             <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
               <TextField
                 label="Search Posts"
-                variant="outlined"
-                size="small"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
@@ -339,6 +407,10 @@ export default function Community() {
                   <TrendingUpIcon sx={{ mr: 0.7, fontSize: 20 }} />
                   Top
                 </ToggleButton>
+                <ToggleButton value="hot" aria-label="Sort by hot">
+                  <WhatshotIcon sx={{ mr: 0.7, fontSize: 20 }} />
+                  Hot
+                </ToggleButton>
                 <ToggleButton value="discussed" aria-label="Sort by discussed">
                   <ForumIcon sx={{ mr: 0.7, fontSize: 20 }} />
                   Discussed
@@ -347,60 +419,63 @@ export default function Community() {
               <IconButton onClick={() => setSidebarOpen(true)} sx={{ display: { xs: 'flex', md: 'none' } }} aria-label="open filters and actions">
                 <MenuIcon />
               </IconButton>
-                <Button
-                  variant="contained"
-                  onClick={handleCreateClick}
-                  startIcon={<AddIcon />}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', display: { xs: 'none', md: 'flex' } }}
-                >
-                  Create Post
-                </Button>
             </Paper>
 
-              {/* Content states */}
-              {loading && (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <CircularProgress />
-                </Box>
-              )}
+            {loading && <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress /></Box>}
               {error && <Alert severity="error">{error}</Alert>}
-              {!loading && !error && posts.length === 0 && (
+            {!loading && !error && posts.length === 0 && (
                 <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 18, py: 4 }}>
                   No posts yet. Be the first to start a conversation!
                 </Typography>
               )}
 
-              {/* Posts Grid */}
-              <Grid container spacing={3}>
-                {posts.map((post) => (
-                  <Grid size={{ xs: 12, sm: 6 }} key={post._id}>
-                    <Box component={RouterLink} to={`/post/${post._id}`} sx={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
-                      <PostCard
-                        post={post}
-                        user={user}
-                        onUpvote={(e) => handleUpvote(post._id, e)}
-                        upvotingPosts={upvotingPosts}
-                        onToggleSave={(e) => handleToggleSave(post._id, e)}
-                        savingPosts={savingPosts}
-                        showSnackbar={setSnackbar}
-                      />
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
+            {/* Posts Feed */}
+            <Stack spacing={3}>
+              {posts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  user={user}
+                  onUpvote={(e) => handleUpvote(post._id, e)}
+                  upvotingPosts={upvotingPosts}
+                  onToggleSave={(e) => handleToggleSave(post._id, e)}
+                  savingPosts={savingPosts}
+                  showSnackbar={setSnackbar}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-                  <Pagination
-                    color="primary"
-                    size="large"
-                    count={totalPages}
-                    page={page}
-                    onChange={handlePageChange}
-                  />
-                </Box>
-              )}
+                  displayMode="feed"
+                />
+              ))}
+            </Stack>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+                <Pagination
+                  color="primary"
+                  size="large"
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                />
+              </Box>
+            )}
+          </Grid>
+
+          {/* Right Sidebar (for Discover Groups) */}
+          <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ position: 'sticky', top: 100 }}>
+              <Paper sx={{ p: 2, borderRadius: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>Discover Groups</Typography>
+                <Stack spacing={1.5}>
+                  {groups.slice(0, 5).map(group => ( // Show top 5 groups
+                    <GroupCard key={group._id} group={group} />
+                  ))}
+                </Stack>
+                <Button component={RouterLink} to="/community/explore" fullWidth sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
+                  Explore All Groups
+                </Button>
+              </Paper>
+            </Box>
           </Grid>
         </Grid>
 
@@ -418,19 +493,6 @@ export default function Community() {
           </Box>
           {SidebarContent}
         </Drawer>
-
-        {/* Create Post Dialog */}
-        <Dialog open={openCreatePost} onClose={handleCloseCreate} fullWidth maxWidth="sm">
-          <DialogTitle sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>Create a New Post</DialogTitle>
-          <DialogContent>
-            <CreatePostForm 
-              onSubmit={handlePostSubmit} 
-              onCancel={handleCloseCreate} 
-              loading={isSubmitting} 
-              forceRecipe={false} 
-            />
-          </DialogContent>
-        </Dialog>
 
         {/* Snackbar */}
         <Snackbar

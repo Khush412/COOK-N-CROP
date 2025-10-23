@@ -4,11 +4,13 @@ import {
   List, ListItem, ListItemText, Checkbox, TextField, Stack, Typography, Divider, Box
 } from '@mui/material';
 import api from '../config/axios';
+import { useTheme } from '@mui/material/styles';
 
 const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const theme = useTheme();
   const [error, setError] = useState('');
   const [selectedCollections, setSelectedCollections] = useState([]);
   const [showNewCollection, setShowNewCollection] = useState(false);
@@ -79,9 +81,9 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Add "{post?.title}" to...</DialogTitle>
+      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>Add "{post?.title}" to...</DialogTitle>
       <DialogContent dividers>
-        {loading ? <CircularProgress /> : error ? <Alert severity="error">{error}</Alert> : (
+        {loading ? <CircularProgress /> : error ? <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert> : (
           <List dense>
             {collections.map(collection => (
               <ListItem key={collection._id} secondaryAction={
@@ -91,7 +93,7 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
                   checked={selectedCollections.includes(collection._id)}
                 />
               } disablePadding>
-                <ListItemText primary={collection.name} secondary={`${collection.postCount} items`} />
+                <ListItemText primary={collection.name} secondary={`${collection.postCount} items`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
               </ListItem>
             ))}
           </List>
@@ -106,20 +108,21 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
               value={newCollectionName}
               onChange={(e) => setNewCollectionName(e.target.value)}
               fullWidth
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
             />
-            <Button onClick={handleCreateAndAdd} disabled={saving || !newCollectionName.trim()}>
+            <Button onClick={handleCreateAndAdd} disabled={saving || !newCollectionName.trim()} sx={{ fontFamily: theme.typography.fontFamily }}>
               {saving ? <CircularProgress size={20} /> : 'Create'}
             </Button>
           </Stack>
         ) : (
-          <Button onClick={() => setShowNewCollection(true)} fullWidth>
+          <Button onClick={() => setShowNewCollection(true)} fullWidth sx={{ fontFamily: theme.typography.fontFamily }}>
             Create New Collection
           </Button>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" disabled={saving}>
+        <Button onClick={onClose} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+        <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ fontFamily: theme.typography.fontFamily }}>
           {saving ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>

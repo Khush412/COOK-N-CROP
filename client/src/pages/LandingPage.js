@@ -372,7 +372,7 @@ const LandingPage = () => {
           </Typography>
           <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto', mb: 8 }} />
           <Grid container spacing={4}>
-            {TESTIMONIALS.map((testimonial, index) => (
+            {TESTIMONIALS.map((testimonial, index) => ( 
               <Grid size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
                 <Paper
                   component={motion.div}

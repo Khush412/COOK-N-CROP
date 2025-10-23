@@ -6,6 +6,7 @@ const Comment = require('../models/Comment');
 const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 const User = require('../models/User'); // Import User model
+const Group = require('../models/Group'); // Import Group model
 const multer = require('multer');
 const path = require('path');
 
@@ -20,7 +21,7 @@ const storage = multer.diskStorage({
 });
 
 function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png|gif/;
+  const filetypes = /jpg|jpeg|png|gif|mp4|mov|avi|mkv|webm|ogg/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
 
@@ -31,23 +32,35 @@ function checkFileType(file, cb) {
   }
 }
 
-const upload = multer({ storage, fileFilter: function(req, file, cb) { checkFileType(file, cb); } });
+const upload = multer({
+  storage,
+  fileFilter: function(req, file, cb) { checkFileType(file, cb); },
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit per file
+});
 
 // @desc    Create a new post
 // @route   POST /api/posts
 // @access  Private
-router.post('/', protect, upload.single('image'), async (req, res) => {
+router.post('/', protect, upload.array('media', 10), async (req, res) => {
   try {
-    const { title, content, tags, isRecipe, recipeDetails, taggedProducts } = req.body;
+    const { title, content, tags, isRecipe, recipeDetails, taggedProducts, group, flair } = req.body;
+
+    const mediaFiles = req.files ? req.files.map(file => ({
+      url: `/uploads/recipes/${file.filename}`,
+      mediaType: file.mimetype.startsWith('image') ? 'image' : 'video',
+    })) : [];
+    if (!group) return res.status(400).json({ message: 'A group must be selected to create a post.' });
 
     const postData = {
       user: req.user.id,
       title,
       content,
-      image: req.file ? `/uploads/recipes/${req.file.filename}` : null,
+      media: mediaFiles,
       tags,
       isRecipe,
       taggedProducts: isRecipe ? taggedProducts : [],
+      flair,
+      group,
     };
 
     if (isRecipe && recipeDetails) { // recipeDetails is now a stringified JSON
@@ -142,13 +155,13 @@ router.get('/', optionalAuth, async (req, res) => {
     if (sort === 'relevance' && search) {
       pipeline.push({ $sort: { score: { $meta: 'textScore' } } });
     } else if (sort === 'top') {
-      pipeline.push({ $addFields: { sortScore: { $size: { $ifNull: ['$upvotes', []] } } } });
-      pipeline.push({ $sort: { isFeatured: -1, sortScore: -1, createdAt: -1 } });
+      pipeline.push({ $addFields: { sortScore: '$voteScore' } });
+      pipeline.push({ $sort: { isPinned: -1, isFeatured: -1, sortScore: -1, createdAt: -1 } });
     } else if (sort === 'discussed') {
       pipeline.push({ $addFields: { sortScore: { $size: { $ifNull: ['$comments', []] } } } });
-      pipeline.push({ $sort: { isFeatured: -1, sortScore: -1, createdAt: -1 } });
+      pipeline.push({ $sort: { isPinned: -1, isFeatured: -1, sortScore: -1, createdAt: -1 } });
     } else { // Default to 'new'
-      pipeline.push({ $sort: { isFeatured: -1, createdAt: -1 } });
+      pipeline.push({ $sort: { isPinned: -1, isFeatured: -1, createdAt: -1 } });
     }
 
     // Add pagination
@@ -156,21 +169,25 @@ router.get('/', optionalAuth, async (req, res) => {
 
     // Add lookups and final shaping
     pipeline.push({ $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' } });
-    pipeline.push({ $unwind: '$user' });
+    pipeline.push({ $lookup: { from: 'groups', localField: 'group', foreignField: '_id', as: 'group' } }); // Populate group info
+    pipeline.push({ $unwind: '$user' }, { $unwind: '$group' });
 
     // Final projection stage
     const projectStage = {
       title: 1,
       content: 1,
-      image: 1,
+      media: 1,
       tags: 1,
       isRecipe: 1,
       isFeatured: 1,
+      isPinned: 1,
       recipeDetails: 1,
-      taggedProducts: 1,
+      flair: 1,
       createdAt: 1,
+      taggedProducts: 1,
       updatedAt: 1,
       upvotes: 1,
+      group: { _id: '$group._id', name: '$group.name', slug: '$group.slug', moderators: '$group.moderators', creator: '$group.creator' }, // Include group moderator and creator info
       user: { _id: '$user._id', username: '$user.username', profilePic: '$user.profilePic' },
       upvoteCount: { $size: { $ifNull: ['$upvotes', []] } },
       commentCount: { $size: { $ifNull: ['$comments', []] } },
@@ -218,7 +235,7 @@ router.get('/featured-recipes', async (req, res) => {
       { $unwind: '$user' },
       {
         $project: {
-          title: 1, content: 1, image: 1, tags: 1, isRecipe: 1, isFeatured: 1, createdAt: 1,
+          title: 1, content: 1, media: 1, tags: 1, isRecipe: 1, isFeatured: 1, createdAt: 1,
           upvotes: 1,
           'user._id': '$user._id', 'user.username': '$user.username', 'user.profilePic': '$user.profilePic',
           upvoteCount: 1,
@@ -347,6 +364,37 @@ router.get('/:id/shoppable-ingredients', async (req, res) => {
   }
 });
 
+// @desc    Pin/unpin a post
+// @route   PUT /api/posts/:id/pin
+// @access  Private (Group Moderator or Admin)
+router.put('/:id/pin', protect, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const group = await Group.findById(post.group);
+    if (!group) {
+      return res.status(404).json({ message: 'Associated group not found' });
+    }
+
+    const isModerator = group.moderators.some(modId => modId.equals(req.user.id));
+    if (!isModerator && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to pin posts in this group.' });
+    }
+
+    post.isPinned = !post.isPinned;
+    await post.save();
+
+    res.json({ success: true, message: `Post ${post.isPinned ? 'pinned' : 'unpinned'}.`, isPinned: post.isPinned });
+
+  } catch (error) {
+    console.error('Pin post error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Get single post by ID
 // @route   GET /api/posts/:id
 // @access  Public
@@ -354,6 +402,7 @@ router.get('/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
       .populate('user', 'username profilePic')
+      .populate('group', 'name slug rules moderators creator') // Populate group with rules
       .populate({
         path: 'comments',
         match: { parentComment: null }, // Fetch only top-level comments
@@ -516,8 +565,8 @@ router.post('/:id/comments', protect, async (req, res) => {
 
 // @desc    Update a post
 // @route   PUT /api/posts/:id
-// @access  Private
-router.put('/:id', protect, upload.single('image'), async (req, res) => {
+// @access  Private 
+router.put('/:id', protect, upload.array('media', 10), async (req, res) => {
   try {
     let post = await Post.findById(req.params.id);
 
@@ -525,21 +574,46 @@ router.put('/:id', protect, upload.single('image'), async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Check user
-    if (post.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Check user, group moderator, or admin
+    const group = await Group.findById(post.group);
+    const isGroupModerator = group && group.moderators.some(modId => modId.equals(req.user.id));
+
+    if (post.user.toString() !== req.user.id && req.user.role !== 'admin' && !isGroupModerator) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
-    const { title, content, tags, isRecipe, recipeDetails, taggedProducts } = req.body;
+    const { title, content, tags, isRecipe, recipeDetails, taggedProducts, existingMedia, group: newGroup, flair } = req.body;
+
+    // If a group is provided in the update, ensure the user is authorized to change it
+    if (newGroup && newGroup !== post.group.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can change a post\'s group.' });
+    }
 
     post.title = title || post.title;
     post.content = content || post.content;
-    post.tags = tags || post.tags;
-    post.isRecipe = isRecipe === undefined ? post.isRecipe : isRecipe;
+    post.tags = tags !== undefined ? tags : post.tags;
+    post.isRecipe = isRecipe === 'true';
     post.taggedProducts = isRecipe ? taggedProducts : [];
+    
+    const newMediaFiles = req.files ? req.files.map(file => ({
+      url: `/uploads/recipes/${file.filename}`,
+      mediaType: file.mimetype.startsWith('image') ? 'image' : 'video',
+    })) : [];
 
-    if (req.file) {
-      post.image = `/uploads/recipes/${req.file.filename}`;
+    // existingMedia should be an array of media objects from the frontend
+    const parsedExistingMedia = existingMedia ? JSON.parse(existingMedia) : [];
+
+    // Sanitize URLs of existing media to remove the base URL prefix
+    const sanitizedExistingMedia = parsedExistingMedia.map(media => {
+      const url = new URL(media.url);
+      return { ...media, url: url.pathname };
+    });
+
+    const finalMedia = sanitizedExistingMedia.concat(newMediaFiles);
+    post.media = finalMedia;
+
+    if (newGroup) {
+      post.group = newGroup;
     }
 
     if (isRecipe && recipeDetails) { // recipeDetails is now a stringified JSON
@@ -600,8 +674,11 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Check user or admin
-    if (post.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Check user, group moderator, or admin
+    const group = await Group.findById(post.group);
+    const isGroupModerator = group && group.moderators.some(modId => modId.equals(req.user.id));
+
+    if (post.user.toString() !== req.user.id && req.user.role !== 'admin' && !isGroupModerator) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 

@@ -210,7 +210,7 @@ const PublicProfilePage = () => {
               {!user.profilePic && user.username.charAt(0).toUpperCase()}
             </Avatar>
           </Grid>
-          <Grid size={{ xs: 12, md: true }} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+          <Grid size={{ xs: 12, md: true }}>
             <Typography variant="h3" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
               {user.username}
             </Typography>
@@ -231,7 +231,7 @@ const PublicProfilePage = () => {
               Joined {format(new Date(user.createdAt), 'MMM yyyy')}
             </Typography>
           </Grid>
-          <Grid size={{ xs: 12, md: 'auto' }} sx={{ display: 'flex', alignItems: 'center' }}>
+          <Grid size={{ xs: 12, md: 'auto' }}>
             {isAuthenticated && currentUser?.username !== user.username && (
               <Stack direction={{ xs: 'row', md: 'column' }} spacing={1.5} sx={{ width: '100%', justifyContent: 'center' }}>
                 <Button
@@ -281,6 +281,7 @@ const PublicProfilePage = () => {
                 {posts.map((post) => (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
                     <ActivityCard item={post} type="post" />
+                    {/* Added fontFamily to Typography */}
                   </Grid>
                 ))}
               </Grid>

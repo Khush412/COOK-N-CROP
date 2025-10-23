@@ -115,7 +115,7 @@ const AboutPage = () => {
             {/* Our Story Section */}
             <Container maxWidth="lg" sx={{ py: { xs: 10, md: 16 } }}>
                 <Box>
-                    <Grid container spacing={{ xs: 4, md: 8 }} alignItems="stretch">
+                    <Grid container spacing={{ xs: 4, md: 8 }} alignItems="stretch"> 
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Typography variant="h3" component="h2" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
                                 Our Story
@@ -152,15 +152,15 @@ const AboutPage = () => {
 
             {/* What We Offer Section */}
             <Box sx={{ bgcolor: 'background.paper', py: { xs: 10, md: 14 } }}>
-                <Container maxWidth="lg">
+                <Container maxWidth="lg"> {/* Use size prop */}
                     <Box>
                         <Typography variant="h3" component="h2" textAlign="center" sx={{ fontWeight: 700, mb: 8, fontFamily: theme.typography.fontFamily }}>
                             What We Offer
                         </Typography>
                         <Grid container spacing={4} alignItems="stretch">
-                            {offers.map((offer, index) => (
+                            {offers.map((offer, index) => ( 
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index} sx={{ display: 'flex' }}>
-                                    <Paper
+                                    <Paper // Use size prop
                                         variant="outlined"
                                         sx={{
                                             p: { xs: 3, sm: 4 },

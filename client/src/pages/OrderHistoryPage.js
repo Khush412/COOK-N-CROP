@@ -191,7 +191,7 @@ const OrderHistoryPage = () => {
             </Paper>
 
             {/* Orders Display - Will be replaced with cards */}
-            <Stack spacing={3}>
+            <Stack spacing={3}> {/* Use size prop */}
               {filteredAndSortedOrders.length === 0 ? (
                 <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3 }}>
                   <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -232,8 +232,7 @@ const OrderHistoryPage = () => {
                           <Chip
                             label={order.status}
                             color={statusColors[order.status] || 'default'}
-                            size="small"
-                            sx={{ fontWeight: 'bold' }}
+                            size="small" sx={{ fontFamily: theme.typography.fontFamily,fontWeight: 'bold' }}
                           />
                         </Box>
                       </Stack>
@@ -246,6 +245,7 @@ const OrderHistoryPage = () => {
                             ))}
                           </AvatarGroup>
                           {order.orderItems.length > 4 && (
+                            // Added fontFamily to Typography
                             <Typography variant="body2" sx={{ ml: 1, fontFamily: theme.typography.fontFamily }}>+ {order.orderItems.length - 4} more</Typography>
                           )}
                         </Box>

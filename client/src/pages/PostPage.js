@@ -11,6 +11,7 @@ import {
   Paper,
   Avatar,
   Chip,
+  TextField,
   Divider,
   Button,
   Stack,
@@ -28,13 +29,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
   alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
 import {
   ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
-  Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon,
+  Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, Gavel as GavelIcon,
   Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import communityService from '../services/communityService';
@@ -492,6 +494,9 @@ const PostPage = () => {
     return null; // Should be handled by error state
   }
 
+  // Check if current user is the post author, an admin, or a moderator of the post's group
+  const isPostAuthor = post.user._id === user?.id;
+  const isModerator = post.group?.moderators?.some(mod => mod._id === user?.id) || post.group?.creator?._id === user?.id;
   const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews.some(review => review.user?._id === user?.id);
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -507,8 +512,8 @@ const PostPage = () => {
         </Button>
 
         {/* Post Header */}
-        <Box sx={{ position: 'relative', mb: 2 }}>
-          {isAuthenticated && (user.id === post.user._id || user.role === 'admin') && (
+        <Box sx={{ position: 'relative', mb: 2 }}> 
+          {isAuthenticated && (user.id === post.user._id || user.role === 'admin' || isModerator) && (
             <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
               <IconButton
                 aria-label="settings"
@@ -536,10 +541,12 @@ const PostPage = () => {
                   'aria-labelledby': 'post-actions-button',
                 }}
               >
-                <MenuItem onClick={handleEdit}>
-                  <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</ListItemText>
-                </MenuItem>
+                {user.id === post.user._id && (
+                  <MenuItem onClick={handleEdit}>
+                    <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</ListItemText>
+                  </MenuItem>
+                )}
                 <MenuItem onClick={() => { setDeleteConfirmOpen(true); handleMenuClose(); }}>
                   <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
                   <ListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</ListItemText>
@@ -580,19 +587,32 @@ const PostPage = () => {
 
         <Divider sx={{ my: 2 }} />
 
-        {post.image && (
-          <Box
-            component="img"
-            src={`${process.env.REACT_APP_API_URL}${post.image}`}
-            alt={post.title}
-            sx={{
-              width: '100%',
-              maxHeight: '500px',
-              objectFit: 'cover',
-              borderRadius: 2,
-              mb: 3,
-            }}
-          />
+        {post.media && post.media.length > 0 && (
+          <Box sx={{ mb: 3, '.slick-dots li button:before': { color: 'primary.main' } }}>
+            <Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1}>
+              {post.media.map((mediaItem, index) => (
+                <Box key={index} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                  {mediaItem.mediaType === 'image' ? (
+                    <Box
+                      component="img"
+                      src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
+                      alt={`${post.title} - media ${index + 1}`}
+                      sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
+                    />
+                  ) : (
+                    <Box
+                      component="video"
+                      controls
+                      src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
+                      sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
+                    >
+                      Your browser does not support the video tag.
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </Slider>
+          </Box>
         )}
         {isEditing ? (
           <CreatePostForm
@@ -666,7 +686,7 @@ const PostPage = () => {
               Products Used in this Recipe
             </Typography>
             <Grid container spacing={2}>
-              {post.taggedProducts.filter(p => p).map(product => (
+              {post.taggedProducts.filter(p => p).map(product => ( 
                 <Grid size={{ xs: 12, sm: 6 }} key={product._id}>
                   <TaggedProductCard product={product} />
                 </Grid>
@@ -777,6 +797,7 @@ const PostPage = () => {
                   onCommentDelete={openDeleteCommentConfirm}
                   onReportComment={handleOpenReportDialog}
                   depth={0}
+                  postGroup={post.group} // Pass the post's group for moderation checks
                 />
               ))
             ) : (

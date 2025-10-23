@@ -276,7 +276,7 @@ const Profile = () => {
         <Fade in={!!feedback.success}><Alert variant="filled" severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }} onClose={() => setFeedback({ ...feedback, success: '' })}>{feedback.success}</Alert></Fade>
 
         <Grid container spacing={4}>
-          {/* Profile Header Card */}
+          {/* Profile Header Card */} 
           <Grid size={{ xs: 12 }}>
             <Paper
               elevation={4}
@@ -314,7 +314,7 @@ const Profile = () => {
             </Paper>
           </Grid>
 
-          {/* Recent Orders Card */}
+          {/* Recent Orders Card */} 
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={3} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
               <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>Recent Orders</Typography>
@@ -338,7 +338,7 @@ const Profile = () => {
             </Paper>
           </Grid>
 
-          {/* Recent Activity Card */}
+          {/* Recent Activity Card */} 
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={3} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
               <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>Recent Activity</Typography>

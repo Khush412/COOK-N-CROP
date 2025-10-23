@@ -523,6 +523,7 @@ const ProductPage = () => {
                   <ProductCard
                     product={relatedProduct}
                     showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })}
+                    // Add default props for onUpvote, upvotingPosts, onToggleSave, savingPosts if not provided
                   />
                 </Box>
               ))}

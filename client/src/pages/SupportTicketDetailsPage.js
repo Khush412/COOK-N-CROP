@@ -123,7 +123,7 @@ const SupportTicketDetailsPage = () => {
 
         {ticket.status !== 'Closed' && (
           <Box component="form" onSubmit={handleReplySubmit} sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Add a Reply</Typography>
+            <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Add a Reply</Typography> 
             <TextField fullWidth multiline rows={4} value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder="Type your reply here..." disabled={isReplying} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
             <Button type="submit" variant="contained" sx={{ mt: 2, fontFamily: theme.typography.fontFamily, borderRadius: '50px' }} disabled={isReplying || !replyContent.trim()} startIcon={isReplying ? <CircularProgress size={20} /> : <SendIcon />}>
               {isReplying ? 'Sending...' : 'Send Reply'}

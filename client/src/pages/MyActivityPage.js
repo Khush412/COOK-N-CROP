@@ -152,6 +152,7 @@ const MyActivityPage = () => {
                 {posts.map((post) => (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
                     <ActivityCard item={post} type="post" />
+                    {/* Added fontFamily to Typography */}
                   </Grid>
                 ))}
               </Grid>

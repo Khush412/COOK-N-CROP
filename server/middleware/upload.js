@@ -5,10 +5,14 @@ const fs = require('fs');
 // Define storage paths
 const profilePicsDir = path.join(__dirname, '..', 'public', 'uploads', 'profilePics');
 const productImagesDir = path.join(__dirname, '..', 'public', 'uploads', 'productImages');
+const recipeMediaDir = path.join(__dirname, '..', 'public', 'uploads', 'recipes');
+const groupCoversDir = path.join(__dirname, '..', 'public', 'uploads', 'groupCovers');
 
 // Ensure directories exist
 fs.mkdirSync(profilePicsDir, { recursive: true });
 fs.mkdirSync(productImagesDir, { recursive: true });
+fs.mkdirSync(recipeMediaDir, { recursive: true });
+fs.mkdirSync(groupCoversDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -17,6 +21,10 @@ const storage = multer.diskStorage({
       cb(null, profilePicsDir);
     } else if (file.fieldname === 'image') {
       cb(null, productImagesDir);
+    } else if (file.fieldname === 'media') {
+      cb(null, recipeMediaDir);
+    } else if (file.fieldname === 'coverImage') {
+      cb(null, groupCoversDir);
     } else {
       // Fallback or error
       cb(new Error('Invalid upload fieldname for file storage.'), null);
@@ -30,7 +38,7 @@ const storage = multer.diskStorage({
 
 function checkFileType(file, cb) {
   // Allowed ext
-  const filetypes = /jpeg|jpg|png|gif|webp/;
+  const filetypes = /jpeg|jpg|png|gif|webp|mp4|mov|avi|mkv|webm|ogg/;
   // Check ext
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   // Check mime

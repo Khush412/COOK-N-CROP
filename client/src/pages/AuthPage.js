@@ -344,12 +344,12 @@ export default function AuthPage() {
                 <WarningIcon sx={{ fontSize: 24, color: "white" }} />
               </Avatar>
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary, fontFamily: theme.typography.fontFamily }}>
               Account Not Found
             </Typography>
           </DialogTitle>
           <DialogContent sx={{ textAlign: "center", px: 3, pb: 2 }}>
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1, lineHeight: 1.4 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1, lineHeight: 1.4, fontFamily: theme.typography.fontFamily }}>
               We couldn't find an account with that email address.
               <br />
               Don't have an account yet? Create one to get started!
@@ -368,6 +368,7 @@ export default function AuthPage() {
               Join Cook-N-Crop Today!
             </Typography>
             <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+              {/* Added fontFamily to Typography */}
               Discover fresh ingredients and inspiring recipes from our community!
             </Typography>
             </Box>
@@ -385,6 +386,7 @@ export default function AuthPage() {
                 textTransform: "none",
                 fontWeight: 600,
                 "&:hover": {
+                  fontFamily: theme.typography.fontFamily,
                   borderColor: theme.palette.text.primary,
                   color: theme.palette.text.primary,
                 },
@@ -408,6 +410,7 @@ export default function AuthPage() {
                 fontWeight: 600,
                 boxShadow: `0 4px 16px ${theme.palette.primary.main}40`,
                 "&:hover": {
+                  fontFamily: theme.typography.fontFamily,
                   bgcolor: theme.palette.primary.dark,
                   boxShadow: `0 6px 20px ${theme.palette.primary.main}60`,
                 },
@@ -488,6 +491,7 @@ export default function AuthPage() {
                 textTransform: "none",
                 fontWeight: 600,
                 "&:hover": {
+                  fontFamily: theme.typography.fontFamily,
                   borderColor: theme.palette.text.primary,
                   color: theme.palette.text.primary,
                 },
@@ -511,6 +515,7 @@ export default function AuthPage() {
                 fontWeight: 600,
                 boxShadow: `0 4px 16px ${theme.palette.primary.main}40`,
                 "&:hover": {
+                  fontFamily: theme.typography.fontFamily,
                   bgcolor: theme.palette.primary.dark,
                   boxShadow: `0 6px 20px ${theme.palette.primary.main}60`,
                 },

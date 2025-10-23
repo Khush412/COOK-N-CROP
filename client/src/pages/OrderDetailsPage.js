@@ -128,7 +128,7 @@ const OrderDetailsPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
@@ -136,7 +136,7 @@ const OrderDetailsPage = () => {
 
   if (!order) {
     return (
-      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
         <Alert severity="info">Order not found.</Alert>
       </Container>
     );
@@ -179,7 +179,7 @@ const OrderDetailsPage = () => {
               onClick={handleReorder}
               disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
               sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}
-            >
+            > 
               Re-order
             </Button>
             {user?.role === 'admin' && (
@@ -265,10 +265,10 @@ const OrderDetailsPage = () => {
           </Grid>
 
           {/* Shipping & Payment Summary */}
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-              <Grid container spacing={4}>
-                <Grid size={{ xs: 12, md: 6 }}>
+              <Grid container spacing={4}> 
+                <Grid item xs={12} md={6}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
                     Shipping Address
                   </Typography>

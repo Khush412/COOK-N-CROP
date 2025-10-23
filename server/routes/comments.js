@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const Comment = require('../models/Comment');
+const Group = require('../models/Group'); // Import Group model
+const Post = require('../models/Post'); // Import Post model to get group info
 const Notification = require('../models/Notification');
 
 // @desc    Upvote/unvote a comment
@@ -96,19 +98,20 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    // Check user or admin
-    if (comment.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Check user, group moderator, or admin
+    const post = await Post.findById(comment.post);
+    const group = post ? await Group.findById(post.group) : null;
+    const isGroupModerator = group && group.moderators.some(modId => modId.equals(req.user.id));
+
+    if (comment.user.toString() !== req.user.id && req.user.role !== 'admin' && !isGroupModerator) {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
     // If it's a reply, remove it from the parent's replies array
     if (comment.parentComment) {
-      await Comment.findByIdAndUpdate(comment.parentComment, {
-        $pull: { replies: comment._id },
-      });
+      await Comment.findByIdAndUpdate(comment.parentComment, { $pull: { replies: comment._id } });
     } else {
       // If it's a top-level comment, remove it from the post's comments array
-      const Post = require('../models/Post');
       await Post.findByIdAndUpdate(comment.post, {
         $pull: { comments: comment._id },
       });
