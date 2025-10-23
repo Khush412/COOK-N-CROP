@@ -26,6 +26,7 @@ import {
   ThumbUp as ThumbUpIcon, MoreVert as MoreVertIcon, Edit as EditIcon, Delete as DeleteIcon, Report as ReportIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon
 } from '@mui/icons-material';
+import RichTextDisplay from './RichTextDisplay';
 
 const CommentThreadItem = ({
   comment,
@@ -161,14 +162,12 @@ const CommentThreadItem = ({
               secondaryTypographyProps={{ component: 'div' }}
               secondary={
                 <>
-                  <Typography
+                  <Box
                     component="span"
-                    variant="body2"
-                    color="text.primary"
                     sx={{ display: 'block', whiteSpace: 'pre-wrap', fontFamily: theme.typography.fontFamily }}
                   >
-                    {comment.content}
-                  </Typography>
+                    <RichTextDisplay text={comment.content} />
+                  </Box>
                   <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                       {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'just now'}

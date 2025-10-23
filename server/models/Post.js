@@ -43,6 +43,19 @@ const PostSchema = new mongoose.Schema({
       trim: true,
     }, // Removed trailing comma here to fix syntax error
   ],
+  hashtags: [
+    {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+  ],
+  mentions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
   flair: {
     type: String,
     trim: true,
@@ -134,6 +147,13 @@ const PostSchema = new mongoose.Schema({
 
 // Create a text index for searching
 PostSchema.index({ title: 'text', content: 'text', tags: 'text' });
+
+// Index for hashtag searches
+PostSchema.index({ hashtags: 1 });
+
+// Index for vote score and hot score sorting
+PostSchema.index({ voteScore: -1, createdAt: -1 });
+PostSchema.index({ hotScore: -1 });
 
 // Virtual for upvote count
 PostSchema.virtual('upvoteCount').get(function() {

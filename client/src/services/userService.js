@@ -120,6 +120,17 @@ const getDashboardData = async () => {
   }
 };
 
+const searchUsers = async (query) => {
+  try {
+    const response = await api.get(`/search/users?q=${encodeURIComponent(query)}&limit=5`);
+    // Backend returns { users: [...] }
+    return response.data.users || [];
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return [];
+  }
+};
+
 const userService = {
   getPublicProfile,
   toggleSavePost,
@@ -133,6 +144,7 @@ const userService = {
   blockUser,
   getBlockedUsers,
   getDashboardData,
+  searchUsers,
 };
 
 export default userService;

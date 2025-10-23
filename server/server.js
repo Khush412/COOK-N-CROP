@@ -49,6 +49,23 @@ const io = new Server(server, {
 
 let onlineUsers = {};
 
+// Periodic cleanup of stale connections (every 5 minutes)
+setInterval(() => {
+  const activeSocketIds = new Set();
+  
+  // Get all currently connected socket IDs
+  io.sockets.sockets.forEach(socket => {
+    activeSocketIds.add(socket.id);
+  });
+  
+  // Remove users whose socket IDs are no longer active
+  Object.keys(onlineUsers).forEach(userId => {
+    if (!activeSocketIds.has(onlineUsers[userId])) {
+      delete onlineUsers[userId];
+    }
+  });
+}, 5 * 60 * 1000); // Run every 5 minutes
+
 io.on("connection", (socket) => {
   // console.log(`User connected: ${socket.id}`); // Optional: uncomment for debugging
 

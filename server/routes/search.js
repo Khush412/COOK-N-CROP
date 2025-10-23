@@ -147,4 +147,74 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// @desc    Search posts by hashtag
+// @route   GET /api/search/hashtag/:hashtag
+// @access  Public
+router.get('/hashtag/:hashtag', optionalAuth, async (req, res) => {
+  try {
+    const { hashtag } = req.params;
+    const { page = 1, limit = 9 } = req.query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Remove # if user included it
+    const cleanHashtag = hashtag.replace(/^#/, '').toLowerCase();
+
+    const postMatchQuery = { hashtags: cleanHashtag };
+    if (req.user) {
+      const currentUser = await User.findById(req.user.id).select('blockedUsers');
+      postMatchQuery.user = { $nin: currentUser.blockedUsers };
+    }
+
+    const posts = await Post.find(postMatchQuery)
+      .sort({ createdAt: -1 })
+      .limit(limitNum)
+      .skip(skip)
+      .populate('user', 'username profilePic')
+      .populate('group', 'name slug')
+      .lean();
+
+    const totalPosts = await Post.countDocuments(postMatchQuery);
+
+    res.json({ 
+      hashtag: cleanHashtag,
+      posts, 
+      page: pageNum, 
+      pages: Math.ceil(totalPosts / limitNum),
+      total: totalPosts
+    });
+  } catch (error) {
+    console.error('Hashtag search error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Get trending hashtags
+// @route   GET /api/search/trending-hashtags
+// @access  Public
+router.get('/trending-hashtags', async (req, res) => {
+  try {
+    const limit = Number(req.query.limit) || 10;
+    
+    // Get hashtags from posts in the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const trendingHashtags = await Post.aggregate([
+      { $match: { createdAt: { $gte: thirtyDaysAgo }, hashtags: { $ne: null, $not: { $size: 0 } } } },
+      { $unwind: '$hashtags' },
+      { $group: { _id: '$hashtags', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: limit },
+      { $project: { _id: 0, hashtag: '$_id', count: 1 } }
+    ]);
+
+    res.json(trendingHashtags);
+  } catch (error) {
+    console.error('Get trending hashtags error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

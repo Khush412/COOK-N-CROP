@@ -43,6 +43,7 @@ import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SearchPage from './pages/SearchPage';
+import HashtagPage from './pages/HashtagPage';
 import ExploreGroupsPage from './pages/ExploreGroupsPage'; // New
 import CreateGroupPage from './pages/CreateGroupPage'; // New
 import GroupPage from './pages/GroupPage'; // New
@@ -75,6 +76,7 @@ export default function AppRouter() {
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> {/* New */}
       <Route path="/login" element={<Login />} />
       <Route path="/search" element={<SearchPage />} />
+      <Route path="/search/hashtag/:hashtag" element={<HashtagPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Authenticated User Routes */}

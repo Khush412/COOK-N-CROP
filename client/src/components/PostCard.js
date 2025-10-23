@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
 import AddToCollectionDialog from "./AddToCollectionDialog";
+import RichTextDisplay from "./RichTextDisplay";
 
 const PostCard = ({
   showSnackbar,
@@ -255,8 +256,7 @@ const PostCard = ({
       {displayMode === "full" && post.content && (
         <>
           {/* Content */}
-          <Typography
-            variant="body2"
+          <Box
             sx={{
               color: theme.palette.text.secondary,
               fontSize: 13,
@@ -271,8 +271,8 @@ const PostCard = ({
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            {post.content}
-          </Typography>
+            <RichTextDisplay text={post.content} />
+          </Box>
 
           {/* Tags */}
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>

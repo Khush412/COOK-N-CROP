@@ -29,6 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import productService from '../services/productService';
 import groupService from '../services/groupService';
+import RichTextInput from './RichTextInput';
 
 const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData }) => {
   const [title, setTitle] = useState('');
@@ -305,18 +306,15 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
           InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
         />
-        <TextField
+        <RichTextInput
           label="What's on your mind?"
-          variant="outlined"
+          placeholder="Type @ to mention users, # for hashtags..."
           fullWidth
-          required
           multiline
           rows={6}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={loading}
-          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
         />
         {typeof forceRecipe !== 'boolean' && (
           <FormControlLabel

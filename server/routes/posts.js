@@ -1,14 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
+const { reportValidation, validate } = require('../middleware/validation');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 const User = require('../models/User'); // Import User model
 const Group = require('../models/Group'); // Import Group model
+const { extractMentions, extractHashtags, validateMentions } = require('../utils/textParser');
 const multer = require('multer');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
+
+// Rate limiter for file uploads - stricter than general API
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 20 : 100, // 20 uploads per 15 min in production
+  message: {
+    success: false,
+    message: 'Too many file uploads, please try again later.'
+  }
+});
 
 // --- Multer Storage Configuration ---
 const storage = multer.diskStorage({
@@ -41,7 +54,7 @@ const upload = multer({
 // @desc    Create a new post
 // @route   POST /api/posts
 // @access  Private
-router.post('/', protect, upload.array('media', 10), async (req, res) => {
+router.post('/', protect, uploadLimiter, upload.array('media', 10), async (req, res) => {
   try {
     const { title, content, tags, isRecipe, recipeDetails, taggedProducts, group, flair } = req.body;
 
@@ -51,12 +64,22 @@ router.post('/', protect, upload.array('media', 10), async (req, res) => {
     })) : [];
     if (!group) return res.status(400).json({ message: 'A group must be selected to create a post.' });
 
+    // Extract mentions and hashtags from title and content
+    const combinedText = `${title} ${content}`;
+    const mentionedUsernames = extractMentions(combinedText);
+    const hashtags = extractHashtags(combinedText);
+    
+    // Validate mentions (get user IDs)
+    const mentionedUserIds = await validateMentions(mentionedUsernames);
+
     const postData = {
       user: req.user.id,
       title,
       content,
       media: mediaFiles,
       tags,
+      hashtags,
+      mentions: mentionedUserIds,
       isRecipe,
       taggedProducts: isRecipe ? taggedProducts : [],
       flair,
@@ -85,6 +108,49 @@ router.post('/', protect, upload.array('media', 10), async (req, res) => {
     const newPost = new Post(postData);
     const post = await newPost.save();
     const populatedPost = await Post.findById(post._id).populate('user', 'username profilePic');
+
+    // Create notifications for mentioned users
+    if (mentionedUserIds.length > 0) {
+      const notificationsToCreate = mentionedUserIds
+        .filter(userId => userId.toString() !== req.user.id) // Don't notify yourself
+        .map(userId => ({
+          recipient: userId,
+          sender: req.user.id,
+          type: 'comment', // Reusing comment type for mentions
+          message: `<strong>${req.user.username}</strong> mentioned you in a post: "<strong>${title}</strong>"`,
+          post: post._id,
+          link: `/post/${post._id}`,
+        }));
+
+      if (notificationsToCreate.length > 0) {
+        // Check for duplicate notifications in the last 5 minutes
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        
+        for (const notif of notificationsToCreate) {
+          const existingNotif = await Notification.findOne({
+            recipient: notif.recipient,
+            sender: notif.sender,
+            post: notif.post,
+            type: 'comment',
+            createdAt: { $gte: fiveMinutesAgo }
+          });
+          
+          // Only create if no duplicate found
+          if (!existingNotif) {
+            const newNotif = await Notification.create(notif);
+            
+            // Send real-time notification
+            const recipientSocketId = req.onlineUsers[notif.recipient.toString()];
+            if (recipientSocketId) {
+              const populatedNotif = await Notification.findById(newNotif._id)
+                .populate('sender', 'username profilePic')
+                .populate('post', 'title');
+              req.io.to(recipientSocketId).emit('new_notification', populatedNotif);
+            }
+          }
+        }
+      }
+    }
 
     // Emit real-time event to admins
     const io = req.app.get('io');
@@ -506,11 +572,20 @@ router.post('/:id/comments', protect, async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
+    // Extract mentions and hashtags from comment content
+    const mentionedUsernames = extractMentions(content);
+    const hashtags = extractHashtags(content);
+    
+    // Validate mentions (get user IDs)
+    const mentionedUserIds = await validateMentions(mentionedUsernames);
+
     const newComment = new Comment({
       content: content,
       user: req.user.id,
       post: req.params.id,
       parentComment: parentCommentId || null,
+      hashtags,
+      mentions: mentionedUserIds,
     });
 
     const savedComment = await newComment.save();
@@ -554,6 +629,36 @@ router.post('/:id/comments', protect, async (req, res) => {
       }
     }
 
+    // Create notifications for mentioned users in the comment
+    if (mentionedUserIds.length > 0) {
+      const notificationsToCreate = mentionedUserIds
+        .filter(userId => userId.toString() !== req.user.id && userId.toString() !== recipientId.toString()) // Don't duplicate notifications
+        .map(userId => ({
+          recipient: userId,
+          sender: req.user.id,
+          type: 'comment',
+          message: `<strong>${req.user.username}</strong> mentioned you in a comment on "<strong>${post.title}</strong>"`,
+          post: post._id,
+          comment: savedComment._id,
+          link: `/post/${post._id}`,
+        }));
+
+      if (notificationsToCreate.length > 0) {
+        await Notification.insertMany(notificationsToCreate);
+        
+        // Send real-time notifications to mentioned users
+        notificationsToCreate.forEach(async (notif) => {
+          const mentionedSocketId = req.onlineUsers[notif.recipient.toString()];
+          if (mentionedSocketId) {
+            const populatedNotif = await Notification.findOne({ recipient: notif.recipient, comment: savedComment._id })
+              .sort({ createdAt: -1 })
+              .populate('sender', 'username profilePic')
+              .populate('post', 'title');
+            req.io.to(mentionedSocketId).emit('new_notification', populatedNotif);
+          }
+        });
+      }
+    }
 
     const populatedComment = await Comment.findById(savedComment._id).populate('user', 'username profilePic');
     res.status(201).json(populatedComment);
@@ -566,7 +671,7 @@ router.post('/:id/comments', protect, async (req, res) => {
 // @desc    Update a post
 // @route   PUT /api/posts/:id
 // @access  Private 
-router.put('/:id', protect, upload.array('media', 10), async (req, res) => {
+router.put('/:id', protect, uploadLimiter, upload.array('media', 10), async (req, res) => {
   try {
     let post = await Post.findById(req.params.id);
 
@@ -603,10 +708,15 @@ router.put('/:id', protect, upload.array('media', 10), async (req, res) => {
     // existingMedia should be an array of media objects from the frontend
     const parsedExistingMedia = existingMedia ? JSON.parse(existingMedia) : [];
 
-    // Sanitize URLs of existing media to remove the base URL prefix
+    // Sanitize URLs of existing media to remove the base URL prefix (with safe error handling)
     const sanitizedExistingMedia = parsedExistingMedia.map(media => {
-      const url = new URL(media.url);
-      return { ...media, url: url.pathname };
+      try {
+        const url = new URL(media.url, 'http://localhost:5000');
+        return { ...media, url: url.pathname };
+      } catch (error) {
+        // If URL parsing fails, return as-is (likely already a pathname)
+        return media;
+      }
     });
 
     const finalMedia = sanitizedExistingMedia.concat(newMediaFiles);
@@ -697,7 +807,7 @@ router.delete('/:id', protect, async (req, res) => {
 // @desc    Report a post
 // @route   PUT /api/posts/:id/report
 // @access  Private
-router.put('/:id/report', protect, async (req, res) => {
+router.put('/:id/report', protect, reportValidation, validate, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
 

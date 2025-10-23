@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, CircularProgress, Stack, Avatar } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '@mui/material/styles';
+import RichTextInput from './RichTextInput';
 
 const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Post' }) => {
   const { user } = useAuth();
@@ -26,16 +27,15 @@ const CommentForm = ({ onSubmit, loading, initialContent = '', submitLabel = 'Po
         <Avatar src={user?.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} alt={user?.username}>
           {!user?.profilePic && user?.username?.charAt(0).toUpperCase()}
         </Avatar>
-        <TextField
+        <RichTextInput
           label="Add a comment..."
-          variant="outlined"
+          placeholder="Type @ to mention users, # for hashtags..."
           fullWidth
           multiline
+          rows={2}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          disabled={loading} 
-          sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+          disabled={loading}
         />
         <Button
           type="submit"

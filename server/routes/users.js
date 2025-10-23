@@ -2,7 +2,6 @@ const express = require('express');
 const User = require('../models/User');
 const Address = require('../models/Address');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
-const { validateProfileUpdate, validatePasswordChange, handleValidationErrors } = require('../middleware/validation');
 const upload = require('../middleware/upload');
 
 const router = express.Router();
@@ -32,8 +31,6 @@ router.put(
   '/me',
   protect,
   upload.single('profilePic'),
-  validateProfileUpdate,
-  handleValidationErrors,
   async (req, res) => {
     try {
       const user = await User.findById(req.user.id);
@@ -64,8 +61,6 @@ router.put(
 router.put(
   '/me/password',
   protect,
-  validatePasswordChange,
-  handleValidationErrors,
   async (req, res) => {
     try {
       const user = await User.findById(req.user.id).select('+password');
@@ -629,7 +624,7 @@ router.get('/:id', protect, async (req, res) => {
 // @desc    Update user by ID
 // @route   PUT /api/users/:id
 // @access  Private
-router.put('/:id', protect, validateProfileUpdate, handleValidationErrors, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -702,7 +697,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 // @desc    Change password by ID
 // @route   PUT /api/users/:id/password
 // @access  Private
-router.put('/:id/password', protect, validatePasswordChange, handleValidationErrors, async (req, res) => {
+router.put('/:id/password', protect, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('+password');
     if (!user) {

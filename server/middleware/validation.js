@@ -1,127 +1,114 @@
 const { body, validationResult } = require('express-validator');
+const { CONTENT_LIMITS } = require('../config/constants');
 
-// Handle validation errors
-const handleValidationErrors = (req, res, next) => {
+/**
+ * Middleware to check validation results
+ */
+const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log('Validation errors:', errors.array());
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array().map(error => ({
-        field: error.path,
-        message: error.msg,
-        value: error.value
+      errors: errors.array().map(err => ({
+        field: err.path,
+        message: err.msg
       }))
     });
   }
   next();
 };
 
-// User registration validation
-const validateRegister = [
-  body('username')
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('email')
-    .isEmail()
-    .withMessage('Please provide a valid email')
-    .normalizeEmail(),
-  
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
-  
-  handleValidationErrors
-];
-
-// User login validation
-const validateLogin = [
-  body('email')
-    .isEmail()
-    .withMessage('Please provide a valid email')
-    .normalizeEmail(),
-  
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required'),
-  
-  handleValidationErrors
-];
-
-// Profile update validation
-const validateProfileUpdate = [
-  body('username')
-    .optional()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('email')
-    .optional()
-    .isEmail()
-    .withMessage('Please provide a valid email')
-    .normalizeEmail(),
-  
-  body('bio')
-    .optional()
-    .isLength({ max: 500 })
-    .withMessage('Bio cannot exceed 500 characters'),
-  
-  handleValidationErrors
-];
-
-// Password change validation
-const validatePasswordChange = [
-  body('currentPassword')
-    .notEmpty()
-    .withMessage('Current password is required'),
-  
-  body('newPassword')
-    .isLength({ min: 6 })
-    .withMessage('New password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number'),
-  
-  body('confirmPassword')
-    .custom((value, { req }) => {
-      if (value !== req.body.newPassword) {
-        throw new Error('Password confirmation does not match new password');
-      }
-      return true;
-    }),
-  
-  handleValidationErrors
-];
-
-// Resume validation
-const validateResume = [
+/**
+ * Validation rules for post creation/update
+ */
+const postValidation = [
   body('title')
-    .notEmpty()
-    .withMessage('Resume title is required')
-    .isLength({ max: 100 })
-    .withMessage('Resume title cannot exceed 100 characters'),
+    .trim()
+    .notEmpty().withMessage('Title is required')
+    .isLength({ min: CONTENT_LIMITS.POST_TITLE_MIN, max: CONTENT_LIMITS.POST_TITLE_MAX })
+    .withMessage(`Title must be between ${CONTENT_LIMITS.POST_TITLE_MIN} and ${CONTENT_LIMITS.POST_TITLE_MAX} characters`),
   
-  body('template')
-    .notEmpty()
-    .withMessage('Template selection is required'),
+  body('content')
+    .trim()
+    .notEmpty().withMessage('Content is required')
+    .isLength({ min: CONTENT_LIMITS.POST_CONTENT_MIN, max: CONTENT_LIMITS.POST_CONTENT_MAX })
+    .withMessage(`Content must be between ${CONTENT_LIMITS.POST_CONTENT_MIN} and ${CONTENT_LIMITS.POST_CONTENT_MAX} characters`),
   
-  body('data')
-    .isObject()
-    .withMessage('Resume data must be a valid object'),
+  body('group')
+    .notEmpty().withMessage('Group is required')
+    .isMongoId().withMessage('Invalid group ID'),
+];
+
+/**
+ * Validation rules for comment creation/update
+ */
+const commentValidation = [
+  body('content')
+    .trim()
+    .notEmpty().withMessage('Comment content is required')
+    .isLength({ min: CONTENT_LIMITS.COMMENT_MIN, max: CONTENT_LIMITS.COMMENT_MAX })
+    .withMessage(`Comment must be between ${CONTENT_LIMITS.COMMENT_MIN} and ${CONTENT_LIMITS.COMMENT_MAX} characters`),
+];
+
+/**
+ * Validation rules for user registration
+ */
+const registerValidation = [
+  body('username')
+    .trim()
+    .notEmpty().withMessage('Username is required')
+    .isLength({ min: CONTENT_LIMITS.USERNAME_MIN, max: CONTENT_LIMITS.USERNAME_MAX })
+    .withMessage(`Username must be between ${CONTENT_LIMITS.USERNAME_MIN} and ${CONTENT_LIMITS.USERNAME_MAX} characters`)
+    .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
   
-  handleValidationErrors
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please provide a valid email'),
+  
+  body('password')
+    .notEmpty().withMessage('Password is required')
+    .isLength({ min: CONTENT_LIMITS.PASSWORD_MIN }).withMessage(`Password must be at least ${CONTENT_LIMITS.PASSWORD_MIN} characters`),
+];
+
+/**
+ * Validation rules for product creation/update
+ */
+const productValidation = [
+  body('name')
+    .trim()
+    .notEmpty().withMessage('Product name is required')
+    .isLength({ min: 3, max: 100 }).withMessage('Product name must be between 3 and 100 characters'),
+  
+  body('price')
+    .notEmpty().withMessage('Price is required')
+    .isFloat({ min: 0 }).withMessage('Price must be a positive number'),
+  
+  body('category')
+    .trim()
+    .notEmpty().withMessage('Category is required'),
+  
+  body('countInStock')
+    .notEmpty().withMessage('Stock count is required')
+    .isInt({ min: 0 }).withMessage('Stock count must be a positive integer'),
+];
+
+/**
+ * Validation rules for reporting
+ */
+const reportValidation = [
+  body('reason')
+    .trim()
+    .notEmpty().withMessage('Reason is required')
+    .isLength({ min: 10, max: 500 }).withMessage('Reason must be between 10 and 500 characters'),
 ];
 
 module.exports = {
-  handleValidationErrors,
-  validateRegister,
-  validateLogin,
-  validateProfileUpdate,
-  validatePasswordChange,
-  validateResume
+  validate,
+  postValidation,
+  commentValidation,
+  registerValidation,
+  productValidation,
+  reportValidation,
 };

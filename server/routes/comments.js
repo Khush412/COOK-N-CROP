@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
+const { commentValidation, validate, reportValidation } = require('../middleware/validation');
 const Comment = require('../models/Comment');
 const Group = require('../models/Group'); // Import Group model
 const Post = require('../models/Post'); // Import Post model to get group info
 const Notification = require('../models/Notification');
+const { extractMentions, extractHashtags, validateMentions } = require('../utils/textParser');
 
 // @desc    Upvote/unvote a comment
 // @route   PUT /api/comments/:id/upvote
@@ -63,7 +65,7 @@ router.put('/:id/upvote', protect, async (req, res) => {
 // @desc    Update a comment
 // @route   PUT /api/comments/:id
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, commentValidation, validate, async (req, res) => {
   try {
     let comment = await Comment.findById(req.params.id);
 
@@ -76,8 +78,58 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'User not authorized' });
     }
 
-    comment.content = req.body.content || comment.content;
+    const newContent = req.body.content || comment.content;
+    
+    // Extract mentions and hashtags from updated content
+    const mentionedUsernames = extractMentions(newContent);
+    const hashtags = extractHashtags(newContent);
+    
+    // Validate mentions (get user IDs)
+    const mentionedUserIds = await validateMentions(mentionedUsernames);
+
+    // Get the post for notification context
+    const post = await Post.findById(comment.post);
+    
+    // Find newly mentioned users (not in old mentions)
+    const oldMentionIds = comment.mentions.map(id => id.toString());
+    const newMentionIds = mentionedUserIds.filter(id => !oldMentionIds.includes(id.toString()));
+
+    // Update comment
+    comment.content = newContent;
+    comment.mentions = mentionedUserIds;
+    comment.hashtags = hashtags;
     await comment.save();
+
+    // Send notifications to newly mentioned users
+    if (newMentionIds.length > 0 && post) {
+      const notificationsToCreate = newMentionIds
+        .filter(userId => userId.toString() !== req.user.id) // Don't notify yourself
+        .map(userId => ({
+          recipient: userId,
+          sender: req.user.id,
+          type: 'comment',
+          message: `<strong>${req.user.username}</strong> mentioned you in a comment on "<strong>${post.title}</strong>"`,
+          post: post._id,
+          comment: comment._id,
+          link: `/post/${post._id}`,
+        }));
+
+      if (notificationsToCreate.length > 0) {
+        await Notification.insertMany(notificationsToCreate);
+        
+        // Send real-time notifications
+        notificationsToCreate.forEach(async (notif) => {
+          const mentionedSocketId = req.onlineUsers[notif.recipient.toString()];
+          if (mentionedSocketId) {
+            const populatedNotif = await Notification.findOne({ recipient: notif.recipient, comment: comment._id })
+              .sort({ createdAt: -1 })
+              .populate('sender', 'username profilePic')
+              .populate('post', 'title');
+            req.io.to(mentionedSocketId).emit('new_notification', populatedNotif);
+          }
+        });
+      }
+    }
 
     const populatedComment = await Comment.findById(comment._id).populate('user', 'username profilePic');
     res.json(populatedComment);
@@ -140,7 +192,7 @@ router.delete('/:id', protect, async (req, res) => {
 // @desc    Report a comment
 // @route   PUT /api/comments/:id/report
 // @access  Private
-router.put('/:id/report', protect, async (req, res) => {
+router.put('/:id/report', protect, reportValidation, validate, async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
 

@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
-const { validateRegister, validateLogin } = require('../middleware/validation');
+const { registerValidation, validate } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
-router.post('/register', validateRegister, async (req, res) => {
+router.post('/register', registerValidation, validate, async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -146,7 +146,7 @@ router.post('/register', validateRegister, async (req, res) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-router.post('/login', validateLogin, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 

@@ -15,6 +15,19 @@ const CommentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add content'],
   },
+  hashtags: [
+    {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+  ],
+  mentions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
   upvotes: [
     {
       type: mongoose.Schema.Types.ObjectId,
