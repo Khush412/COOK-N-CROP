@@ -8,7 +8,9 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import UpiIcon from '@mui/icons-material/TapAndPlay'; // Using a generic icon for UPI
+import UpiIcon from '@mui/icons-material/TapAndPlay';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import NoteIcon from '@mui/icons-material/Note';
 import orderService from '../services/orderService';
 import { useCart } from '../contexts/CartContext';
 import productService from '../services/productService';
@@ -19,7 +21,7 @@ const PaymentPage = () => {
   const theme = useTheme();
   const { clearCart } = useCart();
 
-  const { shippingAddress, appliedCoupon } = location.state || {};
+  const { shippingAddress, appliedCoupon, deliveryTimeSlot, orderNotes } = location.state || {};
   const [cart, setCart] = useState(null);
   const [loadingCart, setLoadingCart] = useState(true);
 
@@ -58,7 +60,10 @@ const PaymentPage = () => {
     return cart.items.filter(item => item.product);
   }, [cart]);
 
-  const subtotal = validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0) || 0;
+  const subtotal = validItems.reduce((acc, item) => {
+    const effectivePrice = item.product.salePrice || item.product.price;
+    return acc + effectivePrice * item.quantity;
+  }, 0) || 0;
   const discountAmount = appliedCoupon?.discountAmount || 0;
   const total = subtotal - discountAmount;
 
@@ -79,6 +84,8 @@ const PaymentPage = () => {
         },
         paymentMethod,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        deliveryTimeSlot: deliveryTimeSlot || undefined,
+        orderNotes: orderNotes || undefined,
       };
 
       const createdOrder = await orderService.createOrder(orderData);
@@ -121,23 +128,72 @@ const PaymentPage = () => {
             <Button component={RouterLink} to="/cart" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Change Address</Button>
           </Paper>
 
+          {deliveryTimeSlot && (
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+                <ScheduleIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Delivery Time Slot</Typography>
+              </Stack>
+              <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                  {deliveryTimeSlot === 'morning' && '🌅 Morning (8AM - 12PM)'}
+                  {deliveryTimeSlot === 'afternoon' && '☀️ Afternoon (12PM - 5PM)'}
+                  {deliveryTimeSlot === 'evening' && '🌆 Evening (5PM - 8PM)'}
+                </Typography>
+              </Box>
+            </Paper>
+          )}
+
+          {orderNotes && (
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
+              <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+                <NoteIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order Notes</Typography>
+              </Stack>
+              <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+                <Typography sx={{ fontFamily: theme.typography.fontFamily, fontStyle: 'italic' }}>
+                  "{orderNotes}"
+                </Typography>
+              </Box>
+            </Paper>
+          )}
+
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>Order Items</Typography>
             <List>
-              {validItems.map(item => (
+              {validItems.map(item => {
+                const effectivePrice = item.product.salePrice || item.product.price;
+                const hasDiscount = item.product.salePrice && item.product.salePrice < item.product.price;
+                
+                return (
                 <ListItem key={item.product?._id} divider>
                   <ListItemAvatar>
                     <Avatar src={item.product.image ? `${process.env.REACT_APP_API_URL}${item.product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" />
                   </ListItemAvatar>
                   <ListItemText
                     primary={item.product.name}
-                    secondary={`Qty: ${item.quantity} x $${item.product.price.toFixed(2)}${item.product.unit ? ` / ${item.product.unit}` : ''}`}
+                    secondary={
+                      <Box component="span">
+                        Qty: {item.quantity} x 
+                        {hasDiscount && (
+                          <Typography component="span" sx={{ textDecoration: 'line-through', mx: 0.5, color: 'text.disabled' }}>
+                            ${item.product.price.toFixed(2)}
+                          </Typography>
+                        )}
+                        <Typography component="span" sx={{ color: hasDiscount ? 'error.main' : 'text.primary', fontWeight: hasDiscount ? 'bold' : 'normal' }}>
+                          ${effectivePrice.toFixed(2)}
+                        </Typography>
+                        {item.product.unit ? ` / ${item.product.unit}` : ''}
+                      </Box>
+                    }
                     primaryTypographyProps={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}
-                    secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}
+                    secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily, component: 'div' }}
                   />
-                  <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.quantity * item.product.price).toFixed(2)}</Typography>
+                  <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: hasDiscount ? 'error.main' : 'text.primary' }}>
+                    ${(item.quantity * effectivePrice).toFixed(2)}
+                  </Typography>
                 </ListItem>
-              ))}
+              )})}
             </List>
           </Paper>
         </Grid>

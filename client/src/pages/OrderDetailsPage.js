@@ -30,6 +30,8 @@ import orderService from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import ReplayIcon from '@mui/icons-material/Replay';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import NoteIcon from '@mui/icons-material/Note';
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
@@ -280,6 +282,32 @@ const OrderDetailsPage = () => {
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</Typography>
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.country}</Typography>
                   <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}><strong>Phone:</strong> {order.shippingAddress.phone}</Typography>
+                  
+                  {order.deliveryTimeSlot && (
+                    <Box sx={{ mt: 3, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                      <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+                        <ScheduleIcon fontSize="small" color="primary" />
+                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Time Slot</Typography>
+                      </Stack>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, ml: 3.5 }}>
+                        {order.deliveryTimeSlot === 'morning' && '🌅 Morning (8AM - 12PM)'}
+                        {order.deliveryTimeSlot === 'afternoon' && '☀️ Afternoon (12PM - 5PM)'}
+                        {order.deliveryTimeSlot === 'evening' && '🌆 Evening (5PM - 8PM)'}
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {order.orderNotes && (
+                    <Box sx={{ mt: 2, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+                      <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+                        <NoteIcon fontSize="small" color="info" />
+                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Order Notes</Typography>
+                      </Stack>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontStyle: 'italic', ml: 3.5 }}>
+                        "{order.orderNotes}"
+                      </Typography>
+                    </Box>
+                  )}
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>

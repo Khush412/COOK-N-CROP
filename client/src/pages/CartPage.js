@@ -20,9 +20,13 @@ import { alpha,
   Radio,
   RadioGroup,
   FormControl,
+  FormControlLabel,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  MenuItem,
+  Select,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -31,6 +35,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import NoteIcon from '@mui/icons-material/Note';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import addressService from '../services/addressService'; // New: Import address service
@@ -55,6 +61,8 @@ const CartPage = () => {
   const [couponError, setCouponError] = useState(''); // New: State for coupon errors
   const [itemLoading, setItemLoading] = useState(null); // For save/move/remove actions
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false); // New: State for coupon apply loading
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState(''); // Delivery time slot
+  const [orderNotes, setOrderNotes] = useState(''); // Special instructions
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,14 +123,20 @@ const CartPage = () => {
 
   const calculateTotal = () => {
     if (!cart || !cart.items) return 0;
-    const subtotal = validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    const subtotal = validItems.reduce((acc, item) => {
+      const effectivePrice = item.product.salePrice || item.product.price;
+      return acc + effectivePrice * item.quantity;
+    }, 0);
     if (appliedCoupon) {
         return (subtotal - appliedCoupon.discountAmount).toFixed(2);
     }
     return subtotal.toFixed(2);
   };
 
-  const calculateSubtotal = () => cart ? validItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0) : 0;
+  const calculateSubtotal = () => cart ? validItems.reduce((acc, item) => {
+    const effectivePrice = item.product.salePrice || item.product.price;
+    return acc + effectivePrice * item.quantity;
+  }, 0) : 0;
 
   const handleUpdateQuantity = async (productId, quantity) => {
     const item = cart.items.find(i => i.product._id === productId);
@@ -255,7 +269,12 @@ const CartPage = () => {
       return;
     }
     navigate('/payment', {
-      state: { shippingAddress: selectedAddress, appliedCoupon: appliedCoupon },
+      state: { 
+        shippingAddress: selectedAddress, 
+        appliedCoupon: appliedCoupon,
+        deliveryTimeSlot: deliveryTimeSlot,
+        orderNotes: orderNotes 
+      },
     });
   };
 
@@ -302,7 +321,11 @@ const CartPage = () => {
                 </Button>
               </Box>}
               {hasItems && <List sx={{ width: '100%' }}>
-                {validItems.map((item) => (
+                {validItems.map((item) => {
+                  const effectivePrice = item.product.salePrice || item.product.price;
+                  const hasDiscount = item.product.salePrice && item.product.salePrice < item.product.price;
+                  
+                  return (
                   <Paper key={item.product?._id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 2, borderRadius: 3, position: 'relative' }}>
                     <CardMedia component="img" sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 2, mr: 2 }}
                       image={item.product.image ? `${process.env.REACT_APP_API_URL}${item.product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
@@ -311,9 +334,16 @@ const CartPage = () => {
                         <Typography component={RouterLink} to={`/product/${item.product._id}`} variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' } }}>
                           {item.product.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
-                          {`$${item.product.price.toFixed(2)}`}{item.product.unit ? ` / ${item.product.unit}` : ''}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {hasDiscount && (
+                            <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                              ${item.product.price.toFixed(2)}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" color={hasDiscount ? 'error' : 'text.secondary'} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: hasDiscount ? 'bold' : 'normal' }}>
+                            ${effectivePrice.toFixed(2)}{item.product.unit ? ` / ${item.product.unit}` : ''}
+                          </Typography>
+                        </Box>
                         <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
                           <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity - 1)} disabled={item.quantity === 1}>
@@ -332,8 +362,8 @@ const CartPage = () => {
                           >
                             Save for later
                           </Button>
-                          <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                          <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: hasDiscount ? 'error.main' : 'text.primary' }}>
+                            ${(effectivePrice * item.quantity).toFixed(2)}
                           </Typography>
                         </Box>
                     </Box>
@@ -341,7 +371,7 @@ const CartPage = () => {
                       <DeleteIcon />
                     </IconButton>
                   </Paper>
-                ))}
+                )})}
               </List>}
 
               {hasSavedItems && (
@@ -415,6 +445,58 @@ const CartPage = () => {
                           </Button>
                         </>
                       )}
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion defaultExpanded>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <ScheduleIcon />
+                        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Time Slot</Typography>
+                      </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <FormControl fullWidth size="small">
+                        <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Select Time Slot</InputLabel>
+                        <Select
+                          value={deliveryTimeSlot}
+                          label="Select Time Slot"
+                          onChange={(e) => setDeliveryTimeSlot(e.target.value)}
+                          sx={{ fontFamily: theme.typography.fontFamily }}
+                        >
+                          <MenuItem value="" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <em>No Preference</em>
+                          </MenuItem>
+                          <MenuItem value="morning" sx={{ fontFamily: theme.typography.fontFamily }}>Morning (8AM - 12PM)</MenuItem>
+                          <MenuItem value="afternoon" sx={{ fontFamily: theme.typography.fontFamily }}>Afternoon (12PM - 5PM)</MenuItem>
+                          <MenuItem value="evening" sx={{ fontFamily: theme.typography.fontFamily }}>Evening (5PM - 8PM)</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion defaultExpanded>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <NoteIcon />
+                        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Order Notes</Typography>
+                      </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <TextField
+                        label="Special Instructions (Optional)"
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        value={orderNotes}
+                        onChange={(e) => setOrderNotes(e.target.value)}
+                        placeholder="E.g., Please ring the doorbell, leave at the front door, etc."
+                        InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                        inputProps={{ maxLength: 200 }}
+                        helperText={`${orderNotes.length}/200 characters`}
+                      />
                     </AccordionDetails>
                   </Accordion>
 

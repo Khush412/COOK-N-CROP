@@ -91,6 +91,16 @@ const orderSchema = mongoose.Schema({
     deliveredAt: {
         type: Date,
     },
+    deliveryTimeSlot: {
+        type: String,
+        enum: ['morning', 'afternoon', 'evening', ''],
+        default: '',
+    },
+    orderNotes: {
+        type: String,
+        maxlength: 200,
+        trim: true,
+    },
 }, {
     timestamps: true,
 });
