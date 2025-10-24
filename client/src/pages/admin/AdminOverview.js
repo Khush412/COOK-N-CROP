@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Box, Paper, Grid, CircularProgress, Alert, useTheme, alpha, Avatar, Stack } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { Typography, Box, Paper, Grid, CircularProgress, Alert, useTheme, alpha, Avatar, Stack, Button, Chip, IconButton, Tooltip } from '@mui/material';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import WarningIcon from '@mui/icons-material/Warning';
+import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { formatDistanceToNow } from 'date-fns';
 import { useSocket } from '../../contexts/SocketContext';
+import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
 const RecentActivityFeed = () => {
@@ -74,8 +80,24 @@ const RecentActivityFeed = () => {
   );
 };
 
-const StatCard = ({ title, value, icon, color }) => (
-  <Paper elevation={3} sx={{ p: 2, display: 'flex', alignItems: 'center', borderRadius: 3, borderLeft: `4px solid ${color}` }}>
+const StatCard = ({ title, value, icon, color, trend, trendValue, onClick }) => (
+  <Paper 
+    elevation={3} 
+    sx={{ 
+      p: 2, 
+      display: 'flex', 
+      alignItems: 'center', 
+      borderRadius: 3, 
+      borderLeft: `4px solid ${color}`,
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'all 0.3s',
+      '&:hover': onClick ? {
+        transform: 'translateY(-4px)',
+        boxShadow: 6
+      } : {}
+    }}
+    onClick={onClick}
+  >
     <Box sx={{
       mr: 2,
       p: 1.5,
@@ -88,53 +110,167 @@ const StatCard = ({ title, value, icon, color }) => (
     }}>
       {icon}
     </Box>
-    <Box>
+    <Box sx={{ flexGrow: 1 }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{value}</Typography>
-      <Typography color="text.secondary" sx={{ fontFamily: 'inherit' }}>{title}</Typography>
+      <Typography color="text.secondary" sx={{ fontFamily: 'inherit', fontSize: '0.875rem' }}>{title}</Typography>
+      {trend && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+          {trend === 'up' ? (
+            <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
+          ) : (
+            <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
+          )}
+          <Typography variant="caption" color={trend === 'up' ? 'success.main' : 'error.main'}>
+            {trendValue}
+          </Typography>
+        </Box>
+      )}
     </Box>
   </Paper>
 );
 
 const AdminOverview = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      setRefreshing(true);
+      const res = await adminService.getDashboardStats();
+      setStats(res.data);
+    } catch (err) {
+      setError('Failed to load dashboard statistics.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await adminService.getDashboardStats();
-        setStats(res.data);
-      } catch (err) {
-        setError('Failed to load dashboard statistics.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStats();
+  }, []);
+
+  // Add CSS keyframes for spin animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
   }, []);
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <Box>
+    <Box sx={{ zoom: 0.8 }}>
+      {/* Quick Actions Bar */}
+      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+          Quick Actions
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/admin/products')}
+            size="small"
+            sx={{ borderRadius: 2 }}
+          >
+            Add Product
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/admin/orders/create')}
+            size="small"
+            sx={{ borderRadius: 2 }}
+          >
+            Create Order
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<WarningIcon />}
+            onClick={() => navigate('/admin/products/low-stock')}
+            size="small"
+            sx={{ borderRadius: 2 }}
+          >
+            Low Stock
+          </Button>
+          <Tooltip title="Refresh Data">
+            <IconButton 
+              onClick={fetchStats} 
+              disabled={refreshing}
+              size="small"
+              sx={{ 
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 2
+              }}
+            >
+              <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Paper>
+
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
-          <StatCard title="Total Users" value={stats?.totalUsers ?? '...'} icon={<PeopleIcon />} color={theme.palette.primary.main} />
+          <StatCard 
+            title="Total Users" 
+            value={stats?.totalUsers ?? '...'} 
+            icon={<PeopleIcon />} 
+            color={theme.palette.primary.main}
+            trend={stats?.usersTrend > 0 ? 'up' : stats?.usersTrend < 0 ? 'down' : null}
+            trendValue={stats?.usersTrend ? `${Math.abs(stats.usersTrend)}% this month` : null}
+            onClick={() => navigate('/admin/users')}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
-          <StatCard title="Total Revenue" value={`$${stats?.totalRevenue?.toFixed(0) ?? '...'}`} icon={<MonetizationOnIcon />} color={theme.palette.info.main} />
+          <StatCard 
+            title="Total Revenue" 
+            value={`$${stats?.totalRevenue?.toFixed(0) ?? '...'}`} 
+            icon={<MonetizationOnIcon />} 
+            color={theme.palette.info.main}
+            trend={stats?.revenueTrend > 0 ? 'up' : stats?.revenueTrend < 0 ? 'down' : null}
+            trendValue={stats?.revenueTrend ? `${Math.abs(stats.revenueTrend)}% this month` : null}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
-          <StatCard title="Total Products" value={stats?.totalProducts ?? '...'} icon={<InventoryIcon />} color={theme.palette.secondary.main} />
+          <StatCard 
+            title="Total Products" 
+            value={stats?.totalProducts ?? '...'} 
+            icon={<InventoryIcon />} 
+            color={theme.palette.secondary.main}
+            onClick={() => navigate('/admin/products')}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
-          <StatCard title="Total Posts" value={stats?.totalPosts ?? '...'} icon={<PostAddIcon />} color={theme.palette.success.main} />
+          <StatCard 
+            title="Total Posts" 
+            value={stats?.totalPosts ?? '...'} 
+            icon={<PostAddIcon />} 
+            color={theme.palette.success.main}
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
-          <StatCard title="Total Orders" value={stats?.totalOrders ?? '...'} icon={<ShoppingCartIcon />} color={theme.palette.warning.main} />
+          <StatCard 
+            title="Total Orders" 
+            value={stats?.totalOrders ?? '...'} 
+            icon={<ShoppingCartIcon />} 
+            color={theme.palette.warning.main}
+            trend={stats?.ordersTrend > 0 ? 'up' : stats?.ordersTrend < 0 ? 'down' : null}
+            trendValue={stats?.ordersTrend ? `${Math.abs(stats.ordersTrend)}% this month` : null}
+            onClick={() => navigate('/admin/orders')}
+          />
         </Grid>
 
         <Grid size={{ xs: 12, lg: 7 }}>
@@ -149,7 +285,7 @@ const AdminOverview = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} />
               <YAxis tickFormatter={(val) => `$${val}`} allowDecimals={false} />
-              <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']} />
+              <ChartTooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']} />
               <Legend />
               <Line type="monotone" dataKey="sales" name="Sales" stroke={theme.palette.secondary.main} strokeWidth={2} activeDot={{ r: 8 }} />
             </LineChart>
@@ -176,7 +312,7 @@ const AdminOverview = () => {
                       <Cell key={`cell-${index}`} fill={color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value, name) => [value, name.charAt(0).toUpperCase() + name.slice(1)]} />
+                  <ChartTooltip formatter={(value, name) => [value, name.charAt(0).toUpperCase() + name.slice(1)]} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -197,7 +333,7 @@ const AdminOverview = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" allowDecimals={false} />
                   <YAxis dataKey="name" type="category" width={120} interval={0} />
-                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.1)' }} />
+                  <ChartTooltip cursor={{ fill: 'rgba(0,0,0,0.1)' }} />
                   <Legend />
                   <Bar dataKey="totalQuantitySold" name="Units Sold" fill={theme.palette.success.main} />
                 </BarChart>
@@ -248,7 +384,7 @@ const AdminOverview = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} />
                   <YAxis allowDecimals={false} />
-                  <Tooltip />
+                  <ChartTooltip />
                   <Legend />
                   <Line type="monotone" dataKey="count" name="New Users" stroke={theme.palette.primary.main} strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>

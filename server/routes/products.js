@@ -15,9 +15,9 @@ router.get('/', async (req, res) => {
     const {
       search = '',
       category = 'All',
-      minPrice,
-      maxPrice,
-      sort = 'default'
+      sort = 'default',
+      minRating,
+      stockFilter = 'all'
     } = req.query;
 
     const query = {};
@@ -33,10 +33,17 @@ router.get('/', async (req, res) => {
       query.category = category;
     }
 
-    if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+    // Rating filter
+    if (minRating && Number(minRating) > 0) {
+      query.rating = { $gte: Number(minRating) };
+    }
+
+    // Stock filter
+    if (stockFilter === 'inStock') {
+      query.countInStock = { $gt: 0 };
+    } else if (stockFilter === 'onSale') {
+      query.salePrice = { $exists: true, $ne: null };
+      query.$expr = { $lt: ['$salePrice', '$price'] };
     }
 
     let sortOption = {};
@@ -46,6 +53,12 @@ router.get('/', async (req, res) => {
         break;
       case 'priceDesc':
         sortOption = { price: -1 };
+        break;
+      case 'rating':
+        sortOption = { rating: -1 };
+        break;
+      case 'newest':
+        sortOption = { createdAt: -1 };
         break;
       case 'nameAsc':
         sortOption = { name: 1 };
@@ -67,7 +80,7 @@ router.get('/', async (req, res) => {
 
     res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (err) {
-    console.error(err.message);
+    console.error('Error fetching products:', err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -316,6 +329,11 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       variants, badges, salePrice
     } = req.body;
 
+    // Validate required fields
+    if (!name || !price || !description || !category || countInStock === undefined) {
+      return res.status(400).json({ message: 'Missing required fields: name, price, description, category, countInStock' });
+    }
+
     // Parse variants if it's a JSON string
     let parsedVariants = [];
     if (variants) {
@@ -338,13 +356,13 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
 
     const product = new Product({
       name,
-      price,
+      price: Number(price),
       description,
-      unit,
+      unit: unit || undefined,
       category,
-      countInStock: Number(countInStock) || 0,
-      origin,
-      freshness,
+      countInStock: Number(countInStock),
+      origin: origin || undefined,
+      freshness: freshness || undefined,
       image: req.file ? `/uploads/productImages/${req.file.filename}` : '/images/placeholder.png',
       variants: parsedVariants,
       badges: parsedBadges,
@@ -375,14 +393,24 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    product.name = name || product.name;
-    product.price = price || product.price;
-    product.description = description || product.description;
-    product.unit = unit || product.unit;
-    product.category = category || product.category;
-    product.countInStock = countInStock === undefined ? product.countInStock : Number(countInStock);
-    product.origin = origin || product.origin;
-    product.freshness = freshness || product.freshness;
+    // Validate required fields if they are being updated
+    if ((name !== undefined && !name) || 
+        (price !== undefined && !price) || 
+        (description !== undefined && !description) || 
+        (category !== undefined && !category) || 
+        (countInStock !== undefined && countInStock === '')) {
+      return res.status(400).json({ message: 'Required fields cannot be empty: name, price, description, category, countInStock' });
+    }
+
+    // Update only provided fields
+    if (name !== undefined) product.name = name;
+    if (price !== undefined) product.price = Number(price);
+    if (description !== undefined) product.description = description;
+    if (unit !== undefined) product.unit = unit || undefined;
+    if (category !== undefined) product.category = category;
+    if (countInStock !== undefined) product.countInStock = Number(countInStock);
+    if (origin !== undefined) product.origin = origin || undefined;
+    if (freshness !== undefined) product.freshness = freshness || undefined;
 
     // Update variants if provided
     if (variants !== undefined) {
@@ -402,9 +430,9 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
       }
     }
 
-    // Update sale price
+    // Update sale price (handle empty string as undefined)
     if (salePrice !== undefined) {
-      product.salePrice = salePrice ? Number(salePrice) : undefined;
+      product.salePrice = salePrice === '' || salePrice === null ? undefined : Number(salePrice);
     }
 
     if (req.file) {

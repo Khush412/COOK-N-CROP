@@ -25,6 +25,9 @@ import {
   StepLabel,
   Button,
   Stack,
+  Tooltip,
+  Card,
+  CardContent,
 } from '@mui/material';
 import orderService from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +35,10 @@ import { useCart } from '../contexts/CartContext';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import NoteIcon from '@mui/icons-material/Note';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import SecurityIcon from '@mui/icons-material/Security';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
@@ -144,6 +151,13 @@ const OrderDetailsPage = () => {
     );
   }
 
+  // Trust badges data
+  const trustBadges = [
+    { icon: <LocalShippingIcon sx={{ fontSize: 24 }} />, title: "Free Delivery", description: "On orders over ₹2000" },
+    { icon: <SecurityIcon sx={{ fontSize: 24 }} />, title: "100% Secure", description: "Protected payments" },
+    { icon: <AutorenewIcon sx={{ fontSize: 24 }} />, title: "Easy Returns", description: "30-day guarantee" },
+  ];
+
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
@@ -160,10 +174,13 @@ const OrderDetailsPage = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Placed On</Typography>
             <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(order.createdAt), 'PPP')}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              ({formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })})
+            </Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Total Amount</Typography>
-            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography>
+            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.totalPrice.toFixed(2)}</Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', mb: 0.5 }}>Status</Typography>
@@ -197,20 +214,67 @@ const OrderDetailsPage = () => {
       {order.statusHistory && order.statusHistory.length > 0 && (
         <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
           <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
-            Order Status
+            Order Status Timeline
           </Typography>
           <Stepper activeStep={order.statusHistory.length - 1} alternativeLabel sx={{ mt: 3 }}>
-            {order.statusHistory.map((historyItem) => (
+            {order.statusHistory.map((historyItem, index) => (
               <Step key={historyItem.timestamp}>
                 <StepLabel>
                   <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{historyItem.status}</Typography>
-                  <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(historyItem.timestamp), 'p, PPP')}</Typography>
+                  <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    {format(new Date(historyItem.timestamp), 'MMM d, h:mm a')}
+                  </Typography>
                 </StepLabel>
               </Step>
             ))}
           </Stepper>
         </Paper>
       )}
+
+      {/* Trust Section */}
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <LocalShippingIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Free Delivery
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  On orders over ₹2000
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <SecurityIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  100% Secure
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Protected payments
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <AutorenewIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Easy Returns
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  30-day guarantee
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
 
         <Grid container spacing={4}>
           {/* Order Items */}
@@ -249,10 +313,10 @@ const OrderDetailsPage = () => {
                                 Quantity: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{item.qty}</Typography>
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                                Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${item.price.toFixed(2)}</Typography>{item.unit ? ` / ${item.unit}` : ''}
+                                Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{item.price.toFixed(2)}</Typography>{item.unit ? ` / ${item.unit}` : ''}
                               </Typography>
                               <Typography variant="body1" color="text.primary" sx={{ mt: 0.5, fontFamily: theme.typography.fontFamily }}>
-                                Subtotal: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${(item.price * item.qty).toFixed(2)}</Typography>
+                                Subtotal: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{(item.price * item.qty).toFixed(2)}</Typography>
                               </Typography>
                             </Box>
                           }
@@ -315,16 +379,63 @@ const OrderDetailsPage = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Stack spacing={1}>
-                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>${order.subtotal.toFixed(2)}</Typography></Stack>
-                    {order.discount?.amount > 0 && <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({order.discount.code}):</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>-${order.discount.amount.toFixed(2)}</Typography></Stack>}
-                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography></Stack>
+                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.subtotal.toFixed(2)}</Typography></Stack>
+                    {order.harvestCoinsDiscount > 0 && (
+                      <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Discount:</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>-₹{order.harvestCoinsDiscount.toFixed(2)}</Typography>
+                      </Stack>
+                    )}
+                    {order.discount?.amount > 0 && (
+                      <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Coupon Discount ({order.discount.code}):</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>-₹{order.discount.amount.toFixed(2)}</Typography>
+                      </Stack>
+                    )}
+                    <Stack direction="row" justifyContent="space-between"><Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography><Typography sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {order.deliveryCharge > 0 ? `₹${order.deliveryCharge.toFixed(2)}` : 'Free'}
+                    </Typography></Stack>
                     <Stack direction="row" justifyContent="space-between">
                       <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Payment Method:</Typography>
                       <Chip label={order.paymentMethod} size="small" variant="outlined" />
                     </Stack>
                     <Divider sx={{ my: 1 }} />
-                    <Stack direction="row" justifyContent="space-between"><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography><Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography></Stack>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography>
+                      <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.totalPrice.toFixed(2)}</Typography>
+                    </Stack>
+                    {order.harvestCoinsEarned > 0 && (
+                      <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, p: 1, bgcolor: alpha(theme.palette.success.main, 0.1), borderRadius: 1 }}>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Earned:</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{order.harvestCoinsEarned} coins</Typography>
+                      </Stack>
+                    )}
                   </Stack>
+                  
+                  {/* Customer Support */}
+                  <Box sx={{ mt: 4 }}>
+                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent>
+                        <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                          <SupportAgentIcon color="primary" />
+                          <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                            Need Help?
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+                          If you have any questions about your order, our support team is here to help.
+                        </Typography>
+                        <Button 
+                          variant="outlined" 
+                          component={RouterLink} 
+                          to="/support"
+                          sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                        >
+                          Contact Support
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Box>
                 </Grid>
               </Grid>
             </Paper>

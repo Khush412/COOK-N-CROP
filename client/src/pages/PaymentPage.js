@@ -1,48 +1,51 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Container, Paper, Typography, Box, Grid, Radio, RadioGroup, FormControlLabel, FormControl, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Divider, List, ListItem, ListItemAvatar, Avatar, ListItemText, useTheme, alpha, Tooltip
+  Container, Paper, Typography, Box, Grid, Radio, RadioGroup, FormControl, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Divider, List, ListItem, ListItemAvatar, Avatar, ListItemText, useTheme, alpha, Card, CardContent
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import UpiIcon from '@mui/icons-material/TapAndPlay';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import NoteIcon from '@mui/icons-material/Note';
+import SecurityIcon from '@mui/icons-material/Security';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import orderService from '../services/orderService';
-import { useCart } from '../contexts/CartContext';
 import productService from '../services/productService';
+import { useCart } from '../contexts/CartContext';
 
 const PaymentPage = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
   const { clearCart } = useCart();
-
-  const { shippingAddress, appliedCoupon, deliveryTimeSlot, orderNotes } = location.state || {};
-  const [cart, setCart] = useState(null);
-  const [loadingCart, setLoadingCart] = useState(true);
+  const {
+    shippingAddress,
+    appliedCoupon,
+    deliveryTimeSlot,
+    orderNotes,
+    harvestCoinsDiscount = 0,
+    harvestCoinsUsed = 0,
+    deliveryCharge: passedDeliveryCharge
+  } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState('COD');
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  const [error, setError] = useState('');
   const [orderSuccessDialogOpen, setOrderSuccessDialogOpen] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState(null);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [error, setError] = useState('');
+  const [cart, setCart] = useState(null);
+  const [loadingCart, setLoadingCart] = useState(true);
 
   useEffect(() => {
     const fetchCart = async () => {
       try {
         const cartData = await productService.getCart();
-        const validItems = cartData?.items?.filter(item => item.product) || [];
-        if (validItems.length === 0) {
-          navigate('/cart');
-        } else {
-          setCart(cartData);
-        }
+        setCart(cartData);
       } catch (err) {
-        navigate('/cart');
+        setError('Failed to load cart.');
       } finally {
         setLoadingCart(false);
       }
@@ -59,13 +62,6 @@ const PaymentPage = () => {
     if (!cart?.items) return [];
     return cart.items.filter(item => item.product);
   }, [cart]);
-
-  const subtotal = validItems.reduce((acc, item) => {
-    const effectivePrice = item.product.salePrice || item.product.price;
-    return acc + effectivePrice * item.quantity;
-  }, 0) || 0;
-  const discountAmount = appliedCoupon?.discountAmount || 0;
-  const total = subtotal - discountAmount;
 
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
@@ -86,12 +82,16 @@ const PaymentPage = () => {
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         deliveryTimeSlot: deliveryTimeSlot || undefined,
         orderNotes: orderNotes || undefined,
+        harvestCoinsUsed: harvestCoinsUsed || undefined,
+        harvestCoinsDiscount: harvestCoinsDiscount || undefined,
+        deliveryCharge: deliveryCharge || undefined,
       };
 
       const createdOrder = await orderService.createOrder(orderData);
       setPlacedOrderId(createdOrder._id);
       setOrderSuccessDialogOpen(true);
-      clearCart();
+      // Clear the cart after successful order placement
+      await clearCart();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to place order.');
     } finally {
@@ -102,6 +102,26 @@ const PaymentPage = () => {
   if (loadingCart || !cart) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
   }
+
+  // Trust badges data
+  const trustBadges = [
+    { icon: <SecurityIcon sx={{ fontSize: 24 }} />, title: "100% Secure", description: "Protected payments" },
+    { icon: <VerifiedUserIcon sx={{ fontSize: 24 }} />, title: "Verified Sellers", description: "Trusted vendors" },
+    { icon: <LocalOfferIcon sx={{ fontSize: 24 }} />, title: "Best Prices", description: "Guaranteed deals" },
+  ];
+
+  const subtotal = validItems.reduce((acc, item) => {
+    const effectivePrice = item.product.salePrice || item.product.price;
+    return acc + effectivePrice * item.quantity;
+  }, 0) || 0;
+  
+  // Use passed delivery charge or calculate if not provided
+  const deliveryCharge = passedDeliveryCharge !== undefined 
+    ? passedDeliveryCharge 
+    : (subtotal < 200 ? 40 : 0);
+  
+  const discountAmount = appliedCoupon?.discountAmount || 0;
+  const total = subtotal + deliveryCharge - discountAmount - (harvestCoinsDiscount || 0);
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
@@ -177,11 +197,11 @@ const PaymentPage = () => {
                         Qty: {item.quantity} x 
                         {hasDiscount && (
                           <Typography component="span" sx={{ textDecoration: 'line-through', mx: 0.5, color: 'text.disabled' }}>
-                            ${item.product.price.toFixed(2)}
+                            ₹{item.product.price.toFixed(2)}
                           </Typography>
                         )}
                         <Typography component="span" sx={{ color: hasDiscount ? 'error.main' : 'text.primary', fontWeight: hasDiscount ? 'bold' : 'normal' }}>
-                          ${effectivePrice.toFixed(2)}
+                            ₹{effectivePrice.toFixed(2)}
                         </Typography>
                         {item.product.unit ? ` / ${item.product.unit}` : ''}
                       </Box>
@@ -190,7 +210,7 @@ const PaymentPage = () => {
                     secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily, component: 'div' }}
                   />
                   <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: hasDiscount ? 'error.main' : 'text.primary' }}>
-                    ${(item.quantity * effectivePrice).toFixed(2)}
+                    ₹{(item.quantity * effectivePrice).toFixed(2)}
                   </Typography>
                 </ListItem>
               )})}
@@ -201,6 +221,27 @@ const PaymentPage = () => {
         {/* Right Side: Payment & Order Total */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: theme.spacing(10) }}>
+            {/* Trust Badges */}
+            <Card variant="outlined" sx={{ mb: 3, borderRadius: 2 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontFamily: theme.typography.fontFamily }}>
+                  Secure Checkout
+                </Typography>
+                <Grid container spacing={2}>
+                  {trustBadges.map((badge, index) => (
+                    <Grid item xs={4} key={index} sx={{ textAlign: 'center' }}>
+                      <Box sx={{ color: 'primary.main', mb: 1 }}>
+                        {badge.icon}
+                      </Box>
+                      <Typography variant="body2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        {badge.title}
+                      </Typography>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+
             <Stack direction="row" alignItems="center" spacing={1} mb={2}>
               <PaymentsIcon color="primary" />
               <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Payment Method</Typography>
@@ -216,80 +257,86 @@ const PaymentPage = () => {
                     </Stack>
                   </label>
                 </Paper>
-                <Tooltip title="Coming Soon!" placement="left">
-                  <Paper variant="outlined" sx={{ p: 1.5, mb: 1, borderRadius: 2, display: 'flex', alignItems: 'center', cursor: 'not-allowed', opacity: 0.5 }}>
-                    <Radio value="UPI" disabled />
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <UpiIcon />
-                      <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>UPI</Typography>
-                    </Stack>
-                  </Paper>
-                </Tooltip>
-                <Tooltip title="Coming Soon!" placement="left">
-                  <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', cursor: 'not-allowed', opacity: 0.5 }}>
-                    <Radio value="Card" disabled />
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <CreditCardIcon />
-                      <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Credit / Debit Card</Typography>
-                    </Stack>
-                  </Paper>
-                </Tooltip>
               </RadioGroup>
             </FormControl>
 
-            <Divider sx={{ my: 3 }} />
-
-            <Typography variant="h6" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Summary</Typography>
-            <Stack spacing={1.5} sx={{ my: 2 }}>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-                <Typography sx={{ fontFamily: theme.typography.fontFamily }}>${subtotal.toFixed(2)}</Typography>
-              </Stack>
-              {appliedCoupon && (
-                <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
-                  <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({appliedCoupon.code})</Typography>
-                  <Typography sx={{ fontFamily: theme.typography.fontFamily }}>-${discountAmount.toFixed(2)}</Typography>
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, mt: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>Order Summary</Typography>
+              <Stack spacing={1} sx={{ mb: 2 }}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography>
+                  <Typography sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
                 </Stack>
-              )}
-              <Stack direction="row" justifyContent="space-between">
-                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping</Typography>
-                <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography>
+                {deliveryCharge > 0 && (
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Charge:</Typography>
+                    <Typography sx={{ fontFamily: theme.typography.fontFamily }}>₹{deliveryCharge.toFixed(2)}</Typography>
+                  </Stack>
+                )}
+                {harvestCoinsDiscount > 0 && (
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Discount:</Typography>
+                    <Typography sx={{ fontFamily: theme.typography.fontFamily, color: 'success.main' }}>-₹{harvestCoinsDiscount.toFixed(2)}</Typography>
+                  </Stack>
+                )}
+                {appliedCoupon && (
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Coupon ({appliedCoupon.code}):</Typography>
+                    <Typography sx={{ fontFamily: theme.typography.fontFamily, color: 'success.main' }}>-₹{appliedCoupon.discountAmount.toFixed(2)}</Typography>
+                  </Stack>
+                )}
+                <Divider sx={{ my: 1 }} />
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography>
+                  <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>₹{total.toFixed(2)}</Typography>
+                </Stack>
               </Stack>
-            </Stack>
-            <Divider sx={{ mb: 2 }} />
-            <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-              <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total</Typography>
-              <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${total.toFixed(2)}</Typography>
-            </Stack>
 
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              fullWidth
-              onClick={handlePlaceOrder}
-              disabled={isPlacingOrder}
-              sx={{ fontFamily: theme.typography.fontFamily, py: 1.5, borderRadius: '50px', fontWeight: 'bold' }}
-            >
-              {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : `Confirm Order (${paymentMethod})`}
-            </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="large"
+                fullWidth
+                onClick={handlePlaceOrder}
+                disabled={isPlacingOrder}
+                sx={{ fontFamily: theme.typography.fontFamily, py: 1.5, borderRadius: '50px', fontWeight: 'bold' }}
+              >
+                {isPlacingOrder ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Place Order'}
+              </Button>
+            </Paper>
           </Paper>
         </Grid>
       </Grid>
 
-      <Dialog open={orderSuccessDialogOpen} onClose={() => setOrderSuccessDialogOpen(false)}>
-        <DialogTitle sx={{ textAlign: 'center' }}>
-          <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 1 }} />
-          <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Placed Successfully!</Typography>
+      <Dialog open={orderSuccessDialogOpen} onClose={() => navigate('/')} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily }}>
+          <CheckCircleOutlineIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order Placed Successfully!</Typography>
         </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2, fontFamily: theme.typography.fontFamily, textAlign: 'center' }}>
-            Your order has been placed. Thank you for your purchase!
+        <DialogContent sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+            Thank you for your order!
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+            Your order #{placedOrderId?.toString().slice(-6)} has been placed successfully. You will receive a confirmation email shortly.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => navigate(`/order/${placedOrderId}`)} autoFocus variant="contained" color="secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to={`/order/${placedOrderId}`}
+            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}
+          >
             View Order Details
+          </Button>
+          <Button
+            variant="outlined"
+            component={RouterLink}
+            to="/"
+            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}
+          >
+            Continue Shopping
           </Button>
         </DialogActions>
       </Dialog>

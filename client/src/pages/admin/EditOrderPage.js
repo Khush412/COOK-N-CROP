@@ -160,7 +160,7 @@ const EditOrderPage = () => {
               {orderItems.map(item => (
                 <ListItem key={item.product} secondaryAction={<IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product)}><DeleteIcon /></IconButton>}>
                   <ListItemAvatar><Avatar src={item.image} variant="rounded" /></ListItemAvatar>
-                  <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - $${(item.price * item.qty).toFixed(2)}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                  <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - ₹${(item.price * item.qty).toFixed(2)}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                 </ListItem>
               ))}
             </List>
@@ -180,7 +180,7 @@ const EditOrderPage = () => {
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order Summary</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>${subtotal.toFixed(2)}</Typography>
+              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
             </Box>
             <Button variant="contained" color="primary" fullWidth size="large" onClick={handleSaveChanges} disabled={saving} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', py: 1.5 }}>
               {saving ? <CircularProgress size={24} /> : 'Save Changes'}

@@ -27,18 +27,25 @@ import {
   useTheme,
   Pagination,
   Stack,
+  Chip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import HistoryIcon from '@mui/icons-material/History';
 import ClearIcon from '@mui/icons-material/Clear';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
 import productService from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import recentlyViewedService from '../services/recentlyViewedService';
 import Slider from 'react-slick';
 
-const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
+const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seaafod', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
 export default function CropCorner() {
   const theme = useTheme();
@@ -52,12 +59,13 @@ export default function CropCorner() {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortOrder, setSortOrder] = useState('default');
+  const [minRating, setMinRating] = useState(0); // New: Rating filter
+  const [stockFilter, setStockFilter] = useState('all'); // New: Stock availability filter
 
   // Debounced filter states for API calls
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [debouncedPriceRange, setDebouncedPriceRange] = useState([0, 100]);
+  const [debouncedMinRating, setDebouncedMinRating] = useState(0);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -69,11 +77,11 @@ export default function CropCorner() {
     return (
       searchTerm !== '' ||
       selectedCategory !== 'All' ||
-      priceRange[0] !== 0 ||
-      priceRange[1] !== 100 ||
-      sortOrder !== 'default'
+      sortOrder !== 'default' ||
+      minRating !== 0 ||
+      stockFilter !== 'all'
     );
-  }, [searchTerm, selectedCategory, priceRange, sortOrder]);
+  }, [searchTerm, selectedCategory, sortOrder, minRating, stockFilter]);
 
   // Debounce search term
   useEffect(() => {
@@ -84,14 +92,14 @@ export default function CropCorner() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Debounce price range
+  // Debounce rating filter
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedPriceRange(priceRange);
-      setPage(1); // Reset to page 1 on price change
-    }, 500);
+      setDebouncedMinRating(minRating);
+      setPage(1);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [priceRange]);
+  }, [minRating]);
 
   // Main data fetching effect
   useEffect(() => {
@@ -102,9 +110,9 @@ export default function CropCorner() {
           page,
           search: debouncedSearchTerm,
           category: selectedCategory,
-          minPrice: debouncedPriceRange[0],
-          maxPrice: debouncedPriceRange[1],
           sort: sortOrder,
+          minRating: debouncedMinRating,
+          stockFilter: stockFilter,
         });
         setProducts(data.products);
         setTotalPages(data.pages);
@@ -119,18 +127,19 @@ export default function CropCorner() {
 
     // Fetch recently viewed products from local storage
     setRecentlyViewed(recentlyViewedService.getProducts());
-  }, [page, debouncedSearchTerm, selectedCategory, debouncedPriceRange, sortOrder]);
+  }, [page, debouncedSearchTerm, selectedCategory, sortOrder, debouncedMinRating, stockFilter]);
 
   // Reset page when category or sort order changes directly
   useEffect(() => {
     setPage(1);
-  }, [selectedCategory, sortOrder]);
+  }, [selectedCategory, sortOrder, stockFilter]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All');
-    setPriceRange([0, 100]);
     setSortOrder('default');
+    setMinRating(0);
+    setStockFilter('all');
     setPage(1);
   };
 
@@ -172,7 +181,7 @@ export default function CropCorner() {
       </Box>
       <Divider sx={{ mb: 2 }} />
 
-      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }}>
+      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }} defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Category</Typography>
         </AccordionSummary>
@@ -190,16 +199,73 @@ export default function CropCorner() {
 
       <Divider />
 
-      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }}>
+      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }} defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Price Range</Typography>
+          <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Minimum Rating</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Slider value={priceRange} onChange={(e, newValue) => setPriceRange(newValue)} valueLabelDisplay="auto" min={0} max={100} sx={{ mt: 2, mb: 1 }} />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${priceRange[0]}</Typography>
-            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${priceRange[1]}</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {[4, 3, 2, 1, 0].map((rating) => (
+              <Box
+                key={rating}
+                onClick={() => setMinRating(rating)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  cursor: 'pointer',
+                  p: 1,
+                  borderRadius: 1,
+                  bgcolor: minRating === rating ? 'action.selected' : 'transparent',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                {rating === 0 ? (
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>All Ratings</Typography>
+                ) : (
+                  <>
+                    {[...Array(5)].map((_, index) => (
+                      index < rating ? (
+                        <StarIcon key={index} sx={{ fontSize: 18, color: 'warning.main' }} />
+                      ) : (
+                        <StarBorderIcon key={index} sx={{ fontSize: 18, color: 'action.disabled' }} />
+                      )
+                    ))}
+                    <Typography variant="body2" sx={{ ml: 0.5, fontFamily: theme.typography.fontFamily }}>& Up</Typography>
+                  </>
+                )}
+              </Box>
+            ))}
           </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      <Divider />
+
+      <Accordion sx={{ boxShadow: 'none', bgcolor: 'transparent', '&:before': { display: 'none' } }} defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Availability</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <FormControl component="fieldset" fullWidth>
+            <RadioGroup value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
+              <FormControlLabel 
+                value="all" 
+                control={<Radio size="small" />} 
+                label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>All Products</Typography>} 
+              />
+              <FormControlLabel 
+                value="inStock" 
+                control={<Radio size="small" />} 
+                label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>In Stock Only</Typography>} 
+              />
+              <FormControlLabel 
+                value="onSale" 
+                control={<Radio size="small" />} 
+                label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>On Sale</Typography>} 
+              />
+            </RadioGroup>
+          </FormControl>
         </AccordionDetails>
       </Accordion>
     </Box>
@@ -267,9 +333,11 @@ export default function CropCorner() {
             <FormControl size="small" sx={{ minWidth: 180 }}>
               <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
               <Select value={sortOrder} label="Sort By" onChange={(e) => setSortOrder(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
-                <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default</MenuItem>
+                <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default (Featured)</MenuItem>
                 <MenuItem value="priceAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: Low to High</MenuItem>
                 <MenuItem value="priceDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: High to Low</MenuItem>
+                <MenuItem value="rating" sx={{ fontFamily: theme.typography.fontFamily }}>Highest Rated</MenuItem>
+                <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest First</MenuItem>
                 <MenuItem value="nameAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: A-Z</MenuItem>
                 <MenuItem value="nameDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: Z-A</MenuItem>
               </Select>

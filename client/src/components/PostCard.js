@@ -253,6 +253,8 @@ const PostCard = ({
               size="small"
               sx={{
                 mr: 1,
+                borderRadius: '8px', // More rounded
+                fontFamily: theme.typography.fontFamily,
                 // In a more advanced version, you'd pass flair color/bg from the group settings
                 bgcolor: alpha(theme.palette.secondary.main, 0.2),
               }}

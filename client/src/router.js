@@ -53,11 +53,13 @@ import MyCollectionsPage from './pages/MyCollectionsPage'; // New
 import CollectionDetailsPage from './pages/CollectionDetailsPage'; // New
 import MessengerPage from './pages/MessengerPage';
 import WishlistPage from './pages/WishlistPage';
+import RewardsPage from './pages/RewardsPage'; // New: Import RewardsPage
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/rewards" element={<RewardsPage />} /> {/* New: Rewards Page Route */}
       <Route path="/terms" element={<TermsPage />} /> {/* New */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* New */}
       <Route path="/support" element={<SupportContactPage />} /> {/* New */}

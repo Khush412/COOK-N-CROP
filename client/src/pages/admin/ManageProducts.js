@@ -2,15 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack, Chip, Grid,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 import ProductFormDialog from '../../components/ProductFormDialog';
@@ -33,6 +36,10 @@ const ManageProducts = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [lowStockThreshold] = useState(10); // Define low stock threshold
+
+  // Calculate low stock count
+  const lowStockCount = products.filter(p => p.countInStock <= lowStockThreshold).length;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,6 +67,7 @@ const ManageProducts = () => {
   }, [page, debouncedSearchTerm]);
 
   useEffect(() => {
+    console.log('ManageProducts useEffect triggered');
     fetchProducts();
   }, [fetchProducts]);
 
@@ -165,7 +173,7 @@ const ManageProducts = () => {
   const rowCount = products.length;
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ mt: 12, py: 4, zoom: 0.9 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Products
@@ -194,9 +202,21 @@ const ManageProducts = () => {
               </Button>
             )}
           </Stack>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-            Add Product
-          </Button>
+          <Stack direction="row" spacing={1}>
+            {lowStockCount > 0 && (
+              <Chip 
+                icon={<WarningAmberIcon />}
+                label={`${lowStockCount} Low Stock`}
+                color="warning"
+                size="small"
+                onClick={() => alert('Low stock items highlighted in table below')}
+                sx={{ cursor: 'pointer', fontWeight: 'bold' }}
+              />
+            )}
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+              Add Product
+            </Button>
+          </Stack>
         </Box>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
@@ -221,6 +241,8 @@ const ManageProducts = () => {
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Stock</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Sales</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -229,30 +251,73 @@ const ManageProducts = () => {
                     products.map((product) => {
                       const isItemSelected = isSelected(product._id);
                       return (
-                        <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
+                        <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected} sx={{
+                          backgroundColor: product.countInStock <= lowStockThreshold ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
+                          '& td': { py: 1 }
+                        }}>
                           <TableCell padding="checkbox">
                             <Checkbox
                               checked={isItemSelected}
                               inputProps={{ 'aria-labelledby': `product-checkbox-${product._id}` }}
                             />
                           </TableCell>
-                          <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
-                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.category}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${product.price.toFixed(2)}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.countInStock}</TableCell>
-                          <TableCell align="right">
-                            <Tooltip title={product.isFeatured ? "Unfeature Product" : "Feature Product"}>
-                              <IconButton onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
-                                <StarIcon color={product.isFeatured ? "secondary" : "action"} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit Product">
-                              <IconButton onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}><EditIcon /></IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete Product">
-                              <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error"><DeleteIcon /></IconButton>
-                            </Tooltip>
+                          <TableCell sx={{ py: 1 }}><Avatar src={product.image} variant="rounded" sx={{ width: 40, height: 40 }} /></TableCell>
+                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.name}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.category}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1, fontSize: '0.875rem' }}>
+                            ₹{product.price.toFixed(2)}
+                            {product.salePrice && product.salePrice < product.price && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontSize: '0.75rem' }}>
+                                  ₹{product.price.toFixed(2)}
+                                </Typography>
+                                <Chip 
+                                  icon={<LocalOfferIcon sx={{ fontSize: 12 }} />}
+                                  label={`${Math.round(((product.price - product.salePrice) / product.price) * 100)}%`}
+                                  size="small"
+                                  color="error"
+                                  sx={{ height: 16, '& .MuiChip-icon': { fontSize: 10, mr: 0.2 }, '& .MuiChip-label': { px: 0.3, fontSize: '0.6rem' } }}
+                                />
+                              </Box>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.countInStock}</Typography>
+                              {product.countInStock <= lowStockThreshold && (
+                                <WarningAmberIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+                              )}
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1, fontSize: '0.875rem' }}>
+                            {product.totalSales || 0}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                              {product.isFeatured && <StarIcon sx={{ fontSize: 16, color: 'secondary.main' }} />}
+                              {product.badges?.isNew && <Chip label="New" size="small" color="info" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
+                              {product.badges?.isOrganic && <Chip label="Organic" size="small" color="success" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
+                              {product.badges?.isBestseller && <Chip label="Best" size="small" color="primary" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right" sx={{ py: 1 }}>
+                            <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+                              <Tooltip title={product.isFeatured ? "Unfeature Product" : "Feature Product"}>
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
+                                  {product.isFeatured ? <StarIcon color="secondary" fontSize="small" /> : <StarBorderIcon fontSize="small" />}
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit Product">
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}>
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Product">
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error">
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       );

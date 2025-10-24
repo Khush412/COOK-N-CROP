@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Paper, alpha, Chip, Stack } from '@mui/material';
+import { Box, Typography, Button, Paper, alpha, Chip, Stack, IconButton, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,6 +8,9 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import Rating from './Rating';
@@ -28,6 +31,10 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
     ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
     : 0;
 
+  // Determine stock status
+  const isLowStock = product.countInStock > 0 && product.countInStock <= 5;
+  const isOutOfStock = product.countInStock === 0;
+
   const handleAddToCart = async (e) => {
     e.stopPropagation(); // Prevent the card's link from firing
     e.preventDefault();
@@ -47,6 +54,12 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
     }
   };
 
+  const handleQuickView = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    navigate(`/product/${product._id}`);
+  };
+
   return (
     <Paper
       component={motion.div}
@@ -61,6 +74,7 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
         color: 'inherit',
         height: '100%',
         border: `1px solid ${theme.palette.divider}`,
+        transition: 'all 0.3s ease',
       }}
       onClick={() => navigate(`/product/${product._id}`)}
     >
@@ -143,6 +157,21 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
               }} 
             />
           )}
+          {product.isFeatured && (
+            <Chip 
+              icon={<FlashOnIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label="Featured" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.secondary.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+                height: '20px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
         </Stack>
         <Box
           component="img"
@@ -201,6 +230,23 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
             />
           </Box>
         )}
+        {/* Low stock indicator */}
+        {isLowStock && (
+          <Chip
+            label={`Only ${product.countInStock} left!`}
+            size="small"
+            color="warning"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 2,
+              fontWeight: 'bold',
+              fontSize: '0.6rem',
+              height: '20px',
+            }}
+          />
+        )}
       </Box>
       <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, flexGrow: 1, lineHeight: 1.3 }}>
@@ -221,17 +267,52 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            ${product.price.toFixed(2)}
+            ₹{product.price.toFixed(2)}
           </Typography>
         )}
         <Typography variant="h6" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', mt: 'auto', fontFamily: theme.typography.fontFamily }}>
-          ${effectivePrice.toFixed(2)}
+          ₹{effectivePrice.toFixed(2)}
           {product.unit && (
             <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
               {` / ${product.unit}`}
             </Typography>
           )}
         </Typography>
+        
+        {/* Stock progress bar for low stock items */}
+        {isLowStock && (
+          <Box sx={{ mt: 1 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={(product.countInStock / 5) * 100} 
+              color="warning"
+              sx={{ height: 6, borderRadius: 3 }}
+            />
+            <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, display: 'block', fontFamily: theme.typography.fontFamily }}>
+              Only {product.countInStock} left in stock!
+            </Typography>
+          </Box>
+        )}
+        
+        {/* Add to cart button for mobile/small screens */}
+        <Button
+          variant="contained"
+          color="secondary"
+          size="small"
+          fullWidth
+          disabled={isAdding || product.countInStock === 0}
+          onClick={handleAddToCart}
+          startIcon={<AddShoppingCartIcon />}
+          sx={{ 
+            mt: 1, 
+            fontFamily: theme.typography.fontFamily, 
+            fontWeight: 'bold', 
+            borderRadius: '50px',
+            display: { xs: 'flex', sm: 'none' } // Only show on small screens
+          }}
+        >
+          {product.countInStock > 0 ? (isAdding ? 'Adding...' : 'Add to Cart') : 'Out of Stock'}
+        </Button>
       </Box>
     </Paper>
   );

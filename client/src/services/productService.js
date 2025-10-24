@@ -4,12 +4,10 @@ const getAllProducts = async ({
   page = 1,
   search = '',
   category = 'All',
-  minPrice = 0,
-  maxPrice = 100,
   sort = 'default'
 } = {}) => {
   try {
-    const params = new URLSearchParams({ page, search, category, minPrice, maxPrice, sort });
+    const params = new URLSearchParams({ page, search, category, sort });
     const response = await axios.get(`/products?${params.toString()}`);
     return response.data;
   } catch (error) {

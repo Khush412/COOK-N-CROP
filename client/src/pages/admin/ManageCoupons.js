@@ -251,7 +251,7 @@ const ManageCoupons = () => {
                         <TableRow key={coupon._id} hover>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
                           <TableCell><Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" /></TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>

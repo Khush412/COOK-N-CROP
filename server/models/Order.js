@@ -57,6 +57,10 @@ const orderSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
+    deliveryCharge: {
+        type: Number,
+        default: 0,
+    },
     discount: {
         code: String,
         amount: {
@@ -101,6 +105,19 @@ const orderSchema = mongoose.Schema({
         maxlength: 200,
         trim: true,
     },
+    harvestCoinsUsed: {
+        type: Number,
+        default: 0,
+    },
+    harvestCoinsDiscount: {
+        type: Number,
+        default: 0,
+    },
+    harvestCoinsEarned: {
+        type: Number,
+        default: 0,
+    },
+
 }, {
     timestamps: true,
 });

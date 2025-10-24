@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination,
   TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Select, MenuItem, IconButton, Container, Stack,
-  TextField, FormControl, InputLabel,
+  TextField, FormControl, InputLabel, useTheme, alpha, Stepper, Step, StepLabel,
 } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import { Link as RouterLink } from 'react-router-dom';
 import adminService from '../../services/adminService';
@@ -30,6 +29,9 @@ const ManageOrders = () => {
     Delivered: 'success',
     Canceled: 'error',
   };
+
+  // Status order for timeline display
+  const statusOrder = ['Pending', 'Processing', 'Shipped', 'Delivered'];
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -72,7 +74,7 @@ const ManageOrders = () => {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ mt: 12, py: 4, zoom: 0.9 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Orders
@@ -153,7 +155,7 @@ const ManageOrders = () => {
                 <TableBody>
                   {orders.length > 0 ? (
                     orders.map((order) => (
-                      <TableRow key={order._id} hover>
+                      <TableRow key={order._id} hover sx={{ '& td': { py: 1 } }}>
                         <TableCell>
                           <Tooltip title={order._id}>
                             <Typography variant="body2" noWrap sx={{ maxWidth: 100, fontFamily: theme.typography.fontFamily }}>
@@ -161,15 +163,17 @@ const ManageOrders = () => {
                             </Typography>
                           </Tooltip>
                         </TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{order.user?.username || 'N/A'}</TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1 }}>{order.user?.username || 'N/A'}</TableCell>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1 }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, py: 1 }}>₹{order.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell sx={{ py: 1 }}>
                           <Chip label={order.paymentMethod} size="small" variant="outlined" />
                         </TableCell>
-                        <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
-                        <TableCell align="right">
-                          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                        <TableCell sx={{ py: 1 }}>
+                          <Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Select value={order.status} onChange={(e) => handleStatusChange(order._id, e.target.value)} size="small" disabled={updatingStatus === order._id} sx={{ minWidth: 120, '.MuiSelect-select': { py: 0.8 } }}>
                               <MenuItem value="Pending">Pending</MenuItem>
                               <MenuItem value="Processing">Processing</MenuItem>
@@ -178,7 +182,11 @@ const ManageOrders = () => {
                               <MenuItem value="Canceled">Canceled</MenuItem>
                             </Select>
                             {updatingStatus === order._id && <CircularProgress size={20} />}
-                            <Button component={RouterLink} to={`/order/${order._id}`} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                            <Button component={RouterLink} to={`/order/${order._id}`} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', minWidth: 'auto', px: 1.5 }}>
                               Details
                             </Button>
                             <Tooltip title="Edit Order">

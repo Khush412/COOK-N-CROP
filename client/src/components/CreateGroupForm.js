@@ -189,6 +189,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
                   label={flair.text || 'Preview'}
                   size="small"
                   sx={{
+                    borderRadius: '8px', // More rounded
                     bgcolor: flair.backgroundColor,
                     color: flair.color,
                     fontFamily: theme.typography.fontFamily

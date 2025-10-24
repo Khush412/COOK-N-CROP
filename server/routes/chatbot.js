@@ -113,7 +113,7 @@ router.post('/query', optionalAuth, async (req, res) => {
           actionResult = { success: false, message: "You need to log in to see your stats." };
         } else {
           const userStats = await User.findById(req.user.id).select('activity');
-          actionResult = { success: true, message: `So far, you've placed ${userStats.activity.totalOrders} orders with us, spending a total of $${userStats.activity.totalSpent.toFixed(2)}. We appreciate your business!` };
+          actionResult = { success: true, message: `So far, you've placed ${userStats.activity.totalOrders} orders with us, spending a total of ₹${userStats.activity.totalSpent.toFixed(2)}. We appreciate your business!` };
         }
         break;
 
@@ -187,10 +187,10 @@ router.post('/query', optionalAuth, async (req, res) => {
             let cartSummary = "Here's what's in your cart:\n";
             let subtotal = 0;
             cart.items.forEach(item => {
-              cartSummary += `- ${item.quantity}x ${item.product.name} at $${item.product.price.toFixed(2)} each.\n`;
+              cartSummary += `- ${item.quantity}x ${item.product.name} at ₹${item.product.price.toFixed(2)} each.\n`;
               subtotal += item.quantity * item.product.price;
             });
-            cartSummary += `\nSubtotal: $${subtotal.toFixed(2)}. You can go to your cart to checkout.`;
+            cartSummary += `\nSubtotal: ₹${subtotal.toFixed(2)}. You can go to your cart to checkout.`;
             actionResult = { success: true, message: cartSummary };
           }
         }
@@ -378,7 +378,7 @@ router.post('/query', optionalAuth, async (req, res) => {
         let searchContext = "You are CropMate, Cook-N-Crop's AI. Answer the user's question based ONLY on the context. If the context is empty, say 'I'm not sure about that, but you can browse our products or recipes!'. Format product/recipe names as Markdown links like Product Name.\n\n";
         if (products.length > 0) {
           searchContext += "PRODUCTS FOUND:\n";
-          products.forEach(p => { searchContext += `- Product: ${p.name}, Price: $${p.price}, Link: /product/${p._id}\n`; });
+          products.forEach(p => { searchContext += `- Product: ${p.name}, Price: ₹${p.price}, Link: /product/${p._id}\n`; });
         }
         if (posts.length > 0) {
           searchContext += "POSTS/RECIPES FOUND:\n";

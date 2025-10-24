@@ -92,7 +92,7 @@ const LowStockPage = () => {
                         <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.category}</TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${product.price.toFixed(2)}</TableCell>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>₹{product.price.toFixed(2)}</TableCell>
                         <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, color: product.countInStock < 5 ? 'error.main' : 'warning.main' }}>
                           {product.countInStock}
                         </TableCell>

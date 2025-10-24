@@ -44,11 +44,11 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
       if (product) {
         setFormData({
           name: product.name || '',
-          price: product.price || '',
-          salePrice: product.salePrice || '',
+          price: product.price !== undefined ? product.price : '',
+          salePrice: product.salePrice !== undefined ? product.salePrice : '',
           description: product.description || '',
           category: product.category || '',
-          countInStock: product.countInStock || 0,
+          countInStock: product.countInStock !== undefined ? product.countInStock : '',
           origin: product.origin || '',
           freshness: product.freshness || '',
           unit: product.unit || '',
@@ -105,7 +105,9 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
 
     const productData = new FormData();
     for (const key in formData) {
+      // Only append fields that have values
       if (formData[key] !== null && formData[key] !== '') {
+        // For FormData, all values must be strings
         productData.append(key, formData[key]);
       }
     }

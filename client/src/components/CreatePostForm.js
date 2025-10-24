@@ -259,38 +259,50 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     <form onSubmit={handleSubmit}>
       <Stack spacing={3} sx={{ pt: 1 }}>
         <FormControl fullWidth required disabled={loading || groupsLoading}>
-          <InputLabel id="group-select-label">Choose a Group</InputLabel>
+          <InputLabel id="group-select-label" sx={{ fontFamily: theme.typography.fontFamily }}>Choose a Group</InputLabel>
           <Select
             labelId="group-select-label"
             id="group-select"
             value={selectedGroup}
             label="Choose a Group"
             onChange={handleGroupChange}
-            sx={{ borderRadius: '12px' }}
+            sx={{ borderRadius: '12px', '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}
           >
             {groupsLoading ? (
-              <MenuItem value="" disabled><em>Loading groups...</em></MenuItem>
+              <MenuItem value="" disabled sx={{ fontFamily: theme.typography.fontFamily }}><em>Loading groups...</em></MenuItem>
             ) : userGroups.length === 0 ? (
-              <MenuItem value="" disabled><em>You haven't joined any groups yet.</em></MenuItem>
+              <MenuItem value="" disabled sx={{ fontFamily: theme.typography.fontFamily }}><em>You haven't joined any groups yet.</em></MenuItem>
             ) : (
               userGroups.map(group => (
-                <MenuItem key={group._id} value={group._id}>{group.name}</MenuItem>
+                <MenuItem key={group._id} value={group._id} sx={{ fontFamily: theme.typography.fontFamily }}>{group.name}</MenuItem>
               ))
             )}
           </Select>
         </FormControl>
         {availableFlairs.length > 0 && (
           <FormControl fullWidth size="small">
-            <InputLabel id="flair-select-label">Flair (Optional)</InputLabel>
+            <InputLabel id="flair-select-label" sx={{ fontFamily: theme.typography.fontFamily }}>Flair (Optional)</InputLabel>
             <Select
               labelId="flair-select-label"
               value={postFlair}
               label="Flair (Optional)"
               onChange={(e) => setPostFlair(e.target.value)}
+              sx={{ borderRadius: '12px', '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}
             >
-              <MenuItem value=""><em>None</em></MenuItem>
+              <MenuItem value="" sx={{ fontFamily: theme.typography.fontFamily }}><em>None</em></MenuItem>
               {availableFlairs.map(flair => (
-                <MenuItem key={flair.text} value={flair.text}>{flair.text}</MenuItem>
+                <MenuItem key={flair.text} value={flair.text} sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Chip 
+                    label={flair.text} 
+                    size="small" 
+                    sx={{ 
+                      borderRadius: '8px', // More rounded
+                      fontFamily: theme.typography.fontFamily,
+                      bgcolor: flair.backgroundColor,
+                      color: flair.color
+                    }} 
+                  />
+                </MenuItem>
               ))}
             </Select>
           </FormControl>

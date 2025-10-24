@@ -210,11 +210,11 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                       fontFamily: theme.typography.fontFamily,
                     }}
                   >
-                    ${product.price.toFixed(2)}
+                    ₹{product.price.toFixed(2)}
                   </Typography>
                 )}
                 <Typography variant="h3" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-                  ${effectivePrice.toFixed(2)}
+                  ₹{effectivePrice.toFixed(2)}
                   {product.unit && (
                     <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 1 }}>
                       / {product.unit}

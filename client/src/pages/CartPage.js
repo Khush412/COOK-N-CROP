@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { alpha,
+import { alpha,InputLabel,
   Box,
   Typography,
   Button,
@@ -26,7 +26,8 @@ import { alpha,
   AccordionDetails,
   MenuItem,
   Select,
-  InputLabel,
+  Card,
+  CardContent,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -37,11 +38,15 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import NoteIcon from '@mui/icons-material/Note';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import SecurityIcon from '@mui/icons-material/Security';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
-import addressService from '../services/addressService'; // New: Import address service
-import couponService from '../services/couponService';   // New: Import coupon service
-import AddressForm from '../components/AddressForm';     // New: Import AddressForm component
+import addressService from '../services/addressService';
+import couponService from '../services/couponService';
+import AddressForm from '../components/AddressForm';
+import HarvestCoinsRedeem from '../components/HarvestCoinsRedeem'; // New: Import HarvestCoinsRedeem component
 import api from '../config/axios';
 
 const CartPage = () => {
@@ -63,6 +68,8 @@ const CartPage = () => {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false); // New: State for coupon apply loading
   const [deliveryTimeSlot, setDeliveryTimeSlot] = useState(''); // Delivery time slot
   const [orderNotes, setOrderNotes] = useState(''); // Special instructions
+  const [harvestCoinsDiscount, setHarvestCoinsDiscount] = useState(0); // New: State for Harvest Coins discount
+  const [harvestCoinsUsed, setHarvestCoinsUsed] = useState(0); // New: State for Harvest Coins used
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,16 +134,31 @@ const CartPage = () => {
       const effectivePrice = item.product.salePrice || item.product.price;
       return acc + effectivePrice * item.quantity;
     }, 0);
+    
+    // Calculate delivery charge (₹40 for orders less than ₹200, free for ₹200 or more)
+    const deliveryCharge = subtotal < 200 ? 40 : 0;
+    
+    // Apply Harvest Coins discount first
+    const afterHarvestCoins = subtotal + deliveryCharge - harvestCoinsDiscount;
+    
+    // Then apply coupon discount
     if (appliedCoupon) {
-        return (subtotal - appliedCoupon.discountAmount).toFixed(2);
+        return (afterHarvestCoins - appliedCoupon.discountAmount).toFixed(2);
     }
-    return subtotal.toFixed(2);
+    
+    return afterHarvestCoins.toFixed(2);
   };
 
   const calculateSubtotal = () => cart ? validItems.reduce((acc, item) => {
     const effectivePrice = item.product.salePrice || item.product.price;
     return acc + effectivePrice * item.quantity;
   }, 0) : 0;
+  
+  // Calculate delivery charge
+  const calculateDeliveryCharge = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal < 200 ? 40 : 0;
+  };
 
   const handleUpdateQuantity = async (productId, quantity) => {
     const item = cart.items.find(i => i.product._id === productId);
@@ -273,14 +295,31 @@ const CartPage = () => {
         shippingAddress: selectedAddress, 
         appliedCoupon: appliedCoupon,
         deliveryTimeSlot: deliveryTimeSlot,
-        orderNotes: orderNotes 
+        orderNotes: orderNotes,
+        harvestCoinsDiscount: harvestCoinsDiscount, // New: Pass Harvest Coins discount
+        harvestCoinsUsed: harvestCoinsUsed, // New: Pass Harvest Coins used
+        deliveryCharge: calculateDeliveryCharge() // New: Pass delivery charge
       },
     });
+  };
+
+  // New: Function to apply Harvest Coins discount
+  const handleHarvestCoinsApply = (discountValue, coinsUsed) => {
+    setHarvestCoinsDiscount(discountValue);
+    setHarvestCoinsUsed(coinsUsed);
+    showSnackbar(`Harvest Coins discount of ₹${discountValue} applied!`, 'success');
   };
 
   const hasItems = validItems.length > 0;
   const hasSavedItems = savedForLaterItems.length > 0;
   const isEmpty = !hasItems && !hasSavedItems;
+
+  // Trust badges data
+  const trustBadges = [
+    { icon: <LocalShippingIcon sx={{ fontSize: 24 }} />, title: "Free Delivery", description: "On orders over ₹2000" },
+    { icon: <SecurityIcon sx={{ fontSize: 24 }} />, title: "100% Secure", description: "Protected payments" },
+    { icon: <AutorenewIcon sx={{ fontSize: 24 }} />, title: "Easy Returns", description: "30-day guarantee" },
+  ];
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
@@ -337,13 +376,21 @@ const CartPage = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {hasDiscount && (
                             <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                              ${item.product.price.toFixed(2)}
+                              ₹{item.product.price.toFixed(2)}
                             </Typography>
                           )}
                           <Typography variant="body2" color={hasDiscount ? 'error' : 'text.secondary'} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: hasDiscount ? 'bold' : 'normal' }}>
-                            ${effectivePrice.toFixed(2)}{item.product.unit ? ` / ${item.product.unit}` : ''}
+                            ₹{effectivePrice.toFixed(2)}{item.product.unit ? ` / ${item.product.unit}` : ''}
                           </Typography>
                         </Box>
+                        {item.product.countInStock <= 5 && item.product.countInStock > 0 && (
+                          <Chip 
+                            label={`Only ${item.product.countInStock} left!`} 
+                            size="small" 
+                            color="warning" 
+                            sx={{ width: 'fit-content', mt: 1, fontFamily: theme.typography.fontFamily }} 
+                          />
+                        )}
                         <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
                           <IconButton size="small" onClick={() => handleUpdateQuantity(item.product._id, item.quantity - 1)} disabled={item.quantity === 1}>
@@ -363,7 +410,7 @@ const CartPage = () => {
                             Save for later
                           </Button>
                           <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: hasDiscount ? 'error.main' : 'text.primary' }}>
-                            ${(effectivePrice * item.quantity).toFixed(2)}
+                            ₹{(effectivePrice * item.quantity).toFixed(2)}
                           </Typography>
                         </Box>
                     </Box>
@@ -412,6 +459,27 @@ const CartPage = () => {
             <Grid size={{ xs: 12, lg: 5 }}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: theme.spacing(10), display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flexGrow: 1 }}>
+                  {/* Trust Badges */}
+                  <Card variant="outlined" sx={{ mb: 3, borderRadius: 2 }}>
+                    <CardContent>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontFamily: theme.typography.fontFamily }}>
+                        Why Shop With Us?
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {trustBadges.map((badge, index) => (
+                          <Grid item xs={4} key={index} sx={{ textAlign: 'center' }}>
+                            <Box sx={{ color: 'primary.main', mb: 1 }}>
+                              {badge.icon}
+                            </Box>
+                            <Typography variant="body2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              {badge.title}
+                            </Typography>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+
                   <Accordion defaultExpanded>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                       <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping Address</Typography>
@@ -515,9 +583,16 @@ const CartPage = () => {
                           {isApplyingCoupon ? <CircularProgress size={24} /> : 'Apply'}
                         </Button>
                       </Box>
-                      {appliedCoupon && <Alert severity="success" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Coupon "{appliedCoupon.code}" applied! You saved ${appliedCoupon.discountAmount.toFixed(2)}.</Alert>}
+                      {appliedCoupon && <Alert severity="success" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Coupon "{appliedCoupon.code}" applied! You saved ₹{appliedCoupon.discountAmount.toFixed(2)}.</Alert>}
+
                     </AccordionDetails>
                   </Accordion>
+
+                  {/* New: Harvest Coins Redemption */}
+                  <HarvestCoinsRedeem 
+                    cartTotal={calculateSubtotal()} 
+                    onDiscountApply={handleHarvestCoinsApply} 
+                  />
                 </Box>
                 <Box sx={{ flexShrink: 0, mt: 2 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Order Summary</Typography>
@@ -525,27 +600,37 @@ const CartPage = () => {
                     <Stack direction="row" justifyContent="space-between">
                       <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
                       <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
-                      ${calculateSubtotal().toFixed(2)}
+                      ₹{calculateSubtotal().toFixed(2)}
                       </Typography>
                     </Stack>
+                    {harvestCoinsDiscount > 0 && (
+                      <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Discount</Typography>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        -₹{harvestCoinsDiscount.toFixed(2)}
+                        </Typography>
+                      </Stack>
+                    )}
                     {appliedCoupon && (
                       <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Discount ({appliedCoupon.code})</Typography>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Coupon Discount ({appliedCoupon.code})</Typography>
                         <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
-                        -${appliedCoupon.discountAmount.toFixed(2)}
+                        -₹{appliedCoupon.discountAmount.toFixed(2)}
                         </Typography>
                       </Stack>
                     )}
                     <Stack direction="row" justifyContent="space-between">
                       <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography>
-                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>Free</Typography>
+                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        {calculateDeliveryCharge() > 0 ? `₹${calculateDeliveryCharge().toFixed(2)}` : 'Free'}
+                      </Typography>
                     </Stack>
                   </Stack>
                   <Divider sx={{ mb: 2 }} />
                   <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                     <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography>
                     <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                      ${calculateTotal()}
+                      ₹{calculateTotal()}
                     </Typography>
                   </Stack>
                   <Button

@@ -39,10 +39,13 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { format, formatDistanceToNow } from 'date-fns';
 import userService from '../services/userService';
 import api from '../config/axios';
 import { useAuth } from "../contexts/AuthContext";
+import { getHarvestCoinsBalance } from '../services/loyaltyService';
 
 const SOCIALS = [
   { name: "Google", key: "google", icon: GoogleIcon, color: "#DB4437" },
@@ -131,13 +134,15 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
 
 const Profile = () => {
   const theme = useTheme();
-  const { user, loadUser, logout } = useAuth();
+  const { user, loadUser } = useAuth();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ error: "", success: "" });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [activityTab, setActivityTab] = useState(0);
+  const [harvestCoins, setHarvestCoins] = useState({ balance: 0, totalSpent: 0, totalOrders: 0 });
+  const [harvestCoinsLoading, setHarvestCoinsLoading] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -160,6 +165,23 @@ const Profile = () => {
       setLoading(true);
       const res = await userService.getDashboardData();
       setDashboardData(res.data);
+      
+      // Fetch Harvest Coins balance
+      try {
+        setHarvestCoinsLoading(true);
+        const coinsData = await getHarvestCoinsBalance();
+        if (coinsData.success) {
+          setHarvestCoins({
+            balance: coinsData.balance,
+            totalSpent: coinsData.totalSpent,
+            totalOrders: coinsData.totalOrders
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch Harvest Coins:', error);
+      } finally {
+        setHarvestCoinsLoading(false);
+      }
     } catch (error) {
       setFeedback({ error: "Failed to load dashboard data.", success: "" });
     } finally {
@@ -311,6 +333,85 @@ const Profile = () => {
                   Edit Profile
                 </Button>
               </Stack>
+            </Paper>
+          </Grid>
+
+          {/* Harvest Coins Card */} 
+          <Grid size={{ xs: 12 }}>
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.secondary.main, 0.05) }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <EmojiEventsIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 1 }} />
+                <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Loyalty Program</Typography>
+              </Box>
+              <Box sx={{ p: 2, bgcolor: alpha(theme.palette.secondary.main, 0.1), borderRadius: 2 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontWeight: 'bold',
+                    color: theme.palette.secondary.main
+                  }}
+                >
+                  {user?.role === 'admin' 
+                    ? 'As an admin, you can earn and use Harvest Coins on all orders!' 
+                    : 'You\'re automatically enrolled in the Harvest Coins program after 10 orders!'}
+                </Typography>
+              </Box>
+              
+              {harvestCoinsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
+                      <Typography variant="h4" fontWeight="bold" color="secondary.main" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        {harvestCoins.balance}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        Harvest Coins Balance
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={4}>
+                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <CurrencyRupeeIcon sx={{ fontSize: 20 }} />
+                        <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          {harvestCoins.totalSpent.toFixed(2)}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        Total Spent
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={4}>
+                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
+                      <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        {harvestCoins.totalOrders}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        Total Orders
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              )}
+              
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Button 
+                  component={RouterLink} 
+                  to="/rewards" 
+                  variant="contained" 
+                  sx={{ fontFamily: theme.typography.fontFamily }}
+                >
+                  View Rewards & Benefits
+                </Button>
+              </Box>
             </Paper>
           </Grid>
 

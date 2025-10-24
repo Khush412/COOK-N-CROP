@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardMedia, CardContent, CardActions, Typography, Button, IconButton, Box, Tooltip, Stack, alpha, Chip } from '@mui/material';
+import { Card, CardMedia, CardContent, CardActions, Typography, Button, IconButton, Box, Tooltip, Stack, alpha, Chip, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +19,8 @@ import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const ProductCard = ({ product, showSnackbar }) => {
   const theme = useTheme();
@@ -196,7 +198,7 @@ const ProductCard = ({ product, showSnackbar }) => {
           )}
           {product.isFeatured && (
             <Chip 
-              icon={<StarIcon sx={{ fontSize: '0.9rem !important' }} />}
+              icon={<FlashOnIcon sx={{ fontSize: '0.9rem !important' }} />}
               label="Featured" 
               size="small"
               sx={{ 
@@ -289,6 +291,23 @@ const ProductCard = ({ product, showSnackbar }) => {
             </IconButton>
           </Tooltip>
         </Stack>
+        {/* Low stock indicator */}
+        {isLowStock && !isOutOfStock && (
+          <Chip
+            label={stockStatus.text}
+            color={stockStatus.color}
+            size="small"
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              zIndex: 2,
+              fontWeight: 'bold',
+              fontSize: '0.65rem',
+              height: '20px',
+            }}
+          />
+        )}
       </Box>
       <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0.5 }}>
         <Typography gutterBottom variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -304,7 +323,7 @@ const ProductCard = ({ product, showSnackbar }) => {
           </Typography>
         </Box>
         {/* Stock Status Indicator */}
-        {stockStatus && (
+        {stockStatus && !isLowStock && (
           <Chip 
             label={stockStatus.text}
             color={stockStatus.color}
@@ -316,6 +335,21 @@ const ProductCard = ({ product, showSnackbar }) => {
               fontWeight: 600,
             }}
           />
+        )}
+        
+        {/* Stock progress bar for low stock items */}
+        {isLowStock && (
+          <Box sx={{ mt: 1 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={(product.countInStock / 5) * 100} 
+              color="warning"
+              sx={{ height: 6, borderRadius: 3 }}
+            />
+            <Typography variant="caption" color="warning.main" sx={{ mt: 0.5, display: 'block', fontFamily: theme.typography.fontFamily }}>
+              Only {product.countInStock} left!
+            </Typography>
+          </Box>
         )}
       </CardContent>
       <CardActions sx={{ p: 1.5, pt: 0.5, mt: 'auto' }}>
@@ -332,11 +366,11 @@ const ProductCard = ({ product, showSnackbar }) => {
                   lineHeight: 1,
                 }}
               >
-                ${product.price.toFixed(2)}
+                ₹{product.price.toFixed(2)}
               </Typography>
             )}
             <Typography variant="h6" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-              {`$${effectivePrice.toFixed(2)}`}
+              ₹{effectivePrice.toFixed(2)}
               {product.unit && (
                 <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                   {` / ${product.unit}`}

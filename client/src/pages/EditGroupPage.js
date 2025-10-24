@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 const JoinRequestsManager = ({ group }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme(); // Add theme hook
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -44,17 +45,19 @@ const JoinRequestsManager = ({ group }) => {
   };
 
   if (loading) return <CircularProgress />;
-  if (requests.length === 0) return <Typography>No pending join requests.</Typography>;
+  if (requests.length === 0) return <Typography sx={{ fontFamily: theme.typography.fontFamily }}>No pending join requests.</Typography>;
 
   return (
     <List>
       {requests.map(request => (
         <ListItem key={request._id}>
           <ListItemAvatar><Avatar src={request.profilePic} /></ListItemAvatar>
-          <ListItemText primary={request.username} />
+          <ListItemText 
+            primary={<Typography sx={{ fontFamily: theme.typography.fontFamily }}>{request.username}</Typography>} 
+          />
           <Stack direction="row" spacing={1}>
-            <Button variant="contained" size="small" onClick={() => handleRequest(request._id, 'approve')}>Approve</Button>
-            <Button variant="outlined" size="small" color="error" onClick={() => handleRequest(request._id, 'deny')}>Deny</Button>
+            <Button variant="contained" size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }} onClick={() => handleRequest(request._id, 'approve')}>Approve</Button>
+            <Button variant="outlined" size="small" color="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }} onClick={() => handleRequest(request._id, 'deny')}>Deny</Button>
           </Stack>
         </ListItem>
       ))}
@@ -64,6 +67,7 @@ const JoinRequestsManager = ({ group }) => {
 
 const RulesManager = ({ group, onSave }) => {
   const [rules, setRules] = useState(group.rules || []);
+  const theme = useTheme(); // Add theme hook
 
   const handleRuleChange = (index, field, value) => {
     const newRules = [...rules];
@@ -90,7 +94,7 @@ const RulesManager = ({ group, onSave }) => {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">Manage Group Rules</Typography>
+      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Manage Group Rules</Typography>
       {rules.map((rule, index) => (
         <Paper key={index} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
           <Stack spacing={1}>
@@ -99,14 +103,25 @@ const RulesManager = ({ group, onSave }) => {
               value={rule.title}
               onChange={(e) => handleRuleChange(index, 'title', e.target.value)}
               fullWidth size="small"
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
             />
-            <TextField label="Description (optional)" value={rule.description} onChange={(e) => handleRuleChange(index, 'description', e.target.value)} fullWidth multiline size="small" />
-            <Button size="small" color="error" onClick={() => handleRemoveRule(index)} sx={{ alignSelf: 'flex-end' }}>Remove</Button>
+            <TextField 
+              label="Description (optional)" 
+              value={rule.description} 
+              onChange={(e) => handleRuleChange(index, 'description', e.target.value)} 
+              fullWidth 
+              multiline 
+              size="small" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+            />
+            <Button size="small" color="error" onClick={() => handleRemoveRule(index)} sx={{ alignSelf: 'flex-end', fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Remove</Button>
           </Stack>
         </Paper>
       ))}
-      <Button onClick={handleAddRule}>Add Rule</Button>
-      <Button onClick={handleSave} variant="contained">Save Rules</Button>
+      <Button onClick={handleAddRule} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Add Rule</Button>
+      <Button onClick={handleSave} variant="contained" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Save Rules</Button>
     </Stack>
   );
 };
@@ -114,6 +129,7 @@ const RulesManager = ({ group, onSave }) => {
 const FlairManager = ({ group, onSave }) => {
   const [flairs, setFlairs] = useState(group.flairs || []);
   const [newFlairText, setNewFlairText] = useState('');
+  const theme = useTheme(); // Add theme hook
 
   const handleAddFlair = () => {
     if (newFlairText.trim() && !flairs.some(f => f.text === newFlairText.trim())) {
@@ -135,20 +151,30 @@ const FlairManager = ({ group, onSave }) => {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">Manage Flairs</Typography>
+      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Manage Flairs</Typography>
       <Stack direction="row" spacing={1}>
         <TextField
           label="New Flair Text"
           value={newFlairText}
           onChange={(e) => setNewFlairText(e.target.value)}
           size="small"
+          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+          sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
         />
-        <Button onClick={handleAddFlair} variant="contained">Add</Button>
+        <Button onClick={handleAddFlair} variant="contained" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Add</Button>
       </Stack>
       <List>
         {flairs.map(flair => (
           <ListItem key={flair.text} secondaryAction={<IconButton edge="end" onClick={() => handleRemoveFlair(flair.text)}><DeleteIcon /></IconButton>}>
-            <Chip label={flair.text} />
+            <Chip 
+              label={flair.text} 
+              sx={{ 
+                borderRadius: '8px', // More rounded
+                fontFamily: theme.typography.fontFamily,
+                bgcolor: flair.backgroundColor,
+                color: flair.color
+              }} 
+            />
           </ListItem>
         ))}
       </List>
@@ -164,6 +190,7 @@ const MemberManager = ({ group }) => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState(''); // 'promote', 'demote', 'remove'
+  const theme = useTheme(); // Add theme hook
 
   const fetchMembers = useCallback(async () => {
     try {
@@ -218,7 +245,6 @@ const MemberManager = ({ group }) => {
   const isModerator = (memberId) => group.moderators.some(mod => mod._id === memberId);
 
   if (loading) return <CircularProgress />;
-
   return (
     <>
       <List>
@@ -230,8 +256,8 @@ const MemberManager = ({ group }) => {
           }> {/* Added profilePic check */}
             <ListItemAvatar><Avatar src={member.profilePic && member.profilePic.startsWith('http') ? member.profilePic : member.profilePic ? `${process.env.REACT_APP_API_URL}${member.profilePic}` : undefined} /></ListItemAvatar>
             <ListItemText
-              primary={<Typography sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>{member.username}</Typography>}
-              secondary={<Typography variant="body2" sx={{ fontFamily: 'inherit', color: 'text.secondary' }}>{isCreator(member._id) ? 'Creator' : isModerator(member._id) ? 'Moderator' : 'Member'}</Typography>}
+              primary={<Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{member.username}</Typography>}
+              secondary={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>{isCreator(member._id) ? 'Creator' : isModerator(member._id) ? 'Moderator' : 'Member'}</Typography>}
             />
           </ListItem>
         ))}
@@ -240,35 +266,36 @@ const MemberManager = ({ group }) => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
       >
         {selectedMember && !isModerator(selectedMember._id) && (
           <MenuItem onClick={() => handleActionClick('promote')}>
             <ListItemIcon><AdminPanelSettingsIcon fontSize="small" /></ListItemIcon>
-            Promote to Moderator
+            <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Promote to Moderator</Typography>
           </MenuItem>
         )}
         {selectedMember && isModerator(selectedMember._id) && (
           <MenuItem onClick={() => handleActionClick('demote')}>
             <ListItemIcon><RemoveCircleOutlineIcon fontSize="small" /></ListItemIcon>
-            Demote to Member
+            <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Demote to Member</Typography>
           </MenuItem>
         )}
         <MenuItem onClick={() => handleActionClick('ban')} sx={{ color: 'error.main' }}>
           <ListItemIcon><NoAccountsIcon fontSize="small" color="error" /></ListItemIcon>
-          Ban from Group
+          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Ban from Group</Typography>
         </MenuItem>
       </Menu>
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>Confirm Action</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
             Are you sure you want to {actionType} <strong>{selectedMember?.username}</strong>? 
             {actionType === 'ban' && ' This will permanently remove them and prevent them from rejoining.'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmAction} color={actionType === 'remove' ? 'error' : 'primary'} autoFocus>
+          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
+          <Button onClick={handleConfirmAction} color={actionType === 'remove' ? 'error' : 'primary'} autoFocus sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
             Confirm
           </Button>
         </DialogActions>
@@ -340,7 +367,7 @@ const EditGroupPage = () => {
   };
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-  if (error) return <Container maxWidth="md" sx={{ mt: 12, py: 4 }}><Alert severity="error">{error}</Alert></Container>;
+  if (error) return <Container maxWidth="md" sx={{ mt: 12, py: 4 }}><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></Container>;
   if (!group) return null; // Don't render the form until group data is loaded
 
   return (
@@ -356,12 +383,20 @@ const EditGroupPage = () => {
 
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4 }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={tab} onChange={handleTabChange} aria-label="edit group tabs">
-            <Tab label="Details" />
-            <Tab label="Rules" />
-            <Tab label="Flairs" /> {/* Moved Flairs to be the third tab */}
-            <Tab label="Manage Members" />
-            {group.isPrivate && <Tab label="Join Requests" />} {/* This will now be the 5th tab if private */}
+          <Tabs 
+            value={tab} 
+            onChange={handleTabChange} 
+            aria-label="edit group tabs"
+            sx={{ 
+              '& .MuiTab-root': { fontFamily: theme.typography.fontFamily },
+              '& .Mui-selected': { fontFamily: theme.typography.fontFamily }
+            }}
+          >
+            <Tab label="Details" sx={{ fontFamily: theme.typography.fontFamily }} />
+            <Tab label="Rules" sx={{ fontFamily: theme.typography.fontFamily }} />
+            <Tab label="Flairs" sx={{ fontFamily: theme.typography.fontFamily }} /> {/* Moved Flairs to be the third tab */}
+            <Tab label="Manage Members" sx={{ fontFamily: theme.typography.fontFamily }} />
+            {group.isPrivate && <Tab label="Join Requests" sx={{ fontFamily: theme.typography.fontFamily }} />} {/* This will now be the 5th tab if private */}
           </Tabs>
         </Box>
         {tab === 0 && (
@@ -381,13 +416,13 @@ const EditGroupPage = () => {
       {/* Delete Group Section - only for creator or admin */}
       {(user?.id === group?.creator?._id || user?.role === 'admin') && (
         <>
-          <Divider sx={{ my: 4 }}><Typography variant="overline">Danger Zone</Typography></Divider>
+          <Divider sx={{ my: 4 }}><Typography variant="overline" sx={{ fontFamily: theme.typography.fontFamily }}>Danger Zone</Typography></Divider>
           <Paper sx={{ p: 3, border: '1px solid', borderColor: 'error.main', borderRadius: 3 }}>
-            <Typography variant="h6" color="error.main" gutterBottom>Delete This Group</Typography>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+            <Typography variant="h6" color="error.main" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>Delete This Group</Typography>
+            <Typography variant="body2" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
               Once you delete a group, there is no going back. All posts and member associations will be permanently removed. Please be certain.
             </Typography>
-            <Button variant="outlined" color="error" onClick={() => setDeleteDialogOpen(true)} disabled={isSubmitting}>
+            <Button variant="outlined" color="error" onClick={() => setDeleteDialogOpen(true)} disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
               Delete Group
             </Button>
           </Paper>
@@ -400,15 +435,15 @@ const EditGroupPage = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Confirm Group Deletion"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>{"Confirm Group Deletion"}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
             Are you absolutely sure you want to delete the group "{group?.name}"? This action is irreversible and will delete all posts within the group.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
-          <Button onClick={handleDeleteGroup} color="error" autoFocus disabled={isSubmitting}>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
+          <Button onClick={handleDeleteGroup} color="error" autoFocus disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
             {isSubmitting ? <CircularProgress size={24} /> : 'Delete'}
           </Button>
         </DialogActions>

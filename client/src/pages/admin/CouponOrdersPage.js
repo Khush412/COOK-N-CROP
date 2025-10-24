@@ -88,7 +88,7 @@ const CouponOrdersPage = () => {
                     </TableCell>
                     <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{order.user?.username || 'N/A'}</TableCell>
                     <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.totalPrice.toFixed(2)}</TableCell>
                     <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
                     <TableCell align="right">
                       <Button component={RouterLink} to={`/order/${order._id}`} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>

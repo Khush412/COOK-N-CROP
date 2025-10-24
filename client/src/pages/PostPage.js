@@ -132,7 +132,7 @@ const TaggedProductCard = ({ product }) => {
         <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</Typography>
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
           <Typography variant="body2" color="primary" sx={{ fontFamily: theme.typography.fontFamily }}>
-            {typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : 'Price not available'}
+            {typeof product.price === 'number' ? `₹${product.price.toFixed(2)}` : 'Price not available'}
           </Typography>
           {product.unit && (
             <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>/ {product.unit}</Typography>
@@ -568,6 +568,19 @@ const PostPage = () => {
             </Avatar>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+                {post.flair && (
+                  <Chip
+                    label={post.flair}
+                    size="small"
+                    sx={{
+                      mr: 1,
+                      borderRadius: '8px', // More rounded
+                      fontFamily: theme.typography.fontFamily,
+                      // In a more advanced version, you'd pass flair color/bg from the group settings
+                      bgcolor: alpha(theme.palette.secondary.main, 0.2),
+                    }}
+                  />
+                )}
                 {post.title}
               </Typography>
               {post.isRecipe && post.numRecipeReviews > 0 && (

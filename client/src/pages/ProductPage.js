@@ -22,6 +22,8 @@ import {
   MenuItem,
   Chip,
   Tooltip,
+  Card,
+  CardContent,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Slider from 'react-slick';
@@ -34,6 +36,11 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import SecurityIcon from '@mui/icons-material/Security';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
@@ -279,6 +286,13 @@ const ProductPage = () => {
     ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
     : 0;
 
+  // Trust badges data
+  const trustBadges = [
+    { icon: <LocalShippingIcon sx={{ fontSize: 24 }} />, title: "Free Delivery", description: "On orders over ₹2000" },
+    { icon: <SecurityIcon sx={{ fontSize: 24 }} />, title: "100% Secure", description: "Protected payments" },
+    { icon: <AutorenewIcon sx={{ fontSize: 24 }} />, title: "Easy Returns", description: "30-day guarantee" },
+  ];
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
@@ -351,6 +365,20 @@ const ProductPage = () => {
                     }} 
                   />
                 )}
+                {product.isFeatured && (
+                  <Chip 
+                    icon={<FlashOnIcon sx={{ fontSize: '0.9rem !important' }} />}
+                    label="Featured" 
+                    size="small"
+                    sx={{ 
+                      bgcolor: theme.palette.secondary.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { color: 'white' },
+                    }} 
+                  />
+                )}
               </Stack>
               <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <Box
@@ -374,6 +402,7 @@ const ProductPage = () => {
               <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">
                 ({product.numReviews} reviews)
               </Typography>
+              <Chip icon={<VerifiedIcon />} label="Fresh Guarantee" size="small" color="success" sx={{ ml: 2, fontFamily: theme.typography.fontFamily }} />
             </Box>
             {hasDiscount && (
               <Typography 
@@ -385,17 +414,35 @@ const ProductPage = () => {
                   mb: 1,
                 }}
               >
-                ${product.price.toFixed(2)}
+                ₹{product.price.toFixed(2)}
               </Typography>
             )}
             <Typography variant="h4" color={hasDiscount ? 'error' : 'primary'} fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-              {`$${effectivePrice.toFixed(2)}`}
+              ₹{effectivePrice.toFixed(2)}
               {product.unit && (
                 <Typography component="span" variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                   {` / ${product.unit}`}
                 </Typography>
               )}
             </Typography>
+            
+            {/* Trust Badges */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+              {trustBadges.map((badge, index) => (
+                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ color: 'primary.main' }}>{badge.icon}</Box>
+                  <Box>
+                    <Typography variant="body2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {badge.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {badge.description}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            
             <Divider sx={{ mb: 3 }} />
             <Typography variant="body1" color="text.secondary" paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
               {product.description}
@@ -436,7 +483,55 @@ const ProductPage = () => {
                   </IconButton>
                 </Tooltip>
               )}
+              <Button variant="outlined" component={RouterLink} to="/CropCorner" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                Continue Shopping
+              </Button>
             </Stack>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Trust Section */}
+      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4, bgcolor: theme.palette.background.default }}>
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <LocalShippingIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Free Delivery
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  On orders over ₹2000
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <SecurityIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  100% Secure
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Protected payments
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <AutorenewIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Easy Returns
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  30-day guarantee
+                </Typography>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Paper>

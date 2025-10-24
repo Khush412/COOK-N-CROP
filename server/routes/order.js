@@ -7,13 +7,14 @@ const User = require('../models/User');
 const Coupon = require('../models/Coupon');
 const { protect, authorize } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
+const { awardHarvestCoins } = require('../controllers/loyaltyController');
 
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
 router.post('/', protect, async (req, res) => {
     try {
-        const { orderItems, shippingAddress, couponCode, paymentMethod, deliveryTimeSlot, orderNotes } = req.body;
+        const { orderItems, shippingAddress, couponCode, paymentMethod, deliveryTimeSlot, orderNotes, harvestCoinsUsed, harvestCoinsDiscount, deliveryCharge: passedDeliveryCharge } = req.body;
 
         if (!orderItems || orderItems.length === 0) {
             return res.status(400).json({ message: 'No order items' });
@@ -59,8 +60,19 @@ router.post('/', protect, async (req, res) => {
             0
         );
 
+        // Use passed delivery charge or calculate if not provided
+        const deliveryCharge = passedDeliveryCharge !== undefined 
+            ? passedDeliveryCharge 
+            : (subtotal < 200 ? 40 : 0);
+
         let discountAmount = 0;
-        let finalPrice = subtotal;
+        let finalPrice = subtotal + deliveryCharge;
+        
+        // Apply Harvest Coins discount
+        if (harvestCoinsDiscount && harvestCoinsDiscount > 0) {
+            finalPrice -= harvestCoinsDiscount;
+        }
+
         let appliedCoupon = null;
 
         if (couponCode) {
@@ -76,9 +88,12 @@ router.post('/', protect, async (req, res) => {
                 discountAmount = coupon.discountValue;
             }
             discountAmount = Math.min(discountAmount, subtotal);
-            finalPrice = subtotal - discountAmount;
+            finalPrice = subtotal + deliveryCharge - discountAmount - (harvestCoinsDiscount || 0);
             appliedCoupon = coupon;
         }
+
+        // Ensure final price doesn't go below zero
+        finalPrice = Math.max(0, finalPrice);
 
         const isPaid = paymentMethod !== 'COD';
 
@@ -88,6 +103,7 @@ router.post('/', protect, async (req, res) => {
             shippingAddress,
             paymentMethod,
             subtotal: subtotal,
+            deliveryCharge: deliveryCharge,
             discount: {
                 code: appliedCoupon ? appliedCoupon.code : undefined,
                 amount: discountAmount,
@@ -99,6 +115,8 @@ router.post('/', protect, async (req, res) => {
             statusHistory: [{ status: 'Processing' }],
             deliveryTimeSlot: deliveryTimeSlot || '',
             orderNotes: orderNotes || '',
+            harvestCoinsUsed: harvestCoinsUsed || 0,
+            harvestCoinsDiscount: harvestCoinsDiscount || 0,
         });
 
         const createdOrder = await order.save();
@@ -131,21 +149,38 @@ router.post('/', protect, async (req, res) => {
                 <tr style="border-bottom: 1px solid #eaeaea;">
                     <td style="padding: 15px; vertical-align: middle;">${item.name}</td>
                     <td style="padding: 15px; vertical-align: middle; text-align: center;">${item.qty}</td>
-                    <td style="padding: 15px; vertical-align: middle; text-align: right;">$${item.price.toFixed(2)}</td>
-                    <td style="padding: 15px; vertical-align: middle; text-align: right;">$${(item.qty * item.price).toFixed(2)}</td>
+                    <td style="padding: 15px; vertical-align: middle; text-align: right;">₹${item.price.toFixed(2)}</td>
+                    <td style="padding: 15px; vertical-align: middle; text-align: right;">₹${(item.qty * item.price).toFixed(2)}</td>
                 </tr>
             `).join('');
 
-            const summaryRows = createdOrder.discount.amount > 0 ? `
-                <tr>
-                    <td colspan="3" style="text-align: right; padding: 5px 0;">Subtotal:</td>
-                    <td style="text-align: right; padding: 5px 0;">$${createdOrder.subtotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="text-align: right; padding: 5px 0; color: #28a745;">Discount (${createdOrder.discount.code}):</td>
-                    <td style="text-align: right; padding: 5px 0; color: #28a745;">-$${createdOrder.discount.amount.toFixed(2)}</td>
-                </tr>
-            ` : '';
+            let summaryRows = '';
+            if (createdOrder.deliveryCharge > 0) {
+                summaryRows += `
+                    <tr>
+                        <td colspan="3" style="text-align: right; padding: 5px 0;">Delivery Charge:</td>
+                        <td style="text-align: right; padding: 5px 0;">₹${createdOrder.deliveryCharge.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            
+            if (createdOrder.harvestCoinsDiscount > 0) {
+                summaryRows += `
+                    <tr>
+                        <td colspan="3" style="text-align: right; padding: 5px 0; color: #28a745;">Harvest Coins Discount:</td>
+                        <td style="text-align: right; padding: 5px 0; color: #28a745;">-₹${createdOrder.harvestCoinsDiscount.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            
+            if (createdOrder.discount.amount > 0) {
+                summaryRows += `
+                    <tr>
+                        <td colspan="3" style="text-align: right; padding: 5px 0; color: #28a745;">Discount (${createdOrder.discount.code}):</td>
+                        <td style="text-align: right; padding: 5px 0; color: #28a745;">-₹${createdOrder.discount.amount.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
 
             const message = `
               <div style="background-color: #f4f4f7; padding: 20px; font-family: Arial, sans-serif;">
@@ -169,10 +204,14 @@ router.post('/', protect, async (req, res) => {
                     </table>
                     <table style="width: 100%; margin-top: 20px;">
                       <tbody>
+                        <tr>
+                            <td colspan="3" style="text-align: right; padding: 5px 0;">Subtotal:</td>
+                            <td style="text-align: right; padding: 5px 0;">₹${createdOrder.subtotal.toFixed(2)}</td>
+                        </tr>
                         ${summaryRows}
                         <tr>
                           <td colspan="3" style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">Grand Total:</td>
-                          <td style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">$${createdOrder.totalPrice.toFixed(2)}</td>
+                          <td style="text-align: right; padding: 10px 0; font-weight: bold; border-top: 2px solid #333;">₹${createdOrder.totalPrice.toFixed(2)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -197,9 +236,15 @@ router.post('/', protect, async (req, res) => {
             io.to('admin_room').emit('new_activity', {
                 type: 'order',
                 id: createdOrder._id,
-                title: `New order #${createdOrder._id.toString().slice(-6)} by ${req.user.username} for $${createdOrder.totalPrice.toFixed(2)}`,
+                title: `New order #${createdOrder._id.toString().slice(-6)} by ${req.user.username} for ₹${createdOrder.totalPrice.toFixed(2)}`,
                 timestamp: createdOrder.createdAt
             });
+        }
+
+        // Award Harvest Coins to the user (admins can also earn points)
+        const loyaltyResult = await awardHarvestCoins(req.user._id, finalPrice);
+        if (!loyaltyResult.success) {
+          console.error('Failed to award Harvest Coins:', loyaltyResult.error);
         }
 
         res.status(201).json(createdOrder);

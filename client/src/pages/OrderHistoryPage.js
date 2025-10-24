@@ -225,7 +225,7 @@ const OrderHistoryPage = () => {
                         </Box>
                         <Box>
                           <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>TOTAL</Typography>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>${order.totalPrice.toFixed(2)}</Typography>
+                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.totalPrice.toFixed(2)}</Typography>
                         </Box>
                         <Box sx={{ minWidth: 150 }}>
                           <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER # {order._id}</Typography>
