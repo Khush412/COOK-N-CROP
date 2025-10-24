@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import userService from '../services/userService';
 import Rating from './Rating';
+import ProductQuickView from './ProductQuickView';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -13,6 +14,11 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import StarIcon from '@mui/icons-material/Star';
 import CircularProgress from '@mui/material/CircularProgress';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const ProductCard = ({ product, showSnackbar }) => {
   const theme = useTheme();
@@ -21,11 +27,28 @@ const ProductCard = ({ product, showSnackbar }) => {
   const navigate = useNavigate();
   const [isFavoriting, setIsFavoriting] = useState(false);
   const [isCartLoading, setIsCartLoading] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const itemInCart = cart?.items?.find(item => item.product._id === product._id);
   const quantityInCart = itemInCart?.quantity || 0;
 
   const isWishlisted = user?.wishlist?.includes(product._id);
+
+  // Calculate effective price (sale price if on sale, otherwise regular price)
+  const effectivePrice = product.salePrice || product.price;
+  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const discountPercent = hasDiscount 
+    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
+    : 0;
+
+  // Determine stock status
+  const isOutOfStock = product.countInStock === 0;
+  const isLowStock = product.countInStock > 0 && product.countInStock <= 5;
+  const stockStatus = isOutOfStock 
+    ? { text: 'Out of Stock', color: 'error' }
+    : isLowStock 
+    ? { text: `Only ${product.countInStock} left`, color: 'warning' }
+    : null;
 
   const handleToggleWishlist = async (e) => {
     e.stopPropagation();
@@ -100,11 +123,93 @@ const ProductCard = ({ product, showSnackbar }) => {
       overflow: 'hidden',
     }}>
       <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-        {product.isFeatured && (
-          <Tooltip title="Featured Product">
-            <StarIcon sx={{ position: 'absolute', top: 8, left: 8, color: 'secondary.main', zIndex: 1, filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))' }} />
-          </Tooltip>
-        )}
+        {/* Badge Stack - Top Left */}
+        <Stack 
+          spacing={0.5} 
+          sx={{ 
+            position: 'absolute', 
+            top: 8, 
+            left: 8, 
+            zIndex: 2,
+            maxWidth: '60%',
+          }}
+        >
+          {product.badges?.isNew && (
+            <Chip 
+              icon={<NewReleasesIcon sx={{ fontSize: '0.9rem !important' }} />}
+              label="New" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.info.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.7rem',
+                height: '22px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {product.badges?.isOrganic && (
+            <Chip 
+              icon={<LocalFloristIcon sx={{ fontSize: '0.9rem !important' }} />}
+              label="Organic" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.success.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.7rem',
+                height: '22px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {product.badges?.isBestseller && (
+            <Chip 
+              icon={<TrendingUpIcon sx={{ fontSize: '0.9rem !important' }} />}
+              label="Bestseller" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.warning.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.7rem',
+                height: '22px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {hasDiscount && (
+            <Chip 
+              icon={<LocalOfferIcon sx={{ fontSize: '0.9rem !important' }} />}
+              label={`${discountPercent}% OFF`}
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.error.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.7rem',
+                height: '22px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {product.isFeatured && (
+            <Chip 
+              icon={<StarIcon sx={{ fontSize: '0.9rem !important' }} />}
+              label="Featured" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.secondary.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.7rem',
+                height: '22px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+        </Stack>
         <CardMedia
           component={RouterLink}
           to={`/product/${product._id}`}
@@ -119,37 +224,71 @@ const ProductCard = ({ product, showSnackbar }) => {
             }
           }}
         />
-        {product.countInStock === 0 && (
+        {isOutOfStock && (
           <Box sx={{
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: alpha(theme.palette.background.paper, 0.7),
+            backgroundColor: alpha(theme.palette.background.paper, 0.85),
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 2,
-            backdropFilter: 'blur(2px)',
+            zIndex: 3,
+            backdropFilter: 'blur(3px)',
           }}>
-            <Chip label="Out of Stock" color="default" variant="filled" sx={{ fontWeight: 'bold', fontSize: '0.8rem' }} />
+            <Chip 
+              label="Out of Stock" 
+              color="error" 
+              variant="filled" 
+              sx={{ 
+                fontWeight: 'bold', 
+                fontSize: '0.9rem',
+                py: 2,
+              }} 
+            />
           </Box>
         )}
-        {isAuthenticated && (
-          <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
+        {/* Wishlist & Quick View - Top Right */}
+        <Stack 
+          direction="row" 
+          spacing={0.5}
+          sx={{ 
+            position: 'absolute', 
+            top: 8, 
+            right: 8, 
+            zIndex: 2,
+          }}
+        >
+          {isAuthenticated && (
+            <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
+              <IconButton
+                onClick={handleToggleWishlist}
+                disabled={isFavoriting}
+                size="small"
+                sx={{
+                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                  '&:hover': { backgroundColor: alpha(theme.palette.background.paper, 1) }
+                }}
+              >
+                {isWishlisted ? <FavoriteIcon color="error" fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Quick View">
             <IconButton
-              onClick={handleToggleWishlist}
-              disabled={isFavoriting}
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuickViewOpen(true);
+              }}
+              size="small"
               sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                backgroundColor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { backgroundColor: alpha(theme.palette.background.paper, 1) }
               }}
             >
-              {isWishlisted ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+              <VisibilityIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-        )}
+        </Stack>
       </Box>
       <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0.5 }}>
         <Typography gutterBottom variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -158,23 +297,53 @@ const ProductCard = ({ product, showSnackbar }) => {
         <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, lineHeight: 1.3, minHeight: '2.6em', mb: 0.5 }}>
           {product.name}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
           <Rating value={product.rating} readOnly size="small" />
           <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontFamily: theme.typography.fontFamily, lineHeight: 1 }}>
             ({product.numReviews})
           </Typography>
         </Box>
+        {/* Stock Status Indicator */}
+        {stockStatus && (
+          <Chip 
+            label={stockStatus.text}
+            color={stockStatus.color}
+            size="small"
+            variant="outlined"
+            sx={{ 
+              fontSize: '0.7rem',
+              height: '20px',
+              fontWeight: 600,
+            }}
+          />
+        )}
       </CardContent>
       <CardActions sx={{ p: 1.5, pt: 0.5, mt: 'auto' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%' }}>
-          <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-            {`$${product.price.toFixed(2)}`}
-            {product.unit && (
-              <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                {` / ${product.unit}`}
+          <Box>
+            {hasDiscount && (
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  textDecoration: 'line-through', 
+                  color: 'text.secondary',
+                  fontFamily: theme.typography.fontFamily,
+                  display: 'block',
+                  lineHeight: 1,
+                }}
+              >
+                ${product.price.toFixed(2)}
               </Typography>
             )}
-          </Typography>
+            <Typography variant="h6" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+              {`$${effectivePrice.toFixed(2)}`}
+              {product.unit && (
+                <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {` / ${product.unit}`}
+                </Typography>
+              )}
+            </Typography>
+          </Box>
           {product.countInStock > 0 ? (
             quantityInCart > 0 ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
@@ -201,6 +370,14 @@ const ProductCard = ({ product, showSnackbar }) => {
           ) : null}
         </Stack>
       </CardActions>
+      
+      {/* Quick View Modal */}
+      <ProductQuickView 
+        product={product}
+        open={quickViewOpen}
+        onClose={() => setQuickViewOpen(false)}
+        showSnackbar={showSnackbar}
+      />
     </Card>
   );
 };

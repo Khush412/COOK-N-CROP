@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Paper, alpha } from '@mui/material';
+import { Box, Typography, Button, Paper, alpha, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import Rating from './Rating';
@@ -16,6 +20,13 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
   const [isAdding, setIsAdding] = useState(false);
 
   if (!product) return null;
+
+  // Calculate effective price
+  const effectivePrice = product.salePrice || product.price;
+  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const discountPercent = hasDiscount 
+    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
+    : 0;
 
   const handleAddToCart = async (e) => {
     e.stopPropagation(); // Prevent the card's link from firing
@@ -62,6 +73,77 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
           position: 'relative',
         }}
       >
+        {/* Badge Stack */}
+        <Stack 
+          spacing={0.5} 
+          sx={{ 
+            position: 'absolute', 
+            top: 8, 
+            left: 8, 
+            zIndex: 2,
+          }}
+        >
+          {product.badges?.isNew && (
+            <Chip 
+              icon={<NewReleasesIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label="New" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.info.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+                height: '20px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {product.badges?.isOrganic && (
+            <Chip 
+              icon={<LocalFloristIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label="Organic" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.success.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+                height: '20px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {product.badges?.isBestseller && (
+            <Chip 
+              icon={<TrendingUpIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label="Bestseller" 
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.warning.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+                height: '20px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+          {hasDiscount && (
+            <Chip 
+              icon={<LocalOfferIcon sx={{ fontSize: '0.8rem !important' }} />}
+              label={`${discountPercent}% OFF`}
+              size="small"
+              sx={{ 
+                bgcolor: theme.palette.error.main,
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.65rem',
+                height: '20px',
+                '& .MuiChip-icon': { color: 'white' },
+              }} 
+            />
+          )}
+        </Stack>
         <Box
           component="img"
           src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
@@ -100,6 +182,25 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
             {product.countInStock > 0 ? (isAdding ? 'Adding...' : 'Add to Cart') : 'Out of Stock'}
           </Button>
         </Box>
+        {product.countInStock === 0 && (
+          <Box sx={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: alpha(theme.palette.background.paper, 0.85),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3,
+            backdropFilter: 'blur(3px)',
+          }}>
+            <Chip 
+              label="Out of Stock" 
+              color="error" 
+              variant="filled" 
+              sx={{ fontWeight: 'bold' }} 
+            />
+          </Box>
+        )}
       </Box>
       <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, flexGrow: 1, lineHeight: 1.3 }}>
@@ -111,8 +212,20 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
             ({product.numReviews})
           </Typography>
         </Box>
-        <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mt: 'auto', fontFamily: theme.typography.fontFamily }}>
-          ${product.price.toFixed(2)}
+        {hasDiscount && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              textDecoration: 'line-through', 
+              color: 'text.secondary',
+              fontFamily: theme.typography.fontFamily,
+            }}
+          >
+            ${product.price.toFixed(2)}
+          </Typography>
+        )}
+        <Typography variant="h6" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', mt: 'auto', fontFamily: theme.typography.fontFamily }}>
+          ${effectivePrice.toFixed(2)}
           {product.unit && (
             <Typography component="span" variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
               {` / ${product.unit}`}

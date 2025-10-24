@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
   CircularProgress, Grid, Box, Avatar, MenuItem, Alert, Stack, Divider, Typography,
+  FormControlLabel, Checkbox, FormGroup,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
@@ -13,12 +14,19 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    salePrice: '',
     description: '',
     category: '',
     countInStock: '',
     origin: '',
     freshness: '',
     unit: '',
+  });
+  const [badges, setBadges] = useState({
+    isNew: false,
+    isOrganic: false,
+    isBestseller: false,
+    isOnSale: false,
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -37,6 +45,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
         setFormData({
           name: product.name || '',
           price: product.price || '',
+          salePrice: product.salePrice || '',
           description: product.description || '',
           category: product.category || '',
           countInStock: product.countInStock || 0,
@@ -44,17 +53,34 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           freshness: product.freshness || '',
           unit: product.unit || '',
         });
+        setBadges({
+          isNew: product.badges?.isNew || false,
+          isOrganic: product.badges?.isOrganic || false,
+          isBestseller: product.badges?.isBestseller || false,
+          isOnSale: product.badges?.isOnSale || false,
+        });
         setImagePreview(product.image || '');
         setImageFile(null);
       } else {
         setFormData({
-          name: '', price: '', description: '', category: '', countInStock: '', origin: '', freshness: '', unit: '',
+          name: '', price: '', salePrice: '', description: '', category: '', countInStock: '', origin: '', freshness: '', unit: '',
+        });
+        setBadges({
+          isNew: false,
+          isOrganic: false,
+          isBestseller: false,
+          isOnSale: false,
         });
         setImageFile(null);
         setImagePreview('');
       }
     }
   }, [product, open]);
+
+  const handleBadgeChange = (e) => {
+    const { name, checked } = e.target;
+    setBadges(prev => ({ ...prev, [name]: checked }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,6 +109,9 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
         productData.append(key, formData[key]);
       }
     }
+    // Add badges as JSON string
+    productData.append('badges', JSON.stringify(badges));
+    
     if (imageFile) {
       productData.append('image', imageFile);
     }
@@ -143,7 +172,10 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
               <Stack spacing={2.5}>
                 <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                  <TextField name="price" label="Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField name="price" label="Regular Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                  <TextField name="salePrice" label="Sale Price (Optional)" type="number" value={formData.salePrice} onChange={handleChange} fullWidth InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
                   <TextField name="unit" label="Unit (e.g., kg, lb, piece)" value={formData.unit} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                   <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
@@ -155,6 +187,32 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
                   <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
                 <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                
+                {/* Product Badges */}
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 1 }}>Product Badges</Typography>
+                <FormGroup row>
+                  <FormControlLabel
+                    control={<Checkbox checked={badges.isNew} onChange={handleBadgeChange} name="isNew" color="info" />}
+                    label="New Product"
+                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={badges.isOrganic} onChange={handleBadgeChange} name="isOrganic" color="success" />}
+                    label="Organic"
+                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={badges.isBestseller} onChange={handleBadgeChange} name="isBestseller" color="warning" />}
+                    label="Bestseller"
+                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={badges.isOnSale} onChange={handleBadgeChange} name="isOnSale" color="error" />}
+                    label="On Sale"
+                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
+                  />
+                </FormGroup>
               </Stack>
             </Grid>
           </Grid>

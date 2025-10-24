@@ -88,6 +88,7 @@ export default function Community() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [trendingTags, setTrendingTags] = useState([]);
+  const [contentFilter, setContentFilter] = useState('all'); // 'all', 'recipes', 'discussions'
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [groups, setGroups] = useState([]); // For the Discover Groups sidebar
@@ -108,7 +109,7 @@ export default function Community() {
       try {
         setLoading(true);
         const data = await communityService.getPosts(sort, page, {
-          isRecipe: false,
+          isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
           tags: selectedTags,
           search: debouncedSearchTerm,
         });
@@ -123,7 +124,7 @@ export default function Community() {
     };
     fetchPosts();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [sort, page, selectedTags, debouncedSearchTerm]);
+  }, [sort, page, selectedTags, debouncedSearchTerm, contentFilter]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
@@ -382,6 +383,43 @@ export default function Community() {
 
           {/* Main Feed */}
           <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: -1, md: 0 } }}>
+            {/* Content Type Filter Chips */}
+            <Paper sx={{ p: 1.5, mb: 2, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                <Chip
+                  label="All Posts"
+                  onClick={() => { setContentFilter('all'); setPage(1); }}
+                  color={contentFilter === 'all' ? 'primary' : 'default'}
+                  variant={contentFilter === 'all' ? 'filled' : 'outlined'}
+                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
+                />
+                <Chip
+                  label="🍳 Recipes"
+                  onClick={() => { setContentFilter('recipes'); setPage(1); }}
+                  color={contentFilter === 'recipes' ? 'secondary' : 'default'}
+                  variant={contentFilter === 'recipes' ? 'filled' : 'outlined'}
+                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
+                />
+                <Chip
+                  label="💬 Discussions"
+                  onClick={() => { setContentFilter('discussions'); setPage(1); }}
+                  color={contentFilter === 'discussions' ? 'info' : 'default'}
+                  variant={contentFilter === 'discussions' ? 'filled' : 'outlined'}
+                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
+                />
+                {contentFilter === 'recipes' && (
+                  <Button
+                    component={RouterLink}
+                    to="/recipes"
+                    size="small"
+                    sx={{ ml: 'auto', textTransform: 'none', fontFamily: theme.typography.fontFamily }}
+                  >
+                    View All in Recipe Hub →
+                  </Button>
+                )}
+              </Stack>
+            </Paper>
+
             <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
               <TextField
                 label="Search Posts"

@@ -311,7 +311,30 @@ router.put('/:id/reviews/:reviewId/upvote', protect, async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, countInStock, origin, freshness, unit } = req.body;
+    const { 
+      name, price, description, category, countInStock, origin, freshness, unit,
+      variants, badges, salePrice
+    } = req.body;
+
+    // Parse variants if it's a JSON string
+    let parsedVariants = [];
+    if (variants) {
+      try {
+        parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      } catch (e) {
+        console.error('Error parsing variants:', e);
+      }
+    }
+
+    // Parse badges if it's a JSON string
+    let parsedBadges = {};
+    if (badges) {
+      try {
+        parsedBadges = typeof badges === 'string' ? JSON.parse(badges) : badges;
+      } catch (e) {
+        console.error('Error parsing badges:', e);
+      }
+    }
 
     const product = new Product({
       name,
@@ -323,6 +346,9 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       origin,
       freshness,
       image: req.file ? `/uploads/productImages/${req.file.filename}` : '/images/placeholder.png',
+      variants: parsedVariants,
+      badges: parsedBadges,
+      salePrice: salePrice ? Number(salePrice) : undefined,
     });
 
     const createdProduct = await product.save();
@@ -338,7 +364,10 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
 // @access  Private/Admin
 router.put('/:id', protect, authorize('admin'), upload.single('image'), async (req, res) => {
   try {
-    const { name, price, description, category, countInStock, origin, freshness, unit } = req.body;
+    const { 
+      name, price, description, category, countInStock, origin, freshness, unit,
+      variants, badges, salePrice
+    } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -354,6 +383,29 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
     product.countInStock = countInStock === undefined ? product.countInStock : Number(countInStock);
     product.origin = origin || product.origin;
     product.freshness = freshness || product.freshness;
+
+    // Update variants if provided
+    if (variants !== undefined) {
+      try {
+        product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      } catch (e) {
+        console.error('Error parsing variants:', e);
+      }
+    }
+
+    // Update badges if provided
+    if (badges !== undefined) {
+      try {
+        product.badges = typeof badges === 'string' ? JSON.parse(badges) : badges;
+      } catch (e) {
+        console.error('Error parsing badges:', e);
+      }
+    }
+
+    // Update sale price
+    if (salePrice !== undefined) {
+      product.salePrice = salePrice ? Number(salePrice) : undefined;
+    }
 
     if (req.file) {
       product.image = `/uploads/productImages/${req.file.filename}`;

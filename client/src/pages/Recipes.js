@@ -32,6 +32,7 @@ import {
   Whatshot as WhatshotIcon,
   FilterList as FilterListIcon,
   Add as AddIcon,
+  Timer as TimerIcon,
 } from "@mui/icons-material";
 import communityService from '../services/communityService';
 import { useAuth } from '../contexts/AuthContext';
@@ -55,6 +56,7 @@ const RecipesPage = () => {
   const [trendingTags, setTrendingTags] = useState([]);
   const [prepTime, setPrepTime] = useState(120);
   const [servings, setServings] = useState(1);
+  const [quickCook, setQuickCook] = useState(false); // Quick cook filter (under 30 mins)
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -75,8 +77,8 @@ const RecipesPage = () => {
           isRecipe: true,
           search: debouncedSearchTerm,
           tags: selectedTags,
-          maxPrepTime: prepTime < 120 ? prepTime : undefined, // Only send if not max
-          minServings: servings > 1 ? servings : undefined, // Only send if not min
+          maxPrepTime: quickCook ? 30 : (prepTime < 120 ? prepTime : undefined),
+          minServings: servings > 1 ? servings : undefined,
         });
         setPosts(data.posts);
         setTotalPages(data.pages);
@@ -86,7 +88,7 @@ const RecipesPage = () => {
       } finally {
         setLoading(false);
       }
-    }, [sort, page, debouncedSearchTerm, selectedTags, prepTime, servings]);
+    }, [sort, page, debouncedSearchTerm, selectedTags, prepTime, servings, quickCook]);
 
   useEffect(() => {
     fetchRecipes();
@@ -190,6 +192,22 @@ const RecipesPage = () => {
 
   const FilterSidebar = () => (
     <Stack spacing={3}>
+      {/* Quick Cook Filter */}
+      <Paper sx={{ p: 2, borderRadius: 2, background: `linear-gradient(145deg, ${alpha(theme.palette.success.main, 0.08)}, ${alpha(theme.palette.warning.main, 0.08)})` }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
+          <TimerIcon sx={{ mr: 1, color: theme.palette.success.main }} />
+          Quick Cook
+        </Typography>
+        <Chip
+          label="⚡ Under 30 mins"
+          onClick={() => { setQuickCook(!quickCook); setPage(1); }}
+          color={quickCook ? 'success' : 'default'}
+          variant={quickCook ? 'filled' : 'outlined'}
+          sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: '0.95rem', width: '100%', py: 2 }}
+          clickable
+        />
+      </Paper>
+      
       <Paper sx={{ p: 2, borderRadius: 2 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
           <WhatshotIcon color="error" sx={{ mr: 1 }} />

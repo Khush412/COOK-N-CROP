@@ -30,6 +30,10 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'; 
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
@@ -268,12 +272,87 @@ const ProductPage = () => {
   const hasUserReviewed = product.reviews.some(review => review.user?._id === user?.id);
   const isWishlisted = user?.wishlist?.includes(product._id);
 
+  // Calculate effective price
+  const effectivePrice = product.salePrice || product.price;
+  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const discountPercent = hasDiscount 
+    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
+    : 0;
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
         <Grid container spacing={{ xs: 3, md: 5 }}>
           <Grid size={{ xs: 12, md: 5 }}>
-            <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <Box sx={{ position: 'relative' }}>
+              {/* Badge Stack */}
+              <Stack 
+                spacing={0.5} 
+                sx={{ 
+                  position: 'absolute', 
+                  top: 12, 
+                  left: 12, 
+                  zIndex: 2,
+                }}
+              >
+                {product.badges?.isNew && (
+                  <Chip 
+                    icon={<NewReleasesIcon sx={{ fontSize: '0.9rem !important' }} />}
+                    label="New" 
+                    size="small"
+                    sx={{ 
+                      bgcolor: theme.palette.info.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { color: 'white' },
+                    }} 
+                  />
+                )}
+                {product.badges?.isOrganic && (
+                  <Chip 
+                    icon={<LocalFloristIcon sx={{ fontSize: '0.9rem !important' }} />}
+                    label="Organic" 
+                    size="small"
+                    sx={{ 
+                      bgcolor: theme.palette.success.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { color: 'white' },
+                    }} 
+                  />
+                )}
+                {product.badges?.isBestseller && (
+                  <Chip 
+                    icon={<TrendingUpIcon sx={{ fontSize: '0.9rem !important' }} />}
+                    label="Bestseller" 
+                    size="small"
+                    sx={{ 
+                      bgcolor: theme.palette.warning.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { color: 'white' },
+                    }} 
+                  />
+                )}
+                {hasDiscount && (
+                  <Chip 
+                    icon={<LocalOfferIcon sx={{ fontSize: '0.9rem !important' }} />}
+                    label={`${discountPercent}% OFF`}
+                    size="small"
+                    sx={{ 
+                      bgcolor: theme.palette.error.main,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem',
+                      '& .MuiChip-icon': { color: 'white' },
+                    }} 
+                  />
+                )}
+              </Stack>
+              <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
               <Box
                 component="img"
                 src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
@@ -281,6 +360,7 @@ const ProductPage = () => {
                 sx={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '1 / 1', objectFit: 'cover' }}
               />
             </Paper>
+            </Box>
           </Grid>
           <Grid size={{ xs: 12, md: 7 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -295,8 +375,21 @@ const ProductPage = () => {
                 ({product.numReviews} reviews)
               </Typography>
             </Box>
-            <Typography variant="h4" color="primary" fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-              {`$${product.price.toFixed(2)}`}
+            {hasDiscount && (
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  textDecoration: 'line-through', 
+                  color: 'text.secondary',
+                  fontFamily: theme.typography.fontFamily,
+                  mb: 1,
+                }}
+              >
+                ${product.price.toFixed(2)}
+              </Typography>
+            )}
+            <Typography variant="h4" color={hasDiscount ? 'error' : 'primary'} fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+              {`$${effectivePrice.toFixed(2)}`}
               {product.unit && (
                 <Typography component="span" variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                   {` / ${product.unit}`}

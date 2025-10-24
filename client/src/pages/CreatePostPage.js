@@ -13,6 +13,7 @@ const CreatePostPage = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Determine if we are creating a recipe based on the URL
+  // Only FORCE recipe mode if explicitly on /create-recipe route
   const isRecipe = location.pathname.includes('/create-recipe');
 
   const handleCreatePostSubmit = async (postData) => {
@@ -49,7 +50,7 @@ const CreatePostPage = () => {
           onSubmit={handleCreatePostSubmit}
           onCancel={() => navigate(-1)} // Go back to the previous page
           loading={isSubmitting}
-          forceRecipe={isRecipe}
+          forceRecipe={isRecipe ? true : undefined} // Only force if on /create-recipe
         />
       </Paper>
 

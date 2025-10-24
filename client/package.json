@@ -9,7 +9,7 @@
     "@lexical/list": "^0.35.0",
     "@lexical/react": "^0.35.0",
     "@lexical/rich-text": "^0.35.0",
-    "@mui/icons-material": "^7.3.2",
+    "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
