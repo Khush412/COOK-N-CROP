@@ -77,12 +77,14 @@ const PostCard = ({
         fontFamily: theme.typography.fontFamily,
         backgroundColor: theme.palette.background.paper,
         overflow: "hidden",
+        pointerEvents: 'auto',
+        '& a': {
+          pointerEvents: 'auto !important',
+        },
       }}
     >
       {post.media && post.media.length > 0 && (
         <CardMedia
-          component={RouterLink}
-          to={`/post/${post._id}`}
           title={post.title}
           sx={{
             display: 'flex',
@@ -91,6 +93,13 @@ const PostCard = ({
             maxHeight: displayMode === 'feed' ? { xs: 300, sm: 400 } : { xs: 350, sm: 400 }, // Use a slightly larger height for feeds
             overflow: 'hidden',
             bgcolor: theme.palette.mode === 'dark' ? 'black' : '#f0f2f5',
+            cursor: 'pointer',
+          }}
+          onClick={(e) => {
+            // Only navigate if not clicking on a link
+            if (!e.target.closest('a')) {
+              window.location.href = `/post/${post._id}`;
+            }
           }}
         >
           {post.media[0].mediaType === 'image' ? (
@@ -108,7 +117,7 @@ const PostCard = ({
           )}
         </CardMedia>
       )}
-      <Box sx={{ p: 2, pb: 0 }}>
+      <Box sx={{ p: 2, pb: 0, '& a': { pointerEvents: 'auto !important' } }}>
 
       {/* Pinned Post Icon */}
       {isPinned && (
@@ -158,9 +167,12 @@ const PostCard = ({
           sx={{
             width: 40,
             height: 40,
+            cursor: 'pointer',
           }}
-          component={RouterLink}
-          to={`/user/${post.user.username}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.location.href = `/user/${post.user.username}`;
+          }}
         >
           {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
         </Avatar>
@@ -224,8 +236,6 @@ const PostCard = ({
         <Typography
           variant="subtitle1"
           noWrap={displayMode === 'compact'}
-          component={RouterLink}
-          to={`/post/${post._id}`}
           sx={{
             fontWeight: 700,
             color: theme.palette.text.primary,
@@ -233,8 +243,7 @@ const PostCard = ({
             flexGrow: 1,
             minWidth: 0,
             fontFamily: theme.typography.fontFamily,
-            textDecoration: 'none',
-            '&:hover': { color: 'primary.main' }
+            pointerEvents: 'none',
           }}
         >
           {/* Display Flair if available */}
@@ -258,17 +267,21 @@ const PostCard = ({
           {/* Content */}
           <Box
             sx={{
+              whiteSpace: 'pre-wrap',
               color: theme.palette.text.secondary,
               fontSize: 13,
               lineHeight: 1.4,
-              flexGrow: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: '-webkit-box',
-              WebkitLineClamp: (post.media && post.media.length > 0) ? 2 : (displayMode === 'feed' ? 6 : 4),
-              WebkitBoxOrient: "vertical",
               mb: 1.5,
               fontFamily: theme.typography.fontFamily,
+              maxHeight: (post.media && post.media.length > 0) ? '3em' : (displayMode === 'feed' ? '9em' : '6em'),
+              overflow: 'hidden',
+              position: 'relative',
+              '& a': {
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                position: 'relative',
+                zIndex: 100,
+              }
             }}
           >
             <RichTextDisplay text={post.content} />

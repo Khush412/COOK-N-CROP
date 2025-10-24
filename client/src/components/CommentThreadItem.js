@@ -164,7 +164,18 @@ const CommentThreadItem = ({
                 <>
                   <Box
                     component="span"
-                    sx={{ display: 'block', whiteSpace: 'pre-wrap', fontFamily: theme.typography.fontFamily }}
+                    sx={{ 
+                      display: 'block', 
+                      whiteSpace: 'pre-wrap', 
+                      fontFamily: theme.typography.fontFamily,
+                      position: 'relative',
+                      '& a': {
+                        pointerEvents: 'auto !important',
+                        position: 'relative',
+                        zIndex: 10,
+                        cursor: 'pointer',
+                      }
+                    }}
                   >
                     <RichTextDisplay text={comment.content} />
                   </Box>

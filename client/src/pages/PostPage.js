@@ -48,13 +48,14 @@ import productService from '../services/productService';
 import CommentThreadItem from '../components/CommentThreadItem';
 import CreatePostForm from '../components/CreatePostForm';
 import ReportDialog from '../components/ReportDialog';
+import RichTextDisplay from '../components/RichTextDisplay';
 
 const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick, isAdding }) => {
   const theme = useTheme();
   return (
     <Box>
-      <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
-        {description}
+      <Typography variant="body1" component="div" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
+        <RichTextDisplay text={description} />
       </Typography>
       <Paper elevation={0} sx={{ my: 3, p: 2.5, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ justifyContent: 'space-around', textAlign: 'center' }}>
@@ -634,8 +635,8 @@ const PostPage = () => {
                 isAdding={isAddingIngredients}
               />
             ) : (
-              <Typography variant="body1" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
-                {post.content}
+              <Typography variant="body1" component="div" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
+                <RichTextDisplay text={post.content} />
               </Typography>
             )}
 

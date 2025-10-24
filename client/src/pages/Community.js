@@ -146,11 +146,7 @@ export default function Community() {
     navigate('/create-post');
   };
 
-  const handleUpvote = async (postId, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleUpvote = async (postId) => {
     if (!isAuthenticated) return navigate("/login?redirect=/community");
     if (upvotingPosts.includes(postId)) return;
 
@@ -180,11 +176,7 @@ export default function Community() {
     }
   };
 
-  const handleToggleSave = async (postId, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleToggleSave = async (postId) => {
     if (!isAuthenticated) return navigate("/login?redirect=/community");
     setSavingPosts((prev) => [...prev, postId]);
     try {

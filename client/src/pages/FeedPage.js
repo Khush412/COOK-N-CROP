@@ -57,11 +57,7 @@ const FeedPage = () => {
     fetchFeed();
   }, [isAuthenticated, navigate, page]);
 
-  const handleUpvote = async (postId, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleUpvote = async (postId) => {
     if (upvotingPosts.includes(postId)) return;
     setUpvotingPosts((prev) => [...prev, postId]);
     const originalPosts = [...posts];
@@ -87,11 +83,7 @@ const FeedPage = () => {
     }
   };
 
-  const handleToggleSave = async (postId, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleToggleSave = async (postId) => {
     setSavingPosts(prev => [...prev, postId]);
     try {
       const res = await userService.toggleSavePost(postId);

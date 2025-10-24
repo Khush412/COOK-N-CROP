@@ -9,13 +9,14 @@ import { Add as AddIcon, Check as CheckIcon, NewReleases as NewReleasesIcon, Tre
 import { useAuth } from '../contexts/AuthContext';
 import groupService from '../services/groupService';
 import communityService from '../services/communityService';
+import userService from '../services/userService';
 import PostCard from '../components/PostCard';
 
 const GroupPage = () => {
   const { slug } = useParams();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
 
   const [group, setGroup] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -131,6 +132,22 @@ const GroupPage = () => {
     }
   };
 
+  const handleToggleSave = async (postId) => {
+    if (!isAuthenticated) return navigate(`/login?redirect=/g/${slug}`);
+    setSavingPosts(prev => [...prev, postId]);
+    try {
+      const res = await userService.toggleSavePost(postId);
+      if (res.success) {
+        updateUserSavedPosts(res.savedPosts);
+        setSnackbar({ open: true, message: 'Post saved!', severity: 'success' });
+      }
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to save post.', severity: 'error' });
+    } finally {
+      setSavingPosts(prev => prev.filter(id => id !== postId));
+    }
+  };
+
   if (loading.group) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><CircularProgress /></Box>;
   }
@@ -220,9 +237,9 @@ const GroupPage = () => {
                     key={post._id}
                     post={post}
                     user={user}
-                    onUpvote={() => handleUpvote(post._id)}
+                    onUpvote={handleUpvote}
                     upvotingPosts={upvotingPosts}
-                    onToggleSave={() => { /* Implement if needed */ }}
+                    onToggleSave={handleToggleSave}
                     savingPosts={savingPosts}
                     showSnackbar={setSnackbar}
                     displayMode="feed"

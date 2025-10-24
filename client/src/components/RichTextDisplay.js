@@ -4,24 +4,38 @@ import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
 
 const StyledContent = styled(Box)(({ theme }) => ({
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
   '& .mention': {
     color: theme.palette.primary.main,
     fontWeight: 600,
     textDecoration: 'none',
+    cursor: 'pointer',
+    position: 'relative',
+    zIndex: 1000,
+    pointerEvents: 'auto',
+    display: 'inline',
+    transition: 'all 0.2s ease',
     '&:hover': {
       textDecoration: 'underline',
+      color: theme.palette.primary.dark,
     },
   },
   '& .hashtag': {
     color: theme.palette.secondary.main,
     fontWeight: 600,
     textDecoration: 'none',
+    cursor: 'pointer',
+    position: 'relative',
+    zIndex: 1000,
+    pointerEvents: 'auto',
+    display: 'inline',
+    transition: 'all 0.2s ease',
     '&:hover': {
       textDecoration: 'underline',
+      color: theme.palette.secondary.dark,
     },
   },
-  whiteSpace: 'pre-wrap',
-  wordBreak: 'break-word',
 }));
 
 /**
@@ -100,6 +114,7 @@ const RichTextDisplay = ({ text, sx = {}, ...otherProps }) => {
               key={index}
               to={`/user/${part.username}`}
               className="mention"
+              onClick={(e) => e.stopPropagation()}
             >
               {part.content}
             </Link>
@@ -110,6 +125,7 @@ const RichTextDisplay = ({ text, sx = {}, ...otherProps }) => {
               key={index}
               to={`/search/hashtag/${part.hashtag}`}
               className="hashtag"
+              onClick={(e) => e.stopPropagation()}
             >
               {part.content}
             </Link>
