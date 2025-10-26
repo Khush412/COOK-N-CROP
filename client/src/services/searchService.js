@@ -30,6 +30,17 @@ const searchProducts = async (query, page = 1) => {
   }
 };
 
+// New function for product suggestions/autocomplete
+const getProductSuggestions = async (query, limit = 5) => {
+  try {
+    const response = await api.get(`/search/product-suggestions?q=${encodeURIComponent(query)}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting product suggestions:', error);
+    throw error;
+  }
+};
+
 const searchUsers = async (query, page = 1) => {
   try {
     const response = await api.get(`/search/users?q=${encodeURIComponent(query)}&page=${page}`);
@@ -66,6 +77,7 @@ const searchService = {
   globalSearch,
   searchPosts,
   searchProducts,
+  getProductSuggestions, // New function
   searchUsers,
   searchByHashtag,
   getTrendingHashtags,

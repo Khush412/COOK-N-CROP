@@ -1,6 +1,8 @@
 const express = require('express');
 const User = require('../models/User');
 const Address = require('../models/Address');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
@@ -486,6 +488,81 @@ router.get('/me/dashboard', protect, async (req, res) => {
     res.status(200).json({ success: true, data: { recentOrders, recentPosts, recentComments } });
   } catch (error) {
     console.error('Get dashboard data error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get personalized product recommendations for current user
+// @route   GET /api/users/me/recommendations
+// @access  Private
+router.get('/me/recommendations', protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get user's purchase history
+    const userOrders = await Order.find({ 
+      user: userId, 
+      status: 'Delivered' 
+    }).populate({
+      path: 'orderItems.product',
+      select: 'name category tags brand'
+    });
+
+    // Get user's wishlist
+    const user = await User.findById(userId).populate({
+      path: 'wishlist',
+      select: 'name category tags brand'
+    });
+
+    // Extract purchased products
+    const purchasedProducts = userOrders.flatMap(order => 
+      order.orderItems.map(item => item.product)
+    ).filter(product => product);
+
+    // Extract wishlist products
+    const wishlistProducts = user.wishlist || [];
+
+    // Combine all user-interacted products
+    const userProducts = [...purchasedProducts, ...wishlistProducts];
+    
+    // Get categories and tags from user products
+    const categories = [...new Set(userProducts.map(p => p.category).filter(Boolean))];
+    const tags = [...new Set(userProducts.flatMap(p => p.tags || []).filter(Boolean))];
+    const brands = [...new Set(userProducts.map(p => p.brand).filter(Boolean))];
+
+    // Build recommendation query
+    const query = {
+      _id: { $nin: userProducts.map(p => p._id) }, // Exclude already purchased/wishlisted products
+      countInStock: { $gt: 0 } // Only in-stock products
+    };
+
+    // Add category filter if user has purchased products
+    if (categories.length > 0) {
+      query.category = { $in: categories };
+    }
+
+    // Add tag filter if user has interacted with tagged products
+    if (tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+
+    // Add brand filter if user has interacted with branded products
+    if (brands.length > 0) {
+      query.brand = { $in: brands };
+    }
+
+    // Get recommended products
+    const recommendedProducts = await Product.find(query)
+      .limit(12) // Limit to 12 recommendations
+      .sort({ rating: -1, totalSales: -1 }) // Sort by rating and sales
+      .select('name price image rating numReviews countInStock salePrice isFeatured badges');
+
+    res.status(200).json({ 
+      success: true, 
+      data: recommendedProducts 
+    });
+  } catch (error) {
+    console.error('Get recommendations error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

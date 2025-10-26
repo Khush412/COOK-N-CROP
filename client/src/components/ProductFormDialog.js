@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
   CircularProgress, Grid, Box, Avatar, MenuItem, Alert, Stack, Divider, Typography,
-  FormControlLabel, Checkbox, FormGroup,
+  FormControlLabel, Checkbox, FormGroup, Chip, OutlinedInput, InputAdornment,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
@@ -18,10 +18,10 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
     description: '',
     category: '',
     countInStock: '',
-    origin: '',
-    freshness: '',
     unit: '',
+    tags: [], // Add tags field
   });
+  const [tagInput, setTagInput] = useState(''); // For adding new tags
   const [badges, setBadges] = useState({
     isNew: false,
     isOrganic: false,
@@ -49,9 +49,8 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           description: product.description || '',
           category: product.category || '',
           countInStock: product.countInStock !== undefined ? product.countInStock : '',
-          origin: product.origin || '',
-          freshness: product.freshness || '',
           unit: product.unit || '',
+          tags: product.tags || [], // Initialize tags
         });
         setBadges({
           isNew: product.badges?.isNew || false,
@@ -63,7 +62,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
         setImageFile(null);
       } else {
         setFormData({
-          name: '', price: '', salePrice: '', description: '', category: '', countInStock: '', origin: '', freshness: '', unit: '',
+          name: '', price: '', salePrice: '', description: '', category: '', countInStock: '', unit: '', tags: [],
         });
         setBadges({
           isNew: false,
@@ -74,6 +73,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
         setImageFile(null);
         setImagePreview('');
       }
+      setTagInput(''); // Clear tag input
     }
   }, [product, open]);
 
@@ -85,6 +85,33 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle tag input changes
+  const handleTagInputChange = (e) => {
+    setTagInput(e.target.value);
+  };
+
+  // Add a new tag
+  const handleAddTag = (e) => {
+    if (e.key === 'Enter' && tagInput.trim() !== '') {
+      e.preventDefault();
+      if (!formData.tags.includes(tagInput.trim())) {
+        setFormData(prev => ({
+          ...prev,
+          tags: [...prev.tags, tagInput.trim()]
+        }));
+      }
+      setTagInput('');
+    }
+  };
+
+  // Remove a tag
+  const handleDeleteTag = (tagToDelete) => () => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToDelete)
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -105,8 +132,12 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
 
     const productData = new FormData();
     for (const key in formData) {
+      // Handle tags specially
+      if (key === 'tags') {
+        productData.append('tags', JSON.stringify(formData.tags));
+      } 
       // Only append fields that have values
-      if (formData[key] !== null && formData[key] !== '') {
+      else if (formData[key] !== null && formData[key] !== '') {
         // For FormData, all values must be strings
         productData.append(key, formData[key]);
       }
@@ -128,7 +159,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
       <Divider />
       <form onSubmit={handleSubmit} id="product-form">
         <DialogContent sx={{ py: 3 }}>
-          {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>} {/* Use size prop */}
+          {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
           <Grid container spacing={4}>
             <Grid item size={{ xs: 12, md: 4 }}>
               <Stack spacing={2} alignItems="center">
@@ -170,7 +201,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
                 <input id="product-image-upload" type="file" hidden accept="image/*" onChange={handleFileChange} />
               </Stack>
             </Grid>
-            <Grid item size={{ xs: 12, md: 8 }}> {/* Use size prop */}
+            <Grid item size={{ xs: 12, md: 8 }}>
               <Stack spacing={2.5}>
                 <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
@@ -186,9 +217,36 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
                   <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}>
                     {categories.map(option => <MenuItem key={option} value={option} sx={{ fontFamily: theme.typography.fontFamily }}>{option}</MenuItem>)}
                   </TextField>
-                  <TextField name="origin" label="Origin (e.g., Local Farm)" value={formData.origin} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Stack>
-                <TextField name="freshness" label="Freshness (e.g., Harvested daily)" value={formData.freshness} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                
+                {/* Tags Input */}
+                <TextField
+                  label="Tags"
+                  value={tagInput}
+                  onChange={handleTagInputChange}
+                  onKeyDown={handleAddTag}
+                  fullWidth
+                  placeholder="Type a tag and press Enter"
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Add:</Typography>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {formData.tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={handleDeleteTag(tag)}
+                      sx={{ fontFamily: theme.typography.fontFamily }}
+                    />
+                  ))}
+                </Box>
                 
                 {/* Product Badges */}
                 <Divider sx={{ my: 2 }} />

@@ -4,6 +4,21 @@ const Product = require('../models/Product');
 const Order = require('../models/Order');
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { sendPriceDropNotifications, sendRestockNotifications } = require('../services/productNotificationService'); // New import
+
+// @desc    Get all unique tags
+// @route   GET /api/products/tags
+// @access  Public
+router.get('/tags', async (req, res) => {
+  try {
+    // Get all unique tags from products
+    const tags = await Product.distinct('tags');
+    res.json(tags);
+  } catch (err) {
+    console.error('Error fetching tags:', err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // @route   GET api/products
 // @desc    Get all products
@@ -17,7 +32,11 @@ router.get('/', async (req, res) => {
       category = 'All',
       sort = 'default',
       minRating,
-      stockFilter = 'all'
+      stockFilter = 'all',
+      minPrice,
+      maxPrice,
+      brands,
+      tags
     } = req.query;
 
     const query = {};
@@ -36,6 +55,29 @@ router.get('/', async (req, res) => {
     // Rating filter
     if (minRating && Number(minRating) > 0) {
       query.rating = { $gte: Number(minRating) };
+    }
+
+    // Price range filter
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      query.price = {};
+      if (minPrice !== undefined) {
+        query.price.$gte = Number(minPrice);
+      }
+      if (maxPrice !== undefined) {
+        query.price.$lte = Number(maxPrice);
+      }
+    }
+
+    // Brand filter (assuming brands is a comma-separated string)
+    if (brands) {
+      const brandArray = Array.isArray(brands) ? brands : brands.split(',').map(b => b.trim());
+      query.brand = { $in: brandArray };
+    }
+
+    // Tags filter (assuming tags is a comma-separated string)
+    if (tags) {
+      const tagArray = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
+      query.tags = { $in: tagArray };
     }
 
     // Stock filter
@@ -326,7 +368,7 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
   try {
     const { 
       name, price, description, category, countInStock, origin, freshness, unit,
-      variants, badges, salePrice
+      variants, badges, salePrice, brand, tags
     } = req.body;
 
     // Validate required fields
@@ -354,6 +396,17 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       }
     }
 
+    // Parse tags if it's a JSON string
+    let parsedTags = [];
+    if (tags) {
+      try {
+        parsedTags = typeof tags === 'string' ? JSON.parse(tags) : tags;
+      } catch (e) {
+        // If it's not JSON, treat as comma-separated string
+        parsedTags = typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : tags;
+      }
+    }
+
     const product = new Product({
       name,
       price: Number(price),
@@ -363,6 +416,8 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       countInStock: Number(countInStock),
       origin: origin || undefined,
       freshness: freshness || undefined,
+      brand: brand || undefined,
+      tags: parsedTags || [],
       image: req.file ? `/uploads/productImages/${req.file.filename}` : '/images/placeholder.png',
       variants: parsedVariants,
       badges: parsedBadges,
@@ -384,7 +439,7 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
   try {
     const { 
       name, price, description, category, countInStock, origin, freshness, unit,
-      variants, badges, salePrice
+      variants, badges, salePrice, brand, tags
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -393,47 +448,50 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Validate required fields if they are being updated
-    if ((name !== undefined && !name) || 
-        (price !== undefined && !price) || 
-        (description !== undefined && !description) || 
-        (category !== undefined && !category) || 
-        (countInStock !== undefined && countInStock === '')) {
-      return res.status(400).json({ message: 'Required fields cannot be empty: name, price, description, category, countInStock' });
-    }
-
-    // Update only provided fields
-    if (name !== undefined) product.name = name;
-    if (price !== undefined) product.price = Number(price);
-    if (description !== undefined) product.description = description;
-    if (unit !== undefined) product.unit = unit || undefined;
-    if (category !== undefined) product.category = category;
-    if (countInStock !== undefined) product.countInStock = Number(countInStock);
-    if (origin !== undefined) product.origin = origin || undefined;
-    if (freshness !== undefined) product.freshness = freshness || undefined;
-
-    // Update variants if provided
-    if (variants !== undefined) {
+    // Parse variants if it's a JSON string
+    let parsedVariants = [];
+    if (variants) {
       try {
-        product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+        parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
       } catch (e) {
         console.error('Error parsing variants:', e);
       }
     }
 
-    // Update badges if provided
-    if (badges !== undefined) {
+    // Parse badges if it's a JSON string
+    let parsedBadges = {};
+    if (badges) {
       try {
-        product.badges = typeof badges === 'string' ? JSON.parse(badges) : badges;
+        parsedBadges = typeof badges === 'string' ? JSON.parse(badges) : badges;
       } catch (e) {
         console.error('Error parsing badges:', e);
       }
     }
 
-    // Update sale price (handle empty string as undefined)
-    if (salePrice !== undefined) {
-      product.salePrice = salePrice === '' || salePrice === null ? undefined : Number(salePrice);
+    // Parse tags if it's a JSON string
+    let parsedTags = [];
+    if (tags) {
+      try {
+        parsedTags = typeof tags === 'string' ? JSON.parse(tags) : tags;
+      } catch (e) {
+        // If it's not JSON, treat as comma-separated string
+        parsedTags = typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : tags;
+      }
     }
+
+    product.name = name || product.name;
+    product.price = price ? Number(price) : product.price;
+    product.description = description || product.description;
+    product.unit = unit || product.unit;
+    product.category = category || product.category;
+    product.countInStock = countInStock !== undefined ? Number(countInStock) : product.countInStock;
+    product.origin = origin || product.origin;
+    product.freshness = freshness || product.freshness;
+    product.brand = brand || product.brand;
+    product.tags = parsedTags || product.tags;
+    product.variants = parsedVariants || product.variants;
+    product.badges = parsedBadges || product.badges;
+    product.salePrice = salePrice ? Number(salePrice) : product.salePrice;
 
     if (req.file) {
       product.image = `/uploads/productImages/${req.file.filename}`;

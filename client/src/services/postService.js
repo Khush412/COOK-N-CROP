@@ -1,23 +1,18 @@
-import api from '../config/axios';
+import axios from '../config/axios';
 
-const searchPosts = async ({ search = '', page = 1, sort = 'relevance', limit = 12 }) => {
+const getPostsByTaggedProduct = async (productId) => {
   try {
-    const params = new URLSearchParams({
-      search,
-      page,
-      sort,
-      limit,
-    });
-    const response = await api.get(`/posts?${params.toString()}`);
-    return response.data;
+    // Fetch posts tagged with a specific product
+    const response = await axios.get(`/posts/tagged-product/${productId}`);
+    return response.data.posts;
   } catch (error) {
-    console.error('Error searching posts:', error);
+    console.error('Error fetching posts by tagged product:', error);
     throw error;
   }
 };
 
 const postService = {
-  searchPosts,
+  getPostsByTaggedProduct,
 };
 
 export default postService;

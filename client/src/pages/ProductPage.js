@@ -24,6 +24,9 @@ import {
   Tooltip,
   Card,
   CardContent,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Slider from 'react-slick';
@@ -41,12 +44,15 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SecurityIcon from '@mui/icons-material/Security';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
 import Rating from '../components/Rating';
 import recentlyViewedService from '../services/recentlyViewedService';
 import ProductCard from '../components/ProductCard';
+import ProductAlerts from '../components/ProductAlerts';
+import UserGeneratedContent from '../components/UserGeneratedContent'; // Keep UGC
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -71,6 +77,36 @@ const ProductPage = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
   const [filterRating, setFilterRating] = useState(0); // 0 for all
   const [sortOption, setSortOption] = useState('newest'); // 'newest' or 'helpful'
+
+  // Mock data for UGC (in a real app, this would come from the backend)
+  const [userGeneratedContent] = useState([
+    {
+      id: 1,
+      type: 'image',
+      url: product?.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`,
+      caption: "Made a delicious salad with this product! So fresh and crisp.",
+      user: {
+        name: "Sarah Johnson",
+        avatar: ""
+      },
+      likes: 24,
+      comments: 5,
+      tags: ["#fresh", "#healthy", "#salad"]
+    },
+    {
+      id: 2,
+      type: 'image',
+      url: product?.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`,
+      caption: "Perfect for my morning smoothie. Highly recommend!",
+      user: {
+        name: "Emma Wilson",
+        avatar: ""
+      },
+      likes: 32,
+      comments: 7,
+      tags: ["#smoothie", "#healthy", "#breakfast"]
+    }
+  ]);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -298,97 +334,18 @@ const ProductPage = () => {
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
         <Grid container spacing={{ xs: 3, md: 5 }}>
           <Grid size={{ xs: 12, md: 5 }}>
-            <Box sx={{ position: 'relative' }}>
-              {/* Badge Stack */}
-              <Stack 
-                spacing={0.5} 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 12, 
-                  left: 12, 
-                  zIndex: 2,
-                }}
-              >
-                {product.badges?.isNew && (
-                  <Chip 
-                    icon={<NewReleasesIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label="New" 
-                    size="small"
-                    sx={{ 
-                      bgcolor: theme.palette.info.main,
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
-                      '& .MuiChip-icon': { color: 'white' },
-                    }} 
-                  />
-                )}
-                {product.badges?.isOrganic && (
-                  <Chip 
-                    icon={<LocalFloristIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label="Organic" 
-                    size="small"
-                    sx={{ 
-                      bgcolor: theme.palette.success.main,
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
-                      '& .MuiChip-icon': { color: 'white' },
-                    }} 
-                  />
-                )}
-                {product.badges?.isBestseller && (
-                  <Chip 
-                    icon={<TrendingUpIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label="Bestseller" 
-                    size="small"
-                    sx={{ 
-                      bgcolor: theme.palette.warning.main,
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
-                      '& .MuiChip-icon': { color: 'white' },
-                    }} 
-                  />
-                )}
-                {hasDiscount && (
-                  <Chip 
-                    icon={<LocalOfferIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label={`${discountPercent}% OFF`}
-                    size="small"
-                    sx={{ 
-                      bgcolor: theme.palette.error.main,
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
-                      '& .MuiChip-icon': { color: 'white' },
-                    }} 
-                  />
-                )}
-                {product.isFeatured && (
-                  <Chip 
-                    icon={<FlashOnIcon sx={{ fontSize: '0.9rem !important' }} />}
-                    label="Featured" 
-                    size="small"
-                    sx={{ 
-                      bgcolor: theme.palette.secondary.main,
-                      color: 'white',
-                      fontWeight: 'bold',
-                      fontSize: '0.75rem',
-                      '& .MuiChip-icon': { color: 'white' },
-                    }} 
-                  />
-                )}
-              </Stack>
-              <Paper elevation={4} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-              <Box
-                component="img"
-                src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
-                alt={product.name}
-                sx={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '1 / 1', objectFit: 'cover' }}
-              />
-            </Paper>
-            </Box>
+            {/* Simple image display instead of 360 viewer */}
+            <Box
+              component="img"
+              src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
+              alt={product.name}
+              sx={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: 3,
+                objectFit: 'cover',
+              }}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 7 }}>
             <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -490,6 +447,15 @@ const ProductPage = () => {
           </Grid>
         </Grid>
       </Paper>
+
+      {/* User Generated Content Section */}
+      <UserGeneratedContent 
+        productId={product._id}
+        title="Customer Photos" 
+      />
+
+      {/* Product Alerts */}
+      <ProductAlerts product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
 
       {/* Trust Section */}
       <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4, bgcolor: theme.palette.background.default }}>

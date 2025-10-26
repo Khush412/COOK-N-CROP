@@ -20,7 +20,6 @@ import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const ProductCard = ({ product, showSnackbar }) => {
   const theme = useTheme();
@@ -218,12 +217,12 @@ const ProductCard = ({ product, showSnackbar }) => {
           image={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
           title={product.name}
           sx={{
-            aspectRatio: '4/3',
+            aspectRatio: '1/1',
             cursor: 'pointer',
             transition: 'transform 0.3s ease',
             '&:hover': {
               transform: 'scale(1.05)',
-            }
+            },
           }}
         />
         {isOutOfStock && (
@@ -310,18 +309,19 @@ const ProductCard = ({ product, showSnackbar }) => {
         )}
       </Box>
       <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0.5 }}>
-        <Typography gutterBottom variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          {product.category}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+          <Typography gutterBottom variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {product.category}
+          </Typography>
+          {product.rating > 0 && (
+            <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontWeight: 'bold' }}>
+              {product.rating.toFixed(1)} ★
+            </Typography>
+          )}
+        </Box>
         <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, lineHeight: 1.3, minHeight: '2.6em', mb: 0.5 }}>
           {product.name}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-          <Rating value={product.rating} readOnly size="small" />
-          <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5, fontFamily: theme.typography.fontFamily, lineHeight: 1 }}>
-            ({product.numReviews})
-          </Typography>
-        </Box>
         {/* Stock Status Indicator */}
         {stockStatus && !isLowStock && (
           <Chip 

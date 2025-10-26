@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Paper, alpha, Chip, Stack, IconButton, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, Paper, alpha, Chip, Stack, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,8 +9,6 @@ import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import Rating from './Rating';
@@ -33,7 +31,7 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
 
   // Determine stock status
   const isLowStock = product.countInStock > 0 && product.countInStock <= 5;
-  const isOutOfStock = product.countInStock === 0;
+  // Note: isOutOfStock is determined dynamically in the render logic
 
   const handleAddToCart = async (e) => {
     e.stopPropagation(); // Prevent the card's link from firing
@@ -52,12 +50,6 @@ const FeaturedProductCard = ({ product, showSnackbar }) => {
     } finally {
       setIsAdding(false);
     }
-  };
-
-  const handleQuickView = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    navigate(`/product/${product._id}`);
   };
 
   return (

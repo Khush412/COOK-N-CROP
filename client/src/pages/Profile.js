@@ -134,7 +134,7 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
 
 const Profile = () => {
   const theme = useTheme();
-  const { user, loadUser } = useAuth();
+  const { user, loadUser, logout } = useAuth();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);

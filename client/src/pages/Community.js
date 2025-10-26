@@ -8,7 +8,8 @@ import {
   Grid,
   Button,
   Paper,
-  CircularProgress, Alert,
+  CircularProgress,
+  Alert,
   Divider,
   Snackbar,
   ToggleButton,
@@ -20,6 +21,12 @@ import {
   Chip,
   IconButton,
   Avatar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
 } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 import {
@@ -27,16 +34,34 @@ import {
   NewReleases as NewReleasesIcon,
   TrendingUp as TrendingUpIcon,
   Whatshot as WhatshotIcon,
-  Menu as MenuIcon,
   Close as CloseIcon,
   Add as AddIcon,
   People as PeopleIcon,
+  Home as HomeIcon,
+  Explore as ExploreIcon,
+  GroupAdd as GroupAddIcon,
+  Rule as RuleIcon,
+  PrivacyTip as PrivacyTipIcon,
+  FilterList as FilterListIcon,
+  ExpandLess,
+  ExpandMore,
+  Info as InfoIcon,
+  ContactSupport as ContactSupportIcon,
+  Help as HelpIcon,
+  Gavel as GavelIcon,
+  Security as SecurityIcon,
+  Campaign as CampaignIcon,
+  EmojiEvents as EmojiEventsIcon,
+  Feedback as FeedbackIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
 } from "@mui/icons-material";
 
 import communityService from "../services/communityService";
 import userService from "../services/userService";
 import PostCard from "../components/PostCard";
 import groupService from '../services/groupService';
+import RotatingText from "../custom_components/RotatingText";
 
 const GroupCard = ({ group }) => {
   const theme = useTheme();
@@ -88,12 +113,20 @@ export default function Community() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [trendingTags, setTrendingTags] = useState([]);
-  const [contentFilter, setContentFilter] = useState('all'); // 'all', 'recipes', 'discussions'
+  const [contentFilter, setContentFilter] = useState('all');
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [groups, setGroups] = useState([]); // For the Discover Groups sidebar
-
-  // Background image URL for the header - update your file path as needed
+  const [groups, setGroups] = useState([]);
+  
+  // State for collapsible sections
+  const [communityOpen, setCommunityOpen] = useState(true);
+  const [resourcesOpen, setResourcesOpen] = useState(true);
+  const [supportOpen, setSupportOpen] = useState(true);
+  
+  // State for left sidebar visibility
+  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
+  
+  // Background image URL for the header
   const headerImageURL = `${process.env.PUBLIC_URL}/images/CooknCrop.png`;
 
   useEffect(() => {
@@ -211,331 +244,599 @@ export default function Community() {
     setSelectedTags((prev) =>
       prev.includes(tagToToggle)
         ? prev.filter((tag) => tag !== tagToToggle)
-        : [tagToToggle] // Only allow one tag at a time for simplicity in this view
+        : [tagToToggle]
     );
   };
-  // Sidebar content reused inside drawer and desktop sidebar
-  const SidebarContent = (
-    <Stack
-      spacing={4}
+
+  // New collapsible navigation sidebar content
+  const NavigationSidebar = (
+    <Box
       sx={{
-        minWidth: 230,
-        maxWidth: 340,
-        p: 3,
+        width: 280,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.paper',
+        borderRight: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Paper
-        sx={{
-          p: 3,
-          textAlign: "center",
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${headerImageURL})`,
-          backgroundSize: "contain",
-          backgroundPosition: "center",
-          filter: "brightness(0.85)",
-          bgcolor: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-          color: theme.palette.common.white,
-          borderRadius: 3,
-          boxShadow: theme.shadows[3],
-        }}
-      >
-        <ForumIcon fontSize="large" sx={{ mb: 1.5 }} />
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
-          Join the Conversation!
-        </Typography>
+      <Box sx={{ p: 2 }}>
+        <Paper sx={{ p: 2, borderRadius: 3 }}>
+          {/* Main Navigation */}
+          <List disablePadding>
+            <ListItem disablePadding>
+              <ListItemButton 
+                onClick={() => navigate('/community')}
+                selected={window.location.pathname === '/community'}
+              >
+                <ListItemIcon>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Home" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton 
+                onClick={() => navigate('/community/popular')}
+                selected={window.location.pathname === '/community/popular'}
+              >
+                <ListItemIcon>
+                  <TrendingUpIcon />
+                </ListItemIcon>
+                <ListItemText primary="Popular" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton 
+                onClick={() => navigate('/community/explore')}
+                selected={window.location.pathname === '/community/explore'}
+              >
+                <ListItemIcon>
+                  <ExploreIcon />
+                </ListItemIcon>
+                <ListItemText primary="Explore All" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          
+          <Divider sx={{ my: 2 }} />
+          
+          {/* Community Section - Collapsible */}
+          <ListItemButton onClick={() => setCommunityOpen(!communityOpen)}>
+            <ListItemIcon>
+              <PeopleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Community" />
+            {communityOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={communityOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton 
+                sx={{ pl: 4 }} 
+                onClick={() => navigate('/groups/create')}
+              >
+                <ListItemIcon>
+                  <GroupAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Create Group" />
+              </ListItemButton>
+              <ListItemButton 
+                sx={{ pl: 4 }} 
+                onClick={() => navigate('/community/explore')}
+              >
+                <ListItemIcon>
+                  <ExploreIcon />
+                </ListItemIcon>
+                <ListItemText primary="Explore Groups" />
+              </ListItemButton>
+              
+              {/* Display 3 random groups from the database */}
+              {groups.slice(0, 3).map(group => (
+                <ListItemButton 
+                  key={group._id}
+                  sx={{ pl: 6, py: 1 }}
+                  component={RouterLink}
+                  to={`/g/${group.slug}`}
+                >
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <Avatar 
+                      src={group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`}
+                      sx={{ width: 24, height: 24 }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={group.name} 
+                    primaryTypographyProps={{ 
+                      variant: 'body2',
+                      noWrap: true
+                    }} 
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          </Collapse>
+          
+          <Divider sx={{ my: 2 }} />
+          
+          {/* Resources Section - Collapsible */}
+          <ListItemButton onClick={() => setResourcesOpen(!resourcesOpen)}>
+            <ListItemIcon>
+              <InfoIcon />
+            </ListItemIcon>
+            <ListItemText primary="Resources" />
+            {resourcesOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={resourcesOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/rules')}>
+                <ListItemIcon>
+                  <RuleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Community Rules" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/privacy')}>
+                <ListItemIcon>
+                  <PrivacyTipIcon />
+                </ListItemIcon>
+                <ListItemText primary="Privacy Policy" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/terms')}>
+                <ListItemIcon>
+                  <GavelIcon />
+                </ListItemIcon>
+                <ListItemText primary="Terms of Service" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/user-agreement')}>
+                <ListItemIcon>
+                  <SecurityIcon />
+                </ListItemIcon>
+                <ListItemText primary="User Agreement" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/guidelines')}>
+                <ListItemIcon>
+                  <CampaignIcon />
+                </ListItemIcon>
+                <ListItemText primary="Community Guidelines" />
+              </ListItemButton>
+            </List>
+          </Collapse>
+          
+          <Divider sx={{ my: 2 }} />
+          
+          {/* Support Section - Collapsible */}
+          <ListItemButton onClick={() => setSupportOpen(!supportOpen)}>
+            <ListItemIcon>
+              <HelpIcon />
+            </ListItemIcon>
+            <ListItemText primary="Support" />
+            {supportOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={supportOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/help')}>
+                <ListItemIcon>
+                  <HelpIcon />
+                </ListItemIcon>
+                <ListItemText primary="Help Center" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/contact')}>
+                <ListItemIcon>
+                  <ContactSupportIcon />
+                </ListItemIcon>
+                <ListItemText primary="Contact Us" />
+              </ListItemButton>
+              <ListItemButton sx={{ pl: 4 }} onClick={() => navigate('/community/feedback')}>
+                <ListItemIcon>
+                  <FeedbackIcon />
+                </ListItemIcon>
+                <ListItemText primary="Feedback" />
+              </ListItemButton>
+            </List>
+          </Collapse>
+        </Paper>
+      </Box>
+    </Box>
+  );
+
+  // Right sidebar with all filter options
+  const RightSidebar = (
+    <Stack spacing={3}>
+      {/* Create Post Button */}
+      <Paper sx={{ p: 2, borderRadius: 3, textAlign: 'center' }}>
         <Button
           fullWidth
           variant="contained"
-          color="secondary"
+          color="primary"
           size="large"
           onClick={handleCreateClick}
-          sx={{ borderRadius: 20, py: 1.3, fontWeight: 700, fontFamily: theme.typography.fontFamily, textTransform: "none" }}
+          startIcon={<AddIcon />}
+          sx={{ 
+            borderRadius: 20, 
+            py: 1.5, 
+            fontWeight: 700,
+            textTransform: 'none'
+          }}
         >
           Create Post
         </Button>
-        <Typography variant="body2" sx={{ mt: 1, opacity: 0.9, fontFamily: theme.typography.fontFamily }}>
-          Share your experiences, ask questions, and connect!
-        </Typography>
       </Paper>
+
+      {/* Filter Options */}
       <Paper sx={{ p: 2, borderRadius: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
-          <WhatshotIcon color="error" sx={{ mr: 1 }} />
-          Trending Topics
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
+          <FilterListIcon sx={{ mr: 1 }} />
+          Filters
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {trendingTags.length > 0 ? trendingTags.map(item => (
+        
+        {/* Content Type Filter */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Content Type
+          </Typography>
+          <Stack spacing={1}>
             <Chip
-              key={item.tag}
-              label={item.tag}
-              onClick={() => handleTagClick(item.tag)}
-              clickable
-              color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
-              variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
-              sx={{ fontFamily: theme.typography.fontFamily }}
+              label="All Posts"
+              onClick={() => { setContentFilter('all'); setPage(1); }}
+              color={contentFilter === 'all' ? 'primary' : 'default'}
+              variant={contentFilter === 'all' ? 'filled' : 'outlined'}
+              sx={{ fontWeight: 600, justifyContent: 'flex-start' }}
             />
-          )) : (
-            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No trending topics right now.</Typography>
-          )}
-          {selectedTags.length > 0 && (
-            <Button size="small" onClick={() => setSelectedTags([])} sx={{ ml: 'auto', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
-              Clear Filter
-            </Button>
-          )}
+            <Chip
+              label="🍳 Recipes"
+              onClick={() => { setContentFilter('recipes'); setPage(1); }}
+              color={contentFilter === 'recipes' ? 'secondary' : 'default'}
+              variant={contentFilter === 'recipes' ? 'filled' : 'outlined'}
+              sx={{ fontWeight: 600, justifyContent: 'flex-start' }}
+            />
+            <Chip
+              label="💬 Discussions"
+              onClick={() => { setContentFilter('discussions'); setPage(1); }}
+              color={contentFilter === 'discussions' ? 'info' : 'default'}
+              variant={contentFilter === 'discussions' ? 'filled' : 'outlined'}
+              sx={{ fontWeight: 600, justifyContent: 'flex-start' }}
+            />
+          </Stack>
+        </Box>
+        
+        {/* Sort Options */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Sort By
+          </Typography>
+          <ToggleButtonGroup 
+            value={sort} 
+            exclusive 
+            onChange={handleSortChange} 
+            fullWidth
+            orientation="vertical"
+            sx={{ 
+              '& .MuiToggleButton-root': { 
+                borderRadius: 2,
+                mb: 0.5,
+                textTransform: 'none',
+                justifyContent: 'flex-start',
+                pl: 2
+              } 
+            }}
+          >
+            <ToggleButton value="new" aria-label="Sort by new">
+              <NewReleasesIcon sx={{ mr: 1, fontSize: 20 }} />
+              New
+            </ToggleButton>
+            <ToggleButton value="top" aria-label="Sort by top">
+              <TrendingUpIcon sx={{ mr: 1, fontSize: 20 }} />
+              Top
+            </ToggleButton>
+            <ToggleButton value="hot" aria-label="Sort by hot">
+              <WhatshotIcon sx={{ mr: 1, fontSize: 20 }} />
+              Hot
+            </ToggleButton>
+            <ToggleButton value="discussed" aria-label="Sort by discussed">
+              <ForumIcon sx={{ mr: 1, fontSize: 20 }} />
+              Discussed
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+        
+        {/* Trending Topics */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Trending Topics
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {trendingTags.length > 0 ? trendingTags.map(item => (
+              <Chip
+                key={item.tag}
+                label={item.tag}
+                onClick={() => handleTagClick(item.tag)}
+                clickable
+                color={selectedTags.includes(item.tag) ? 'secondary' : 'default'}
+                variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
+              />
+            )) : (
+              <Typography variant="body2" color="text.secondary">No trending topics right now.</Typography>
+            )}
+            {selectedTags.length > 0 && (
+              <Button size="small" onClick={() => setSelectedTags([])} sx={{ ml: 'auto', textTransform: 'none' }}>
+                Clear Filter
+              </Button>
+            )}
+          </Box>
         </Box>
       </Paper>
     </Stack>
   );
 
   return (
-    <Box
-      sx={{
-        bgcolor: theme.palette.background.default,
-        paddingTop: { xs: 8, md: 12 },
-        paddingBottom: 4,
-        fontFamily: theme.typography.fontFamily,
-      }}
-    >
-      <Container maxWidth="lg" disableGutters>
-        {/* Header with background image */}
-        <Paper
-          sx={{
-            position: "relative",
-            height: { xs: 180, sm: 225, md: 280 },
-            borderRadius: 6,
-            overflow: "hidden",
-            marginBottom: 6,
-            boxShadow: theme.shadows[5],
-            cursor: "default",
-            userSelect: "none",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            color: "#fff",
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: `url(${headerImageURL})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: "brightness(0.55)",
-              zIndex: 1,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 2,
-            }}
-          />
-          <Box sx={{ position: "relative", p: { xs: 2, sm: 3 }, zIndex: 3 }}>
-            <Typography
-              variant="h2"
-              component="h1"
-              sx={{
-                fontSize: { xs: "1.8rem", sm: "2.6rem", md: "3rem" },
-                fontWeight: 900,
-                letterSpacing: 1.2,
-                textShadow: "0 0 10px rgba(0,0,0,0.6)",
-                lineHeight: 1.15,
-                fontFamily: theme.typography.fontFamily,
-              }}
-            >
-              Cook-N-Connect
-            </Typography>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                marginTop: 1,
-                fontWeight: 400,
-                opacity: 0.9,
-                fontFamily: theme.typography.fontFamily,
-                fontSize: { xs: "1.05rem", sm: "1.15rem" },
-                textShadow: "0 0 7px rgba(0,0,0,0.5)",
-                maxWidth: 680,
-                mx: "auto",
-              }}
-            >
-              Connect with food lovers, share recipes, and get tips from local farmers and chefs.
-            </Typography>
-          </Box>
-        </Paper>
+    <Box sx={{ 
+      display: 'flex', 
+      minHeight: '100vh',
+      bgcolor: theme.palette.background.default,
+    }}>
+      {/* Toggle Button for Left Sidebar */}
+      <IconButton
+        onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}
+        sx={{
+          position: 'fixed',
+          left: leftSidebarVisible ? 280 : 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1200,
+          backgroundColor: theme.palette.primary.main,
+          color: 'white',
+          borderRadius: '0 20px 20px 0',
+          p: 1,
+          width: 30,
+          height: 60,
+          '&:hover': {
+            backgroundColor: theme.palette.primary.dark,
+          },
+          transition: 'left 0.3s ease',
+          boxShadow: theme.shadows[3],
+        }}
+      >
+        {leftSidebarVisible ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+      </IconButton>
 
-        {/* Main grid */}
-        <Grid
-          container
-          spacing={{ xs: 0, md: 4 }}
+      {/* Left Navigation Sidebar - Fixed positioning */}
+      {leftSidebarVisible && (
+        <Box
           sx={{
-            flexDirection: { xs: "column", md: "row" },
-            alignItems: "flex-start",
+            width: 280,
+            flexShrink: 0,
+            position: 'fixed',
+            height: 'calc(100vh - 64px)',
+            top: 64,
+            left: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',  // Prevent horizontal scrollbar
+            zIndex: 1100,
+            boxShadow: theme.shadows[3],
+            // Custom scrollbar styling
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+            },
           }}
         >
-          {/* Desktop Left Sidebar (for Trending Topics and Create Post) */}
-          <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Box sx={{ position: 'sticky', top: 100 }}>
-              {SidebarContent}
+          {NavigationSidebar}
+        </Box>
+      )}
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: '100%',
+          ml: leftSidebarVisible ? '280px' : 0,
+          pt: { xs: 8, md: 12 },
+          pb: 4,
+          transition: 'margin 0.3s ease',
+        }}
+      >
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
+          {/* Cook'n'Connect header - reduced height */}
+          <Paper
+            sx={{
+              position: "relative",
+              height: { xs: 100, sm: 120, md: 140 },
+              borderRadius: 6,
+              overflow: "hidden",
+              mb: 4,
+              boxShadow: theme.shadows[3],
+              cursor: "default",
+              userSelect: "none",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+              color: "#fff",
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${headerImageURL})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "brightness(0.55)",
+                zIndex: 1,
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 2,
+              }}
+            />
+            <Box sx={{ position: "relative", p: { xs: 1, sm: 2 }, zIndex: 3 }}>
+              <Typography
+                variant="h3"
+                component="h1"
+                sx={{
+                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
+                  fontWeight: 800,
+                  letterSpacing: 1,
+                  textShadow: "0 0 10px rgba(0,0,0,0.6)",
+                  lineHeight: 1.15,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexWrap: 'nowrap',
+                }}
+              >
+                Cook 'N'&nbsp;
+                <Box component="span" sx={{ display: 'inline-block', width: 120, textAlign: 'left' }}>
+                  <RotatingText texts={["Explore", "Connect", "Share"]} />
+                </Box>
+              </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mt: 0.5,
+                  fontWeight: 400,
+                  opacity: 0.9,
+                  fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                  textShadow: "0 0 7px rgba(0,0,0,0.5)",
+                  maxWidth: 680,
+                  mx: "auto",
+                }}
+              >
+                Connect with food lovers, share recipes, and get tips from local farmers and chefs.
+              </Typography>
             </Box>
-          </Grid>
+          </Paper>
 
-          {/* Main Feed */}
-          <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: -1, md: 0 } }}>
-            {/* Content Type Filter Chips */}
-            <Paper sx={{ p: 1.5, mb: 2, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                <Chip
-                  label="All Posts"
-                  onClick={() => { setContentFilter('all'); setPage(1); }}
-                  color={contentFilter === 'all' ? 'primary' : 'default'}
-                  variant={contentFilter === 'all' ? 'filled' : 'outlined'}
-                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
+          {/* Reddit-like layout with fixed sidebars */}
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            {/* Main Content Area */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              {/* Search Bar */}
+              <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+                <TextField
+                  label="Search Posts"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  fullWidth
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { borderRadius: '20px' }
+                  }}
                 />
-                <Chip
-                  label="🍳 Recipes"
-                  onClick={() => { setContentFilter('recipes'); setPage(1); }}
-                  color={contentFilter === 'recipes' ? 'secondary' : 'default'}
-                  variant={contentFilter === 'recipes' ? 'filled' : 'outlined'}
-                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
-                />
-                <Chip
-                  label="💬 Discussions"
-                  onClick={() => { setContentFilter('discussions'); setPage(1); }}
-                  color={contentFilter === 'discussions' ? 'info' : 'default'}
-                  variant={contentFilter === 'discussions' ? 'filled' : 'outlined'}
-                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}
-                />
-                {contentFilter === 'recipes' && (
-                  <Button
-                    component={RouterLink}
-                    to="/recipes"
-                    size="small"
-                    sx={{ ml: 'auto', textTransform: 'none', fontFamily: theme.typography.fontFamily }}
-                  >
-                    View All in Recipe Hub →
-                  </Button>
-                )}
-              </Stack>
-            </Paper>
-
-            <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
-              <TextField
-                label="Search Posts"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-              />
-              <ToggleButtonGroup value={sort} exclusive onChange={handleSortChange} aria-label="Sort posts" sx={{ '& .MuiToggleButton-root': { fontFamily: theme.typography.fontFamily } }}>
-                <ToggleButton value="new" aria-label="Sort by new">
-                  <NewReleasesIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                  New
-                </ToggleButton>
-                <ToggleButton value="top" aria-label="Sort by top">
-                  <TrendingUpIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                  Top
-                </ToggleButton>
-                <ToggleButton value="hot" aria-label="Sort by hot">
-                  <WhatshotIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                  Hot
-                </ToggleButton>
-                <ToggleButton value="discussed" aria-label="Sort by discussed">
-                  <ForumIcon sx={{ mr: 0.7, fontSize: 20 }} />
-                  Discussed
-                </ToggleButton>
-              </ToggleButtonGroup>
-              <IconButton onClick={() => setSidebarOpen(true)} sx={{ display: { xs: 'flex', md: 'none' } }} aria-label="open filters and actions">
-                <MenuIcon />
-              </IconButton>
-            </Paper>
-
-            {loading && <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress /></Box>}
-              {error && <Alert severity="error">{error}</Alert>}
-            {!loading && !error && posts.length === 0 && (
-                <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 18, py: 4 }}>
-                  No posts yet. Be the first to start a conversation!
-                </Typography>
-              )}
-
-            {/* Posts Feed */}
-            <Stack spacing={3}>
-              {posts.map((post) => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  user={user}
-                  onUpvote={(e) => handleUpvote(post._id, e)}
-                  upvotingPosts={upvotingPosts}
-                  onToggleSave={(e) => handleToggleSave(post._id, e)}
-                  savingPosts={savingPosts}
-                  showSnackbar={setSnackbar}
-
-                  displayMode="feed"
-                />
-              ))}
-            </Stack>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-                <Pagination
-                  color="primary"
-                  size="large"
-                  count={totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                />
-              </Box>
-            )}
-          </Grid>
-
-          {/* Right Sidebar (for Discover Groups) */}
-          <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Box sx={{ position: 'sticky', top: 100 }}>
-              <Paper sx={{ p: 2, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>Discover Groups</Typography>
-                <Stack spacing={1.5}>
-                  {groups.slice(0, 5).map(group => ( // Show top 5 groups
-                    <GroupCard key={group._id} group={group} />
-                  ))}
-                </Stack>
-                <Button component={RouterLink} to="/community/explore" fullWidth sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
-                  Explore All Groups
-                </Button>
               </Paper>
+
+              {/* Posts Feed */}
+              <Stack spacing={3}>
+                {loading && <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress /></Box>}
+                {error && <Alert severity="error">{error}</Alert>}
+                {!loading && !error && posts.length === 0 && (
+                  <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 18, py: 4 }}>
+                    No posts yet. Be the first to start a conversation!
+                  </Typography>
+                )}
+                
+                {posts.map((post) => (
+                  <Box sx={{ width: '100%' }} key={post._id}>
+                    <PostCard
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                      showSnackbar={setSnackbar}
+                      displayMode="feed"
+                    />
+                  </Box>
+                ))}
+              </Stack>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+                  <Pagination
+                    color="primary"
+                    size="large"
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                  />
+                </Box>
+              )}
             </Box>
-          </Grid>
-        </Grid>
 
-        {/* Mobile Sidebar Drawer */}
-        <Drawer
-          anchor="right"
-          open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          PaperProps={{ sx: { width: "90vw", maxWidth: 360 } }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-            <IconButton edge="end" onClick={() => setSidebarOpen(false)} aria-label="close sidebar">
-              <CloseIcon />
-            </IconButton>
+            {/* Right Sidebar - Hidden on mobile */}
+            <Box sx={{ 
+              width: 300,
+              display: { xs: 'none', md: 'block' },
+              position: 'sticky',
+              top: 100,
+              height: 'fit-content',
+              // Reddit-style scrollbar - only visible on hover
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&:hover::-webkit-scrollbar-thumb': {
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'transparent',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'transparent',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+              },
+              overflowY: 'auto',
+              maxHeight: 'calc(100vh - 100px)',
+            }}>
+              {RightSidebar}
+            </Box>
           </Box>
-          {SidebarContent}
-        </Drawer>
 
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Container>
+          {/* Mobile Sidebar Drawer - Contains the right sidebar content */}
+          <Drawer
+            anchor="right"
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            PaperProps={{ sx: { width: "90vw", maxWidth: 360 } }}
+          >
+            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+              <IconButton edge="end" onClick={() => setSidebarOpen(false)} aria-label="close sidebar">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              {RightSidebar}
+            </Box>
+          </Drawer>
+
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+        </Container>
+      </Box>
     </Box>
   );
 }

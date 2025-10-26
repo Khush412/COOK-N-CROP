@@ -910,4 +910,74 @@ router.post('/:id/recipe-reviews', protect, async (req, res) => {
   }
 });
 
+// @desc    Get posts by tagged product
+// @route   GET /api/posts/tagged-product/:productId
+// @access  Public
+router.get('/tagged-product/:productId', optionalAuth, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { page = 1, limit = 6 } = req.query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Validate productId
+    if (!productId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+
+    // Find posts tagged with this product
+    const matchConditions = {
+      taggedProducts: productId,
+      isRecipe: true // Only show recipe posts
+    };
+
+    // Exclude posts from users that the current user has blocked
+    if (req.user) {
+      const currentUser = await User.findById(req.user.id).select('blockedUsers');
+      matchConditions.user = { $nin: currentUser.blockedUsers };
+    }
+
+    // Build aggregation pipeline
+    const pipeline = [
+      { $match: matchConditions },
+      { $sort: { createdAt: -1 } }, // Sort by newest first
+      { $skip: skip },
+      { $limit: limitNum },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          title: 1,
+          content: 1,
+          media: 1,
+          tags: 1,
+          createdAt: 1,
+          taggedProducts: 1,
+          upvoteCount: { $size: { $ifNull: ['$upvotes', []] } },
+          commentCount: { $size: { $ifNull: ['$comments', []] } },
+          'user._id': 1,
+          'user.username': 1,
+          'user.profilePic': 1
+        }
+      }
+    ];
+
+    const posts = await Post.aggregate(pipeline);
+    const totalPosts = await Post.countDocuments(matchConditions);
+
+    res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
+  } catch (error) {
+    console.error('Get posts by tagged product error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -10,13 +10,12 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../config/axios';
 import FeaturedProductCard from '../components/FeaturedProductCard';
 import ProminentCTA from '../components/ProminentCTA';
-import ProductHighlight from '../components/ProductHighlight';
-import SeasonalPromo from '../components/SeasonalPromo';
 import NewsletterSignup from '../components/NewsletterSignup';
-import LoyaltyProgram from '../components/LoyaltyProgram';
+import PromotionalCarousel from '../components/PromotionalCarousel'; // Import the PromotionalCarousel component
+import CircularGallery from '../custom_components/CircularGallery'; // Import the CircularGallery component
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+import DomeGallery from '../custom_components/DomeGallery';
 // Reusable component for animated sections
 const AnimatedSection = React.forwardRef(({ children, sx = {}, id }, ref) => {
   // If no ref is passed from the parent, we still need one for useInView to work.
@@ -67,33 +66,6 @@ const LandingPage = () => {
   const [featuredProducts, setFeaturedProducts] = useState({ loading: true, data: [], error: null });
   const [featuredRecipes, setFeaturedRecipes] = useState({ loading: true, data: [], error: null });
 
-  // To use a fixed set of banner images, use this array.
-  // Make sure you place your images in the `public/images/` folder.
-  const bannerImages = [
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-1.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-2.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-3.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-4.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-5.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-6.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-7.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-8.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-9.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-10.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-11.png`,
-    `${process.env.PUBLIC_URL}/images/hero-banner-image-12.png`,
-  ];
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    if (isAuthenticated && bannerImages.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
-      }, 7000); // Change image every 7 seconds
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, bannerImages.length]);
-
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -128,227 +100,23 @@ const LandingPage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // Trust badges data
-  const trustBadges = [
-    { icon: <LocalShipping sx={{ fontSize: 40 }} />, title: "Free Delivery", description: "On orders over ₹2000" },
-    { icon: <Shield sx={{ fontSize: 40 }} />, title: "100% Secure", description: "Protected payments" },
-    { icon: <Timer sx={{ fontSize: 40 }} />, title: "Fresh Guarantee", description: "Delivered within 24 hours" },
-    { icon: <EmojiEvents sx={{ fontSize: 40 }} />, title: "Award Winning", description: "Best local produce 2023" },
-  ];
-
-  // Enhanced value propositions for hero section
-  const valuePropositions = [
-    { icon: <Verified sx={{ color: theme.palette.secondary.main }} />, text: "Farm-Fresh Produce" },
-    { icon: <Star sx={{ color: theme.palette.secondary.main }} />, text: "Locally Sourced" },
-    { icon: <CheckCircle sx={{ color: theme.palette.secondary.main }} />, text: "Quality Guaranteed" },
-  ];
-
   return (
     <Box sx={{
       width: '100%',
       bgcolor: 'background.default',
+      pt: { xs: 4, sm: 5, md: 6 } // Reduced top padding slightly
     }}
     >
       {/* The global header from App.js will act as the navbar */}
       
-      {/* Hero Section - Conditional Rendering */}
-      {isAuthenticated ? (
-        // LOGGED-IN HERO
-        <Box
-          id="home"
-          sx={{
-            position: 'relative',
-            height: '100vh', // Full viewport height
-            width: '100%',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            backgroundColor: theme.palette.grey[900], // Fallback background
-          }}
-        >
-          {bannerImages.length > 0 && (
-            <AnimatePresence>
-              <motion.div
-                key={currentImageIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5, ease: 'easeInOut' }}
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  backgroundImage: `url(${bannerImages[currentImageIndex]})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  zIndex: 1,
-                }}
-              />
-            </AnimatePresence>
-          )}
-          <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.45)', zIndex: 2 }} />
-          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 3, color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-              style={{ width: '100%', textAlign: 'center' }}
-            >
-              <Typography variant="h2" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '2rem', sm: '3rem', md: '3.5rem' }, letterSpacing: '0.03em', textShadow: '0px 3px 8px rgba(0,0,0,0.6)', fontFamily: theme.typography.fontFamily, mb: 2 }}>
-                Welcome back, {user?.username}!
-              </Typography>
-              <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily, mb: 4 }}>
-                What are we cooking today?
-              </Typography>
-              
-              {/* Value Propositions */}
-              <Box sx={{ mt: 3, mb: 4 }}>
-                <Grid container spacing={2} justifyContent="center">
-                  {valuePropositions.map((prop, index) => (
-                    <Grid item key={index} xs={12} sm={4}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                        {prop.icon}
-                        <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-                          {prop.text}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-              
-              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-                <Button
-                  component={RouterLink}
-                  to="/CropCorner"
-                  variant="contained"
-                  color="secondary"
-                  size="large"
-                  endIcon={<ArrowForward />}
-                  sx={{
-                    py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
-                    boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.7)}, 0 0 35px ${alpha(theme.palette.secondary.main, 0.5)}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': { transform: 'scale(1.05)', boxShadow: `0 0 30px ${alpha(theme.palette.secondary.main, 0.9)}, 0 0 50px ${alpha(theme.palette.secondary.main, 0.7)}` }
-                  }}
-                >
-                  Shop Fresh Produce
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/recipes"
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily,
-                    color: '#fff',
-                    borderColor: '#fff',
-                    '&:hover': { 
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                      borderColor: theme.palette.secondary.main,
-                      color: theme.palette.secondary.main
-                    }
-                  }}
-                >
-                  Browse Recipes
-                </Button>
-              </Stack>
-            </motion.div>
-          </Container>
-        </Box>
-      ) : (
-        // LOGGED-OUT HERO (Cinematic Video)
-        <Box id="home" sx={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          <video autoPlay loop muted playsInline style={{ position: 'absolute', width: '100%', height: '100%', left: '50%', top: '50%', objectFit: 'cover', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
-            <source src={isMobile ? `${process.env.PUBLIC_URL}/videos/cinematic_video_mobile.mp4` : `${process.env.PUBLIC_URL}/videos/cinematic_video.mp4`} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 2 }} />
-          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 3, color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }} style={{ width: '100%', textAlign: 'center' }}>
-              <Typography variant="h1" component="h1" sx={{ fontWeight: 900, fontSize: { xs: '2.5rem', sm: '4rem', md: '5rem' }, letterSpacing: '0.05em', textShadow: '0px 4px 10px rgba(0,0,0,0.7)', fontFamily: theme.typography.fontFamily, mb: 2 }}>
-                Cook'N'Crop
-              </Typography>
-              <Typography variant="h5" component="p" sx={{ mt: 2, opacity: 0.9, textShadow: '0px 2px 5px rgba(0,0,0,0.5)', fontFamily: theme.typography.fontFamily, mb: 2 }}>
-                Where Cooking Meets Freshness
-              </Typography>
-              <Typography variant="h6" component="p" sx={{ mt: 2, opacity: 0.8, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto', mb: 4 }}>
-                Discover the freshest local produce, connect with fellow food lovers, and unlock delicious recipes from our vibrant community.
-              </Typography>
-              
-              {/* Value Propositions */}
-              <Box sx={{ mt: 3, mb: 4 }}>
-                <Grid container spacing={2} justifyContent="center">
-                  {valuePropositions.map((prop, index) => (
-                    <Grid item key={index} xs={12} sm={4}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                        {prop.icon}
-                        <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-                          {prop.text}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-              
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-                <Button component={RouterLink} to="/login" variant="contained" color="secondary" size="large" endIcon={<ArrowForward />} sx={{ py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`, transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}` } }}>
-                  Get Started - Fresh Today
-                </Button>
-                <Button component={RouterLink} to="/CropCorner" variant="outlined" size="large" sx={{ py: 1.5, px: 5, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, color: '#fff', borderColor: '#fff', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main } }}>
-                  Browse Products
-                </Button>
-              </Stack>
-            </motion.div>
-          </Container>
-        </Box>
-      )}
-
-      {/* Trust Badges Section */}
-      <Box sx={{ py: 6, bgcolor: 'background.paper' }}>
+      {/* Promotional Carousel */}
+      <Box id="home" sx={{ py: 6 }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4} justifyContent="center">
-            {trustBadges.map((badge, index) => (
-              <Grid item xs={6} sm={3} key={index} sx={{ textAlign: 'center' }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  p: 2,
-                  borderRadius: 2,
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'translateY(-5px)' }
-                }}>
-                  <Box sx={{ color: 'secondary.main', mb: 1 }}>
-                    {badge.icon}
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, fontFamily: theme.typography.fontFamily }}>
-                    {badge.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                    {badge.description}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+          <PromotionalCarousel />
         </Container>
       </Box>
 
-      {/* Seasonal Promo Section */}
-      <Container maxWidth="lg">
-        <SeasonalPromo />
-      </Container>
-
-      {/* Product Highlight Section */}
-      <Container maxWidth="lg">
-        <ProductHighlight />
-      </Container>
-
-      {/* Featured Products Section */}
+      {/* Featured Products Section - Replaced with CircularGallery */}
       <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -360,48 +128,10 @@ const LandingPage = () => {
             </Typography>
             <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
           </Box>
-          {featuredProducts.loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
-          ) : featuredProducts.error ? (
-            <Alert severity="error">{featuredProducts.error}</Alert>
-          ) : (
-            <Box sx={{
-              '.slick-slide': {
-                px: 1.5, // Create spacing between slides
-              },
-              '.slick-list': {
-                mx: -1.5, // Counteract the slide padding
-              },
-              '.slick-dots li button:before': {
-                fontSize: '12px',
-                color: theme.palette.primary.main,
-              },
-              '.slick-dots li.slick-active button:before': {
-                color: theme.palette.secondary.main,
-              }
-            }}>
-              <Slider {...{
-                dots: true,
-                infinite: featuredProducts.data.length > 4,
-                speed: 500,
-                slidesToShow: 4,
-                slidesToScroll: 1,
-                autoplay: true,
-                autoplaySpeed: 4000,
-                responsive: [
-                  { breakpoint: 1200, settings: { slidesToShow: 3 } },
-                  { breakpoint: 900, settings: { slidesToShow: 2 } },
-                  { breakpoint: 600, settings: { slidesToShow: 1, arrows: false } }
-                ]
-              }}>
-                {featuredProducts.data.map((product) => (
-                  <Box key={product._id} sx={{ height: '100%' }}>
-                    <FeaturedProductCard product={product} showSnackbar={showSnackbar} />
-                  </Box>
-                ))}
-              </Slider>
-            </Box>
-          )}
+          
+          {/* Fetch featured products and pass them to CircularGallery */}
+          <FeaturedProductsGallery />
+          
           <Box sx={{ textAlign: 'center', mt: 6 }}>
             <Button
               component={RouterLink}
@@ -421,19 +151,27 @@ const LandingPage = () => {
         </Container>
       </AnimatedSection>
 
+      {/* Explore Recipes Section - DomeGallery */}
+      <AnimatedSection id="explore-recipes" sx={{ bgcolor: 'background.default', py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+              Explore Recipes from around the world
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
+              Discover delicious recipes created by our community of food enthusiasts
+            </Typography>
+            <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
+          </Box>
+          
+          {/* Fetch featured recipes and pass them to DomeGallery */}
+          <FeaturedRecipesGallery />
+        </Container>
+      </AnimatedSection>
+
       {/* Prominent CTA Section */}
       <Container maxWidth="lg">
         <ProminentCTA />
-      </Container>
-
-      {/* Loyalty Program Section */}
-      <Container maxWidth="lg">
-        <LoyaltyProgram />
-      </Container>
-
-      {/* Newsletter Signup Section */}
-      <Container maxWidth="lg">
-        <NewsletterSignup />
       </Container>
 
       {/* Testimonials Section */}
@@ -530,12 +268,273 @@ const LandingPage = () => {
         </Container>
       </AnimatedSection>
 
+      {/* Newsletter Signup Section - Moved to the end */}
+      <Container maxWidth="lg">
+        <NewsletterSignup />
+      </Container>
+
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
+  );
+};
+
+// Add this component to fetch featured products and pass them to the CircularGallery
+const FeaturedProductsGallery = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const theme = useTheme();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/products/featured');
+        // Transform products into gallery items with product IDs
+        const galleryItems = res.data.map(product => ({
+          id: product._id, // Add product ID for click handling
+          image: product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/default-product.jpg`,
+          text: product.name
+        }));
+        setItems(galleryItems);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load products');
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+  }
+
+  if (error) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
+  }
+
+  // If no items, show a message
+  if (items.length === 0) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No products available</div>;
+  }
+
+  // Use the CircularGallery component with featured products
+  return (
+    <div style={{ height: '500px', position: 'relative' }}>
+      <CircularGallery 
+        items={items}
+        bend={-2} // Changed to -2 for downward curve
+        textColor="#808080" // Changed to greyish color for better visibility on both dark and white backgrounds
+        borderRadius={0.3}
+        font="bold 20px Figtree"
+        scrollSpeed={1.5}
+        scrollEase={0.05}
+        autoScroll={true}
+        autoScrollSpeed={0.1}
+        height={500}
+      />
+    </div>
+  );
+};
+
+// Add this component to fetch featured recipes and pass them to the DomeGallery
+const FeaturedRecipesGallery = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const theme = useTheme();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch all posts/recipes
+        let res;
+        try {
+          // First try to get all posts/recipes
+          res = await api.get('/posts');
+        } catch (err) {
+          try {
+            // If that fails, try to get most liked recipes
+            res = await api.get('/posts/most-liked');
+          } catch (err2) {
+            // If that also fails, fall back to featured recipes
+            res = await api.get('/posts/featured-recipes');
+          }
+        }
+        
+        // Check if response data is an array
+        let recipes = [];
+        if (Array.isArray(res.data)) {
+          recipes = res.data;
+        } else if (res.data && Array.isArray(res.data.recipes)) {
+          // Handle case where data is an object with a recipes array property
+          recipes = res.data.recipes;
+        } else if (res.data && Array.isArray(res.data.posts)) {
+          // Handle case where data is an object with a posts array property
+          recipes = res.data.posts;
+        } else {
+          console.warn('Unexpected data format:', res.data);
+          recipes = [];
+        }
+        
+        // Filter posts to only include recipe posts with images
+        recipes = recipes.filter(recipe => {
+          // Check if it's marked as a recipe
+          const isMarkedAsRecipe = recipe.isRecipe === true;
+          
+          // Check if it has recipe details
+          const hasRecipeDetails = recipe.recipeDetails && typeof recipe.recipeDetails === 'object';
+          
+          // Check if it has media (images)
+          const hasMedia = recipe.media && Array.isArray(recipe.media) && recipe.media.length > 0;
+          
+          // Return true if it's a recipe and has media
+          return (isMarkedAsRecipe || hasRecipeDetails) && hasMedia;
+        });
+        
+        // Transform recipes into gallery items with recipe IDs
+        // Take a random sample if there are many recipes
+        if (recipes.length > 20) {
+          // Shuffle and take first 20 for better variety
+          recipes = recipes
+            .map(value => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+            .slice(0, 20);
+        }
+        
+        // Store the recipes for later use
+        window.allRecipes = recipes;
+        
+        const galleryItems = recipes.map((recipe, index) => {
+          // Get the first image from media array
+          let imageUrl = `${process.env.PUBLIC_URL}/images/default-recipe.jpg`;
+          if (recipe.media && recipe.media.length > 0 && recipe.media[0].url) {
+            imageUrl = `${process.env.REACT_APP_API_URL}${recipe.media[0].url}`;
+          }
+          
+          console.log('Processing recipe:', recipe._id || recipe.id, recipe.title); // Debug log
+          
+          return {
+            id: recipe._id || recipe.id, // Add recipe ID for click handling
+            src: imageUrl,
+            alt: recipe.title || recipe.name || 'Recipe image'
+          };
+        });
+        
+        console.log('Gallery items being passed to DomeGallery:', galleryItems); // Debug log
+        setItems(galleryItems);
+      } catch (err) {
+        setError('Failed to load recipes');
+        console.error('Error fetching recipes:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipes();
+  }, [navigate]);
+
+  // Handle image click to navigate to recipe detail page
+  const handleImageClick = (imageData) => {
+    console.log('Image clicked:', imageData); // Debug log
+    
+    // First try to get ID directly
+    if (imageData.id) {
+      console.log('Navigating to post with direct ID:', imageData.id);
+      // Recipes are actually posts in this system, so we use /post/:id route
+      navigate(`/post/${imageData.id}`);
+      return;
+    }
+    
+    // Fallback: Try to find recipe by matching image URL
+    if (imageData.src && window.allRecipes) {
+      console.log('Trying to match image URL to recipe:', imageData.src);
+      const matchedRecipe = window.allRecipes.find(recipe => {
+        if (recipe.media && recipe.media.length > 0 && recipe.media[0].url) {
+          const recipeImageUrl = `${process.env.REACT_APP_API_URL}${recipe.media[0].url}`;
+          return recipeImageUrl === imageData.src;
+        }
+        return false;
+      });
+      
+      if (matchedRecipe && (matchedRecipe._id || matchedRecipe.id)) {
+        const recipeId = matchedRecipe._id || matchedRecipe.id;
+        console.log('Found matching recipe by image URL, navigating to:', recipeId);
+        // Recipes are actually posts in this system, so we use /post/:id route
+        navigate(`/post/${recipeId}`);
+        return;
+      }
+    }
+    
+    // Try to extract ID from the URL as a last resort
+    const url = imageData.src || '';
+    console.log('Trying to extract ID from URL:', url);
+    
+    // Try different patterns to extract ID from URL
+    // Pattern 1: Look for MongoDB ObjectId in the URL path
+    const objectIdMatch = url.match(/([0-9a-fA-F]{24})/);
+    if (objectIdMatch && objectIdMatch[1]) {
+      console.log('Found ObjectId in URL:', objectIdMatch[1]);
+      // Recipes are actually posts in this system, so we use /post/:id route
+      navigate(`/post/${objectIdMatch[1]}`);
+      return;
+    }
+    
+    // Pattern 2: Look for any long alphanumeric string that might be an ID
+    const idMatch = url.match(/\/([0-9a-fA-F]{12,})/);
+    if (idMatch && idMatch[1]) {
+      console.log('Found potential ID in URL:', idMatch[1]);
+      // Recipes are actually posts in this system, so we use /post/:id route
+      navigate(`/post/${idMatch[1]}`);
+      return;
+    }
+    
+    console.log('No valid ID found, opening image viewer');
+  };
+
+  if (loading) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+  }
+
+  if (error) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
+  }
+
+  // If no items, show a message
+  if (items.length === 0) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No recipes available</div>;
+  }
+
+  // Use the DomeGallery component with recipes
+  return (
+    <div style={{ height: '600px', position: 'relative' }}>
+      <DomeGallery 
+        images={items}
+        fit={0.6}
+        minRadius={500}
+        maxVerticalRotationDeg={10}
+        dragSensitivity={15}
+        imageBorderRadius="20px"
+        openedImageBorderRadius="20px"
+        grayscale={false}
+        onImageClick={handleImageClick} // Add click handler
+        autoRotate={true} // Enable auto-rotation
+        autoRotateSpeed={0.2} // Set auto-rotation speed
+        showVisualCues={true} // Show visual cues
+        overlayBlurColor="transparent" // Make overlay fully transparent
+      />
+    </div>
   );
 };
 

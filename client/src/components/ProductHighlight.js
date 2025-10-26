@@ -61,28 +61,7 @@ const ProductHighlight = () => {
         </Box>
         
         <Grid container spacing={4} alignItems="center" justifyContent="center">
-          <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ 
-              borderRadius: 3, 
-              overflow: 'hidden',
-              boxShadow: 3,
-              height: { xs: '200px', sm: '250px', md: '300px' },
-              width: '100%',
-              maxWidth: '400px'
-            }}>
-              <Box
-                component="img"
-                src={`${process.env.PUBLIC_URL}/images/fresh-produce.jpg`}
-                alt="Fresh produce"
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <Typography 
                 variant="h4" 

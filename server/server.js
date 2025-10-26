@@ -34,6 +34,7 @@ const searchRoutes = require('./routes/search'); // New: Import search routes
 const chatbotRoutes = require('./routes/chatbot'); // New: Import chatbot routes
 const supportRoutes = require('./routes/support'); // New: Import support routes
 const loyaltyRoutes = require('./routes/loyaltyRoutes'); // New: Import loyalty routes
+const offerRoutes = require('./routes/offerRoutes'); // New: Import offer routes
 
 const app = express();
 
@@ -191,6 +192,7 @@ app.use('/api/search', searchRoutes); // New: Use search routes
 app.use('/api/chatbot', chatbotRoutes); // New: Use chatbot routes
 app.use('/api/support', supportRoutes); // New: Use support routes
 app.use('/api/loyalty', loyaltyRoutes); // New: Use loyalty routes
+app.use('/api/offers', offerRoutes); // New: Use offer routes
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

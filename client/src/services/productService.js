@@ -4,10 +4,27 @@ const getAllProducts = async ({
   page = 1,
   search = '',
   category = 'All',
-  sort = 'default'
+  sort = 'default',
+  minRating,
+  stockFilter,
+  minPrice,
+  maxPrice,
+  brands,
+  tags
 } = {}) => {
   try {
-    const params = new URLSearchParams({ page, search, category, sort });
+    const params = new URLSearchParams({ 
+      page, 
+      search, 
+      category, 
+      sort,
+      ...(minRating !== undefined && { minRating }),
+      ...(stockFilter !== undefined && { stockFilter }),
+      ...(minPrice !== undefined && { minPrice }),
+      ...(maxPrice !== undefined && { maxPrice }),
+      ...(brands && { brands: Array.isArray(brands) ? brands.join(',') : brands }),
+      ...(tags && { tags: Array.isArray(tags) ? tags.join(',') : tags })
+    });
     const response = await axios.get(`/products?${params.toString()}`);
     return response.data;
   } catch (error) {
@@ -134,6 +151,15 @@ const getRelatedProducts = async (id) => {
   }
 };
 
+const getUniqueTags = async () => {
+  try {
+    const response = await axios.get('/products/tags');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching tags', error);
+    throw error;
+  }
+};
 
 const productService = {
   getAllProducts,
@@ -150,7 +176,8 @@ const productService = {
   deleteProduct,
   addMultipleToCart,
   searchProductsForTagging,
-  getRelatedProducts, // <-- Added this export
+  getRelatedProducts,
+  getUniqueTags, // Add the new function
 };
 
 export default productService;

@@ -60,20 +60,20 @@ const PostCard = ({
       sx={{
         display: 'flex',
         flexDirection: "column",
-        borderRadius: 3,
+        borderRadius: 2,
         border: isFeatured
           ? `2px solid ${theme.palette.secondary.main}`
-          : `1px solid transparent`,
+          : `1px solid ${theme.palette.divider}`,
         position: "relative",
         boxSizing: "border-box",
-        boxShadow: theme.shadows[3],
-        transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+        boxShadow: 'none',
+        transition: "border-color 0.2s ease",
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow: theme.shadows[8],
           borderColor: theme.palette.primary.light,
         },
         width: "100%",
+        maxWidth: "100%",
+        margin: "0 auto",
         fontFamily: theme.typography.fontFamily,
         backgroundColor: theme.palette.background.paper,
         overflow: "hidden",
@@ -83,16 +83,153 @@ const PostCard = ({
         },
       }}
     >
+      {/* Pinned Post Icon */}
+      {isPinned && (
+        <Tooltip title="Pinned Post">
+          <PushPinIcon
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: theme.palette.text.secondary,
+              fontSize: 16,
+              zIndex: 10,
+            }}
+          />
+        </Tooltip>
+      )}
+      {/* Featured Star */}
+      {isFeatured && (
+        <Tooltip title="Featured Post">
+          <StarIcon
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: theme.palette.secondary.main,
+              fontSize: 16,
+              zIndex: 10,
+            }}
+          />
+        </Tooltip>
+      )}
+
+      <Box sx={{ p: 2, pb: 1, '& a': { pointerEvents: 'auto !important' } }}>
+        {/* Group Name, Posted By, Time */}
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1, flexWrap: 'wrap' }}>
+          {/* Show Group Name if available on the post object */}
+          {post.group?.name && (
+            <Typography
+              variant="body2"
+              component={RouterLink}
+              to={`/g/${post.group.slug}`}
+              sx={{
+                fontWeight: 600,
+                color: theme.palette.primary.main,
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' },
+                fontFamily: theme.typography.fontFamily,
+              }}
+            >
+              g/{post.group.name}
+            </Typography>
+          )}
+          
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+            • Posted by
+          </Typography>
+          
+          <Typography
+            variant="body2"
+            component={RouterLink}
+            to={`/user/${post.user.username}`}
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.secondary,
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
+              fontFamily: theme.typography.fontFamily,
+              pr: 1  // Added padding to the right of the username
+            }}
+          >
+            {post.user.username}
+          </Typography>
+          
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: theme.palette.text.secondary, 
+              fontFamily: theme.typography.fontFamily,
+            }}
+          >
+            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+          </Typography>
+        </Stack>
+
+        {/* Title */}
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ flexWrap: "wrap", mb: 1.5, fontFamily: theme.typography.fontFamily }}
+        >
+          {post.isRecipe && (
+            <MenuBookIcon
+              color="action"
+              sx={{ fontSize: 16, verticalAlign: "middle" }}
+            />
+          )}
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              fontSize: { xs: '1.1rem', sm: '1.2rem' },
+              flexGrow: 1,
+              minWidth: 0,
+              fontFamily: theme.typography.fontFamily,
+              cursor: 'pointer',
+            }}
+            onClick={(e) => {
+              // Only navigate if not clicking on a link
+              if (!e.target.closest('a')) {
+                window.location.href = `/post/${post._id}`;
+              }
+            }}
+          >
+            {/* Display Flair if available */}
+            {post.flair && (
+              <Chip
+                label={post.flair}
+                size="small"
+                sx={{
+                  mr: 1,
+                  borderRadius: 1,
+                  fontFamily: theme.typography.fontFamily,
+                  bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                  height: 20,
+                  '& .MuiChip-label': {
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                  }
+                }}
+              />
+            )}
+            {post.title}
+          </Typography>
+        </Stack>
+      </Box>
+
+      {/* Media */}
       {post.media && post.media.length > 0 && (
-        <CardMedia
-          title={post.title}
+        <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            maxHeight: displayMode === 'feed' ? { xs: 300, sm: 400 } : { xs: 350, sm: 400 }, // Use a slightly larger height for feeds
+            maxHeight: { xs: 300, sm: 400 },
             overflow: 'hidden',
-            bgcolor: theme.palette.mode === 'dark' ? 'black' : '#f0f2f5',
+            bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.02)',
             cursor: 'pointer',
           }}
           onClick={(e) => {
@@ -106,219 +243,24 @@ const PostCard = ({
             <img 
               src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
               alt={post.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: 400 }} 
             />
           ) : (
             <video 
               src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: 400 }} 
               controls 
             />
           )}
-        </CardMedia>
-      )}
-      <Box sx={{ p: 2, pb: 0, '& a': { pointerEvents: 'auto !important' } }}>
-
-      {/* Pinned Post Icon */}
-      {isPinned && (
-        <Tooltip title="Pinned Post">
-          <PushPinIcon
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              color: theme.palette.text.secondary,
-              fontSize: 22,
-              zIndex: 10,
-            }}
-          />
-        </Tooltip>
-      )}
-      {/* Featured Star */}
-      {isFeatured && (
-        <Tooltip title="Featured Post">
-          <StarIcon
-            sx={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              color: theme.palette.secondary.main,
-              fontSize: 24,
-              zIndex: 10,
-            }}
-          />
-        </Tooltip>
-      )}
-
-      {/* User Info */}
-      <Stack
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        sx={{
-          flexWrap: "wrap",
-          mb: 1.5,
-          fontFamily: theme.typography.fontFamily,
-          position: 'relative',
-        }}
-      >
-        <Avatar
-          src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
-          sx={{
-            width: 40,
-            height: 40,
-            cursor: 'pointer',
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            window.location.href = `/user/${post.user.username}`;
-          }}
-        >
-          {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
-        </Avatar>
-        <Box minWidth={0} sx={{ flexGrow: 1 }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap' }}>
-            {/* Show Group Name if available on the post object */}
-            {post.group?.name && (
-              <Typography
-                variant="subtitle2"
-                component={RouterLink}
-                to={`/g/${post.group.slug}`}
-                sx={{
-                  fontWeight: 700,
-                  color: theme.palette.text.primary,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' },
-                  fontSize: 14,
-                  fontFamily: theme.typography.fontFamily,
-                }}
-              >
-                g/{post.group.name}
-              </Typography>
-            )}
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
-              • Posted by
-            </Typography>
-            <Typography
-              variant="caption"
-              component={RouterLink}
-              to={`/user/${post.user.username}`}
-              sx={{
-                fontWeight: 700,
-                color: theme.palette.text.secondary,
-                textDecoration: "none",
-                "&:hover": { textDecoration: "underline" },
-                fontFamily: theme.typography.fontFamily,
-              }}
-            >
-              {post.user.username}
-            </Typography>
-          </Stack>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily, display: 'block' }}>
-            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-          </Typography>
         </Box>
-      </Stack>
-
-      {/* Title */}
-      <Stack
-        direction="row"
-        spacing={1}
-        alignItems="center"
-        sx={{ flexWrap: "wrap", mb: 1, fontFamily: theme.typography.fontFamily }}
-      >
-        {post.isRecipe && (
-          <MenuBookIcon
-            color="action"
-            sx={{ fontSize: 18, verticalAlign: "middle", mb: -0.5 }}
-          />
-        )}
-        <Typography
-          variant="subtitle1"
-          noWrap={displayMode === 'compact'}
-          sx={{
-            fontWeight: 700,
-            color: theme.palette.text.primary,
-            fontSize: 16,
-            flexGrow: 1,
-            minWidth: 0,
-            fontFamily: theme.typography.fontFamily,
-            pointerEvents: 'none',
-          }}
-        >
-          {/* Display Flair if available */}
-          {post.flair && (
-            <Chip
-              label={post.flair}
-              size="small"
-              sx={{
-                mr: 1,
-                borderRadius: '8px', // More rounded
-                fontFamily: theme.typography.fontFamily,
-                // In a more advanced version, you'd pass flair color/bg from the group settings
-                bgcolor: alpha(theme.palette.secondary.main, 0.2),
-              }}
-            />
-          )}
-          {post.title}
-        </Typography>
-      </Stack>
-
-      {displayMode === "full" && post.content && (
-        <>
-          {/* Content */}
-          <Box
-            sx={{
-              whiteSpace: 'pre-wrap',
-              color: theme.palette.text.secondary,
-              fontSize: 13,
-              lineHeight: 1.4,
-              mb: 1.5,
-              fontFamily: theme.typography.fontFamily,
-              maxHeight: (post.media && post.media.length > 0) ? '3em' : (displayMode === 'feed' ? '9em' : '6em'),
-              overflow: 'hidden',
-              position: 'relative',
-              '& a': {
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                position: 'relative',
-                zIndex: 100,
-              }
-            }}
-          >
-            <RichTextDisplay text={post.content} />
-          </Box>
-
-          {/* Tags */}
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1 }}>
-            {(post.tags || []).map((tag, index) => (
-              <Chip
-                key={index}
-                label={tag}
-                size="small"
-                sx={{
-                  borderRadius: 2,
-                  bgcolor: alpha(theme.palette.primary.main, 0.12),
-                  color: theme.palette.primary.main,
-                  fontWeight: 500,
-                  fontSize: 12,
-                  fontFamily: theme.typography.fontFamily,
-                }}
-              />
-            ))}
-          </Box>
-        </>
       )}
-      </Box>
-
-      <Divider sx={{ mx: 2, my: 1 }} />
 
       {/* Actions */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ flexWrap: "wrap", gap: 1, fontFamily: theme.typography.fontFamily, p: 2, pt: 1 }}
+        sx={{ flexWrap: "wrap", gap: 1, fontFamily: theme.typography.fontFamily, p: 2, pt: 1.5 }}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -332,19 +274,19 @@ const PostCard = ({
                   ? theme.palette.primary.main
                   : theme.palette.action.active,
                 "&:hover": {
-                  bgcolor: alpha(theme.palette.primary.main, 0.15),
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
                 },
               }}
             >
               <ThumbUpIcon fontSize="small" />
             </IconButton>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
               {post.upvoteCount}
             </Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
               {post.commentCount}
             </Typography>
           </Stack>
@@ -366,7 +308,7 @@ const PostCard = ({
             sx={{
               color: isSaved ? theme.palette.secondary.main : theme.palette.action.active,
               "&:hover": {
-                bgcolor: alpha(theme.palette.secondary.main, 0.12),
+                bgcolor: alpha(theme.palette.secondary.main, 0.1),
               },
             }}
           >
@@ -381,7 +323,7 @@ const PostCard = ({
                 setCollectionDialogOpen(true);
               }}
               aria-label="add to collection"
-              sx={{ "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.12) } }}
+              sx={{ "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.1) } }}
             >
               <CollectionsBookmarkIcon />
             </IconButton>
@@ -390,18 +332,18 @@ const PostCard = ({
             component={RouterLink}
             to={`/post/${post._id}`}
             size="small"
-            variant="outlined"
+            variant="text"
             sx={{
               fontWeight: 600,
               textTransform: "none",
               fontSize: 13,
-              borderRadius: 2,
-              px: 1.5,
+              borderRadius: 1,
+              px: 1,
               py: 0.5,
+              color: theme.palette.text.secondary,
+              minWidth: 'auto',
               "&:hover": {
-                borderColor: theme.palette.secondary.main,
-                color: theme.palette.secondary.main,
-                bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                backgroundColor: alpha(theme.palette.action.active, 0.1),
               },
             }}
           >

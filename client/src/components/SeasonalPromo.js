@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Typography, Button, Container, useTheme, alpha, Grid } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import TimerIcon from '@mui/icons-material/Timer';
 
 const SeasonalPromo = () => {
   const theme = useTheme();
@@ -10,7 +9,7 @@ const SeasonalPromo = () => {
   return (
     <Box sx={{ 
       py: 8, 
-      bgcolor: alpha(theme.palette.secondary.main, 0.1),
+      bgcolor: alpha(theme.palette.secondzzzary.main, 0.1),
       borderRadius: 4,
       mb: 6,
       position: 'relative',
@@ -63,7 +62,7 @@ const SeasonalPromo = () => {
                   color: theme.palette.text.primary
                 }}
               >
-                Summer Harvest Sale
+                Fresh Organic Produce
               </Typography>
               
               <Typography 
@@ -75,26 +74,12 @@ const SeasonalPromo = () => {
                   maxWidth: '600px'
                 }}
               >
-                Get 25% off on all seasonal fruits and vegetables. Limited time offer - fresh summer produce at unbeatable prices!
+                Discover our premium selection of certified organic fruits and vegetables, sourced directly from local farms committed to sustainable growing practices.
               </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, justifyContent: 'center' }}>
-                <TimerIcon sx={{ fontSize: 24, color: theme.palette.error.main, mr: 1 }} />
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    fontFamily: theme.typography.fontFamily,
-                    color: theme.palette.error.main
-                  }}
-                >
-                  Offer ends in 3 days
-                </Typography>
-              </Box>
               
               <Button
                 component={RouterLink}
-                to="/CropCorner"
+                to="/CropCorner?category=organic"
                 variant="contained"
                 size="large"
                 sx={{ 
@@ -111,7 +96,7 @@ const SeasonalPromo = () => {
                   }
                 }}
               >
-                Shop Summer Harvest
+                Shop Organic Collection
               </Button>
             </Box>
           </Grid>
@@ -127,8 +112,8 @@ const SeasonalPromo = () => {
             }}>
               <Box
                 component="img"
-                src={`${process.env.PUBLIC_URL}/images/seasonal-promo.jpg`}
-                alt="Seasonal promo"
+                src={`${process.env.PUBLIC_URL}/images/fresh-produce.jpg`}
+                alt="Organic produce"
                 sx={{
                   width: '100%',
                   height: '100%',

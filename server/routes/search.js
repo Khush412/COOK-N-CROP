@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/Post');
+const Post = require('../models/Product');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { optionalAuth } = require('../middleware/auth');
@@ -116,6 +116,52 @@ router.get('/products', async (req, res) => {
     res.json({ products, page: pageNum, pages: Math.ceil(totalProducts / limitNum) });
   } catch (error) {
     console.error('Paginated product search error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Product suggestions for autocomplete
+// @route   GET /api/search/product-suggestions
+// @access  Public
+router.get('/product-suggestions', async (req, res) => {
+  try {
+    const { q = '', limit = 5 } = req.query;
+    const limitNum = Number(limit);
+
+    if (!q) {
+      return res.json([]);
+    }
+
+    // Find products that match the query
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { category: { $regex: q, $options: 'i' } }
+      ]
+    })
+      .limit(limitNum)
+      .select('name category')
+      .lean();
+
+    // Extract unique categories
+    const categories = [...new Set(products.map(p => p.category))];
+
+    // Get popular search terms (this would typically come from a database or analytics)
+    const popularSearches = [
+      'Organic vegetables',
+      'Fresh fruits',
+      'Dairy products',
+      'Grains and cereals',
+      'Meat and poultry'
+    ].filter(term => term.toLowerCase().includes(q.toLowerCase()));
+
+    res.json({
+      products: products.map(p => p.name),
+      categories,
+      popularSearches
+    });
+  } catch (error) {
+    console.error('Product suggestions error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

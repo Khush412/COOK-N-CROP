@@ -131,6 +131,17 @@ const searchUsers = async (query) => {
   }
 };
 
+// New function for personalized recommendations
+const getRecommendations = async () => {
+  try {
+    const response = await api.get('/users/me/recommendations');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error.response?.data || error;
+  }
+};
+
 const userService = {
   getPublicProfile,
   toggleSavePost,
@@ -145,6 +156,7 @@ const userService = {
   getBlockedUsers,
   getDashboardData,
   searchUsers,
+  getRecommendations, // New function
 };
 
 export default userService;

@@ -8,10 +8,10 @@ import RedeemIcon from '@mui/icons-material/Redeem';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
-
+import { useAuth } from '../contexts/AuthContext';
 const RewardsPage = () => {
   const theme = useTheme();
-
+  const { user, loadUser,logout } = useAuth();
   const benefits = [
     {
       icon: <PercentIcon sx={{ fontSize: 40 }} />,

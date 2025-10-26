@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['upvote', 'comment', 'follow', 'broadcast'], // Added 'broadcast'
+    enum: ['upvote', 'comment', 'follow', 'broadcast', 'priceDrop', 'restock'], // Added 'priceDrop' and 'restock'
     required: true,
   },
   recipient: {
@@ -28,6 +28,13 @@ const notificationSchema = new mongoose.Schema({
   comment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',
+  },
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: function() {
+      return ['priceDrop', 'restock'].includes(this.type);
+    },
   },
   message: {
     type: String,

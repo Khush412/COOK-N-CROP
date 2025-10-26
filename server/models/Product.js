@@ -82,6 +82,17 @@ const productSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  // Brand information
+  brand: {
+    type: String,
+    trim: true,
+  },
+  // Tags for filtering and search
+  tags: [{
+    type: String,
+    trim: true,
+    index: true, // Add index for better search performance
+  }],
   // Product variants (different sizes/weights)
   variants: [variantSchema],
   // Badges
@@ -103,12 +114,6 @@ const productSchema = new mongoose.Schema({
   isFeatured: {
     type: Boolean,
     default: false,
-  },
-  origin: {
-    type: String,
-  },
-  freshness: {
-    type: String,
   },
   nutritionFacts: {
     calories: { type: Number },
