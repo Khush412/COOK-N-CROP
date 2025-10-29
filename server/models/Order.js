@@ -22,7 +22,8 @@ const orderSchema = mongoose.Schema({
         {
             name: { type: String, required: true },
             qty: { type: Number, required: true },
-            image: { type: String, required: true },
+            image: { type: String, required: true }, // Keep it required but ensure we always provide a value
+            images: [{ type: String }], // Add support for multiple images
             price: { type: Number, required: true },
             unit: { type: String },
             product: {

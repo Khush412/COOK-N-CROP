@@ -3,6 +3,7 @@ import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack, Chip, Grid,
+  Input,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,6 +15,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 import ProductFormDialog from '../../components/ProductFormDialog';
@@ -36,6 +38,10 @@ const ManageProducts = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [csvImportDialogOpen, setCsvImportDialogOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvImportLoading, setCsvImportLoading] = useState(false);
+  const [csvImportResult, setCsvImportResult] = useState(null);
   const [lowStockThreshold] = useState(10); // Define low stock threshold
 
   // Calculate low stock count
@@ -172,6 +178,50 @@ const ManageProducts = () => {
   const numSelected = selectedProducts.length;
   const rowCount = products.length;
 
+  // CSV Import Functions
+  const handleOpenCsvImportDialog = () => {
+    setCsvImportDialogOpen(true);
+  };
+
+  const handleCloseCsvImportDialog = () => {
+    setCsvImportDialogOpen(false);
+    setCsvFile(null);
+    setCsvImportResult(null);
+  };
+
+  const handleCsvFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+    } else {
+      alert('Please select a valid CSV file.');
+    }
+  };
+
+  const handleCsvImport = async () => {
+    if (!csvFile) {
+      alert('Please select a CSV file first.');
+      return;
+    }
+
+    setCsvImportLoading(true);
+    setCsvImportResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('csvFile', csvFile);
+      
+      const response = await adminService.importProductsFromCsv(formData);
+      setCsvImportResult(response.data);
+      fetchProducts(); // Refresh the product list
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to import products.';
+      setCsvImportResult({ success: false, message: errorMessage });
+    } finally {
+      setCsvImportLoading(false);
+    }
+  };
+
   return (
     <Container maxWidth="xl" sx={{ mt: 12, py: 4, zoom: 0.9 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
@@ -198,22 +248,15 @@ const ManageProducts = () => {
             />
             {numSelected > 0 && (
               <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
-                Delete ({numSelected})
+                Delete Selected ({numSelected})
               </Button>
             )}
           </Stack>
           <Stack direction="row" spacing={1}>
-            {lowStockCount > 0 && (
-              <Chip 
-                icon={<WarningAmberIcon />}
-                label={`${lowStockCount} Low Stock`}
-                color="warning"
-                size="small"
-                onClick={() => alert('Low stock items highlighted in table below')}
-                sx={{ cursor: 'pointer', fontWeight: 'bold' }}
-              />
-            )}
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+            <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={handleOpenCsvImportDialog} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+              Import CSV
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
               Add Product
             </Button>
           </Stack>
@@ -261,7 +304,13 @@ const ManageProducts = () => {
                               inputProps={{ 'aria-labelledby': `product-checkbox-${product._id}` }}
                             />
                           </TableCell>
-                          <TableCell sx={{ py: 1 }}><Avatar src={product.image} variant="rounded" sx={{ width: 40, height: 40 }} /></TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            <Avatar 
+                              src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
+                              variant="rounded" 
+                              sx={{ width: 40, height: 40 }} 
+                            />
+                          </TableCell>
                           <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.name}</TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.category}</TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1, fontSize: '0.875rem' }}>
@@ -371,6 +420,93 @@ const ManageProducts = () => {
           </Button>
           <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
             Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={csvImportDialogOpen} onClose={handleCloseCsvImportDialog} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>
+          Import Products from CSV
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+            Upload a CSV file to bulk import products. You can add images manually after import.
+          </DialogContentText>
+          
+          <Box sx={{ mb: 2 }}>
+            <input
+              accept=".csv"
+              style={{ display: 'none' }}
+              id="csv-file-upload"
+              type="file"
+              onChange={handleCsvFileChange}
+            />
+            <label htmlFor="csv-file-upload">
+              <Button 
+                variant="outlined" 
+                component="span" 
+                sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+              >
+                {csvFile ? csvFile.name : 'Choose CSV File'}
+              </Button>
+            </label>
+            {csvFile && (
+              <Typography variant="body2" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+                Selected: {csvFile.name}
+              </Typography>
+            )}
+          </Box>
+          
+          <Alert severity="info" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+            <strong>CSV Format Requirements:</strong>
+            <br />
+            Required columns: name, price, description, category, countInStock
+            <br />
+            Optional columns: unit, brand, tags (comma-separated), isFeatured (true/false)
+            <br />
+            Category must be one of: Fruits, Vegetables, Dairy, Grains, Meat, Seafood, Baked Goods, Beverages, Snacks, Other
+            <br />
+            <br />
+            Example format:
+            <br />
+            name,price,description,category,countInStock,unit,brand,tags,isFeatured
+            <br />
+            Organic Apples,120,"Fresh organic apples",Fruits,50,1 kg,Organic Farms,"organic,healthy",true
+          </Alert>
+          
+          {csvImportResult && (
+            <Alert 
+              severity={csvImportResult.success ? 'success' : 'error'} 
+              sx={{ fontFamily: theme.typography.fontFamily }}
+            >
+              {csvImportResult.message}
+              {csvImportResult.importedCount !== undefined && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Imported {csvImportResult.importedCount} products successfully.
+                </Typography>
+              )}
+              {csvImportResult.errors && csvImportResult.errors.length > 0 && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Errors: {csvImportResult.errors.length} rows had issues.
+                </Typography>
+              )}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleCloseCsvImportDialog} 
+            disabled={csvImportLoading}
+            sx={{ fontFamily: theme.typography.fontFamily }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleCsvImport} 
+            disabled={!csvFile || csvImportLoading}
+            variant="contained"
+            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+          >
+            {csvImportLoading ? <CircularProgress size={24} /> : 'Import Products'}
           </Button>
         </DialogActions>
       </Dialog>

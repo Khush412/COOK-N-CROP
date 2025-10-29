@@ -311,9 +311,10 @@ class App {
     this.isDown = false;
     this.isDragging = false; // Track dragging state
     this.startX = 0; // Track start position
+    this.startY = 0; // Track start position Y
     // Remove interaction timeout since we want continuous scrolling
     this.onCheckDebounce = debounce(this.onCheck, 200);
-    this.onImageClick = onImageClick; // Store click handler
+    this.onImageClick = onImageClick || function() {}; // Store click handler with fallback
     
     // Store items with IDs for click handling
     this.items = items;
@@ -338,6 +339,10 @@ class App {
     this.gl = this.renderer.gl;
     this.gl.clearColor(0, 0, 0, 0);
     this.container.appendChild(this.gl.canvas);
+    
+    // Ensure the canvas has a lower z-index than the click handlers
+    this.gl.canvas.style.zIndex = '1';
+    this.gl.canvas.style.position = 'relative';
   }
   createCamera() {
     this.camera = new Camera(this.gl);
@@ -400,6 +405,7 @@ class App {
     this.clickContainer.style.width = '100%';
     this.clickContainer.style.height = '100%';
     this.clickContainer.style.pointerEvents = 'none'; // Don't block WebGL events
+    this.clickContainer.style.zIndex = '2'; // Ensure click handlers are above WebGL canvas
     this.container.appendChild(this.clickContainer);
     this.clickHandlers = [];
   }
@@ -407,25 +413,32 @@ class App {
   // Update click handler positions
   updateClickHandlers() {
     // Check if clickContainer exists
-    if (!this.clickContainer) return;
+    if (!this.clickContainer) {
+      return;
+    }
     
     // Clear existing handlers
     this.clickContainer.innerHTML = '';
     this.clickHandlers = [];
     
-    if (!this.medias || !this.items || this.items.length === 0) return;
+    if (!this.medias || !this.items || this.items.length === 0) {
+      return;
+    }
     
     // Create click handlers for visible items
     this.medias.forEach((media, index) => {
       // Only create handlers for items in the original set (not duplicates)
       if (index < this.items.length && this.items[index]) {
         const handler = document.createElement('div');
+        handler.className = 'circular-gallery-click-handler'; // Add class for CSS styling
         handler.style.position = 'absolute';
         handler.style.cursor = 'pointer';
         handler.style.pointerEvents = 'auto'; // Enable pointer events for this element
+        handler.style.zIndex = '3'; // Ensure click handlers are above the WebGL canvas
+        handler.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease'; // Add transition for hover effect
+        handler.style.backgroundColor = 'transparent'; // Ensure transparent background
         
         // Position the handler over the media
-        const rect = this.container.getBoundingClientRect();
         const scale = this.screen ? this.screen.height / 1500 : 1;
         // Make cards square by using the same dimension for both width and height
         const cardSize = this.viewport ? Math.min(
@@ -434,20 +447,39 @@ class App {
         ) : 150;
         
         // Calculate position based on media position
-        const x = media.plane.position.x + (this.viewport ? this.viewport.width / 2 : rect.width / 2);
-        const y = (this.viewport ? this.viewport.height / 2 : rect.height / 2) + media.plane.position.y;
+        // The media position is relative to the center of the viewport
+        const x = media.plane.position.x + this.viewport.width / 2;
+        const y = this.viewport.height / 2 + media.plane.position.y;
         
-        handler.style.left = `${(x - cardSize / 2)}px`;
-        handler.style.top = `${(y - cardSize / 2)}px`;
+        handler.style.left = `${x - cardSize / 2}px`;
+        handler.style.top = `${y - cardSize / 2}px`;
         handler.style.width = `${cardSize}px`;
         handler.style.height = `${cardSize}px`;
         
+        // Remove debug border
+        handler.style.border = 'none';
+        
         // Add click event
-        handler.addEventListener('click', () => {
+        handler.addEventListener('click', (e) => {
+          // Prevent the click from propagating to the container
+          e.stopPropagation();
+          e.preventDefault();
+          
           // Navigate to product detail page
           if (this.items[index] && this.items[index].id) {
-            this.onImageClick(this.items[index].id);
+            if (this.onImageClick && typeof this.onImageClick === 'function') {
+              this.onImageClick(this.items[index].id);
+            }
           }
+        });
+        
+        // Also prevent other events that might trigger dragging
+        handler.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+        });
+        
+        handler.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
         });
         
         this.clickContainer.appendChild(handler);
@@ -481,21 +513,30 @@ class App {
     // Remove lastInteractionTime update since we want continuous scrolling
     this.scroll.position = this.scroll.current;
     this.startX = e.touches ? e.touches[0].clientX : e.clientX;
+    this.startY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    // Store the target element to check if it's a click handler
+    this.startTarget = e.target;
     
     // Add dragging class to container
     this.container.classList.add('dragging');
   }
   
   onTouchMove(e) {
-    if (!this.isDown) return;
+    if (!this.isDown) {
+      return;
+    }
+    
     // Remove lastInteractionTime update since we want continuous scrolling
     const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const distance = this.startX - x;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const distanceX = this.startX - x;
+    const distanceY = this.startY - y;
     
-    // Only consider it dragging if moved more than 5 pixels
-    if (Math.abs(distance) > 5) {
+    // Only consider it dragging if moved more than 5 pixels in any direction
+    if (Math.abs(distanceX) > 5 || Math.abs(distanceY) > 5) {
       this.isDragging = true;
-      const scrollDistance = distance * (this.scrollSpeed * 0.025);
+      const scrollDistance = distanceX * (this.scrollSpeed * 0.025);
       this.scroll.target = this.scroll.position + scrollDistance;
     }
   }
@@ -506,15 +547,18 @@ class App {
     // Remove dragging class from container
     this.container.classList.remove('dragging');
     
+    // If it wasn't a drag, treat it as a click
+    if (!this.isDragging) {
+      // Check if the click was on a click handler
+      if (this.startTarget && this.startTarget.classList.contains('circular-gallery-click-handler')) {
+        // Let the click handler handle the event
+        return;
+      }
+    }
+    
     this.onCheck();
   }
   
-  onWheel(e) {
-    // Remove lastInteractionTime update since we want continuous scrolling
-    const delta = e.deltaY || e.wheelDelta || e.detail;
-    this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.2;
-    this.onCheckDebounce();
-  }
   onCheck() {
     if (!this.medias || !this.medias[0]) return;
     const width = this.medias[0].width;
@@ -542,7 +586,7 @@ class App {
     this.updateClickHandlers();
   }
   update() {
-    // Handle auto-scroll if enabled
+    // Handle auto-scroll if enabled - ALWAYS run regardless of user interaction
     if (this.autoScroll) {
       this.scroll.target += this.autoScrollSpeed;
     }
@@ -562,13 +606,11 @@ class App {
   }
   addEventListeners() {
     this.boundOnResize = this.onResize.bind(this);
-    this.boundOnWheel = this.onWheel.bind(this);
     this.boundOnTouchDown = this.onTouchDown.bind(this);
     this.boundOnTouchMove = this.onTouchMove.bind(this);
     this.boundOnTouchUp = this.onTouchUp.bind(this);
     window.addEventListener('resize', this.boundOnResize);
-    window.addEventListener('mousewheel', this.boundOnWheel);
-    window.addEventListener('wheel', this.boundOnWheel);
+    
     window.addEventListener('mousedown', this.boundOnTouchDown);
     window.addEventListener('mousemove', this.boundOnTouchMove);
     window.addEventListener('mouseup', this.boundOnTouchUp);
@@ -579,14 +621,6 @@ class App {
   destroy() {
     window.cancelAnimationFrame(this.raf);
     window.removeEventListener('resize', this.boundOnResize);
-    window.removeEventListener('mousewheel', this.boundOnWheel);
-    window.removeEventListener('wheel', this.boundOnWheel);
-    window.removeEventListener('mousedown', this.boundOnTouchDown);
-    window.removeEventListener('mousemove', this.boundOnTouchMove);
-    window.removeEventListener('mouseup', this.boundOnTouchUp);
-    window.removeEventListener('touchstart', this.boundOnTouchDown);
-    window.removeEventListener('touchmove', this.boundOnTouchMove);
-    window.removeEventListener('touchend', this.boundOnTouchUp);
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas);
     }
@@ -603,7 +637,8 @@ export default function CircularGallery({
   scrollEase = 0.05, // Use scrollEase=0.05 as per standards
   autoScroll = true,
   autoScrollSpeed = 0.1,
-  height = 400 // Add height parameter to make cards smaller
+  height = 400, // Add height parameter to make cards smaller
+  onImageClick // Add click handler prop
 }) {
   const containerRef = useRef(null);
   useEffect(() => {
@@ -616,12 +651,13 @@ export default function CircularGallery({
       scrollSpeed, 
       scrollEase,
       autoScroll,
-      autoScrollSpeed
+      autoScrollSpeed,
+      onImageClick // Pass click handler to App
     });
     return () => {
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed]);
+  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed, onImageClick]);
   
   // Apply height style
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
@@ -28,8 +29,10 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
     isBestseller: false,
     isOnSale: false,
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imageFiles, setImageFiles] = useState([]); // Updated to handle multiple files
+  const [imagePreviews, setImagePreviews] = useState([]); // Updated to handle multiple previews
+  const [existingImages, setExistingImages] = useState([]); // Track existing images for editing
+  const [imagesToRemove, setImagesToRemove] = useState([]); // Track images to remove
   const [error, setError] = useState('');
 
   const getImageUrl = (path) => {
@@ -58,8 +61,20 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           isBestseller: product.badges?.isBestseller || false,
           isOnSale: product.badges?.isOnSale || false,
         });
-        setImagePreview(product.image || '');
-        setImageFile(null);
+        // Initialize existing images
+        if (product.images && product.images.length > 0) {
+          setExistingImages(product.images);
+          setImagePreviews(product.images);
+        } else if (product.image) {
+          // Fallback for single image
+          setExistingImages([product.image]);
+          setImagePreviews([product.image]);
+        } else {
+          setExistingImages([]);
+          setImagePreviews([]);
+        }
+        setImageFiles([]);
+        setImagesToRemove([]);
       } else {
         setFormData({
           name: '', price: '', salePrice: '', description: '', category: '', countInStock: '', unit: '', tags: [],
@@ -70,8 +85,10 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           isBestseller: false,
           isOnSale: false,
         });
-        setImageFile(null);
-        setImagePreview('');
+        setImageFiles([]);
+        setImagePreviews([]);
+        setExistingImages([]);
+        setImagesToRemove([]);
       }
       setTagInput(''); // Clear tag input
     }
@@ -115,10 +132,38 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      // Limit to 5 images total
+      const totalImages = imagePreviews.length + files.length;
+      if (totalImages > 5) {
+        setError(`You can upload a maximum of 5 images. You currently have ${imagePreviews.length} images.`);
+        return;
+      }
+      
+      const newFiles = files.slice(0, 5 - imagePreviews.length);
+      setImageFiles(prev => [...prev, ...newFiles]);
+      
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  // Remove an image
+  const handleRemoveImage = (index, isExisting = false) => {
+    if (isExisting) {
+      // For existing images, mark for removal
+      const imagePath = existingImages[index];
+      setImagesToRemove(prev => [...prev, imagePath]);
+      setExistingImages(prev => prev.filter((_, i) => i !== index));
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // For newly added images, remove from previews and files
+      const newIndex = index - existingImages.length;
+      if (newIndex >= 0) {
+        setImageFiles(prev => prev.filter((_, i) => i !== newIndex));
+        setImagePreviews(prev => prev.filter((_, i) => i !== index));
+      }
     }
   };
 
@@ -128,6 +173,12 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
     if (!formData.name || !formData.price || !formData.category || formData.countInStock === '') {
         setError('Please fill in all required fields: Name, Price, Category, and Stock.');
         return;
+    }
+
+    // Check if we have at least one image
+    if (imagePreviews.length === 0 && existingImages.length === 0) {
+      setError('Please upload at least one image.');
+      return;
     }
 
     const productData = new FormData();
@@ -145,9 +196,16 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
     // Add badges as JSON string
     productData.append('badges', JSON.stringify(badges));
     
-    if (imageFile) {
-      productData.append('image', imageFile);
+    // Add new image files
+    imageFiles.forEach(file => {
+      productData.append('images', file);
+    });
+    
+    // Add images to remove
+    if (imagesToRemove.length > 0) {
+      productData.append('removeImages', JSON.stringify(imagesToRemove));
     }
+    
     onSave(productData, product?._id, setError);
   };
 
@@ -163,124 +221,275 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
           <Grid container spacing={4}>
             <Grid item size={{ xs: 12, md: 4 }}>
               <Stack spacing={2} alignItems="center">
+                <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                  Product Images
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textAlign: 'center' }}>
+                  Upload up to 5 images. First image will be used as the main image.
+                </Typography>
+                
+                {/* Image previews */}
+                <Box sx={{ width: '100%', maxHeight: 300, overflowY: 'auto' }}>
+                  <Grid container spacing={2}>
+                    {imagePreviews.map((preview, index) => (
+                      <Grid item xs={6} key={index}>
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar
+                            src={getImageUrl(preview)}
+                            alt={`Product Image ${index + 1}`}
+                            variant="rounded"
+                            sx={{ width: '100%', height: 100, objectFit: 'cover' }}
+                          />
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleRemoveImage(index, index < existingImages.length)}
+                            sx={{ 
+                              position: 'absolute', 
+                              top: 4, 
+                              right: 4, 
+                              minWidth: 'auto', 
+                              p: 0.5,
+                              borderRadius: '50%',
+                              minWidth: 24,
+                              height: 24
+                            }}
+                          >
+                            <DeleteIcon sx={{ fontSize: 16 }} />
+                          </Button>
+                          {index === 0 && (
+                            <Chip 
+                              label="Main" 
+                              size="small" 
+                              sx={{ 
+                                position: 'absolute', 
+                                bottom: 4, 
+                                left: 4,
+                                bgcolor: 'primary.main',
+                                color: 'white'
+                              }} 
+                            />
+                          )}
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+                
+                {/* Upload button */}
                 <Box
                   component="label"
-                  htmlFor="product-image-upload"
+                  htmlFor="product-images-upload"
                   sx={{
                     width: '100%',
-                    aspectRatio: '1 / 1',
-                    maxWidth: 250,
                     border: `2px dashed ${theme.palette.divider}`,
                     borderRadius: 3,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    bgcolor: imagePreview ? 'transparent' : alpha(theme.palette.action.hover, 0.02),
-                    overflow: 'hidden',
+                    bgcolor: alpha(theme.palette.action.hover, 0.02),
+                    py: 2,
                     '&:hover': {
                       borderColor: 'primary.main',
                       bgcolor: alpha(theme.palette.primary.main, 0.05),
                     }
                   }}
                 >
-                  {imagePreview ? (
-                    <Avatar
-                      src={getImageUrl(imagePreview)}
-                      alt="Product Image"
-                      variant="rounded"
-                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <Stack alignItems="center" spacing={1} color="text.secondary">
-                      <PhotoCamera sx={{ fontSize: 40 }} />
-                      <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>Upload Image</Typography>
-                    </Stack>
-                  )}
+                  <Stack alignItems="center" spacing={1} color="text.secondary">
+                    <PhotoCamera sx={{ fontSize: 40 }} />
+                    <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      {imagePreviews.length > 0 ? 'Add More Images' : 'Upload Images'}
+                    </Typography>
+                  </Stack>
+                  <input
+                    id="product-images-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
                 </Box>
-                <input id="product-image-upload" type="file" hidden accept="image/*" onChange={handleFileChange} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {imagePreviews.length}/5 images uploaded
+                </Typography>
               </Stack>
             </Grid>
+            
             <Grid item size={{ xs: 12, md: 8 }}>
-              <Stack spacing={2.5}>
-                <TextField name="name" label="Product Name" value={formData.name} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                  <TextField name="price" label="Regular Price" type="number" value={formData.price} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                  <TextField name="salePrice" label="Sale Price (Optional)" type="number" value={formData.salePrice} onChange={handleChange} fullWidth InputProps={{ inputProps: { min: 0, step: "0.01" } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                  <TextField name="unit" label="Unit (e.g., kg, lb, piece)" value={formData.unit} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                  <TextField name="countInStock" label="Count In Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required InputProps={{ inputProps: { min: 0 } }} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                </Stack>
-                <TextField name="description" label="Description" multiline rows={4} value={formData.description} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-                <Stack direction="row" spacing={2.5}>
-                  <TextField name="category" label="Category" select value={formData.category} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}>
-                    {categories.map(option => <MenuItem key={option} value={option} sx={{ fontFamily: theme.typography.fontFamily }}>{option}</MenuItem>)}
-                  </TextField>
-                </Stack>
-                
-                {/* Tags Input */}
+              <Stack spacing={3}>
                 <TextField
-                  label="Tags"
-                  value={tagInput}
-                  onChange={handleTagInputChange}
-                  onKeyDown={handleAddTag}
+                  label="Product Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
                   fullWidth
-                  placeholder="Type a tag and press Enter"
-                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Add:</Typography>
-                      </InputAdornment>
-                    ),
-                  }}
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                 />
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {formData.tags.map((tag, index) => (
-                    <Chip
-                      key={index}
-                      label={tag}
-                      onDelete={handleDeleteTag(tag)}
-                      sx={{ fontFamily: theme.typography.fontFamily }}
+                
+                <Grid container spacing={2}>
+                  <Grid item size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label="Price"
+                      name="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={handleChange}
+                      required
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                     />
-                  ))}
+                  </Grid>
+                  <Grid item size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label="Sale Price"
+                      name="salePrice"
+                      type="number"
+                      value={formData.salePrice}
+                      onChange={handleChange}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    />
+                  </Grid>
+                </Grid>
+                
+                <TextField
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  multiline
+                  rows={3}
+                  fullWidth
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                />
+                
+                <Grid container spacing={2}>
+                  <Grid item size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      select
+                      label="Category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      required
+                      fullWidth
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    >
+                      {categories.map((category) => (
+                        <MenuItem key={category} value={category} sx={{ fontFamily: theme.typography.fontFamily }}>
+                          {category}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label="Unit"
+                      name="unit"
+                      value={formData.unit}
+                      onChange={handleChange}
+                      placeholder="e.g., 500g, 1kg"
+                      fullWidth
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    />
+                  </Grid>
+                </Grid>
+                
+                <TextField
+                  label="Stock Quantity"
+                  name="countInStock"
+                  type="number"
+                  value={formData.countInStock}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                />
+                
+                {/* Tags input */}
+                <Box>
+                  <TextField
+                    label="Tags"
+                    value={tagInput}
+                    onChange={handleTagInputChange}
+                    onKeyDown={handleAddTag}
+                    placeholder="Press Enter to add tags"
+                    fullWidth
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                  />
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {formData.tags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onDelete={handleDeleteTag(tag)}
+                        sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                      />
+                    ))}
+                  </Box>
                 </Box>
                 
-                {/* Product Badges */}
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 1 }}>Product Badges</Typography>
-                <FormGroup row>
-                  <FormControlLabel
-                    control={<Checkbox checked={badges.isNew} onChange={handleBadgeChange} name="isNew" color="info" />}
-                    label="New Product"
-                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={badges.isOrganic} onChange={handleBadgeChange} name="isOrganic" color="success" />}
-                    label="Organic"
-                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={badges.isBestseller} onChange={handleBadgeChange} name="isBestseller" color="warning" />}
-                    label="Bestseller"
-                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={badges.isOnSale} onChange={handleBadgeChange} name="isOnSale" color="error" />}
-                    label="On Sale"
-                    sx={{ '& .MuiFormControlLabel-label': { fontFamily: theme.typography.fontFamily } }}
-                  />
-                </FormGroup>
+                {/* Badges checkboxes */}
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>Badges</Typography>
+                  <FormGroup row>
+                    <FormControlLabel
+                      control={<Checkbox checked={badges.isNew} onChange={handleBadgeChange} name="isNew" />}
+                      label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>New</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Checkbox checked={badges.isOrganic} onChange={handleBadgeChange} name="isOrganic" />}
+                      label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Organic</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Checkbox checked={badges.isBestseller} onChange={handleBadgeChange} name="isBestseller" />}
+                      label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>Bestseller</Typography>}
+                    />
+                    <FormControlLabel
+                      control={<Checkbox checked={badges.isOnSale} onChange={handleBadgeChange} name="isOnSale" />}
+                      label={<Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>On Sale</Typography>}
+                    />
+                  </FormGroup>
+                </Box>
               </Stack>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 2, px: 3 }}>
-          <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button> 
-          <Button type="submit" form="product-form" variant="contained" disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 3 }}>
-            {loading ? <CircularProgress size={24} /> : (product ? 'Save Changes' : 'Create Product')}
+        <Divider />
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={onClose} 
+            disabled={loading}
+            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            disabled={loading}
+            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, px: 3 }}
+          >
+            {loading ? <CircularProgress size={24} /> : product ? 'Update Product' : 'Add Product'}
           </Button>
         </DialogActions>
       </form>

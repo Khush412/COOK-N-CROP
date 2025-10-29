@@ -4,7 +4,9 @@ const MAX_ITEMS = 15;
 const getProducts = () => {
   try {
     const items = localStorage.getItem(RECENTLY_VIEWED_KEY);
-    return items ? JSON.parse(items) : [];
+    const parsedItems = items ? JSON.parse(items) : [];
+    // Filter out any invalid products (null, undefined, or without _id)
+    return parsedItems.filter(item => item && item._id);
   } catch (error) {
     console.error('Error getting recently viewed products:', error);
     return [];

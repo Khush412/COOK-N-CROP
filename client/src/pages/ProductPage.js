@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 import {
   Box,
   Container,
@@ -11,11 +13,11 @@ import {
   Button,
   Divider,
   List,
+  Stack,
   Avatar,
   TextField,
   Snackbar,
   IconButton,
-  Stack,
   FormControl,
   InputLabel,
   Select,
@@ -27,6 +29,9 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  ImageList,
+  ImageListItem,
+  Breadcrumbs,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Slider from 'react-slick';
@@ -45,6 +50,10 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SecurityIcon from '@mui/icons-material/Security';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import HomeIcon from '@mui/icons-material/Home';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
@@ -59,6 +68,72 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { user, isAuthenticated, updateUserWishlist } = useAuth();
+  
+  // Create a ref for the slider
+  const sliderRef = useRef(null);
+
+  // Custom arrow components for the slider
+  const NextArrow = ({ onClick, ...rest }) => {
+    const { className, style, currentSlide, slideCount, ...props } = rest;
+    return (
+      <IconButton 
+        {...props}
+        onClick={onClick}
+        sx={{ 
+          position: 'absolute', 
+          right: 16, 
+          top: '50%', 
+          transform: 'translateY(-50%)',
+          zIndex: 10,
+          bgcolor: 'rgba(255, 255, 255, 0.7)',
+          '&:hover': { 
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
+            transform: 'translateY(-50%) scale(1.1)'
+          },
+          transition: 'all 0.2s ease',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(0,0,0,0.05)'
+        }}
+      >
+        <ArrowForwardIosIcon sx={{ fontSize: '0.9rem', color: 'rgba(0,0,0,0.7)' }} />
+      </IconButton>
+    );
+  };
+
+  const PrevArrow = ({ onClick, ...rest }) => {
+    const { className, style, currentSlide, slideCount, ...props } = rest;
+    return (
+      <IconButton 
+        {...props}
+        onClick={onClick}
+        sx={{ 
+          position: 'absolute', 
+          left: 16, 
+          top: '50%', 
+          transform: 'translateY(-50%)',
+          zIndex: 10,
+          bgcolor: 'rgba(255, 255, 255, 0.7)',
+          '&:hover': { 
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
+            transform: 'translateY(-50%) scale(1.1)'
+          },
+          transition: 'all 0.2s ease',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(0,0,0,0.05)'
+        }}
+      >
+        <ArrowBackIosIcon sx={{ fontSize: '0.9rem', color: 'rgba(0,0,0,0.7)' }} />
+      </IconButton>
+    );
+  };
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,11 +154,11 @@ const ProductPage = () => {
   const [sortOption, setSortOption] = useState('newest'); // 'newest' or 'helpful'
 
   // Mock data for UGC (in a real app, this would come from the backend)
-  const [userGeneratedContent] = useState([
+  const [userGeneratedContent, setUserGeneratedContent] = useState([
     {
       id: 1,
       type: 'image',
-      url: product?.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`,
+      url: '', // Will be set after product loads
       caption: "Made a delicious salad with this product! So fresh and crisp.",
       user: {
         name: "Sarah Johnson",
@@ -96,7 +171,7 @@ const ProductPage = () => {
     {
       id: 2,
       type: 'image',
-      url: product?.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`,
+      url: '', // Will be set after product loads
       caption: "Perfect for my morning smoothie. Highly recommend!",
       user: {
         name: "Emma Wilson",
@@ -150,6 +225,17 @@ const ProductPage = () => {
     fetchProduct();
   }, [id, fetchProduct]);
 
+  // Update UGC URLs when product loads
+  useEffect(() => {
+    if (product && product.images && product.images.length > 0) {
+      const mainImageUrl = `${process.env.REACT_APP_API_URL}${product.images[0]}`;
+      setUserGeneratedContent(prev => prev.map((item, index) => ({
+        ...item,
+        url: mainImageUrl
+      })));
+    }
+  }, [product]);
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!rating) {
@@ -198,11 +284,17 @@ const ProductPage = () => {
 
     const newProductState = { ...product, reviews: newReviews };
     setProduct(newProductState);
+
     try {
-      await productService.toggleReviewUpvote(id, reviewId);
+      const res = await productService.toggleReviewUpvote(id, reviewId);
+      // Update with server response
+      reviewToUpdate.upvotes = res.upvotes;
+      newReviews[reviewIndex] = reviewToUpdate;
+      setProduct({ ...product, reviews: newReviews });
     } catch (err) {
-      setProduct(originalProduct); // Revert on error
-      setSnackbar({ open: true, message: 'Failed to update vote.', severity: 'error' });
+      // Revert on error
+      setProduct(originalProduct);
+      console.error("Failed to upvote review:", err);
     } finally {
       setUpvotingReviewId(null);
     }
@@ -215,90 +307,81 @@ const ProductPage = () => {
     }
     setIsFavoriting(true);
     try {
-      const res = await userService.toggleWishlist(product._id);
+      const res = await userService.toggleWishlist(id);
       if (res.success) {
         updateUserWishlist(res.wishlist);
-        setSnackbar({ open: true, message: isWishlisted ? 'Removed from wishlist' : 'Added to wishlist', severity: 'success' });
+        setSnackbar({ open: true, message: res.message });
       }
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to update wishlist.', severity: 'error' });
+      setSnackbar({ open: true, message: 'Failed to update wishlist.' });
     } finally {
       setIsFavoriting(false);
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) return navigate(`/login?redirect=/product/${id}`);
-    setCartLoading(true);
-    try {
-      await productService.addToCart(product._id, 1);
-      setQuantityInCart(1);
-      setSnackbar({ open: true, message: 'Product added to cart!', severity: 'success' });
-    } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.message || 'Failed to add product to cart.', severity: 'error' });
-    } finally {
-      setCartLoading(false);
-    }
-  };
-
-  const handleIncreaseQuantity = async () => {
-    if (!isAuthenticated) return navigate(`/login?redirect=/product/${id}`);
-    if (quantityInCart >= product.countInStock) {
-      setSnackbar({ open: true, message: 'Cannot add more than available stock.', severity: 'warning' });
+  const handleAddToCart = async (qty) => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/product/${id}`);
       return;
     }
     setCartLoading(true);
     try {
-      await productService.addToCart(product._id, 1); // Backend handles incrementing
-      setQuantityInCart(prev => prev + 1);
-    } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.message || 'Failed to increase quantity.', severity: 'error' });
+      await productService.addToCart(id, qty);
+      setQuantityInCart(qty);
+      setSnackbar({ open: true, message: `${product.name} added to cart!` });
+    } catch (err) {
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Failed to add to cart.' });
     } finally {
       setCartLoading(false);
     }
   };
 
-  const handleDecreaseQuantity = async () => {
-    if (!isAuthenticated) return navigate(`/login?redirect=/product/${id}`);
+  const handleUpdateQuantity = async (newQuantity) => {
+    if (!isAuthenticated) return;
+    if (newQuantity > product.countInStock) {
+      setSnackbar({ open: true, message: `Only ${product.countInStock} of ${product.name} available.` });
+      return;
+    }
     setCartLoading(true);
     try {
-      if (quantityInCart > 1) {
-        await productService.updateCartItemQuantity(product._id, quantityInCart - 1);
-        setQuantityInCart(prev => prev - 1);
+      if (newQuantity > 0) {
+        await productService.updateCartItemQuantity(id, newQuantity);
+        setQuantityInCart(newQuantity);
       } else {
-        await productService.removeCartItem(product._id);
+        await productService.removeCartItem(id);
         setQuantityInCart(0);
       }
-    } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to update cart.', severity: 'error' });
+    } catch (err) {
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Failed to update cart.' });
     } finally {
       setCartLoading(false);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   const filteredAndSortedReviews = useMemo(() => {
-    if (!product?.reviews) return [];
-
-    let reviews = [...product.reviews];
-
-    // Filter by rating
+    if (!product || !product.reviews) return [];
+    
+    let filtered = product.reviews;
     if (filterRating > 0) {
-      reviews = reviews.filter(review => review.rating === filterRating);
+      filtered = filtered.filter(review => review.rating === filterRating);
     }
-
-    // Sort reviews
-    if (sortOption === 'helpful') {
-      reviews.sort((a, b) => (b.upvotes?.length || 0) - (a.upvotes?.length || 0));
-    } else { // 'newest' is default
-      reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-
-    return reviews;
-  }, [product?.reviews, filterRating, sortOption]);
+    
+    return filtered.sort((a, b) => {
+      if (sortOption === 'helpful') {
+        return (b.upvotes?.length || 0) - (a.upvotes?.length || 0);
+      } else {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+    });
+  }, [product, filterRating, sortOption]);
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
         <CircularProgress />
       </Box>
     );
@@ -306,385 +389,903 @@ const ProductPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, mt: 8 }}>
+      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
-  const hasUserReviewed = product.reviews.some(review => review.user?._id === user?.id);
-  const isWishlisted = user?.wishlist?.includes(product._id);
+  if (!product) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+        <Alert severity="warning">Product not found.</Alert>
+      </Container>
+    );
+  }
 
-  // Calculate effective price
+  // Calculate effective price (sale price if on sale, otherwise regular price)
   const effectivePrice = product.salePrice || product.price;
   const hasDiscount = product.salePrice && product.salePrice < product.price;
   const discountPercent = hasDiscount 
     ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
     : 0;
 
-  // Trust badges data
-  const trustBadges = [
-    { icon: <LocalShippingIcon sx={{ fontSize: 24 }} />, title: "Free Delivery", description: "On orders over ₹2000" },
-    { icon: <SecurityIcon sx={{ fontSize: 24 }} />, title: "100% Secure", description: "Protected payments" },
-    { icon: <AutorenewIcon sx={{ fontSize: 24 }} />, title: "Easy Returns", description: "30-day guarantee" },
-  ];
-
+  // Slider settings for product images
+  const sliderSettings = {
+    dots: false,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true,
+    arrows: true,
+    draggable: true,
+    swipe: true,
+    accessibility: true,
+    lazyLoad: false,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: false
+        }
+      }
+    ]
+  };
+  
+  // Function to handle thumbnail click
+  const handleThumbnailClick = (index) => {
+    // Check if sliderRef is properly attached and has the method
+    if (sliderRef.current) {
+      // Try different ways to access the slickGoTo method
+      if (typeof sliderRef.current.slickGoTo === 'function') {
+        sliderRef.current.slickGoTo(index);
+      } else if (sliderRef.current.innerSlider && typeof sliderRef.current.innerSlider.slickGoTo === 'function') {
+        sliderRef.current.innerSlider.slickGoTo(index);
+      } else {
+        console.warn('Slider navigation not available:', sliderRef.current);
+      }
+    } else {
+      console.warn('Slider reference not available');
+    }
+  };
+  
   return (
-    <Container maxWidth="lg" sx={{ py: 4, mt: 8 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4 }}>
-        <Grid container spacing={{ xs: 3, md: 5 }}>
-          <Grid size={{ xs: 12, md: 5 }}>
-            {/* Simple image display instead of 360 viewer */}
-            <Box
-              component="img"
-              src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
-              alt={product.name}
-              sx={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: 3,
-                objectFit: 'cover',
-              }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-              {product.category}
-            </Typography>
-            <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-              {product.name}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Rating value={product.rating} readOnly />
-              <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">
-                ({product.numReviews} reviews)
-              </Typography>
-              <Chip icon={<VerifiedIcon />} label="Fresh Guarantee" size="small" color="success" sx={{ ml: 2, fontFamily: theme.typography.fontFamily }} />
-            </Box>
-            {hasDiscount && (
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  textDecoration: 'line-through', 
-                  color: 'text.secondary',
-                  fontFamily: theme.typography.fontFamily,
-                  mb: 1,
-                }}
-              >
-                ₹{product.price.toFixed(2)}
-              </Typography>
+    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        aria-label="breadcrumb" 
+        sx={{ mb: 3 }}
+        separator={<NavigateNextIcon fontSize="small" />}
+      >
+        <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+          <HomeIcon fontSize="small" sx={{ mr: 0.5 }} />
+          Home
+        </RouterLink>
+        <RouterLink to="/CropCorner" style={{ textDecoration: 'none', color: 'inherit' }}>
+          Store
+        </RouterLink>
+        <Typography color="text.primary">{product.name}</Typography>
+      </Breadcrumbs>
+
+      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, boxShadow: 3 }}>
+        <Grid container spacing={4}>
+          {/* Product Images */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            {product.images && product.images.length > 0 ? (
+              <>
+                <Slider {...sliderSettings} ref={sliderRef}>
+                  {product.images.map((image, index) => (
+                    <Box key={index} sx={{ position: 'relative', pt: '100%', overflow: 'hidden' }}>
+                      <Box
+                        component="img"
+                        src={`${process.env.REACT_APP_API_URL}${image}`}
+                        alt={`${product.name} ${index + 1}`}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '115%', // Make image taller
+                          objectFit: 'cover',
+                          objectPosition: 'center top',
+                          borderRadius: 2,
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Slider>
+                
+                {/* Thumbnail gallery for multiple images */}
+                {product.images.length > 1 && (
+                  <ImageList 
+                    sx={{ 
+                      mt: 2, 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr)) !important',
+                      gap: '12px !important',
+                      overflowX: 'auto',
+                      overflowY: 'hidden',
+                      '&::-webkit-scrollbar': {
+                        height: 6,
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        borderRadius: 3,
+                        '&:hover': {
+                          backgroundColor: 'rgba(0,0,0,0.3)',
+                        }
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        backgroundColor: 'transparent',
+                      }
+                    }} 
+                    cols={5} 
+                    gap={12}
+                  >
+                    {product.images.map((image, index) => (
+                      <ImageListItem 
+                        key={index} 
+                        sx={{ 
+                          borderRadius: 1, 
+                          overflow: 'hidden',
+                          border: '2px solid transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            borderColor: theme.palette.primary.main,
+                            transform: 'scale(1.05)',
+                          }
+                        }}
+                        onClick={() => handleThumbnailClick(index)}
+                      >
+                        <Box
+                          component="img"
+                          src={`${process.env.REACT_APP_API_URL}${image}`}
+                          alt={`Thumbnail ${index + 1}`}
+                          sx={{
+                            width: '100%',
+                            height: 80,
+                            objectFit: 'cover',
+                            display: 'block'
+                          }}
+                        />
+                      </ImageListItem>
+                    ))}
+                  </ImageList>
+                )}
+              </>
+            ) : (
+              <Box sx={{ position: 'relative', pt: '100%', bgcolor: 'grey.200', borderRadius: 2 }}>
+                <Box
+                  component="img"
+                  src={`${process.env.PUBLIC_URL}/images/placeholder.png`}
+                  alt={product.name}
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: 2,
+                  }}
+                />
+              </Box>
             )}
-            <Typography variant="h4" color={hasDiscount ? 'error' : 'primary'} fontWeight="bold" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-              ₹{effectivePrice.toFixed(2)}
+          </Grid>
+
+          {/* Product Details */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography 
+                  variant="overline" 
+                  color="primary" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    fontFamily: theme.typography.fontFamily,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  {product.category}
+                </Typography>
+                <Typography 
+                  variant="h3" 
+                  component="h1" 
+                  sx={{ 
+                    fontWeight: 800, 
+                    fontFamily: theme.typography.fontFamily,
+                    mt: 0.5,
+                    lineHeight: 1.2
+                  }}
+                >
+                  {product.name}
+                </Typography>
+              </Box>
+
+              <Stack direction="row" alignItems="center" spacing={1.5}>
+                <Rating value={product.rating} readOnly size="small" />
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontWeight: 500
+                  }}
+                >
+                  {product.rating.toFixed(1)}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily 
+                  }}
+                >
+                  ({product.numReviews} reviews)
+                </Typography>
+              </Stack>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box>
+                  {hasDiscount && (
+                    <Typography 
+                      variant="h4" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        fontFamily: theme.typography.fontFamily, 
+                        textDecoration: 'line-through',
+                        display: 'inline'
+                      }}
+                    >
+                      ₹{product.price.toFixed(2)}
+                    </Typography>
+                  )}
+                  <Typography 
+                    variant="h2" 
+                    color={hasDiscount ? 'error' : 'primary'} 
+                    sx={{ 
+                      fontWeight: 800, 
+                      fontFamily: theme.typography.fontFamily, 
+                      ml: hasDiscount ? 1 : 0,
+                      display: 'inline'
+                    }}
+                  >
+                    ₹{effectivePrice.toFixed(2)}
+                  </Typography>
+                </Box>
+                {hasDiscount && (
+                  <Chip 
+                    label={`Save ${discountPercent}%`} 
+                    color="error" 
+                    size="medium" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      height: '32px'
+                    }}
+                  />
+                )}
+              </Box>
+
               {product.unit && (
-                <Typography component="span" variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h6" 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily 
+                  }}
+                >
                   {` / ${product.unit}`}
                 </Typography>
               )}
-            </Typography>
-            
-            {/* Trust Badges */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-              {trustBadges.map((badge, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ color: 'primary.main' }}>{badge.icon}</Box>
-                  <Box>
-                    <Typography variant="body2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                      {badge.title}
+
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  whiteSpace: 'pre-line',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.7
+                }}
+              >
+                {product.description}
+              </Typography>
+
+              {/* Badges */}
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {product.badges?.isNew && (
+                  <Chip 
+                    icon={<NewReleasesIcon />} 
+                    label="New" 
+                    color="info" 
+                    size="small" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      height: '28px'
+                    }}
+                  />
+                )}
+                {product.badges?.isOrganic && (
+                  <Chip 
+                    icon={<LocalFloristIcon />} 
+                    label="Organic" 
+                    color="success" 
+                    size="small" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      height: '28px'
+                    }}
+                  />
+                )}
+                {product.badges?.isBestseller && (
+                  <Chip 
+                    icon={<TrendingUpIcon />} 
+                    label="Bestseller" 
+                    color="warning" 
+                    size="small" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      height: '28px'
+                    }}
+                  />
+                )}
+                {product.badges?.isOnSale && (
+                  <Chip 
+                    icon={<LocalOfferIcon />} 
+                    label="On Sale" 
+                    color="error" 
+                    size="small" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      height: '28px'
+                    }}
+                  />
+                )}
+                {product.isFeatured && (
+                  <Chip 
+                    icon={<FlashOnIcon />} 
+                    label="Featured" 
+                    color="secondary" 
+                    size="small" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      height: '28px'
+                    }}
+                  />
+                )}
+              </Stack>
+
+              {/* Stock Status */}
+              <Box>
+                {product.countInStock > 0 ? (
+                  <Chip 
+                    label={`In Stock (${product.countInStock} available)`} 
+                    color="success" 
+                    variant="outlined" 
+                    size="medium" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      height: '32px'
+                    }}
+                  />
+                ) : (
+                  <Chip 
+                    label="Out of Stock" 
+                    color="error" 
+                    size="medium" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      height: '32px'
+                    }}
+                  />
+                )}
+              </Box>
+
+              {/* Add to Cart / Wishlist */}
+              <Box sx={{ mt: 2 }}>
+                {product.countInStock > 0 ? (
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                    {quantityInCart > 0 ? (
+                      <Stack 
+                        direction="row" 
+                        spacing={1} 
+                        alignItems="center" 
+                        sx={{ 
+                          border: `2px solid ${theme.palette.divider}`, 
+                          borderRadius: 3,
+                          px: 1.5,
+                          py: 0.5
+                        }}
+                      >
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleUpdateQuantity(Math.max(0, quantityInCart - 1))}
+                          disabled={cartLoading}
+                          sx={{ 
+                            width: 40, 
+                            height: 40 
+                          }}
+                        >
+                          <RemoveIcon />
+                        </IconButton>
+                        <Typography 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily, 
+                            minWidth: 40, 
+                            textAlign: 'center',
+                            fontWeight: 600,
+                            fontSize: '1.1rem'
+                          }}
+                        >
+                          {quantityInCart}
+                        </Typography>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleUpdateQuantity(quantityInCart + 1)}
+                          disabled={cartLoading || quantityInCart >= product.countInStock}
+                          sx={{ 
+                            width: 40, 
+                            height: 40 
+                          }}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </Stack>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => handleAddToCart(1)}
+                        disabled={cartLoading}
+                        sx={{ 
+                          borderRadius: 3, 
+                          px: { xs: 2, sm: 4 }, 
+                          py: 1.5,
+                          fontFamily: theme.typography.fontFamily,
+                          fontWeight: 700,
+                          textTransform: 'none',
+                          flexGrow: { xs: 1, sm: 0 },
+                          boxShadow: 3,
+                          '&:hover': {
+                            boxShadow: 5
+                          }
+                        }}
+                      >
+                        {cartLoading ? <CircularProgress size={24} color="inherit" /> : 'Add to Cart'}
+                      </Button>
+                    )}
+                    <Tooltip title={user?.wishlist?.includes(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}>
+                      <IconButton 
+                        onClick={handleToggleWishlist}
+                        disabled={isFavoriting}
+                        sx={{ 
+                          border: `2px solid ${theme.palette.divider}`,
+                          borderRadius: 3,
+                          width: 50,
+                          height: 50
+                        }}
+                      >
+                        {user?.wishlist?.includes(product._id) ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                ) : (
+                  <ProductAlerts productId={product._id} productName={product.name} />
+                )}
+              </Box>
+
+              {/* Product Info */}
+              <Box sx={{ mt: 3 }}>
+                <Accordion 
+                  sx={{ 
+                    boxShadow: 'none', 
+                    border: '1px solid',
+                    borderColor: theme.palette.divider,
+                    borderRadius: 2,
+                    '&:before': { display: 'none' }
+                  }}
+                  defaultExpanded
+                >
+                  <AccordionSummary 
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{ 
+                      minHeight: 48,
+                      '&.Mui-expanded': { minHeight: 48 }
+                    }}
+                  >
+                    <Typography 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily, 
+                        fontWeight: 700,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      Product Information
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                      {badge.description}
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack spacing={1.5}>
+                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <strong>Category:</strong> {product.category}
+                      </Typography>
+                      {product.brand && (
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <strong>Brand:</strong> {product.brand}
+                        </Typography>
+                      )}
+                      {product.unit && (
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <strong>Unit:</strong> {product.unit}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+                
+                <Accordion 
+                  sx={{ 
+                    boxShadow: 'none', 
+                    border: '1px solid',
+                    borderColor: theme.palette.divider,
+                    borderRadius: 2,
+                    '&:before': { display: 'none' },
+                    mt: 1
+                  }}
+                >
+                  <AccordionSummary 
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{ 
+                      minHeight: 48,
+                      '&.Mui-expanded': { minHeight: 48 }
+                    }}
+                  >
+                    <Typography 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily, 
+                        fontWeight: 700,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      Shipping & Returns
                     </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-            
-            <Divider sx={{ mb: 3 }} />
-            <Typography variant="body1" color="text.secondary" paragraph sx={{ fontFamily: theme.typography.fontFamily }}>
-              {product.description}
-            </Typography>
-            <Divider sx={{ my: 3 }} />
-            <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
-              Status: {product.countInStock > 0 ? (
-                <Chip label="In Stock" color="success" sx={{ fontFamily: theme.typography.fontFamily }} />
-              ) : (
-                <Chip label="Out of Stock" color="error" sx={{ fontFamily: theme.typography.fontFamily }} />
-              )}
-              {product.countInStock > 0 && product.countInStock <= 10 && (
-                <Typography variant="caption" color="warning.main" sx={{ ml: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-                  (Only {product.countInStock} left!)
-                </Typography>
-              )}
-            </Typography>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 4 }}>
-              {quantityInCart === 0 ? (
-                <Button variant="contained" size="large" onClick={handleAddToCart} disabled={cartLoading || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', px: 4, py: 1.5, borderRadius: '50px' }}>
-                  {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </Button>
-              ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px', p: 0.5 }}>
-                  <IconButton size="small" onClick={handleDecreaseQuantity} disabled={cartLoading}>
-                    <RemoveIcon />
-                  </IconButton>
-                  <Typography variant="h6" sx={{ px: 2, minWidth: '30px', textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{quantityInCart}</Typography>
-                  <IconButton size="small" onClick={handleIncreaseQuantity} disabled={cartLoading || quantityInCart >= product.countInStock}>
-                    <AddIcon />
-                  </IconButton>
-                </Box>
-              )}
-              {isAuthenticated && (
-                <Tooltip title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}>
-                  <IconButton onClick={handleToggleWishlist} disabled={isFavoriting} size="large" sx={{ border: `1px solid ${theme.palette.divider}` }}>
-                    {isWishlisted ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
-                  </IconButton>
-                </Tooltip>
-              )}
-              <Button variant="outlined" component={RouterLink} to="/CropCorner" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-                Continue Shopping
-              </Button>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack spacing={2}>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <LocalShippingIcon color="primary" sx={{ fontSize: '1.8rem' }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          Free shipping on orders over ₹500
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <SecurityIcon color="primary" sx={{ fontSize: '1.8rem' }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          Secure payment options
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <AutorenewIcon color="primary" sx={{ fontSize: '1.8rem' }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          7-day return policy
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
             </Stack>
           </Grid>
         </Grid>
-      </Paper>
 
-      {/* User Generated Content Section */}
-      <UserGeneratedContent 
-        productId={product._id}
-        title="Customer Photos" 
-      />
-
-      {/* Product Alerts */}
-      <ProductAlerts product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
-
-      {/* Trust Section */}
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, mb: 4, bgcolor: theme.palette.background.default }}>
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <LocalShippingIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Free Delivery
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  On orders over ₹2000
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <SecurityIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  100% Secure
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Protected payments
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <AutorenewIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Easy Returns
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  30-day guarantee
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
-        <Grid container spacing={{ xs: 4, md: 6 }}>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-              <Typography variant="h5" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                Customer Reviews ({filteredAndSortedReviews.length})
+        {/* Reviews Section */}
+        <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 800, 
+              fontFamily: theme.typography.fontFamily, 
+              mb: 3 
+            }}
+          >
+            Customer Reviews
+          </Typography>
+          
+          {isAuthenticated && (
+            <Paper 
+              sx={{ 
+                p: { xs: 2, md: 3 }, 
+                mb: 4, 
+                borderRadius: 3,
+                boxShadow: 2
+              }}
+            >
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  mb: 2,
+                  fontWeight: 700
+                }}
+              >
+                Write a Review
               </Typography>
-              <Stack direction="row" spacing={2}>
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter by Rating</InputLabel>
-                  <Select
-                    value={filterRating}
-                    label="Filter by Rating"
-                    onChange={(e) => setFilterRating(e.target.value)}
-                    sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: { '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } },
-                      },
-                    }}
-                  >
-                    <MenuItem value={0}>All Ratings</MenuItem>
-                    <MenuItem value={5}>5 Stars</MenuItem>
-                    <MenuItem value={4}>4 Stars</MenuItem>
-                    <MenuItem value={3}>3 Stars</MenuItem>
-                    <MenuItem value={2}>2 Stars</MenuItem>
-                    <MenuItem value={1}>1 Star</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort by</InputLabel>
-                  <Select
-                    value={sortOption}
-                    label="Sort by"
-                    onChange={(e) => setSortOption(e.target.value)}
-                    sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: { '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } },
-                      },
-                    }}
-                  >
-                    <MenuItem value="newest">Newest</MenuItem>
-                    <MenuItem value="helpful">Most Helpful</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
-            </Box>
-            {product.reviews.length === 0 && (
-              <Alert severity="info" sx={{ fontFamily: theme.typography.fontFamily }}>No reviews yet. Be the first to review this product!</Alert>
-            )}
-            {product.reviews.length > 0 && filteredAndSortedReviews.length === 0 && (
-              <Alert severity="info" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>No reviews match your current filters.</Alert>
-            )}
-            {filteredAndSortedReviews.length > 0 && (
-              <List>
-                {filteredAndSortedReviews.map((review) => (
-                  <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic && review.user.profilePic.startsWith('http') ? review.user.profilePic : review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0) || review.name.charAt(0)}</Avatar>
-                      <Box flexGrow={1}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
-                        <Rating value={review.rating} readOnly />
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <IconButton size="small" onClick={() => handleReviewUpvote(review._id)} disabled={upvotingReviewId === review._id}>
-                          <ThumbUpIcon fontSize="small" color={(review.upvotes || []).includes(user?.id) ? 'primary' : 'action'} />
-                        </IconButton>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                          {(review.upvotes || []).length}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                    <Typography variant="body2" sx={{ mt: 1.5, pl: { xs: 0, sm: 7 }, fontFamily: theme.typography.fontFamily }}>{review.comment}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1, fontFamily: theme.typography.fontFamily }}>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </Paper>
-                ))}
-              </List>
-            )}
-          </Grid>
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-              Write a Review
-            </Typography>
-            {isAuthenticated ? (
-              hasUserReviewed ? ( 
-                <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily }}>You have already reviewed this product.</Alert>
-              ) : (
-                <Box component="form" onSubmit={handleReviewSubmit}>
-                  <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
-                  <Rating value={rating} onChange={(newValue) => setRating(newValue)} />
+              {reviewError && <Alert severity="error" sx={{ mb: 2 }}>{reviewError}</Alert>}
+              <form onSubmit={handleReviewSubmit}>
+                <Stack spacing={2.5}>
+                  <Rating 
+                    value={rating} 
+                    onChange={(newValue) => setRating(newValue)} 
+                    size="large"
+                  />
                   <TextField
-                    label="Your Comment"
+                    label="Your Review"
                     multiline
                     rows={4}
-                    fullWidth
-                    margin="normal"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    fullWidth
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { 
+                        borderRadius: 2 
+                      }, 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily 
+                      }
+                    }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily 
+                      } 
+                    }}
                   />
-                  {reviewError && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{reviewError}</Alert>}
-                  <Button
-                    type="submit"
-                    variant="contained"
+                  <Button 
+                    type="submit" 
+                    variant="contained" 
                     disabled={reviewLoading}
-                    startIcon={reviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
-                    sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
+                    sx={{ 
+                      alignSelf: 'flex-start', 
+                      borderRadius: 3, 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 700,
+                      px: 4,
+                      py: 1.5,
+                      boxShadow: 3,
+                      '&:hover': {
+                        boxShadow: 5
+                      }
+                    }}
                   >
-                    {reviewLoading ? 'Submitting...' : 'Submit Review'}
+                    {reviewLoading ? <CircularProgress size={24} color="inherit" /> : 'Submit Review'}
                   </Button>
-                </Box>
-              )
-            ) : (
-              <Alert severity="warning" sx={{ fontFamily: theme.typography.fontFamily }}>
-                Please <RouterLink to="/login" style={{ fontFamily: theme.typography.fontFamily }}>log in</RouterLink> to write a review.
-              </Alert>
-            )}
-          </Grid>
-        </Grid>
+                </Stack>
+              </form>
+            </Paper>
+          )}
+
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={2} 
+            alignItems={{ xs: 'flex-start', sm: 'center' }} 
+            sx={{ mb: 3 }}
+          >
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 700
+              }}
+            >
+              {filteredAndSortedReviews.length} Reviews
+            </Typography>
+            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter by Rating</InputLabel>
+                <Select
+                  value={filterRating}
+                  label="Filter by Rating"
+                  onChange={(e) => setFilterRating(e.target.value)}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2 
+                  }}
+                >
+                  <MenuItem value={0} sx={{ fontFamily: theme.typography.fontFamily }}>All Ratings</MenuItem>
+                  <MenuItem value={5} sx={{ fontFamily: theme.typography.fontFamily }}>5 Stars</MenuItem>
+                  <MenuItem value={4} sx={{ fontFamily: theme.typography.fontFamily }}>4 Stars</MenuItem>
+                  <MenuItem value={3} sx={{ fontFamily: theme.typography.fontFamily }}>3 Stars</MenuItem>
+                  <MenuItem value={2} sx={{ fontFamily: theme.typography.fontFamily }}>2 Stars</MenuItem>
+                  <MenuItem value={1} sx={{ fontFamily: theme.typography.fontFamily }}>1 Star</MenuItem>
+                </Select>
+              </FormControl>
+              <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
+                <Select
+                  value={sortOption}
+                  label="Sort By"
+                  onChange={(e) => setSortOption(e.target.value)}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2 
+                  }}
+                >
+                  <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest</MenuItem>
+                  <MenuItem value="helpful" sx={{ fontFamily: theme.typography.fontFamily }}>Most Helpful</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Stack>
+
+          {filteredAndSortedReviews.length > 0 ? (
+            <Stack spacing={3}>
+              {filteredAndSortedReviews.map((review) => (
+                <Paper 
+                  key={review._id} 
+                  sx={{ 
+                    p: { xs: 2, md: 3 }, 
+                    borderRadius: 3,
+                    boxShadow: 1
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar 
+                          sx={{ 
+                            bgcolor: theme.palette.primary.main,
+                            width: 48,
+                            height: 48
+                          }}
+                        >
+                          {review.name.charAt(0)}
+                        </Avatar>
+                        <Stack>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontWeight: 700, 
+                              fontFamily: theme.typography.fontFamily 
+                            }}
+                          >
+                            {review.name}
+                          </Typography>
+                          <Rating value={review.rating} readOnly size="small" />
+                        </Stack>
+                      </Stack>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily,
+                          alignSelf: 'flex-start'
+                        }}
+                      >
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </Stack>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: '1.1rem',
+                        lineHeight: 1.7
+                      }}
+                    >
+                      {review.comment}
+                    </Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleReviewUpvote(review._id)}
+                        disabled={upvotingReviewId === review._id}
+                        sx={{ 
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: 2
+                        }}
+                      >
+                        <ThumbUpIcon fontSize="small" />
+                      </IconButton>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily,
+                          fontWeight: 500
+                        }}
+                      >
+                        {review.upvotes?.length || 0} {review.upvotes?.length === 1 ? 'like' : 'likes'}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
+          ) : (
+            <Typography 
+              variant="h6" 
+              color="text.secondary" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily, 
+                textAlign: 'center', 
+                py: 6 
+              }}
+            >
+              No reviews yet. Be the first to review this product!
+            </Typography>
+          )}
+        </Box>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 800, 
+                fontFamily: theme.typography.fontFamily, 
+                mb: 3 
+              }}
+            >
+              Related Products
+            </Typography>
+            <Grid container spacing={3}>
+              {relatedProducts.map((relatedProduct) => (
+                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+
+        {/* User Generated Content */}
+        <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 800, 
+              fontFamily: theme.typography.fontFamily, 
+              mb: 3 
+            }}
+          >
+            Customer Photos & Videos
+          </Typography>
+          <UserGeneratedContent content={userGeneratedContent} />
+        </Box>
       </Paper>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity || 'success'} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Related Products Section */}
-      {relatedProducts.length > 0 && (
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h4" component="h2" fontWeight="bold" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>
-            Customers Also Bought
-          </Typography>
-          <Divider sx={{ mb: 4 }} />
-          <Box sx={{
-            '.slick-slide': {
-              px: 1.5, // Create spacing between slides
-            },
-            '.slick-list': {
-              mx: -1.5, // Counteract the slide padding
-            },
-            '.slick-dots li button:before': {
-              fontSize: '12px',
-              color: theme.palette.primary.main,
-            },
-            '.slick-dots li.slick-active button:before': {
-              color: theme.palette.secondary.main,
-            }
-          }}>
-            <Slider {...{
-              dots: true,
-              infinite: relatedProducts.length > 4,
-              speed: 500,
-              slidesToShow: 4,
-              slidesToScroll: 1,
-              autoplay: true,
-              autoplaySpeed: 5000,
-              responsive: [
-                { breakpoint: 1200, settings: { slidesToShow: 3 } },
-                { breakpoint: 900, settings: { slidesToShow: 2 } },
-                { breakpoint: 600, settings: { slidesToShow: 1, arrows: false } }
-              ]
-            }}>
-              {relatedProducts.map((relatedProduct) => (
-                <Box key={relatedProduct._id} sx={{ height: '100%' }}>
-                  <ProductCard
-                    product={relatedProduct}
-                    showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })}
-                    // Add default props for onUpvote, upvotingPosts, onToggleSave, savingPosts if not provided
-                  />
-                </Box>
-              ))}
-            </Slider>
-          </Box>
-        </Box>
-      )}
+        onClose={handleCloseSnackbar}
+        message={snackbar.message}
+      />
     </Container>
   );
 };

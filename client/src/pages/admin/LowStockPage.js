@@ -89,7 +89,12 @@ const LowStockPage = () => {
                   {products.length > 0 ? (
                     products.map((product) => (
                       <TableRow key={product._id} hover>
-                        <TableCell><Avatar src={product.image} variant="rounded" /></TableCell>
+                        <TableCell>
+                          <Avatar 
+                            src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
+                            variant="rounded" 
+                          />
+                        </TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{product.category}</TableCell>
                         <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>₹{product.price.toFixed(2)}</TableCell>

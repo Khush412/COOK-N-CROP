@@ -25,7 +25,104 @@ router.get('/tags', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const pageSize = 12; // Good for 2, 3, or 4 column grids
+    // Check if this is a request for all products (for CircularGallery)
+    const getAll = req.query.getAll === 'true';
+    
+    // If getAll is true, fetch all products without pagination
+    if (getAll) {
+      const {
+        search = '',
+        category = 'All',
+        sort = 'default',
+        minRating,
+        stockFilter = 'all',
+        minPrice,
+        maxPrice,
+        brands,
+        tags
+      } = req.query;
+
+      const query = {};
+
+      if (search) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } },
+        ];
+      }
+
+      if (category && category !== 'All') {
+        query.category = category;
+      }
+
+      // Rating filter
+      if (minRating && Number(minRating) > 0) {
+        query.rating = { $gte: Number(minRating) };
+      }
+
+      // Price range filter
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        query.price = {};
+        if (minPrice !== undefined) {
+          query.price.$gte = Number(minPrice);
+        }
+        if (maxPrice !== undefined) {
+          query.price.$lte = Number(maxPrice);
+        }
+      }
+
+      // Brand filter (assuming brands is a comma-separated string)
+      if (brands) {
+        const brandArray = Array.isArray(brands) ? brands : brands.split(',').map(b => b.trim());
+        query.brand = { $in: brandArray };
+      }
+
+      // Tags filter (assuming tags is a comma-separated string)
+      if (tags) {
+        const tagArray = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
+        query.tags = { $in: tagArray };
+      }
+
+      // Stock filter
+      if (stockFilter === 'inStock') {
+        query.countInStock = { $gt: 0 };
+      } else if (stockFilter === 'onSale') {
+        query.salePrice = { $exists: true, $ne: null };
+        query.$expr = { $lt: ['$salePrice', '$price'] };
+      }
+
+      let sortOption = {};
+      switch (sort) {
+        case 'priceAsc':
+          sortOption = { price: 1 };
+          break;
+        case 'priceDesc':
+          sortOption = { price: -1 };
+          break;
+        case 'rating':
+          sortOption = { rating: -1 };
+          break;
+        case 'newest':
+          sortOption = { createdAt: -1 };
+          break;
+        case 'nameAsc':
+          sortOption = { name: 1 };
+          break;
+        case 'nameDesc':
+          sortOption = { name: -1 };
+          break;
+        default:
+          sortOption = { createdAt: -1 };
+      }
+
+      const finalSort = { isFeatured: -1, ...sortOption };
+
+      const products = await Product.find(query).sort(finalSort);
+      return res.json(products);
+    }
+
+    // Regular paginated request
+    const pageSize = Number(req.query.limit) || 12; // Use limit parameter if provided, otherwise default to 12
     const page = Number(req.query.page) || 1;
     const {
       search = '',
@@ -154,7 +251,7 @@ router.get('/search', async (req, res) => {
 
     const products = await Product.find(findQuery)
       .limit(limit)
-      .select('name image _id');
+      .select('name images _id'); // Updated to select images instead of image
     res.json(products);
   } catch (err) {
     res.status(500).send('Server Error');
@@ -364,7 +461,8 @@ router.put('/:id/reviews/:reviewId/upvote', protect, async (req, res) => {
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
-router.post('/', protect, authorize('admin'), upload.single('image'), async (req, res) => {
+// Updated to handle multiple images
+router.post('/', protect, authorize('admin'), upload.array('images', 5), async (req, res) => {
   try {
     const { 
       name, price, description, category, countInStock, origin, freshness, unit,
@@ -407,6 +505,15 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       }
     }
 
+    // Handle multiple images
+    let imagePaths = [];
+    if (req.files && req.files.length > 0) {
+      imagePaths = req.files.map(file => `/uploads/productImages/${file.filename}`);
+    } else {
+      // Fallback to default image if no images uploaded
+      imagePaths = ['/images/placeholder.png'];
+    }
+
     const product = new Product({
       name,
       price: Number(price),
@@ -418,7 +525,7 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
       freshness: freshness || undefined,
       brand: brand || undefined,
       tags: parsedTags || [],
-      image: req.file ? `/uploads/productImages/${req.file.filename}` : '/images/placeholder.png',
+      images: imagePaths, // Updated to use images array
       variants: parsedVariants,
       badges: parsedBadges,
       salePrice: salePrice ? Number(salePrice) : undefined,
@@ -435,11 +542,12 @@ router.post('/', protect, authorize('admin'), upload.single('image'), async (req
 // @desc    Update a product
 // @route   PUT /api/products/:id
 // @access  Private/Admin
-router.put('/:id', protect, authorize('admin'), upload.single('image'), async (req, res) => {
+// Updated to handle multiple images
+router.put('/:id', protect, authorize('admin'), upload.array('images', 5), async (req, res) => {
   try {
     const { 
       name, price, description, category, countInStock, origin, freshness, unit,
-      variants, badges, salePrice, brand, tags
+      variants, badges, salePrice, brand, tags, removeImages
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -479,6 +587,59 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
       }
     }
 
+    // Parse removeImages if it's a JSON string
+    let parsedRemoveImages = [];
+    if (removeImages) {
+      try {
+        parsedRemoveImages = typeof removeImages === 'string' ? JSON.parse(removeImages) : removeImages;
+      } catch (e) {
+        console.error('Error parsing removeImages:', e);
+      }
+    }
+
+    // Handle image updates
+    let updatedImages = [...product.images]; // Start with existing images
+    
+    // Remove images if specified
+    if (parsedRemoveImages && Array.isArray(parsedRemoveImages)) {
+      updatedImages = updatedImages.filter(img => !parsedRemoveImages.includes(img));
+      
+      // Also delete the actual image files from the server
+      const fs = require('fs');
+      const path = require('path');
+      
+      for (const imagePath of parsedRemoveImages) {
+        // Only delete images that are in the uploads directory (not the placeholder)
+        if (imagePath !== '/images/placeholder.png' && imagePath.includes('/uploads/')) {
+          try {
+            const fullPath = path.join(__dirname, '..', 'public', imagePath);
+            if (fs.existsSync(fullPath)) {
+              fs.unlinkSync(fullPath);
+            }
+          } catch (err) {
+            console.error('Error deleting image file:', err);
+          }
+        }
+      }
+    }
+    
+    // Add new images if uploaded
+    if (req.files && req.files.length > 0) {
+      const newImagePaths = req.files.map(file => `/uploads/productImages/${file.filename}`);
+      // If the only image is the placeholder, replace it with new images
+      // Otherwise, add new images to existing ones
+      if (updatedImages.length === 1 && updatedImages[0] === '/images/placeholder.png') {
+        updatedImages = newImagePaths;
+      } else {
+        updatedImages = [...updatedImages, ...newImagePaths];
+      }
+    }
+    
+    // Ensure we have at least one image
+    if (updatedImages.length === 0) {
+      updatedImages = ['/images/placeholder.png'];
+    }
+
     product.name = name || product.name;
     product.price = price ? Number(price) : product.price;
     product.description = description || product.description;
@@ -489,13 +650,10 @@ router.put('/:id', protect, authorize('admin'), upload.single('image'), async (r
     product.freshness = freshness || product.freshness;
     product.brand = brand || product.brand;
     product.tags = parsedTags || product.tags;
+    product.images = updatedImages; // Updated to use images array
     product.variants = parsedVariants || product.variants;
     product.badges = parsedBadges || product.badges;
     product.salePrice = salePrice ? Number(salePrice) : product.salePrice;
-
-    if (req.file) {
-      product.image = `/uploads/productImages/${req.file.filename}`;
-    }
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);

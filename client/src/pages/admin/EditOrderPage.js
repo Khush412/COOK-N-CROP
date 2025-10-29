@@ -39,7 +39,7 @@ const EditOrderPage = () => {
         const formattedItems = order.orderItems.map(item => ({
           name: item.name,
           qty: item.qty,
-          image: item.image,
+          image: item.images && item.images.length > 0 ? item.images[0] : (item.image || ''),
           price: item.price,
           product: item.product._id, // Ensure product is just the ID
         }));
@@ -74,7 +74,7 @@ const EditOrderPage = () => {
       setOrderItems(orderItems.map(x => x.product === existItem.product ? { ...x, qty: x.qty + 1 } : x));
     } else {
       setOrderItems([...orderItems, {
-        product: product._id, name: product.name, image: product.image, price: product.price, qty: 1,
+        product: product._id, name: product.name, image: product.images && product.images.length > 0 ? product.images[0] : (product.image || ''), price: product.price, qty: 1,
       }]);
     }
     setProduct(null);
@@ -159,7 +159,12 @@ const EditOrderPage = () => {
             <List>
               {orderItems.map(item => (
                 <ListItem key={item.product} secondaryAction={<IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product)}><DeleteIcon /></IconButton>}>
-                  <ListItemAvatar><Avatar src={item.image} variant="rounded" /></ListItemAvatar>
+                  <ListItemAvatar>
+                    <Avatar 
+                      src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} 
+                      variant="rounded" 
+                    />
+                  </ListItemAvatar>
                   <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - ₹${(item.price * item.qty).toFixed(2)}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                 </ListItem>
               ))}

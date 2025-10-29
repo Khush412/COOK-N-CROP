@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
     // Dynamically set destination based on the fieldname of the upload
     if (file.fieldname === 'profilePic') {
       cb(null, profilePicsDir);
-    } else if (file.fieldname === 'image') {
+    } else if (file.fieldname === 'images') { // Updated to handle multiple images
       cb(null, productImagesDir);
     } else if (file.fieldname === 'media') {
       cb(null, recipeMediaDir);

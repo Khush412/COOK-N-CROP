@@ -18,6 +18,7 @@ import Community from "./pages/Community";
 import ProductPage from "./pages/ProductPage"; // New
 import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
+import OffersPage from "./pages/OffersPage"; // Add this import
 import PaymentPage from "./pages/PaymentPage"; // New
 import OrderDetailsPage from "./pages/OrderDetailsPage"; // New: Import OrderDetailsPage
 import AddressManagementPage from "./pages/AddressManagementPage"; // New: Import AddressManagementPage
@@ -99,6 +100,7 @@ export default function AppRouter() {
         <Route path="/profile/orders" element={<OrderHistoryPage />} />
         <Route path="/messages" element={<MessengerPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/offers" element={<OffersPage />} /> // Add this route
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/order/:id" element={<OrderDetailsPage />} />
       </Route>

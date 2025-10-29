@@ -27,30 +27,27 @@ router.post('/', protect, async (req, res) => {
 
         // 2. Map client items to DB items and check for invalid products
         const dbOrderItems = orderItems.map((itemFromClient) => {
-            const matchingItemFromDB = itemsFromDB.find(
-                (item) => item._id.toString() === itemFromClient.product
-            );
-
-            if (!matchingItemFromDB) {
-                const err = new Error(`One of the products in your order could not be found. Please review your cart and try again.`);
-                err.statusCode = 404;
-                throw err;
-            }
-
-            // Check stock availability
+            const matchingItemFromDB = itemsFromDB.find((item) => item._id.toString() === itemFromClient.product);
+            if (!matchingItemFromDB) throw new Error(`Product not found: ${itemFromClient.product}`);
             if (matchingItemFromDB.countInStock < itemFromClient.qty) {
                 const err = new Error(`Not enough stock for ${matchingItemFromDB.name}. Only ${matchingItemFromDB.countInStock} left.`);
-                err.statusCode = 400; // Set status code for specific error
+                err.statusCode = 400;
                 throw err;
             }
+            
+            // Handle both single image and images array for backward compatibility
+            const image = matchingItemFromDB.images && matchingItemFromDB.images.length > 0 
+                ? matchingItemFromDB.images[0] 
+                : matchingItemFromDB.image || '';
 
             return {
-                name: matchingItemFromDB.name,
-                qty: itemFromClient.qty,
-                image: matchingItemFromDB.image,
-                price: matchingItemFromDB.salePrice || matchingItemFromDB.price, // Use salePrice if available, otherwise regular price
-                unit: matchingItemFromDB.unit, // Add the unit
-                product: itemFromClient.product,
+                name: matchingItemFromDB.name, 
+                qty: itemFromClient.qty, 
+                image: image, // Use first image or fallback to single image
+                images: matchingItemFromDB.images || [], // Include all images
+                unit: matchingItemFromDB.unit,
+                price: matchingItemFromDB.salePrice || matchingItemFromDB.price, // Use salePrice if available
+                product: itemFromClient.product
             };
         });
 
@@ -294,10 +291,17 @@ router.put('/admin/edit/:id', protect, authorize('admin'), async (req, res) => {
         const itemsFromDB = await Product.find({ _id: { $in: orderItems.map(x => x.product) } });
         const dbOrderItems = orderItems.map(item => {
             const matchingItem = itemsFromDB.find(p => p._id.toString() === item.product.toString());
+            
+            // Handle both single image and images array for backward compatibility
+            const image = matchingItem.images && matchingItem.images.length > 0 
+                ? matchingItem.images[0] 
+                : matchingItem.image || '';
+
             return { 
                 name: matchingItem.name, 
                 qty: item.qty, 
-                image: matchingItem.image, 
+                image: image, // Use first image or fallback to single image
+                images: matchingItem.images || [], // Include all images
                 price: matchingItem.salePrice || matchingItem.price, // Use salePrice if available
                 unit: matchingItem.unit, 
                 product: item.product 
@@ -349,10 +353,16 @@ router.post('/admin/create', protect, authorize('admin'), async (req, res) => {
                 err.statusCode = 400;
                 throw err;
             }
+            // Handle both single image and images array for backward compatibility
+            const image = matchingItemFromDB.images && matchingItemFromDB.images.length > 0 
+                ? matchingItemFromDB.images[0] 
+                : matchingItemFromDB.image || '';
+
             return {
                 name: matchingItemFromDB.name, 
                 qty: itemFromClient.qty, 
-                image: matchingItemFromDB.image, 
+                image: image, // Use first image or fallback to single image
+                images: matchingItemFromDB.images || [], // Include all images
                 unit: matchingItemFromDB.unit,
                 price: matchingItemFromDB.salePrice || matchingItemFromDB.price, // Use salePrice if available
                 product: itemFromClient.product

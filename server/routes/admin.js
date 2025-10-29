@@ -7,6 +7,10 @@ const Product = require('../models/Product');
 const Post = require('../models/Post');
 const Order = require('../models/Order');
 const Notification = require('../models/Notification');
+const upload = require('../middleware/upload');
+const uploadCsv = require('../middleware/uploadCsv');
+const fs = require('fs');
+const path = require('path');
 
 // @desc    Get dashboard stats
 // @route   GET /api/admin/stats
@@ -290,6 +294,123 @@ router.get('/users/export', protect, authorize('admin'), async (req, res) => {
   } catch (error) {
     console.error('Export users error:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
+// @desc    Import products from CSV
+// @route   POST /api/admin/products/import-csv
+// @access  Private/Admin
+router.post('/products/import-csv', protect, authorize('admin'), uploadCsv.single('csvFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No CSV file uploaded.' });
+    }
+
+    const filePath = req.file.path;
+
+    // Read and parse CSV file
+    fs.readFile(filePath, 'utf8', async (err, data) => {
+      if (err) {
+        console.error('Error reading CSV file:', err);
+        return res.status(500).json({ success: false, message: 'Error reading CSV file.' });
+      }
+
+      try {
+        // Simple CSV parser
+        const lines = data.trim().split('\n');
+        const headers = lines[0].split(',').map(header => header.trim());
+        
+        let importedCount = 0;
+        const errors = [];
+        
+        // Process each row (skip header)
+        for (let i = 1; i < lines.length; i++) {
+          try {
+            const values = lines[i].split(',').map(value => value.trim());
+            
+            // Create object from headers and values
+            const row = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index] || '';
+            });
+            
+            // Validate required fields
+            if (!row.name || !row.price || !row.description || !row.category || row.countInStock === undefined) {
+              errors.push(`Row ${i + 1} missing required fields: ${JSON.stringify(row)}`);
+              continue;
+            }
+
+            // Validate category
+            const validCategories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
+            if (!validCategories.includes(row.category)) {
+              errors.push(`Row ${i + 1} invalid category "${row.category}" for product "${row.name}"`);
+              continue;
+            }
+
+            // Parse tags if present
+            let tags = [];
+            if (row.tags) {
+              tags = row.tags.split(',').map(tag => tag.trim());
+            }
+
+            // Parse isFeatured if present
+            let isFeatured = false;
+            if (row.isFeatured) {
+              isFeatured = row.isFeatured.toLowerCase() === 'true';
+            }
+
+            // Create product object
+            const productData = {
+              name: row.name,
+              price: Number(row.price),
+              description: row.description,
+              category: row.category,
+              countInStock: Number(row.countInStock),
+              unit: row.unit || undefined,
+              brand: row.brand || undefined,
+              tags: tags,
+              isFeatured: isFeatured,
+              // Use placeholder image since images will be added manually
+              images: ['/images/placeholder.png']
+            };
+
+            // Create product in database
+            const product = new Product(productData);
+            await product.save();
+            importedCount++;
+          } catch (rowError) {
+            errors.push(`Error processing row ${i + 1}: ${rowError.message}`);
+          }
+        }
+
+        // Clean up uploaded file
+        fs.unlinkSync(filePath);
+
+        // Return result
+        if (errors.length > 0) {
+          return res.json({
+            success: true,
+            message: `Import completed with some errors. ${importedCount} products imported.`,
+            importedCount: importedCount,
+            errors: errors
+          });
+        }
+
+        return res.json({
+          success: true,
+          message: `Successfully imported ${importedCount} products.`,
+          importedCount: importedCount
+        });
+      } catch (processingError) {
+        // Clean up uploaded file
+        fs.unlinkSync(filePath);
+        console.error('CSV processing error:', processingError);
+        return res.status(500).json({ success: false, message: 'Error processing CSV file.' });
+      }
+    });
+  } catch (error) {
+    console.error('CSV import error:', error);
+    return res.status(500).json({ success: false, message: 'Server Error' });
   }
 });
 

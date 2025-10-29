@@ -127,7 +127,11 @@ const TaggedProductCard = ({ product }) => {
 
   return (
     <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, transition: 'box-shadow .2s', '&:hover': { boxShadow: theme.shadows[3] } }}>
-      <Avatar src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 60, height: 60, mr: 2 }} />
+      <Avatar 
+        src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
+        variant="rounded" 
+        sx={{ width: 60, height: 60, mr: 2 }} 
+      />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{product.name}</Typography>
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>

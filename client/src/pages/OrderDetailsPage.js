@@ -299,7 +299,7 @@ const OrderDetailsPage = () => {
                         }}
                       >
                         <ListItemAvatar>
-                          <Avatar alt={item.name} src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
+                          <Avatar alt={item.name} src={item.images && item.images.length > 0 ? `${process.env.REACT_APP_API_URL}${item.images[0]}` : (item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} variant="rounded" sx={{ width: 80, height: 80, mr: 2, border: `1px solid ${theme.palette.divider}` }} />
                         </ListItemAvatar>
                         <ListItemText
                           primary={

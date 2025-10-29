@@ -1,15 +1,62 @@
 const User = require('../models/User');
 const Order = require('../models/Order');
 
-// Calculate Harvest Coins based on order total (2% of order value)
-const calculateHarvestCoins = (orderTotal) => {
-  return Math.floor(orderTotal * 0.02);
+// Calculate Harvest Coins based on order total and user tier
+const calculateHarvestCoins = (orderTotal, userTier) => {
+  // Harvest Coins percentage based on tier:
+  // Bronze: 3%
+  // Silver: 5%
+  // Gold: 8%
+  let percentage = 3; // Default bronze tier
+  if (userTier === 'silver') {
+    percentage = 5;
+  } else if (userTier === 'gold') {
+    percentage = 8;
+  }
+  
+  return Math.floor(orderTotal * (percentage / 100));
+};
+
+// Determine user tier based on spending and order count
+const getUserTier = async (userId) => {
+  try {
+    // Get user's order history
+    const userOrders = await Order.find({ 
+      user: userId, 
+      status: 'Delivered' 
+    });
+
+    // Calculate user's total spending
+    const totalSpent = userOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+    
+    // Calculate user's order count
+    const orderCount = userOrders.length;
+
+    // Determine user tier based on new requirements:
+    // Silver: ₹2000+ spent OR 5+ orders
+    // Gold: ₹8000+ spent OR 10+ orders
+    let userTier = 'bronze';
+    if (totalSpent >= 8000 || orderCount >= 10) {
+      userTier = 'gold';
+    } else if (totalSpent >= 2000 || orderCount >= 5) {
+      userTier = 'silver';
+    }
+    
+    return userTier;
+  } catch (error) {
+    console.error('Error determining user tier:', error);
+    return 'bronze'; // Default to bronze on error
+  }
 };
 
 // Award Harvest Coins to user after order completion
 const awardHarvestCoins = async (userId, orderTotal) => {
   try {
-    const coinsToAward = calculateHarvestCoins(orderTotal);
+    // Get user's tier
+    const userTier = await getUserTier(userId);
+    
+    // Calculate coins to award based on tier
+    const coinsToAward = calculateHarvestCoins(orderTotal, userTier);
     
     // Update user's Harvest Coins balance
     const user = await User.findById(userId);
@@ -17,7 +64,7 @@ const awardHarvestCoins = async (userId, orderTotal) => {
       throw new Error('User not found');
     }
     
-    // Admins can also earn Harvest Coins (no enrollment requirement)
+    // Remove the 10 orders enrollment requirement - all users can earn Harvest Coins
     user.activity.harvestCoins += coinsToAward;
     user.activity.totalSpent += orderTotal;
     user.activity.totalOrders += 1;
@@ -27,7 +74,8 @@ const awardHarvestCoins = async (userId, orderTotal) => {
     return {
       success: true,
       coinsAwarded: coinsToAward,
-      newBalance: user.activity.harvestCoins
+      newBalance: user.activity.harvestCoins,
+      userTier: userTier
     };
   } catch (error) {
     console.error('Error awarding Harvest Coins:', error);
@@ -88,11 +136,24 @@ const getHarvestCoinsBalance = async (userId) => {
       throw new Error('User not found');
     }
     
+    // Get user's tier
+    const userTier = await getUserTier(userId);
+    
+    // Calculate Harvest Coins percentage based on tier
+    let harvestCoinsPercentage = 3; // Default bronze tier
+    if (userTier === 'silver') {
+      harvestCoinsPercentage = 5;
+    } else if (userTier === 'gold') {
+      harvestCoinsPercentage = 8;
+    }
+    
     return {
       success: true,
       balance: user.activity.harvestCoins,
       totalSpent: user.activity.totalSpent,
-      totalOrders: user.activity.totalOrders
+      totalOrders: user.activity.totalOrders,
+      tier: userTier,
+      harvestCoinsPercentage: harvestCoinsPercentage
     };
   } catch (error) {
     console.error('Error getting Harvest Coins balance:', error);
@@ -105,6 +166,7 @@ const getHarvestCoinsBalance = async (userId) => {
 
 module.exports = {
   calculateHarvestCoins,
+  getUserTier,
   awardHarvestCoins,
   redeemHarvestCoins,
   getHarvestCoinsBalance

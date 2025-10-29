@@ -73,7 +73,7 @@ const CreateOrderPage = () => {
       setOrderItems([...orderItems, {
         product: product._id,
         name: product.name,
-        image: product.image,
+        image: product.images && product.images.length > 0 ? product.images[0] : (product.image || ''),
         price: product.price,
         qty: 1,
       }]);
@@ -176,7 +176,7 @@ const CreateOrderPage = () => {
             <List>
               {orderItems.map(item => (
                 <ListItem key={item.product} secondaryAction={<IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product)}><DeleteIcon /></IconButton>}>
-                  <ListItemAvatar><Avatar src={item.image} variant="rounded" /></ListItemAvatar>
+                  <ListItemAvatar><Avatar src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} variant="rounded" /></ListItemAvatar>
                   <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - ₹${(item.price * item.qty).toFixed(2)}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
                 </ListItem>
               ))}

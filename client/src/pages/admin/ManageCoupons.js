@@ -3,7 +3,7 @@ import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
   DialogContentText,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Container, Stack, Grid,
-  DialogContent, DialogActions, TextField, MenuItem, Chip,
+  DialogContent, DialogActions, TextField, MenuItem, Chip, Checkbox, FormControlLabel, FormControl, FormLabel, FormGroup
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -26,6 +26,7 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
     expiresAt: '',
     minPurchase: '',
     usageLimit: '',
+    tierRestrictions: ['bronze', 'silver', 'gold'], // Add tier restrictions
   });
 
   useEffect(() => {
@@ -37,10 +38,12 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
         expiresAt: coupon.expiresAt ? format(new Date(coupon.expiresAt), "yyyy-MM-dd'T'HH:mm") : '',
         minPurchase: coupon.minPurchase || '',
         usageLimit: coupon.usageLimit === null ? '' : coupon.usageLimit,
+        tierRestrictions: coupon.tierRestrictions || ['bronze', 'silver', 'gold'],
       });
     } else {
       setFormData({
         code: '', discountType: 'percentage', discountValue: '', expiresAt: '', minPurchase: '', usageLimit: '',
+        tierRestrictions: ['bronze', 'silver', 'gold'],
       });
     }
   }, [coupon, open]);
@@ -48,6 +51,18 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle tier restriction changes
+  const handleTierChange = (tier) => {
+    setFormData(prev => {
+      const tiers = [...prev.tierRestrictions];
+      if (tiers.includes(tier)) {
+        return { ...prev, tierRestrictions: tiers.filter(t => t !== tier) };
+      } else {
+        return { ...prev, tierRestrictions: [...tiers, tier] };
+      }
+    });
   };
 
   const handleSubmit = (e) => {
@@ -84,6 +99,43 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
                 <TextField name="usageLimit" label="Usage Limit" type="number" value={formData.usageLimit} onChange={handleChange} fullWidth helperText="Leave blank for unlimited uses." />
               </Grid>
             </Grid>
+            
+            {/* Tier Restrictions */}
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>Available to Tiers</FormLabel>
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.tierRestrictions.includes('bronze')}
+                      onChange={() => handleTierChange('bronze')}
+                      name="bronze"
+                    />
+                  }
+                  label={<Chip label="Bronze" sx={{ bgcolor: '#CD7F32', color: 'white', fontWeight: 'bold' }} />}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.tierRestrictions.includes('silver')}
+                      onChange={() => handleTierChange('silver')}
+                      name="silver"
+                    />
+                  }
+                  label={<Chip label="Silver" sx={{ bgcolor: '#C0C0C0', color: 'white', fontWeight: 'bold' }} />}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.tierRestrictions.includes('gold')}
+                      onChange={() => handleTierChange('gold')}
+                      name="gold"
+                    />
+                  }
+                  label={<Chip label="Gold" sx={{ bgcolor: '#FFD700', color: 'black', fontWeight: 'bold' }} />}
+                />
+              </FormGroup>
+            </FormControl>
           </Stack>
         </Box>
       </DialogContent>
@@ -175,6 +227,11 @@ const ManageCoupons = () => {
   const handleSaveCoupon = async (couponData, couponId) => {
     setFormLoading(true);
     try {
+      // Ensure tierRestrictions is always an array
+      if (!Array.isArray(couponData.tierRestrictions)) {
+        couponData.tierRestrictions = ['bronze', 'silver', 'gold'];
+      }
+      
       if (couponId) {
         await couponService.updateCoupon(couponId, couponData);
       } else {
@@ -239,6 +296,7 @@ const ManageCoupons = () => {
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Expires</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Usage</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Tiers</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -255,6 +313,13 @@ const ManageCoupons = () => {
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
                           <TableCell><Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" /></TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Stack direction="row" spacing={0.5}>
+                              {coupon.tierRestrictions.includes('bronze') && <Chip label="B" size="small" sx={{ bgcolor: '#CD7F32', color: 'white', width: 24, height: 24 }} />}
+                              {coupon.tierRestrictions.includes('silver') && <Chip label="S" size="small" sx={{ bgcolor: '#C0C0C0', color: 'white', width: 24, height: 24 }} />}
+                              {coupon.tierRestrictions.includes('gold') && <Chip label="G" size="small" sx={{ bgcolor: '#FFD700', color: 'black', width: 24, height: 24 }} />}
+                            </Stack>
+                          </TableCell>
                           <TableCell align="right">
                             <Tooltip title="View Orders">
                               <IconButton component={RouterLink} to={`/admin/coupons/${coupon.code}/orders`}><VisibilityIcon /></IconButton>

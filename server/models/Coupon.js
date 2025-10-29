@@ -37,6 +37,12 @@ const couponSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  // Tier restrictions - which tiers can use this coupon
+  tierRestrictions: {
+    type: [String],
+    enum: ['bronze', 'silver', 'gold'],
+    default: ['bronze', 'silver', 'gold'], // Available to all tiers by default
+  },
 }, {
   timestamps: true,
 });

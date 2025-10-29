@@ -288,18 +288,32 @@ const FeaturedProductsGallery = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const theme = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await api.get('/products/featured');
+        // Fetch all products without a limit
+        const res = await api.get('/products?getAll=true');
+        
+        // Handle array response
+        let products = Array.isArray(res.data) ? res.data : [];
+        
         // Transform products into gallery items with product IDs
-        const galleryItems = res.data.map(product => ({
-          id: product._id, // Add product ID for click handling
-          image: product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/default-product.jpg`,
-          text: product.name
-        }));
+        const galleryItems = products
+          .filter(product => {
+            // Only include products that have images
+            return (product.images && product.images.length > 0) || product.image;
+          })
+          .map(product => ({
+            id: product._id, // Add product ID for click handling
+            image: product.images && product.images.length > 0 
+              ? `${process.env.REACT_APP_API_URL}${product.images[0]}` 
+              : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`),
+            text: product.name
+          }));
+        
         setItems(galleryItems);
         setError(null);
       } catch (err) {
@@ -326,7 +340,7 @@ const FeaturedProductsGallery = () => {
     return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No products available</div>;
   }
 
-  // Use the CircularGallery component with featured products
+  // Use the CircularGallery component with all products
   return (
     <div style={{ height: '500px', position: 'relative' }}>
       <CircularGallery 

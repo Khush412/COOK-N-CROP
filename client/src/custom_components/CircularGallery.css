@@ -3,8 +3,28 @@
   height: 100%;
   overflow: hidden;
   cursor: grab;
+  position: relative;
 }
 
 .circular-gallery:active {
   cursor: grabbing;
+}
+
+/* Ensure click handlers have pointer cursor */
+.circular-gallery-click-handler {
+  cursor: pointer !important;
+  background: transparent !important;
+  position: absolute;
+  z-index: 3;
+}
+
+/* When dragging, ensure the cursor is grabbing */
+.circular-gallery.dragging {
+  cursor: grabbing !important;
+}
+
+/* Add hover effect to indicate clickability */
+.circular-gallery-click-handler:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }

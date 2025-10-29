@@ -57,10 +57,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  image: {
+  // Updated to support multiple images
+  images: [{
     type: String,
     required: true,
-  },
+  }],
   reviews: [reviewSchema],
   rating: {
     type: Number,

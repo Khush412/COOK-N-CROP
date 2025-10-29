@@ -146,7 +146,9 @@ export default function CropCorner() {
           tags: selectedTags,
           minRating: minRating, // Add this line
         });
-        setProducts(data.products);
+        // Filter out any null products
+        const validProducts = data.products.filter(product => product && product._id);
+        setProducts(validProducts);
         setTotalPages(data.pages);
       } catch (err) {
         setError('Failed to load products. Please try again.');
@@ -158,7 +160,10 @@ export default function CropCorner() {
     fetchProducts();
 
     // Fetch recently viewed products from local storage
-    setRecentlyViewed(recentlyViewedService.getProducts());
+    const storedRecentlyViewed = recentlyViewedService.getProducts();
+    // Filter out any null products
+    const validRecentlyViewed = storedRecentlyViewed.filter(product => product && product._id);
+    setRecentlyViewed(validRecentlyViewed);
   }, [page, debouncedSearchTerm, selectedCategory, sortOrder, stockFilter, debouncedPriceRange, selectedTags, minRating]); // Add minRating to dependency array
 
   // Reset page when category or sort order changes directly
@@ -210,7 +215,30 @@ export default function CropCorner() {
   };
 
   const filterContent = (
-    <Box sx={{ width: '100%', p: { xs: 2, md: 0 }, pt: { xs: 2, md: 0 }, fontFamily: theme.typography.fontFamily }}>
+    <Box sx={{ 
+      width: '100%', 
+      p: { xs: 2, md: 0 }, 
+      pt: { xs: 2, md: 0 }, 
+      fontFamily: theme.typography.fontFamily,
+      maxHeight: { md: 'calc(100vh - 120px)' },
+      overflowY: 'auto',
+      '&::-webkit-scrollbar': {
+        width: '6px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: '3px',
+        visibility: 'hidden',
+      },
+      '&:hover::-webkit-scrollbar-thumb': {
+        visibility: 'visible',
+      },
+      scrollbarWidth: 'thin',
+      scrollbarColor: 'rgba(0,0,0,0.2) transparent',
+    }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>Filters</Typography>
         {isFilterApplied && (
@@ -373,46 +401,12 @@ export default function CropCorner() {
         </AccordionDetails>
       </Accordion>
 
-      <Divider />
+      <Divider sx={{ mb: 2 }} />
     </Box>
   );
 
   return (
     <Container maxWidth="xl" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{
-        position: 'relative',
-        p: { xs: 3, md: 5 },
-        mb: 4,
-        borderRadius: 4,
-        color: '#fff',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundImage: `url(${process.env.PUBLIC_URL}/images/CooknCrop.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'brightness(0.5)',
-          zIndex: 1,
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 2,
-        }
-      }}>
-        <Box sx={{ position: 'relative', zIndex: 3 }}>
-          <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-            The Store
-          </Typography>
-          <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9, textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-            Freshness delivered from our fields to your kitchen.
-          </Typography>
-        </Box>
-      </Paper>
-
       <Grid container spacing={4}>
         {/* Desktop Filter Sidebar */}
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -423,27 +417,31 @@ export default function CropCorner() {
 
         {/* Main Content */}
         <Grid size={{ xs: 12, md: 9 }}>
-          <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
-            <EnhancedSearch 
-              searchTerm={searchTerm} 
-              setSearchTerm={setSearchTerm} 
-              onSearchSubmit={handleSearchSubmit}
-            />
-            <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
-              <Select value={sortOrder} label="Sort By" onChange={(e) => setSortOrder(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
-                <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default (Featured)</MenuItem>
-                <MenuItem value="priceAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: Low to High</MenuItem>
-                <MenuItem value="priceDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: High to Low</MenuItem>
-                <MenuItem value="rating" sx={{ fontFamily: theme.typography.fontFamily }}>Highest Rated</MenuItem>
-                <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest First</MenuItem>
-                <MenuItem value="nameAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: A-Z</MenuItem>
-                <MenuItem value="nameDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: Z-A</MenuItem>
-              </Select>
-            </FormControl>
-            <IconButton onClick={handleDrawerToggle} sx={{ display: { xs: 'flex', md: 'none' } }}>
-              <MenuIcon />
-            </IconButton>
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 300, md: 400 } }}>
+                <EnhancedSearch 
+                  searchTerm={searchTerm} 
+                  setSearchTerm={setSearchTerm} 
+                  onSearchSubmit={handleSearchSubmit}
+                />
+              </Box>
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
+                <Select value={sortOrder} label="Sort By" onChange={(e) => setSortOrder(e.target.value)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>
+                  <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default (Featured)</MenuItem>
+                  <MenuItem value="priceAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: Low to High</MenuItem>
+                  <MenuItem value="priceDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Price: High to Low</MenuItem>
+                  <MenuItem value="rating" sx={{ fontFamily: theme.typography.fontFamily }}>Highest Rated</MenuItem>
+                  <MenuItem value="newest" sx={{ fontFamily: theme.typography.fontFamily }}>Newest First</MenuItem>
+                  <MenuItem value="nameAsc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: A-Z</MenuItem>
+                  <MenuItem value="nameDesc" sx={{ fontFamily: theme.typography.fontFamily }}>Name: Z-A</MenuItem>
+                </Select>
+              </FormControl>
+              <IconButton onClick={handleDrawerToggle} sx={{ display: { xs: 'flex', md: 'none' } }}>
+                <MenuIcon />
+              </IconButton>
+            </Box>
           </Paper>
 
           {loading ? (
@@ -473,15 +471,19 @@ export default function CropCorner() {
             <>
               <Grid container spacing={4}>
                 {products.map((product) => (
-                  <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <ProductCard product={product} showSnackbar={showSnackbar} />
-                  </Grid>
+                  product && product._id ? ( // Add null check for products
+                    <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <ProductCard product={product} showSnackbar={showSnackbar} />
+                    </Grid>
+                  ) : null
                 ))}
               </Grid>
               
-              {/* Personalized Offers */}
-              {isAuthenticated && (
-                <PersonalizedOffers onApplyCoupon={handleApplyCoupon} />
+              {/* Pagination Controls - Moved before Recommended For You */}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, pb: 4 }}>
+                  <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+                </Box>
               )}
               
               {/* Personalized Recommendations */}
@@ -491,27 +493,28 @@ export default function CropCorner() {
             </>
           )}
 
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5, pb: 4 }}>
-              <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
-            </Box>
-          )}
-
-          {/* Recently Viewed Section */}
+          {/* Recently Viewed Section - Styled like Recommended For You */}
           {recentlyViewed.length > 0 && (
-            <Box sx={{ mt: 8 }}>
+            <Box sx={{ mt: 6 }}>
               <Stack direction="row" alignItems="center" spacing={1} mb={2}>
                 <HistoryIcon />
-                <Typography variant="h5" component="h2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h5" 
+                  component="h2" 
+                  fontWeight="bold" 
+                  sx={{ fontFamily: theme.typography.fontFamily }}
+                >
                   Recently Viewed
                 </Typography>
               </Stack>
-              <Divider sx={{ mb: 4 }} />
+              
               <Grid container spacing={4}>
                 {recentlyViewed.slice(0, 4).map((product) => (
-                  <Grid key={`recent-${product._id}`} size={{ xs: 12, sm: 6, md: 3 }}>
-                    <ProductCard product={product} showSnackbar={showSnackbar} />
-                  </Grid>
+                  product && product._id ? ( // Add null check for recently viewed products
+                    <Grid key={`recent-${product._id}`} size={{ xs: 12, sm: 6, md: 3 }}>
+                      <ProductCard product={product} showSnackbar={showSnackbar} hideCategoryAndUnit={true} />
+                    </Grid>
+                  ) : null
                 ))}
               </Grid>
             </Box>

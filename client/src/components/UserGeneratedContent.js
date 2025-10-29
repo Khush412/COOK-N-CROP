@@ -72,7 +72,21 @@ const UserGeneratedContent = ({ productId, title }) => {
   }
 
   if (!contentItems || contentItems.length === 0) {
-    return null;
+    return (
+      <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center' }}>
+        <Typography 
+          variant="h6" 
+          color="text.secondary" 
+          sx={{ 
+            fontFamily: theme.typography.fontFamily, 
+            textAlign: 'center', 
+            py: 6 
+          }}
+        >
+          No images or videos available for now
+        </Typography>
+      </Box>
+    );
   }
 
   return (

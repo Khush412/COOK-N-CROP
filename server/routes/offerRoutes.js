@@ -24,17 +24,16 @@ router.get('/personalized', protect, async (req, res) => {
     // Calculate user's total spending
     const totalSpent = userOrders.reduce((sum, order) => sum + order.totalPrice, 0);
     
-    // Calculate user's order frequency (orders per month)
+    // Calculate user's order count
     const orderCount = userOrders.length;
-    const firstOrderDate = userOrders.length > 0 ? new Date(userOrders[userOrders.length - 1].createdAt) : new Date();
-    const monthsSinceFirstOrder = Math.max(1, (new Date() - firstOrderDate) / (1000 * 60 * 60 * 24 * 30));
-    const orderFrequency = orderCount / monthsSinceFirstOrder;
 
-    // Determine user tier based on spending and frequency
+    // Determine user tier based on new requirements:
+    // Silver: ₹2000+ spent OR 5+ orders
+    // Gold: ₹8000+ spent OR 10+ orders
     let userTier = 'bronze';
-    if (totalSpent > 5000 || orderFrequency > 3) {
+    if (totalSpent >= 8000 || orderCount >= 10) {
       userTier = 'gold';
-    } else if (totalSpent > 2000 || orderFrequency > 2) {
+    } else if (totalSpent >= 2000 || orderCount >= 5) {
       userTier = 'silver';
     }
 
@@ -44,27 +43,13 @@ router.get('/personalized', protect, async (req, res) => {
       expiresAt: { $gt: new Date() }
     });
 
-    // Filter coupons based on user tier and other criteria
+    // Filter coupons based on user tier
     const personalizedCoupons = allCoupons.filter(coupon => {
-      // For gold tier users, show all coupons
-      if (userTier === 'gold') return true;
-      
-      // For silver tier users, exclude high-value coupons
-      if (userTier === 'silver') {
-        if (coupon.discountType === 'percentage' && coupon.discountValue > 25) return false;
-        if (coupon.discountType === 'fixed' && coupon.discountValue > 500) return false;
-      }
-      
-      // For bronze tier users, only show moderate coupons
-      if (userTier === 'bronze') {
-        if (coupon.discountType === 'percentage' && coupon.discountValue > 15) return false;
-        if (coupon.discountType === 'fixed' && coupon.discountValue > 300) return false;
-      }
-      
-      return true;
+      // Check if this coupon is available for the user's tier
+      return coupon.tierRestrictions.includes(userTier);
     });
 
-    // Sort by relevance (higher value first, but not too high for lower tiers)
+    // Sort by relevance (higher value first)
     personalizedCoupons.sort((a, b) => {
       const getValue = (coupon) => {
         if (coupon.discountType === 'percentage') return coupon.discountValue;
@@ -112,6 +97,37 @@ router.get('/dynamic-pricing/:productId', protect, async (req, res) => {
       'orderItems.product': productId
     });
 
+    // Get user's order history for tier calculation
+    const userAllOrders = await Order.find({ 
+      user: userId, 
+      status: 'Delivered' 
+    });
+
+    // Calculate user's total spending
+    const totalSpent = userAllOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+    
+    // Calculate user's order count
+    const orderCount = userAllOrders.length;
+
+    // Determine user tier for Harvest Coins calculation:
+    // Bronze: 3% Harvest Coins
+    // Silver: 5% Harvest Coins  
+    // Gold: 8% Harvest Coins
+    let userTier = 'bronze';
+    if (totalSpent >= 8000 || orderCount >= 10) {
+      userTier = 'gold';
+    } else if (totalSpent >= 2000 || orderCount >= 5) {
+      userTier = 'silver';
+    }
+
+    // Calculate Harvest Coins percentage based on tier
+    let harvestCoinsPercentage = 3; // Default bronze tier
+    if (userTier === 'silver') {
+      harvestCoinsPercentage = 5;
+    } else if (userTier === 'gold') {
+      harvestCoinsPercentage = 8;
+    }
+
     // Calculate base price (this would typically come from the Product model)
     // For now, we'll simulate this
     const basePrice = 1000; // This should come from the actual product
@@ -138,7 +154,9 @@ router.get('/dynamic-pricing/:productId', protect, async (req, res) => {
         basePrice,
         dynamicPrice,
         userOrdersCount: userOrders.length,
-        productPopularity: allProductOrders.length
+        productPopularity: allProductOrders.length,
+        harvestCoinsPercentage,
+        userTier
       }
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/Product');
+const Post = require('../models/Post');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { optionalAuth } = require('../middleware/auth');
@@ -37,7 +37,7 @@ router.get('/', optionalAuth, async (req, res) => {
       $or: [{ name: searchRegex }, { category: searchRegex }, { description: searchRegex }],
     })
       .limit(limit)
-      .select('name price image rating numReviews _id countInStock')
+      .select('name images price rating numReviews _id countInStock') // Updated to use images instead of image
       .lean();
 
     const usersPromise = User.find({
@@ -77,19 +77,22 @@ router.get('/posts', optionalAuth, async (req, res) => {
       postMatchQuery.user = { $nin: currentUser.blockedUsers };
     }
 
-    const posts = await Post.find(postMatchQuery, { score: { $meta: 'textScore' } })
-      .sort({ score: { $meta: 'textScore' } })
-      .limit(limitNum)
+    const countPromise = Post.countDocuments(postMatchQuery);
+    
+    const postsPromise = Post.find(postMatchQuery)
+      .sort({ createdAt: -1 })
       .skip(skip)
+      .limit(limitNum)
       .populate('user', 'username profilePic')
-      .select('title content user tags upvoteCount commentCount createdAt isFeatured')
+      .populate('group', 'name slug')
+      .select('title content user tags isRecipe isFeatured flair group createdAt upvotes comments')
       .lean();
 
-    const totalPosts = await Post.countDocuments(postMatchQuery);
+    const [totalPosts, posts] = await Promise.all([countPromise, postsPromise]);
 
     res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
   } catch (error) {
-    console.error('Paginated post search error:', error);
+    console.error('Search posts error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -104,64 +107,22 @@ router.get('/products', async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const productMatchQuery = { $or: [{ name: { $regex: q, $options: 'i' } }, { category: { $regex: q, $options: 'i' } }] };
+    const productMatchQuery = { $text: { $search: q } };
 
-    const products = await Product.find(productMatchQuery)
-      .limit(limitNum)
+    const countPromise = Product.countDocuments(productMatchQuery);
+    
+    const productsPromise = Product.find(productMatchQuery)
+      .sort({ createdAt: -1 })
       .skip(skip)
+      .limit(limitNum)
+      .select('name images price rating numReviews _id countInStock') // Updated to use images instead of image
       .lean();
 
-    const totalProducts = await Product.countDocuments(productMatchQuery);
+    const [totalProducts, products] = await Promise.all([countPromise, productsPromise]);
 
     res.json({ products, page: pageNum, pages: Math.ceil(totalProducts / limitNum) });
   } catch (error) {
-    console.error('Paginated product search error:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @desc    Product suggestions for autocomplete
-// @route   GET /api/search/product-suggestions
-// @access  Public
-router.get('/product-suggestions', async (req, res) => {
-  try {
-    const { q = '', limit = 5 } = req.query;
-    const limitNum = Number(limit);
-
-    if (!q) {
-      return res.json([]);
-    }
-
-    // Find products that match the query
-    const products = await Product.find({
-      $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { category: { $regex: q, $options: 'i' } }
-      ]
-    })
-      .limit(limitNum)
-      .select('name category')
-      .lean();
-
-    // Extract unique categories
-    const categories = [...new Set(products.map(p => p.category))];
-
-    // Get popular search terms (this would typically come from a database or analytics)
-    const popularSearches = [
-      'Organic vegetables',
-      'Fresh fruits',
-      'Dairy products',
-      'Grains and cereals',
-      'Meat and poultry'
-    ].filter(term => term.toLowerCase().includes(q.toLowerCase()));
-
-    res.json({
-      products: products.map(p => p.name),
-      categories,
-      popularSearches
-    });
-  } catch (error) {
-    console.error('Product suggestions error:', error);
+    console.error('Search products error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -176,62 +137,25 @@ router.get('/users', async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const userMatchQuery = { username: { $regex: q, $options: 'i' }, isActive: true };
+    const userMatchQuery = { 
+      username: { $regex: q, $options: 'i' },
+      isActive: true
+    };
 
-    const users = await User.find(userMatchQuery)
-      .limit(limitNum)
+    const countPromise = User.countDocuments(userMatchQuery);
+    
+    const usersPromise = User.find(userMatchQuery)
+      .sort({ followers: -1 }) // Sort by most followers first
       .skip(skip)
+      .limit(limitNum)
       .select('username profilePic bio followers')
       .lean();
 
-    const totalUsers = await User.countDocuments(userMatchQuery);
+    const [totalUsers, users] = await Promise.all([countPromise, usersPromise]);
 
     res.json({ users, page: pageNum, pages: Math.ceil(totalUsers / limitNum) });
   } catch (error) {
-    console.error('Paginated user search error:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @desc    Search posts by hashtag
-// @route   GET /api/search/hashtag/:hashtag
-// @access  Public
-router.get('/hashtag/:hashtag', optionalAuth, async (req, res) => {
-  try {
-    const { hashtag } = req.params;
-    const { page = 1, limit = 9 } = req.query;
-    const pageNum = Number(page);
-    const limitNum = Number(limit);
-    const skip = (pageNum - 1) * limitNum;
-
-    // Remove # if user included it
-    const cleanHashtag = hashtag.replace(/^#/, '').toLowerCase();
-
-    const postMatchQuery = { hashtags: cleanHashtag };
-    if (req.user) {
-      const currentUser = await User.findById(req.user.id).select('blockedUsers');
-      postMatchQuery.user = { $nin: currentUser.blockedUsers };
-    }
-
-    const posts = await Post.find(postMatchQuery)
-      .sort({ createdAt: -1 })
-      .limit(limitNum)
-      .skip(skip)
-      .populate('user', 'username profilePic')
-      .populate('group', 'name slug')
-      .lean();
-
-    const totalPosts = await Post.countDocuments(postMatchQuery);
-
-    res.json({ 
-      hashtag: cleanHashtag,
-      posts, 
-      page: pageNum, 
-      pages: Math.ceil(totalPosts / limitNum),
-      total: totalPosts
-    });
-  } catch (error) {
-    console.error('Hashtag search error:', error);
+    console.error('Search users error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -241,22 +165,20 @@ router.get('/hashtag/:hashtag', optionalAuth, async (req, res) => {
 // @access  Public
 router.get('/trending-hashtags', async (req, res) => {
   try {
-    const limit = Number(req.query.limit) || 10;
-    
-    // Get hashtags from posts in the last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Get trending hashtags from posts in the last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const trendingHashtags = await Post.aggregate([
-      { $match: { createdAt: { $gte: thirtyDaysAgo }, hashtags: { $ne: null, $not: { $size: 0 } } } },
-      { $unwind: '$hashtags' },
-      { $group: { _id: '$hashtags', count: { $sum: 1 } } },
+    const hashtags = await Post.aggregate([
+      { $match: { createdAt: { $gte: sevenDaysAgo }, tags: { $ne: null, $not: { $size: 0 } } } },
+      { $unwind: '$tags' },
+      { $group: { _id: '$tags', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      { $limit: limit },
+      { $limit: 10 },
       { $project: { _id: 0, hashtag: '$_id', count: 1 } }
     ]);
-
-    res.json(trendingHashtags);
+    
+    res.json(hashtags);
   } catch (error) {
     console.error('Get trending hashtags error:', error);
     res.status(500).json({ message: 'Server Error' });

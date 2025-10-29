@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,11 @@ import {
   Chip,
   Divider,
   alpha,
+  ImageList,
+  ImageListItem,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import Slider from 'react-slick';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -35,13 +38,20 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, updateUserWishlist } = useAuth();
   const { cart, addToCart, updateCartItemQuantity, removeCartItem } = useCart();
+  const sliderRef = useRef(null);
 
   const [isCartLoading, setIsCartLoading] = useState(false);
   const [isFavoriting, setIsFavoriting] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  if (!product) return null;
+  // Comprehensive null check for product
+  if (!product || !product._id) {
+    console.warn('ProductQuickView received invalid product data:', product);
+    return null;
+  }
 
-  const itemInCart = cart?.items?.find(item => item.product._id === product._id);
+  // Safe access to cart item with null checks
+  const itemInCart = cart?.items?.find(item => item.product && item.product._id === product._id);
   const quantityInCart = itemInCart?.quantity || 0;
   const isWishlisted = user?.wishlist?.includes(product._id);
 
@@ -116,6 +126,72 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
     navigate(`/product/${product._id}`);
   };
 
+  // Get all product images
+  const getProductImages = () => {
+    if (product.images && product.images.length > 0) {
+      return product.images;
+    }
+    // Fallback for products with single image field
+    if (product.image) {
+      return [product.image];
+    }
+    return ['/images/placeholder.png'];
+  };
+
+  // Get the full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) {
+      return `${process.env.PUBLIC_URL}/images/placeholder.png`;
+    }
+    
+    // If it's already a full URL, return it as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Otherwise, construct the full URL
+    return `${process.env.REACT_APP_API_URL}${imagePath}`;
+  };
+
+  // Function to handle thumbnail click
+  const handleThumbnailClick = (index) => {
+    if (sliderRef.current) {
+      if (typeof sliderRef.current.slickGoTo === 'function') {
+        sliderRef.current.slickGoTo(index);
+      } else if (sliderRef.current.innerSlider && typeof sliderRef.current.innerSlider.slickGoTo === 'function') {
+        sliderRef.current.innerSlider.slickGoTo(index);
+      }
+    }
+  };
+
+  // Slider settings for product images
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true,
+    arrows: true,
+    draggable: true,
+    swipe: true,
+    accessibility: true,
+    lazyLoad: false,
+    afterChange: (current) => setCurrentSlide(current),
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+          arrows: false
+        }
+      }
+    ]
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -145,23 +221,91 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
 
       <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
         <Grid container spacing={4}>
-          {/* Product Image */}
-          <Grid item xs={12} md={5}>
-            <Box
-              component="img"
-              src={product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`}
-              alt={product.name}
-              sx={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: 2,
-                boxShadow: theme.shadows[3],
-              }}
-            />
+          {/* Product Images Carousel */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Box sx={{ position: 'relative' }}>
+              <Slider {...sliderSettings} ref={sliderRef}>
+                {getProductImages().map((image, index) => (
+                  <Box key={index} sx={{ position: 'relative', pt: '100%' }}>
+                    <Box
+                      component="img"
+                      src={getImageUrl(image)}
+                      alt={`${product.name} ${index + 1}`}
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: 2,
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Slider>
+              
+              {/* Image counter badge */}
+              {getProductImages().length > 1 && (
+                <Chip
+                  label={`${currentSlide + 1} / ${getProductImages().length}`}
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    right: 16,
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    fontWeight: 'bold',
+                    backdropFilter: 'blur(4px)'
+                  }}
+                />
+              )}
+            </Box>
+            
+            {/* Thumbnail gallery for multiple images */}
+            {getProductImages().length > 1 && (
+              <ImageList 
+                sx={{ 
+                  mt: 2, 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr)) !important',
+                  gap: '8px !important'
+                }} 
+                cols={5} 
+                gap={8}
+              >
+                {getProductImages().map((image, index) => (
+                  <ImageListItem 
+                    key={index} 
+                    sx={{ 
+                      borderRadius: 1, 
+                      overflow: 'hidden',
+                      border: currentSlide === index ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        border: `2px solid ${theme.palette.primary.main}`,
+                      }
+                    }}
+                    onClick={() => handleThumbnailClick(index)}
+                  >
+                    <Box
+                      component="img"
+                      src={getImageUrl(image)}
+                      alt={`Thumbnail ${index + 1}`}
+                      sx={{
+                        width: '100%',
+                        height: 60,
+                        objectFit: 'cover',
+                        display: 'block'
+                      }}
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
           </Grid>
 
           {/* Product Details */}
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Stack spacing={2}>
               {/* Category */}
               <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>

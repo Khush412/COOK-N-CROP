@@ -150,6 +150,15 @@ const exportUsers = async () => {
   return response.data;
 };
 
+const importProductsFromCsv = async (formData) => {
+  const response = await api.post('/admin/products/import-csv', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
 const adminService = {
   getAllUsers,
   deleteUser,
@@ -180,6 +189,7 @@ const adminService = {
   createOrderForUser,
   exportUsers,
   toggleFeatureProduct,
+  importProductsFromCsv,
 };
 
 export default adminService;
