@@ -16,7 +16,6 @@ import PostPage from "./pages/PostPage"; // New: Import PostPage
 import FeedPage from "./pages/FeedPage"; // New
 import Community from "./pages/Community";
 import ProductPage from "./pages/ProductPage"; // New
-import Recipes from "./pages/Recipes";
 import CartPage from "./pages/CartPage";
 import OffersPage from "./pages/OffersPage"; // Add this import
 import PaymentPage from "./pages/PaymentPage"; // New
@@ -46,6 +45,7 @@ import BlockedUsersPage from './pages/BlockedUsersPage';
 import SearchPage from './pages/SearchPage';
 import HashtagPage from './pages/HashtagPage';
 import ExploreGroupsPage from './pages/ExploreGroupsPage'; // New
+import ExploreAllPage from './pages/ExploreAllPage'; // New
 import CreateGroupPage from './pages/CreateGroupPage'; // New
 import GroupPage from './pages/GroupPage'; // New
 import EditGroupPage from './pages/EditGroupPage'; // New
@@ -55,6 +55,10 @@ import CollectionDetailsPage from './pages/CollectionDetailsPage'; // New
 import MessengerPage from './pages/MessengerPage';
 import WishlistPage from './pages/WishlistPage';
 import RewardsPage from './pages/RewardsPage'; // New: Import RewardsPage
+import PopularPostsPage from './pages/PopularPostsPage'; // New: Import PopularPostsPage
+import CommunityGuidelinesPage from './pages/CommunityGuidelinesPage'; // New: Import CommunityGuidelinesPage
+import HelpCenterPage from './pages/HelpCenterPage'; // New: Import HelpCenterPage
+import FeedbackPage from './pages/FeedbackPage'; // New: Import FeedbackPage
 
 export default function AppRouter() {
   return (
@@ -64,22 +68,26 @@ export default function AppRouter() {
       <Route path="/terms" element={<TermsPage />} /> {/* New */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* New */}
       <Route path="/support" element={<SupportContactPage />} /> {/* New */}
+      <Route path="/community/help" element={<HelpCenterPage />} /> {/* New: Help Center Page */}
+      <Route path="/community/feedback" element={<FeedbackPage />} /> {/* New: Feedback Page */}
       <Route path="/about" element={<AboutPage />} />
       <Route path="/user/:username" element={<PublicProfilePage />} /> {/* New: Public Profile Page */}
       <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
       <Route path="/feed" element={<FeedPage />} /> {/* New */}
       <Route path="/community" element={<Community />} />
+      <Route path="/community/popular" element={<PopularPostsPage />} /> {/* New: Popular Posts Page */}
+      <Route path="/community/explore-all" element={<ExploreAllPage />} /> {/* New: Explore All Page */}
+      <Route path="/community/guidelines" element={<CommunityGuidelinesPage />} /> {/* New: Community Guidelines Page */}
       <Route path="/g/:slug" element={<GroupPage />} /> {/* New */}
       <Route path="/community/explore" element={<ExploreGroupsPage />} /> {/* New */}
       <Route path="/collection/:id" element={<CollectionDetailsPage />} /> {/* New */}
       <Route path="/product/:id" element={<ProductPage />} /> {/* New */}
       <Route path="/CropCorner" element={<CropCorner />} />
-      <Route path="/recipes" element={<Recipes />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} /> {/* New */}
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> {/* New */}
       <Route path="/login" element={<Login />} />
       <Route path="/search" element={<SearchPage />} />
-      <Route path="/search/hashtag/:hashtag" element={<HashtagPage />} />
+      {/* <Route path="/search/hashtag/:hashtag" element={<HashtagPage />} /> */}
       <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Authenticated User Routes */}

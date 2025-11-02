@@ -123,7 +123,7 @@ const RichTextDisplay = ({ text, sx = {}, ...otherProps }) => {
           return (
             <Link
               key={index}
-              to={`/search/hashtag/${part.hashtag}`}
+              to={`/community?search=%23${part.hashtag}`}
               className="hashtag"
               onClick={(e) => e.stopPropagation()}
             >

@@ -125,7 +125,8 @@ const SupportContactPage = () => {
         <Grid container spacing={6}>
           {/* FAQ Section */} 
           <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center' }}>
+              <SearchIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
               Frequently Asked Questions
             </Typography>
             <TextField
@@ -147,12 +148,32 @@ const SupportContactPage = () => {
             />
             {filteredFaqs.length > 0 ? (
               filteredFaqs.map((faq, index) => (
-                <Accordion key={index} sx={{ boxShadow: 'none', border: `1px solid ${theme.palette.divider}`, borderRadius: 2, '&:before': { display: 'none' }, mb: 1 }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Accordion 
+                  key={index} 
+                  sx={{ 
+                    boxShadow: 'none', 
+                    border: `1px solid ${theme.palette.divider}`, 
+                    borderRadius: 2, 
+                    '&:before': { display: 'none' }, 
+                    mb: 1,
+                    '&.Mui-expanded': {
+                      margin: '8px 0',
+                    }
+                  }}
+                  TransitionProps={{ unmountOnExit: true }}
+                >
+                  <AccordionSummary 
+                    expandIcon={<ExpandMoreIcon />} 
+                    sx={{ 
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                      }
+                    }}
+                  >
                     <Typography sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{faq.question}</Typography>
                   </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{faq.answer}</Typography>
+                  <AccordionDetails sx={{ backgroundColor: alpha(theme.palette.grey[500], 0.05) }}>
+                    <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, lineHeight: 1.7 }}>{faq.answer}</Typography>
                   </AccordionDetails>
                 </Accordion>
               ))
@@ -165,39 +186,103 @@ const SupportContactPage = () => {
 
           {/* Contact Form Section */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4 }}>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, height: '100%' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center' }}>
+                <SendIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
                 Send Us a Message
               </Typography>
-              <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={2}>
+              <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 50px)' }}>
+                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth required label="Your Name" name="name" value={form.name} onChange={handleChange} disabled={loading || isAuthenticated} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
+                    <TextField 
+                      fullWidth 
+                      required 
+                      label="Your Name" 
+                      name="name" 
+                      value={form.name} 
+                      onChange={handleChange} 
+                      disabled={loading || isAuthenticated} 
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+                      sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField fullWidth required type="email" label="Your Email" name="email" value={form.email} onChange={handleChange} disabled={loading || isAuthenticated} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
+                    <TextField 
+                      fullWidth 
+                      required 
+                      type="email" 
+                      label="Your Email" 
+                      name="email" 
+                      value={form.email} 
+                      onChange={handleChange} 
+                      disabled={loading || isAuthenticated} 
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+                      sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    />
                   </Grid>
                   <Grid size={{ xs: 12 }}>
                     <FormControl fullWidth required disabled={loading}>
                       <InputLabel id="subject-label" sx={{ fontFamily: theme.typography.fontFamily }}>Subject</InputLabel>
-                      <Select labelId="subject-label" label="Subject" name="subject" value={form.subject} onChange={handleChange} sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Select 
+                        labelId="subject-label" 
+                        label="Subject" 
+                        name="subject" 
+                        value={form.subject} 
+                        onChange={handleChange} 
+                        sx={{ fontFamily: theme.typography.fontFamily }}
+                      >
                         <MenuItem value="General Inquiry" sx={{ fontFamily: theme.typography.fontFamily }}>General Inquiry</MenuItem>
                         <MenuItem value="Account Support" sx={{ fontFamily: theme.typography.fontFamily }}>Account Support</MenuItem>
                         <MenuItem value="Order Issue" sx={{ fontFamily: theme.typography.fontFamily }}>Order Issue</MenuItem>
                         <MenuItem value="Partnership" sx={{ fontFamily: theme.typography.fontFamily }}>Partnership</MenuItem>
                         <MenuItem value="Feedback" sx={{ fontFamily: theme.typography.fontFamily }}>Feedback</MenuItem>
                       </Select>
-                    </FormControl> {/* Use size prop */}
+                    </FormControl>
                   </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField fullWidth required multiline rows={6} label="Your Message" name="message" value={form.message} onChange={handleChange} disabled={loading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} />
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <Button type="submit" variant="contained" size="large" fullWidth disabled={loading} startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />} sx={{ py: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}>
-                      {loading ? 'Sending...' : 'Send Message'}
-                    </Button>
+                  <Grid size={{ xs: 12 }} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <TextField 
+                      fullWidth 
+                      required 
+                      multiline 
+                      rows={6} 
+                      label="Your Message" 
+                      name="message" 
+                      value={form.message} 
+                      onChange={handleChange} 
+                      disabled={loading} 
+                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+                      sx={{ 
+                        '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                      inputProps={{ 
+                        style: { 
+                          resize: 'vertical',
+                          flexGrow: 1
+                        }
+                      }}
+                    />
                   </Grid>
                 </Grid>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  size="large" 
+                  fullWidth 
+                  disabled={loading} 
+                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />} 
+                  sx={{ 
+                    py: 1.5, 
+                    fontFamily: theme.typography.fontFamily, 
+                    fontWeight: 'bold', 
+                    borderRadius: '50px',
+                    mt: 2
+                  }}
+                >
+                  {loading ? 'Sending...' : 'Send Message'}
+                </Button>
               </Box>
             </Paper>
           </Grid>

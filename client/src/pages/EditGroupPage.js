@@ -242,7 +242,7 @@ const MemberManager = ({ group }) => {
   };
 
   const isCreator = (memberId) => group.creator._id === memberId;
-  const isModerator = (memberId) => group.moderators.some(mod => mod._id === memberId);
+  const isModerator = (memberId) => group.moderators && group.moderators.some(mod => mod._id === memberId);
 
   if (loading) return <CircularProgress />;
   return (

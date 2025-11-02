@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -10,13 +10,27 @@ import {
   Button,
   Snackbar,
   alpha,
+  TextField,
+  InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton,
+  Pagination,
+  Stack,
+  Chip,
+  FormControl,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../components/ProductCard';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import {
+  FavoriteBorder as FavoriteBorderIcon,
+  Search as SearchIcon,
+  ViewModule as ViewModuleIcon,
+  ViewList as ViewListIcon,
+  Sort as SortIcon,
+} from '@mui/icons-material';
 
 const WishlistPage = () => {
   const { user } = useAuth();
@@ -25,6 +39,11 @@ const WishlistPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortOption, setSortOption] = useState('newest');
+  const [page, setPage] = useState(1);
+  const productsPerPage = 6;
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -45,9 +64,53 @@ const WishlistPage = () => {
     fetchWishlist();
   }, []);
 
+  // Filter and sort products
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = wishlist.filter(product => 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.tags && product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+    );
+
+    // Sorting
+    switch (sortOption) {
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case 'price-low':
+        filtered.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      default:
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    return filtered;
+  }, [wishlist, searchTerm, sortOption]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (page - 1) * productsPerPage;
+    return filteredAndSortedProducts.slice(startIndex, startIndex + productsPerPage);
+  }, [filteredAndSortedProducts, page]);
+
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
   };
 
   if (loading) {
@@ -76,13 +139,14 @@ const WishlistPage = () => {
           Your favorite products, all in one place.
         </Typography>
       </Paper>
+      
       {wishlist.length === 0 ? (
         <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
           <FavoriteBorderIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
             Your wishlist is empty.
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
             Add products you love to your wishlist to save them for later.
           </Typography>
           <Button component={RouterLink} to="/CropCorner" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
@@ -90,13 +154,117 @@ const WishlistPage = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
-          {wishlist.filter(p => p).map((product) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
-              <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          {/* Filters and Search */}
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+              <TextField
+                placeholder="Search wishlist..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': { borderRadius: '20px' },
+                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                }}
+                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              />
+              
+              <FormControl>
+                <ToggleButtonGroup
+                  value={sortOption}
+                  exclusive
+                  onChange={(e, newValue) => newValue && setSortOption(newValue)}
+                  size="small"
+                  sx={{ height: 40 }}
+                >
+                  <ToggleButton value="newest" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    Newest
+                  </ToggleButton>
+                  <ToggleButton value="price-low" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    Price ↑
+                  </ToggleButton>
+                  <ToggleButton value="price-high" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    Price ↓
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </FormControl>
+              
+              <FormControl>
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={(e, newValue) => newValue && setViewMode(newValue)}
+                  size="small"
+                  sx={{ height: 40 }}
+                >
+                  <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    <ViewModuleIcon />
+                  </ToggleButton>
+                  <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    <ViewListIcon />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </FormControl>
+            </Stack>
+          </Paper>
+          
+          {paginatedProducts.length === 0 ? (
+            <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                No products found matching your search.
+              </Typography>
+            </Paper>
+          ) : (
+            <>
+              {viewMode === 'grid' ? (
+                <Grid container spacing={3}>
+                  {paginatedProducts.filter(p => p).map((product) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
+                      <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <Stack spacing={2}>
+                  {paginatedProducts.filter(p => p).map((product) => (
+                    <ProductCard 
+                      key={product._id} 
+                      product={product} 
+                      showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} 
+                      variant="list" 
+                    />
+                  ))}
+                </Stack>
+              )}
+              
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    siblingCount={1}
+                    boundaryCount={1}
+                    sx={{ 
+                      '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily },
+                      '& .Mui-selected': { fontWeight: 'bold' }
+                    }}
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </>
       )}
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
         <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>

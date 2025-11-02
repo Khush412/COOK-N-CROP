@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -9,6 +9,14 @@ import {
   Grid,
   Button,
   alpha,
+  TextField,
+  InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton,
+  Pagination,
+  Stack,
+  Chip,
+  FormControl,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
@@ -16,7 +24,13 @@ import userService from '../services/userService';
 import communityService from '../services/communityService';
 import { useAuth } from '../contexts/AuthContext';
 import PostCard from '../components/PostCard';
-import BookmarksIcon from '@mui/icons-material/Bookmarks';
+import {
+  Bookmarks as BookmarksIcon,
+  Search as SearchIcon,
+  ViewModule as ViewModuleIcon,
+  ViewList as ViewListIcon,
+  Sort as SortIcon,
+} from '@mui/icons-material';
 
 const SavedPostsPage = () => {
   const theme = useTheme();
@@ -26,6 +40,11 @@ const SavedPostsPage = () => {
   const [error, setError] = useState(null);
   const [savingPosts, setSavingPosts] = useState([]); // For loading state on save button
   const [upvotingPosts, setUpvotingPosts] = useState([]); // For loading state on upvote button
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
+  const [sortOption, setSortOption] = useState('newest');
+  const [page, setPage] = useState(1);
+  const postsPerPage = 6;
 
   useEffect(() => {
     const fetchSavedPosts = async () => {
@@ -45,6 +64,39 @@ const SavedPostsPage = () => {
     };
     fetchSavedPosts();
   }, []);
+
+  // Filter and sort posts
+  const filteredAndSortedPosts = useMemo(() => {
+    let filtered = savedPosts.filter(post => 
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (post.content && post.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+    );
+
+    // Sorting
+    switch (sortOption) {
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case 'popular':
+        filtered.sort((a, b) => b.upvoteCount - a.upvoteCount);
+        break;
+      default:
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    return filtered;
+  }, [savedPosts, searchTerm, sortOption]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedPosts.length / postsPerPage);
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (page - 1) * postsPerPage;
+    return filteredAndSortedPosts.slice(startIndex, startIndex + postsPerPage);
+  }, [filteredAndSortedPosts, page]);
 
   const handleUpvote = async (postId) => {
     if (!user) return;
@@ -88,6 +140,10 @@ const SavedPostsPage = () => {
     }
   };
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -114,13 +170,14 @@ const SavedPostsPage = () => {
           Your collection of favorite posts and recipes.
         </Typography>
       </Paper>
+      
       {savedPosts.length === 0 ? (
         <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
           <BookmarksIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
             You haven't saved any posts yet.
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
             Click the bookmark icon on a post to save it for later.
           </Typography>
           <Button component={RouterLink} to="/community" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
@@ -128,21 +185,127 @@ const SavedPostsPage = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
-          {savedPosts.filter(p => p).map((post) => (
-            <Grid size={{ xs: 12, sm: 6 }} key={post._id}>
-              <PostCard
-                post={post}
-                user={user}
-                onUpvote={handleUpvote}
-                upvotingPosts={upvotingPosts}
-                onToggleSave={handleToggleSave}
-                savingPosts={savingPosts}
-                showSnackbar={() => {}} // Snackbar not needed here as it's a core action
+        <>
+          {/* Filters and Search */}
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+              <TextField
+                placeholder="Search saved posts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': { borderRadius: '20px' },
+                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                }}
+                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
-            </Grid>
-          ))}
-        </Grid>
+              
+              <FormControl>
+                <ToggleButtonGroup
+                  value={sortOption}
+                  exclusive
+                  onChange={(e, newValue) => newValue && setSortOption(newValue)}
+                  size="small"
+                  sx={{ height: 40 }}
+                >
+                  <ToggleButton value="newest" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    Newest
+                  </ToggleButton>
+                  <ToggleButton value="popular" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    Popular
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </FormControl>
+              
+              <FormControl>
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={(e, newValue) => newValue && setViewMode(newValue)}
+                  size="small"
+                  sx={{ height: 40 }}
+                >
+                  <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    <ViewModuleIcon />
+                  </ToggleButton>
+                  <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
+                    <ViewListIcon />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </FormControl>
+            </Stack>
+          </Paper>
+          
+          {paginatedPosts.length === 0 ? (
+            <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3 }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                No saved posts found matching your search.
+              </Typography>
+            </Paper>
+          ) : (
+            <>
+              {viewMode === 'grid' ? (
+                <Grid container spacing={3}>
+                  {paginatedPosts.filter(p => p).map((post) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                      <PostCard
+                        post={post}
+                        user={user}
+                        onUpvote={handleUpvote}
+                        upvotingPosts={upvotingPosts}
+                        onToggleSave={handleToggleSave}
+                        savingPosts={savingPosts}
+                        showSnackbar={() => {}} // Snackbar not needed here as it's a core action
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <Stack spacing={2}>
+                  {paginatedPosts.filter(p => p).map((post) => (
+                    <PostCard
+                      key={post._id}
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                      showSnackbar={() => {}} // Snackbar not needed here as it's a core action
+                      displayMode="compact"
+                    />
+                  ))}
+                </Stack>
+              )}
+              
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    siblingCount={1}
+                    boundaryCount={1}
+                    sx={{ 
+                      '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily },
+                      '& .Mui-selected': { fontWeight: 'bold' }
+                    }}
+                  />
+                </Box>
+              )}
+            </>
+          )}
+        </>
       )}
     </Container>
   );

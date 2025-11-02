@@ -287,38 +287,42 @@ class Media {
 }
 
 class App {
-  constructor(
-    container,
-    {
-      items,
-      bend,
-      textColor = '#ffffff',
-      borderRadius = 0,
-      font = 'bold 30px Figtree',
-      scrollSpeed = 2,
-      scrollEase = 0.05,
-      autoScroll = false,
-      autoScrollSpeed = 0.5,
-      onImageClick // Add click handler prop
-    } = {}
-  ) {
-    document.documentElement.classList.remove('no-js');
+  constructor(container, {
+    items = [],
+    bend = 1.5,
+    textColor = '#ffffff',
+    borderRadius = 0.2,
+    font = 'bold 20px Figtree',
+    scrollSpeed = 1.5,
+    scrollEase = 0.05,
+    autoScroll = true,
+    autoScrollSpeed = 0.1,
+    onImageClick, // Add click handler prop
+    onEyeButtonClick // Add eye button click handler prop
+  } = {}) {
+    autoBind(this);
     this.container = container;
+    this.items = items;
+    this.bend = bend;
+    this.textColor = textColor;
+    this.borderRadius = borderRadius;
+    this.font = font;
     this.scrollSpeed = scrollSpeed;
-    this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
+    this.scrollEase = scrollEase;
     this.autoScroll = autoScroll;
     this.autoScrollSpeed = autoScrollSpeed;
-    this.isDown = false;
-    this.isDragging = false; // Track dragging state
-    this.startX = 0; // Track start position
-    this.startY = 0; // Track start position Y
-    // Remove interaction timeout since we want continuous scrolling
-    this.onCheckDebounce = debounce(this.onCheck, 200);
-    this.onImageClick = onImageClick || function() {}; // Store click handler with fallback
-    
-    // Store items with IDs for click handling
-    this.items = items;
-    
+    this.onImageClick = onImageClick; // Store click handler
+    this.onEyeButtonClick = onEyeButtonClick; // Store eye button click handler
+    this.scroll = {
+      ease: scrollEase,
+      current: 0,
+      target: 0,
+      last: 0
+    };
+    this.init();
+  }
+  init() {
+    document.documentElement.classList.remove('no-js');
     this.createRenderer();
     this.createCamera();
     this.createScene();
@@ -326,7 +330,7 @@ class App {
     this.createNavigation(); // Create navigation arrows
     this.onResize();
     this.createGeometry();
-    this.createMedias(items, bend, textColor, borderRadius, font);
+    this.createMedias();
     this.update();
     this.addEventListeners();
   }
@@ -358,7 +362,7 @@ class App {
       widthSegments: 100
     });
   }
-  createMedias(items, bend = 1, textColor, borderRadius, font) {
+  createMedias() {
     const defaultItems = [
       { image: `https://picsum.photos/seed/1/800/600?grayscale`, text: 'Bridge' },
       { image: `https://picsum.photos/seed/2/800/600?grayscale`, text: 'Desk Setup' },
@@ -373,7 +377,7 @@ class App {
       { image: `https://picsum.photos/seed/21/800/600?grayscale`, text: 'Coastline' },
       { image: `https://picsum.photos/seed/12/800/600?grayscale`, text: 'Palm Trees' }
     ];
-    const galleryItems = items && items.length ? items : defaultItems;
+    const galleryItems = this.items.length ? this.items : defaultItems;
     this.mediasImages = galleryItems.concat(galleryItems);
     this.medias = this.mediasImages.map((data, index) => {
       return new Media({
@@ -387,10 +391,10 @@ class App {
         screen: this.screen,
         text: data.text,
         viewport: this.viewport,
-        bend,
-        textColor,
-        borderRadius,
-        font
+        bend: this.bend,
+        textColor: this.textColor,
+        borderRadius: this.borderRadius,
+        font: this.font
       });
     });
   }
@@ -405,7 +409,7 @@ class App {
     this.clickContainer.style.width = '100%';
     this.clickContainer.style.height = '100%';
     this.clickContainer.style.pointerEvents = 'none'; // Don't block WebGL events
-    this.clickContainer.style.zIndex = '2'; // Ensure click handlers are above WebGL canvas
+    this.clickContainer.style.zIndex = '10'; // Ensure click handlers are above WebGL canvas
     this.container.appendChild(this.clickContainer);
     this.clickHandlers = [];
   }
@@ -434,7 +438,7 @@ class App {
         handler.style.position = 'absolute';
         handler.style.cursor = 'pointer';
         handler.style.pointerEvents = 'auto'; // Enable pointer events for this element
-        handler.style.zIndex = '3'; // Ensure click handlers are above the WebGL canvas
+        handler.style.zIndex = '11'; // Ensure click handlers are above the WebGL canvas
         handler.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease'; // Add transition for hover effect
         handler.style.backgroundColor = 'transparent'; // Ensure transparent background
         
@@ -448,24 +452,50 @@ class App {
         
         // Calculate position based on media position
         // The media position is relative to the center of the viewport
-        const x = media.plane.position.x + this.viewport.width / 2;
-        const y = this.viewport.height / 2 + media.plane.position.y;
+        const x = media.plane.position.x + (this.viewport ? this.viewport.width / 2 : this.container.clientWidth / 2);
+        const y = (this.viewport ? this.viewport.height / 2 : this.container.clientHeight / 2) + media.plane.position.y;
         
         handler.style.left = `${x - cardSize / 2}px`;
         handler.style.top = `${y - cardSize / 2}px`;
         handler.style.width = `${cardSize}px`;
         handler.style.height = `${cardSize}px`;
         
-        // Remove debug border
-        handler.style.border = 'none';
+        // Create eye button for product highlights
+        const eyeButton = document.createElement('div');
+        eyeButton.className = 'circular-gallery-eye-button';
+        eyeButton.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
         
-        // Add click event
-        handler.addEventListener('click', (e) => {
+        // Add hover effect to show eye button
+        handler.addEventListener('mouseenter', () => {
+          eyeButton.style.opacity = '1';
+        });
+        
+        handler.addEventListener('mouseleave', () => {
+          eyeButton.style.opacity = '0';
+        });
+        
+        // Add click event for eye button
+        eyeButton.addEventListener('click', (e) => {
           // Prevent the click from propagating to the container
           e.stopPropagation();
           e.preventDefault();
           
-          // Navigate to product detail page
+          // Handle eye button click (product highlight)
+          if (this.items[index] && this.items[index].id) {
+            if (this.onEyeButtonClick && typeof this.onEyeButtonClick === 'function') {
+              this.onEyeButtonClick(this.items[index].id);
+            }
+          }
+        });
+        
+        // Add click event for main card
+        handler.addEventListener('click', (e) => {
+          // Handle main card click
           if (this.items[index] && this.items[index].id) {
             if (this.onImageClick && typeof this.onImageClick === 'function') {
               this.onImageClick(this.items[index].id);
@@ -482,6 +512,7 @@ class App {
           e.stopPropagation();
         });
         
+        handler.appendChild(eyeButton);
         this.clickContainer.appendChild(handler);
         this.clickHandlers.push(handler);
       }
@@ -549,10 +580,43 @@ class App {
     
     // If it wasn't a drag, treat it as a click
     if (!this.isDragging) {
-      // Check if the click was on a click handler
-      if (this.startTarget && this.startTarget.classList.contains('circular-gallery-click-handler')) {
+      // Check if the click was on a click handler or eye button
+      const target = e.target;
+      
+      // Check if the click was directly on a click handler
+      if (target.classList.contains('circular-gallery-click-handler')) {
         // Let the click handler handle the event
         return;
+      }
+      
+      // Check if the click was on an eye button
+      if (target.classList.contains('circular-gallery-eye-button')) {
+        // Let the eye button handle the event
+        return;
+      }
+      
+      // Check if the click was on an SVG inside an eye button
+      if (target.tagName === 'path' && target.parentElement && 
+          target.parentElement.classList.contains('circular-gallery-eye-button')) {
+        // Let the eye button handle the event
+        return;
+      }
+      
+      // Check if the click was on an SVG inside an eye button
+      if (target.tagName === 'svg' && target.parentElement && 
+          target.parentElement.classList.contains('circular-gallery-eye-button')) {
+        // Let the eye button handle the event
+        return;
+      }
+      
+      // Check if the click was on an element inside a click handler
+      let parent = target.parentElement;
+      while (parent) {
+        if (parent.classList.contains('circular-gallery-click-handler')) {
+          // Let the click handler handle the event
+          return;
+        }
+        parent = parent.parentElement;
       }
     }
     
@@ -638,7 +702,8 @@ export default function CircularGallery({
   autoScroll = true,
   autoScrollSpeed = 0.1,
   height = 400, // Add height parameter to make cards smaller
-  onImageClick // Add click handler prop
+  onImageClick, // Add click handler prop
+  onEyeButtonClick // Add eye button click handler prop
 }) {
   const containerRef = useRef(null);
   useEffect(() => {
@@ -652,12 +717,13 @@ export default function CircularGallery({
       scrollEase,
       autoScroll,
       autoScrollSpeed,
-      onImageClick // Pass click handler to App
+      onImageClick, // Pass click handler to App
+      onEyeButtonClick // Pass eye button click handler to App
     });
     return () => {
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed, onImageClick]);
+  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed, onImageClick, onEyeButtonClick]);
   
   // Apply height style
   useEffect(() => {

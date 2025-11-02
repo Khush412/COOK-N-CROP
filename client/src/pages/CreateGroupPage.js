@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Container, Typography, Paper, TextField, Button, CircularProgress,
-  Snackbar, Alert, alpha
+  Snackbar, Alert, alpha, Stack, Card, CardContent, CardMedia
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { GroupAdd as GroupAddIcon, Info as InfoIcon } from '@mui/icons-material';
 import groupService from '../services/groupService';
 import CreateGroupForm from '../components/CreateGroupForm';
 
@@ -32,20 +33,44 @@ const CreateGroupPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
-          Create a New Group
-        </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-          Start a community around your favorite food topic.
-        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          <GroupAddIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />
+          <Box>
+            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+              Create a New Group
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Start a community around your favorite food topic.
+            </Typography>
+          </Box>
+        </Stack>
+        
+        {/* Tips Card */}
+        <Card sx={{ mt: 2, borderRadius: 3, boxShadow: 3 }}>
+          <CardContent>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <InfoIcon sx={{ color: theme.palette.info.main }} />
+              <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, color: theme.palette.info.main }}>
+                Tips for Creating a Successful Group
+              </Typography>
+            </Stack>
+            <Typography variant="body2" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+              • Choose a clear, descriptive name that reflects your group's purpose<br />
+              • Write a detailed description to help users understand what your group is about<br />
+              • Set up clear rules to maintain a positive community environment<br />
+              • Consider making your group private if it's for a specific audience<br />
+              • Add flairs to help organize posts within your group
+            </Typography>
+          </CardContent>
+        </Card>
       </Paper>
 
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4 }}>
         <CreateGroupForm
           onSubmit={handleCreateSubmit}
-          onCancel={() => navigate('/community')}
+          onCancel={() => navigate('/community/explore')}
           loading={isSubmitting}
         />
       </Paper>

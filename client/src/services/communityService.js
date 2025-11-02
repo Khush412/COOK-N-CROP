@@ -5,6 +5,8 @@ const getPosts = async (sort = 'new', page = 1, options = {}) => {
     const params = new URLSearchParams();
     params.append('sort', sort);
     params.append('page', page);
+    params.append('limit', 12); // Increase limit for better grid layout
+    
     if (typeof options.isRecipe === 'boolean') {
       params.append('isRecipe', options.isRecipe.toString());
     }

@@ -34,8 +34,7 @@ import RichTextInput from './RichTextInput';
 const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [tags, setTags] = useState([]);
-  const [currentTag, setCurrentTag] = useState('');
+  const [contentWordCount, setContentWordCount] = useState(0);
   const [isRecipe, setIsRecipe] = useState(forceRecipe === true);
   const [recipeDetails, setRecipeDetails] = useState({
     prepTime: '',
@@ -111,7 +110,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     if (initialData) {
       setTitle(initialData.title || '');
       setContent(initialData.content || '');
-      setTags(initialData.tags || []);
+      setContentWordCount(initialData.content ? initialData.content.trim().split(/\s+/).filter(word => word.length > 0).length : 0);
       setIsRecipe(initialData.isRecipe || false);
       if (initialData.isRecipe && initialData.recipeDetails) {
         setRecipeDetails({
@@ -142,21 +141,6 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     }
   }, [forceRecipe, initialData, userGroups]); // Add userGroups to dependency array
 
-  const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      const newTag = currentTag.trim().toLowerCase();
-      if (newTag && !tags.includes(newTag) && tags.length < 5) {
-        setTags([...tags, newTag]);
-      }
-      setCurrentTag('');
-    }
-  };
-
-  const handleTagDelete = (tagToDelete) => {
-    setTags(tags.filter((tag) => tag !== tagToDelete));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || !selectedGroup) return;
@@ -181,7 +165,17 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
       postData.append('existingMedia', JSON.stringify(existingMedia));
     }
 
-    tags.forEach(tag => postData.append('tags', tag));
+    // Extract hashtags from content and add them as tags
+    const hashtagRegex = /#([a-zA-Z0-9_]{2,50})/g;
+    const hashtags = [];
+    let match;
+    while ((match = hashtagRegex.exec(content)) !== null) {
+      hashtags.push(match[1]);
+    }
+    // Remove duplicates
+    const uniqueHashtags = [...new Set(hashtags)];
+    uniqueHashtags.forEach(tag => postData.append('tags', tag));
+
     taggedProducts.forEach(p => postData.append('taggedProducts', p._id));
 
     if (isRecipe) {
@@ -194,10 +188,6 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
     }
 
     onSubmit(postData);
-  };
-
-  const handleRecipeDetailChange = (e) => {
-    setRecipeDetails({ ...recipeDetails, [e.target.name]: e.target.value });
   };
 
   const handleDynamicListChange = (index, event, field) => {
@@ -216,6 +206,10 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
       newList.splice(index, 1);
       setRecipeDetails({ ...recipeDetails, [field]: newList });
     }
+  };
+
+  const handleRecipeDetailChange = (e) => {
+    setRecipeDetails({ ...recipeDetails, [e.target.name]: e.target.value });
   };
 
   const handleProductSearch = async (event, newValue) => {
@@ -325,9 +319,19 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           multiline
           rows={6}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            setContent(e.target.value);
+            // Calculate word count
+            const wordCount = e.target.value.trim() ? e.target.value.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
+            setContentWordCount(wordCount);
+          }}
           disabled={loading}
         />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {contentWordCount} words
+          </Typography>
+        </Box>
         {typeof forceRecipe !== 'boolean' && (
           <FormControlLabel
             control={
@@ -493,30 +497,6 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
           </Box>
         )}
 
-        <Box>
-          <TextField
-            label="Tags (press Enter to add, max 5)"
-            variant="outlined"
-            fullWidth
-            value={currentTag}
-            onChange={(e) => setCurrentTag(e.target.value)}
-            onKeyDown={handleTagKeyDown}
-            disabled={loading || tags.length >= 5}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-            InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-          />
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-            {tags.map((tag) => (
-              <Chip
-                key={tag}
-                label={tag}
-                onDelete={() => handleTagDelete(tag)}
-                disabled={loading}
-                sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
-              />
-            ))}
-          </Box>
-        </Box>
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button onClick={onCancel} disabled={loading} sx={{ borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}>
             Cancel

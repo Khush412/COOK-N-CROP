@@ -104,16 +104,30 @@ const LandingPage = () => {
     <Box sx={{
       width: '100%',
       bgcolor: 'background.default',
-      pt: { xs: 4, sm: 5, md: 6 } // Reduced top padding slightly
+      pt: { xs: 8, sm: 9, md: 10 } // Added responsive top padding to prevent content hiding under nav
     }}
     >
       {/* The global header from App.js will act as the navbar */}
       
-      {/* Promotional Carousel */}
-      <Box id="home" sx={{ py: 6 }}>
-        <Container maxWidth="lg">
+      {/* Promotional Carousel - Enhanced to take full width and proper height */}
+      <Box id="home" sx={{ 
+        py: 0, 
+        height: { xs: '70vh', md: '85vh' }, 
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <Box sx={{ 
+          height: '100%', 
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: { xs: 2, sm: 3, md: 4 } // Added padding on sides for smaller screens
+        }}>
           <PromotionalCarousel />
-        </Container>
+        </Box>
       </Box>
 
       {/* Featured Products Section - Replaced with CircularGallery */}
@@ -354,6 +368,18 @@ const FeaturedProductsGallery = () => {
         autoScroll={true}
         autoScrollSpeed={0.1}
         height={500}
+        onImageClick={(productId) => {
+          // Navigate to product detail page
+          console.log('Main card clicked for product:', productId);
+          navigate(`/product/${productId}`);
+        }}
+        onEyeButtonClick={(productId) => {
+          // Show product highlight (could open a modal or show a highlight panel)
+          console.log('Eye button clicked for product:', productId);
+          // For now, we'll just navigate to the product page
+          // In a more advanced implementation, this could open a highlight modal
+          navigate(`/product/${productId}`);
+        }}
       />
     </div>
   );

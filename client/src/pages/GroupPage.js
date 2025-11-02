@@ -11,6 +11,7 @@ import groupService from '../services/groupService';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
 import PostCard from '../components/PostCard';
+import GroupJoinRequests from '../components/GroupJoinRequests'; // Import the new component
 
 const GroupPage = () => {
   const { slug } = useParams();
@@ -44,8 +45,8 @@ const GroupPage = () => {
       setGroup(groupData);
       setMemberCount(groupData.memberCount);
       if (isAuthenticated) {
-        setIsMember(groupData.members.some(memberId => memberId === user.id));
-        setHasRequestedToJoin(groupData.joinRequests.some(reqUser => reqUser._id === user.id));
+        setIsMember(groupData.members && groupData.members.some(memberId => memberId === user.id));
+        setHasRequestedToJoin(groupData.joinRequests && groupData.joinRequests.some(reqUser => reqUser._id === user.id));
       }
     } catch (err) {
       setError('Group not found or you do not have access.');
@@ -156,7 +157,7 @@ const GroupPage = () => {
     return <Container maxWidth="md" sx={{ py: 4, mt: 12 }}><Alert severity="error">{error}</Alert></Container>;
   }
 
-  const isMod = group && (group.moderators.some(mod => mod._id === user?.id) || group.creator._id === user?.id || user?.role === 'admin');
+  const isMod = group && (group.moderators && group.moderators.some(mod => mod._id === user?.id) || group.creator._id === user?.id || user?.role === 'admin');
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
       {/* Group Header */}
@@ -259,7 +260,21 @@ const GroupPage = () => {
 
           {/* Right Sidebar */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ position: 'sticky', top: 100 }}>
+            <Box sx={{ 
+              position: 'relative',
+              top: 100,
+            }}>
+              <Box sx={{
+                position: 'sticky',
+                top: 100,
+              }}>
+                {/* Join Requests Management for Moderators */}
+                {isMod && group.isPrivate && (
+                  <Box sx={{ mb: 3 }}>
+                    <GroupJoinRequests groupId={group._id} />
+                  </Box>
+                )}
+              
               <Paper sx={{ p: 3, borderRadius: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
                 {group.isPrivate && !isMember && !hasRequestedToJoin ? (
@@ -330,6 +345,7 @@ const GroupPage = () => {
                 )}
               </Paper>
             </Box>
+          </Box>
           </Grid>
         </Grid>
       </Container>

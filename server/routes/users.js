@@ -162,7 +162,7 @@ router.delete('/me/social/unlink/:provider', protect, async (req, res) => {
 router.get('/me/subscriptions', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
-      .populate('subscriptions', 'name slug flairs'); // Populate with flairs
+      .populate('subscriptions', 'name slug flairs coverImage'); // Populate with flairs and coverImage
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

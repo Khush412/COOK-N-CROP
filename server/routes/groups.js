@@ -384,4 +384,62 @@ router.get('/:slug/posts', async (req, res) => {
   }
 });
 
+// @desc    Get pending join requests for a group
+// @route   GET /api/groups/:id/requests
+// @access  Private (Group Moderator or Admin)
+router.get('/:id/requests', protect, async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.id).populate('joinRequests', 'username profilePic');
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+
+    // Authorization check: User must be a moderator or an admin
+    const isModerator = group.moderators.some(modId => modId.equals(req.user.id));
+    if (!isModerator && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'User not authorized to view join requests' });
+    }
+
+    res.json(group.joinRequests);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Approve or deny a join request
+// @route   PUT /api/groups/:id/requests/:userId
+// @access  Private (Group Moderator or Admin)
+router.put('/:id/requests/:userId', protect, async (req, res) => {
+  try {
+    const { action } = req.body; // 'approve' or 'deny'
+    const group = await Group.findById(req.params.id);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+
+    // Authorization check: User must be a moderator or an admin
+    const isModerator = group.moderators.some(modId => modId.equals(req.user.id));
+    if (!isModerator && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'User not authorized to handle join requests' });
+    }
+
+    // Check if user has requested to join
+    const hasRequested = group.joinRequests.includes(req.params.userId);
+    if (!hasRequested) {
+      return res.status(400).json({ message: 'User has not requested to join this group' });
+    }
+
+    if (action === 'approve') {
+      // Add user to members
+      group.members.push(req.params.userId);
+      await User.findByIdAndUpdate(req.params.userId, { $addToSet: { subscriptions: group._id } });
+    }
+
+    // Remove from join requests (whether approved or denied)
+    group.joinRequests.pull(req.params.userId);
+    group.memberCount = group.members.length;
+    await group.save();
+
+    res.json({ success: true, message: `Join request ${action}d.` });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

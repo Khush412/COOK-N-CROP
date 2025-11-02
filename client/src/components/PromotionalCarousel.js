@@ -37,7 +37,7 @@ const PromotionalCarousel = () => {
       subtitle: "Earn points with every purchase",
       description: "Join our loyalty program and earn Harvest Coins with every order. Redeem for discounts and exclusive offers!",
       ctaText: "Join Rewards",
-      ctaLink: "/login",
+      ctaLink: "/rewards",
       image: `${process.env.PUBLIC_URL}/images/loyalty-program.jpg`
     }
   ];
@@ -57,11 +57,11 @@ const PromotionalCarousel = () => {
   return (
     <Box sx={{ 
       position: 'relative', 
-      height: { xs: '70vh', md: '80vh' }, // Increased height for more visual impact
-      width: '100%', 
+      height: '100%', // Changed to 100% to fill container
+      width: '100%', // Ensure full width
       overflow: 'hidden',
       borderRadius: 4,
-      mb: 6,
+      mb: 0, // Removed margin bottom
       boxShadow: 5, // Enhanced shadow for more depth
       border: `2px solid ${theme.palette.secondary.main}` // Added border for more professional look
     }}>

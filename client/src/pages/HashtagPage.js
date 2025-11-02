@@ -79,12 +79,12 @@ const HashtagPage = () => {
   };
 
   const handleHashtagClick = (tag) => {
-    navigate(`/search/hashtag/${tag}`);
+    navigate(`/community?search=%23${tag}`);
     setPage(1);
   };
 
   const handleUpvote = async (postId) => {
-    if (!isAuthenticated) return navigate('/login?redirect=/search/hashtag/' + hashtag);
+    if (!isAuthenticated) return navigate('/login?redirect=/community?search=%23' + hashtag);
     if (upvotingPosts.includes(postId)) return;
 
     setUpvotingPosts((prev) => [...prev, postId]);
@@ -113,7 +113,7 @@ const HashtagPage = () => {
   };
 
   const handleToggleSave = async (postId) => {
-    if (!isAuthenticated) return navigate('/login?redirect=/search/hashtag/' + hashtag);
+    if (!isAuthenticated) return navigate('/login?redirect=/community?search=%23' + hashtag);
     setSavingPosts((prev) => [...prev, postId]);
     try {
       const res = await userService.toggleSavePost(postId);

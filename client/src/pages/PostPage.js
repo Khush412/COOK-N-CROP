@@ -502,7 +502,7 @@ const PostPage = () => {
   // Check if current user is the post author, an admin, or a moderator of the post's group
   const isPostAuthor = post.user._id === user?.id;
   const isModerator = post.group?.moderators?.some(mod => mod._id === user?.id) || post.group?.creator?._id === user?.id;
-  const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews.some(review => review.user?._id === user?.id);
+  const hasUserReviewedRecipe = post.isRecipe && post.recipeReviews && post.recipeReviews.some(review => review.user?._id === user?.id);
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });

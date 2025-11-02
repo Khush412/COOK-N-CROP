@@ -58,6 +58,7 @@ import notificationService from "../services/notificationService";
 import { useSocket } from "../contexts/SocketContext";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
+import { useCart } from "../contexts/CartContext"; // Add this import
 import GlobalSearch from './GlobalSearch';
 
 // Navigation link styles adjusted for reduced padding except first nav item
@@ -187,6 +188,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, unreadMessageCount, fetchUnreadMessageCount } = useAuth();
+  const { cart } = useCart(); // Add this line to get cart data
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
@@ -329,14 +331,13 @@ export default function Navbar() {
     { label: 'Home', path: '/' },
     { label: 'Community', path: '/community' },
     { label: "Store", path: '/CropCorner' },
-    { label: 'Recipes', path: '/recipes' },
+    { label: 'My Feed', path: '/feed' }, // Added back My Feed to main navbar
   ];
 
   const userDrawerLinks = [
     { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
     { label: 'My Orders', path: '/profile/orders', icon: <ReceiptLongIcon /> },
     { label: 'Saved Addresses', path: '/profile/addresses', icon: <HomeIcon /> },
-    { label: 'My Feed', path: '/feed', icon: <DynamicFeedIcon /> },
     { label: 'Messages', path: '/messages', icon: <Badge badgeContent={unreadMessageCount} color="secondary"><MailIcon /></Badge> },
     { label: 'My Wishlist', path: '/profile/wishlist', icon: <FavoriteIcon /> },
     { label: 'My Collections', path: '/profile/collections', icon: <CollectionsBookmarkIcon /> },
@@ -434,6 +435,9 @@ export default function Navbar() {
       </List>
     </Box>
   );
+
+  // Calculate total items in cart
+  const cartItemCount = cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   return (
     <>
@@ -534,7 +538,9 @@ export default function Navbar() {
                 }}
                 aria-label="shopping cart"
               >
-                <ShoppingCartIcon />
+                <Badge badgeContent={cartItemCount > 0 ? cartItemCount : null} color="secondary">
+                  <ShoppingCartIcon />
+                </Badge>
               </IconButton>
             </Tooltip>
 
@@ -698,18 +704,6 @@ export default function Navbar() {
                     Saved Addresses
                   </MenuItem>
 
-                  <MenuItem
-                    onClick={() => {
-                      handleCloseUserMenu();
-                      navigate("/feed");
-                    }}
-                    sx={{ borderRadius: 2, px: 3 }}
-                  >
-                    <ListItemIcon>
-                      <DynamicFeedIcon fontSize="small" />
-                    </ListItemIcon>
-                    My Feed
-                  </MenuItem>
 
                   {user?.role === "admin" && (
                     <MenuItem

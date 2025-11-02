@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -20,29 +20,116 @@ import {
   Chip,
   Tooltip,
   alpha,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
+  TextField,
+  InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton,
+  Pagination,
+  FormControl,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
-import StarIcon from '@mui/icons-material/Star';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  HomeWork as HomeWorkIcon,
+  Star as StarIcon,
+  Search as SearchIcon,
+  ViewModule as ViewModuleIcon,
+  ViewList as ViewListIcon,
+  LocationOn as LocationOnIcon,
+  Phone as PhoneIcon,
+  Person as PersonIcon,
+  Label as LabelIcon,
+} from '@mui/icons-material';
 import addressService from '../services/addressService';
 import AddressForm from '../components/AddressForm';
 
-const AddressCard = ({ address, onEdit, onDelete, onSetDefault }) => {
+const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
   const theme = useTheme();
+  
+  if (viewMode === 'list') {
+    return (
+      <Card
+        sx={{
+          display: 'flex',
+          borderRadius: 3,
+          border: address.isDefault ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
+          transition: '0.3s',
+          '&:hover': {
+            boxShadow: theme.shadows[4],
+            borderColor: theme.palette.primary.light,
+          },
+          position: 'relative',
+        }}
+      >
+        {address.isDefault && (
+          <Tooltip title="Default Address">
+            <StarIcon sx={{ position: 'absolute', top: 8, left: 8, color: 'primary.main' }} />
+          </Tooltip>
+        )}
+        <CardContent sx={{ flexGrow: 1, p: 2 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {address.label || 'Address'}
+                </Typography>
+                {address.isDefault && (
+                  <Chip label="Default" size="small" color="primary" sx={{ height: 20, '& .MuiChip-label': { fontSize: '0.7rem' } }} />
+                )}
+              </Stack>
+              <Stack spacing={0.5}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{address.fullName}</Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    {address.street}, {address.city}, {address.state} {address.zipCode}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <PhoneIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  {address.phone && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.phone}</Typography>}
+                </Stack>
+              </Stack>
+            </Box>
+            <Stack direction="row" spacing={0.5}>
+              <Tooltip title="Edit">
+                <IconButton size="small" onClick={() => onEdit(address)}><EditIcon /></IconButton>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <IconButton size="small" onClick={() => onDelete(address)} color="error"><DeleteIcon /></IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
+        </CardContent>
+        {!address.isDefault && (
+          <CardActions sx={{ p: 2, pt: 0 }}>
+            <Button size="small" onClick={() => onSetDefault(address)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+              Set as Default
+            </Button>
+          </CardActions>
+        )}
+      </Card>
+    );
+  }
+  
   return (
-    <Paper
-      variant="outlined"
+    <Card
       sx={{
-        p: 2,
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 3,
         position: 'relative',
         border: address.isDefault ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
-        transition: 'box-shadow .2s, border-color .2s',
+        transition: '0.3s',
         '&:hover': {
           boxShadow: theme.shadows[4],
           borderColor: theme.palette.primary.light,
@@ -54,32 +141,57 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault }) => {
           <StarIcon sx={{ position: 'absolute', top: 8, left: 8, color: 'primary.main' }} />
         </Tooltip>
       )}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-          {address.label || 'Address'}
-        </Typography>
-        <Box>
-          <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => onEdit(address)}><EditIcon /></IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => onDelete(address)} color="error"><DeleteIcon /></IconButton>
-          </Tooltip>
+      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {address.label || 'Address'}
+          </Typography>
+          <Box>
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={() => onEdit(address)}><EditIcon /></IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton size="small" onClick={() => onDelete(address)} color="error"><DeleteIcon /></IconButton>
+            </Tooltip>
+          </Box>
+        </Stack>
+        <Box sx={{ mb: 2 }}>
+          <Stack spacing={0.5}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <PersonIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{address.fullName}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.street}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                {address.city}, {address.state} {address.zipCode}
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.country}</Typography>
+            </Stack>
+            {address.phone && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <PhoneIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Phone: {address.phone}</Typography>
+              </Stack>
+            )}
+          </Stack>
         </Box>
-      </Stack>
-      <Box sx={{ flexGrow: 1, mb: 2 }}>
-        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>{address.fullName}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.street}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.city}, {address.state} {address.zipCode}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{address.country}</Typography>
-        {address.phone && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mt: 1 }}>Phone: {address.phone}</Typography>}
-      </Box>
+      </CardContent>
       {!address.isDefault && (
-        <Button size="small" onClick={() => onSetDefault(address)} sx={{ mt: 'auto', alignSelf: 'flex-start', fontFamily: theme.typography.fontFamily }}>
-          Set as Default
-        </Button>
+        <CardActions sx={{ p: 2, pt: 0 }}>
+          <Button size="small" onClick={() => onSetDefault(address)} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+            Set as Default
+          </Button>
+        </CardActions>
       )}
-    </Paper>
+    </Card>
   );
 };
 
@@ -93,6 +205,10 @@ const AddressManagementPage = () => {
   const [editingAddress, setEditingAddress] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
+  const [page, setPage] = useState(1);
+  const addressesPerPage = 6;
 
   const showSnackbar = useCallback((message, severity) => {
     setSnackbar({ open: true, message, severity });
@@ -114,6 +230,24 @@ const AddressManagementPage = () => {
   useEffect(() => {
     fetchAddresses();
   }, [fetchAddresses]);
+
+  // Filter addresses
+  const filteredAddresses = useMemo(() => {
+    return addresses.filter(address => 
+      (address.label && address.label.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (address.fullName && address.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (address.street && address.street.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (address.city && address.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (address.state && address.state.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [addresses, searchTerm]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAddresses.length / addressesPerPage);
+  const paginatedAddresses = useMemo(() => {
+    const startIndex = (page - 1) * addressesPerPage;
+    return filteredAddresses.slice(startIndex, startIndex + addressesPerPage);
+  }, [filteredAddresses, page]);
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -170,6 +304,10 @@ const AddressManagementPage = () => {
     setDeleteConfirmOpen(true);
   };
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><CircularProgress /></Box>;
   }
@@ -179,7 +317,7 @@ const AddressManagementPage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
         <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Your Addresses
@@ -189,45 +327,129 @@ const AddressManagementPage = () => {
         </Typography>
       </Paper>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, mb: 3 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          <TextField
+            placeholder="Search addresses..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ 
+              flex: 1,
+              '& .MuiOutlinedInput-root': { borderRadius: '20px' },
+              '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+            }}
+            InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+          />
+          
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => openForm()}
-            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+            sx={{ 
+              fontFamily: theme.typography.fontFamily, 
+              borderRadius: '50px', 
+              px: 3,
+              py: 1,
+              minWidth: 180,
+              boxShadow: 3,
+              '&:hover': {
+                boxShadow: 4,
+              }
+            }}
           >
             Add New Address
           </Button>
-        </Box>
+        </Stack>
+      </Paper>
 
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
         {addresses.length === 0 ? (
           <Box sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center' }}>
             <HomeWorkIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
               No Saved Addresses
             </Typography>
-            <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+            <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
               Add an address to make checkout faster.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => openForm()}
+              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}
+            >
+              Add Your First Address
+            </Button>
+          </Box>
+        ) : paginatedAddresses.length === 0 ? (
+          <Box sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center' }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              No addresses found matching your search.
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {addresses.map((address) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={address._id}>
-                <AddressCard
-                  address={address}
-                  onEdit={openForm}
-                  onDelete={openDeleteConfirm}
-                  onSetDefault={handleSetDefault}
-                />
+          <>
+            {viewMode === 'grid' ? (
+              <Grid container spacing={3}>
+                {paginatedAddresses.map((address) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={address._id}>
+                    <AddressCard
+                      address={address}
+                      onEdit={openForm}
+                      onDelete={openDeleteConfirm}
+                      onSetDefault={handleSetDefault}
+                      viewMode={viewMode}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            ) : (
+              <Stack spacing={2}>
+                {paginatedAddresses.map((address) => (
+                  <AddressCard
+                    key={address._id}
+                    address={address}
+                    onEdit={openForm}
+                    onDelete={openDeleteConfirm}
+                    onSetDefault={handleSetDefault}
+                    viewMode={viewMode}
+                  />
+                ))}
+              </Stack>
+            )}
+            
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  sx={{ 
+                    '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily },
+                    '& .Mui-selected': { fontWeight: 'bold' }
+                  }}
+                />
+              </Box>
+            )}
+          </>
         )}
       </Paper>
 
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>
+          {editingAddress ? 'Edit Address' : 'Add New Address'}
+        </DialogTitle>
         <DialogContent>
           <AddressForm
             address={editingAddress}
