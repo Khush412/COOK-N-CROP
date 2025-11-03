@@ -73,14 +73,23 @@ const getTrendingHashtags = async (limit = 10) => {
   }
 };
 
+// Add a helper function to get the first image URL for a product
+const getProductImageUrl = (product) => {
+  if (product.images && product.images.length > 0) {
+    return `${process.env.REACT_APP_API_URL}${product.images[0]}`;
+  }
+  return `${process.env.PUBLIC_URL}/images/placeholder.png`;
+};
+
 const searchService = {
   globalSearch,
   searchPosts,
   searchProducts,
-  getProductSuggestions, // New function
+  getProductSuggestions,
   searchUsers,
   searchByHashtag,
   getTrendingHashtags,
+  getProductImageUrl, // Export the helper function
 };
 
 export default searchService;

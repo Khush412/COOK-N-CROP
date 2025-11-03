@@ -51,8 +51,10 @@ const RewardsPage = () => {
   const tiers = [
     { 
       name: "Bronze", 
-      minCoins: 0,
-      maxCoins: 499, 
+      minSpent: 0,
+      maxSpent: 1999, 
+      minOrders: 0,
+      maxOrders: 4,
       benefits: [
         "3% Harvest Coins back on purchases",
         "Birthday reward",
@@ -63,8 +65,10 @@ const RewardsPage = () => {
     },
     { 
       name: "Silver", 
-      minCoins: 500,
-      maxCoins: 1499, 
+      minSpent: 2000,
+      maxSpent: 7999, 
+      minOrders: 5,
+      maxOrders: 9,
       benefits: [
         "5% Harvest Coins back on purchases",
         "All Bronze benefits",
@@ -76,8 +80,10 @@ const RewardsPage = () => {
     },
     { 
       name: "Gold", 
-      minCoins: 1500,
-      maxCoins: 2999, 
+      minSpent: 8000,
+      maxSpent: Infinity, 
+      minOrders: 10,
+      maxOrders: Infinity,
       benefits: [
         "8% Harvest Coins back on purchases",
         "All Silver benefits",
@@ -93,37 +99,87 @@ const RewardsPage = () => {
   const getCurrentTier = () => {
     if (!harvestCoins) return tiers[0];
     
-    return tiers.find(tier => 
-      harvestCoins.balance >= tier.minCoins && 
-      harvestCoins.balance <= tier.maxCoins
-    ) || tiers[0];
+    // Check if user qualifies for Gold tier first (highest tier)
+    if (harvestCoins.totalSpent >= 8000 || harvestCoins.totalOrders >= 10) {
+      return tiers[2]; // Gold tier
+    }
+    
+    // Check if user qualifies for Silver tier
+    if (harvestCoins.totalSpent >= 2000 || harvestCoins.totalOrders >= 5) {
+      return tiers[1]; // Silver tier
+    }
+    
+    // Default to Bronze tier
+    return tiers[0];
   };
 
   // Get next tier
   const getNextTier = () => {
     if (!harvestCoins) return tiers[1];
     
-    const currentIndex = tiers.findIndex(tier => 
-      harvestCoins.balance >= tier.minCoins && 
-      harvestCoins.balance <= tier.maxCoins
-    );
+    // If user is at Gold tier, there is no next tier
+    if (harvestCoins.totalSpent >= 8000 || harvestCoins.totalOrders >= 10) {
+      return null;
+    }
     
-    return tiers[currentIndex + 1] || tiers[tiers.length - 1];
+    // If user is at Silver tier, next tier is Gold
+    if (harvestCoins.totalSpent >= 2000 || harvestCoins.totalOrders >= 5) {
+      return tiers[2]; // Gold tier
+    }
+    
+    // If user is at Bronze tier, next tier is Silver
+    return tiers[1]; // Silver tier
   };
 
-  // Calculate progress to next tier
+  // Calculate progress to next tier based on spending or orders (whichever is closer to next tier)
   const getProgressToNextTier = () => {
     if (!harvestCoins) return 0;
     
-    const currentTier = getCurrentTier();
     const nextTier = getNextTier();
+    if (!nextTier) return 100; // Already at highest tier
     
-    if (!nextTier || nextTier.maxCoins === Infinity) return 100;
+    // Calculate progress based on spending
+    let spendingProgress = 0;
+    if (nextTier.name === "Silver") {
+      // Progress to Silver: ₹2000 or 5 orders
+      const spentProgress = (harvestCoins.totalSpent / 2000) * 100;
+      const orderProgress = (harvestCoins.totalOrders / 5) * 100;
+      spendingProgress = Math.min(100, Math.max(spentProgress, orderProgress));
+    } else if (nextTier.name === "Gold") {
+      // Progress to Gold: ₹8000 or 10 orders
+      const spentProgress = (harvestCoins.totalSpent / 8000) * 100;
+      const orderProgress = (harvestCoins.totalOrders / 10) * 100;
+      spendingProgress = Math.min(100, Math.max(spentProgress, orderProgress));
+    }
     
-    const progress = ((harvestCoins.balance - currentTier.minCoins) / 
-                     (nextTier.maxCoins - currentTier.minCoins)) * 100;
+    return spendingProgress;
+  };
+
+  // Get progress details for display
+  const getProgressDetails = () => {
+    if (!harvestCoins) return { spent: 0, orders: 0, nextTier: null };
     
-    return Math.min(100, Math.max(0, progress));
+    const nextTier = getNextTier();
+    if (!nextTier) return { spent: 100, orders: 100, nextTier: null };
+    
+    let spentProgress = 0;
+    let orderProgress = 0;
+    
+    if (nextTier.name === "Silver") {
+      // Progress to Silver: ₹2000 or 5 orders
+      spentProgress = Math.min(100, (harvestCoins.totalSpent / 2000) * 100);
+      orderProgress = Math.min(100, (harvestCoins.totalOrders / 5) * 100);
+    } else if (nextTier.name === "Gold") {
+      // Progress to Gold: ₹8000 or 10 orders
+      spentProgress = Math.min(100, (harvestCoins.totalSpent / 8000) * 100);
+      orderProgress = Math.min(100, (harvestCoins.totalOrders / 10) * 100);
+    }
+    
+    return {
+      spent: spentProgress,
+      orders: orderProgress,
+      nextTier: nextTier
+    };
   };
 
   // Real redemption rates from backend
@@ -161,6 +217,7 @@ const RewardsPage = () => {
   const currentTier = getCurrentTier();
   const nextTier = getNextTier();
   const progressToNextTier = getProgressToNextTier();
+  const progressDetails = getProgressDetails();
 
   if (loading) {
     return (
@@ -457,14 +514,14 @@ const RewardsPage = () => {
                 </Grid>
                 
                 {/* Progress to Next Tier */}
-                {nextTier && nextTier.maxCoins !== Infinity && (
+                {nextTier && (
                   <Box sx={{ mt: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
                         Progress to {nextTier.name} Tier
                       </Typography>
                       <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
-                        {harvestCoins.balance} / {nextTier.minCoins} coins
+                        {progressToNextTier.toFixed(0)}% Complete
                       </Typography>
                     </Box>
                     <LinearProgress 
@@ -479,7 +536,57 @@ const RewardsPage = () => {
                         }
                       }} 
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                    <Box sx={{ mt: 2 }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2 }}>
+                            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main' }}>
+                              ₹{harvestCoins.totalSpent.toFixed(0)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              Spent of ₹{nextTier.minSpent.toLocaleString()}
+                            </Typography>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={Math.min(100, (harvestCoins.totalSpent / nextTier.minSpent) * 100)} 
+                              sx={{ 
+                                height: 6, 
+                                borderRadius: 3,
+                                mt: 1,
+                                bgcolor: alpha(theme.palette.divider, 0.3),
+                                '& .MuiLinearProgress-bar': {
+                                  bgcolor: theme.palette.primary.main
+                                }
+                              }} 
+                            />
+                          </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2 }}>
+                            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main' }}>
+                              {harvestCoins.totalOrders}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              Orders of {nextTier.minOrders}
+                            </Typography>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={Math.min(100, (harvestCoins.totalOrders / nextTier.minOrders) * 100)} 
+                              sx={{ 
+                                height: 6, 
+                                borderRadius: 3,
+                                mt: 1,
+                                bgcolor: alpha(theme.palette.divider, 0.3),
+                                '& .MuiLinearProgress-bar': {
+                                  bgcolor: theme.palette.primary.main
+                                }
+                              }} 
+                            />
+                          </Paper>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                       <Chip 
                         label={currentTier.name} 
                         sx={{ 
@@ -694,7 +801,54 @@ const RewardsPage = () => {
                       color: 'text.primary'
                     }}
                   >
-                    {tier.minCoins === 0 ? '0' : tier.minCoins.toLocaleString()} - {tier.maxCoins === Infinity ? '∞' : tier.maxCoins.toLocaleString()} Coins
+                    Requirements
+                  </Typography>
+                  
+                  <List sx={{ textAlign: 'left', mb: 2, px: 1 }}>
+                    <ListItem sx={{ py: 0.5, px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <CheckCircleIcon sx={{ 
+                          fontSize: 16, 
+                          color: tier.color 
+                        }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={`₹${tier.minSpent.toLocaleString()}+ spent`}
+                        primaryTypographyProps={{ 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                          color: 'text.secondary'
+                        }}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ py: 0.5, px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <CheckCircleIcon sx={{ 
+                          fontSize: 16, 
+                          color: tier.color 
+                        }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={`${tier.minOrders}+ orders`}
+                        primaryTypographyProps={{ 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                          color: 'text.secondary'
+                        }}
+                      />
+                    </ListItem>
+                  </List>
+                  
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      mb: 2, 
+                      fontFamily: theme.typography.fontFamily,
+                      color: 'text.primary'
+                    }}
+                  >
+                    Benefits
                   </Typography>
                   
                   <List sx={{ textAlign: 'left', mb: 2, px: 1 }}>

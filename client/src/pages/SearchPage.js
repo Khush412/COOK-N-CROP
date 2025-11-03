@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Box, Container, Typography, CircularProgress, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination,
+  Box, Container, Typography, CircularProgress, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination, Chip, Stack, useTheme, alpha
 } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 import searchService from '../services/searchService';
+import searchAnalyticsService from '../services/searchAnalyticsService';
 import ProductCard from '../components/ProductCard';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../contexts/AuthContext';
-import SearchOffIcon from '@mui/icons-material/SearchOff';
 
 const UserCard = ({ user }) => {
   const theme = useTheme();
@@ -31,16 +31,37 @@ const UserCard = ({ user }) => {
         },
       }}
     >
-      <Avatar src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} sx={{ width: 80, height: 80, mb: 1 }} />
+      <Avatar 
+        src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} 
+        sx={{ width: 80, height: 80, mb: 1 }}
+        alt={user.username}
+      />
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component={RouterLink} to={`/user/${user.username}`} sx={{ textDecoration: 'none', color: 'text.primary', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, '&:hover': { color: 'primary.main' } }}>
+        <Typography 
+          variant="h6" 
+          component={RouterLink} 
+          to={`/user/${user.username}`} 
+          sx={{ 
+            textDecoration: 'none', 
+            color: 'text.primary', 
+            fontWeight: 'bold', 
+            fontFamily: theme.typography.fontFamily, 
+            '&:hover': { color: 'primary.main' } 
+          }}
+        >
           {user.username}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
           {user.followers?.length || 0} Followers
         </Typography>
       </Box>
-      <Button component={RouterLink} to={`/user/${user.username}`} variant="outlined" size="small" sx={{ mt: 'auto', borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+      <Button 
+        component={RouterLink} 
+        to={`/user/${user.username}`} 
+        variant="outlined" 
+        size="small" 
+        sx={{ mt: 'auto', borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+      >
         View Profile
       </Button>
     </Paper>
@@ -85,6 +106,10 @@ const SearchPage = () => {
       try {
         const data = await searchService.globalSearch(query);
         setGlobalResults(data);
+        
+        // Track the search
+        const totalResults = data.posts.length + data.products.length + data.users.length;
+        searchAnalyticsService.trackSearch(query, totalResults);
       } catch (err) {
         setError('Failed to fetch search results.');
       } finally {
@@ -174,12 +199,22 @@ const SearchPage = () => {
         <Box>
           {globalResults.posts.length > 0 && (
             <Box mb={4}>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Posts</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Posts</Typography>
+                <Chip label={`${globalResults.posts.length} results`} size="small" color="secondary" />
+              </Stack>
               <Grid container spacing={3}>
-                {/* Added showSnackbar prop */}
-                {globalResults.posts.map(post => ( // Use size prop for Grid items
+                {globalResults.posts.map(post => (
                   <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
-                    <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
+                    <PostCard 
+                      post={post} 
+                      user={user} 
+                      onUpvote={() => {}} 
+                      upvotingPosts={[]} 
+                      onToggleSave={() => {}} 
+                      savingPosts={[]} 
+                      showSnackbar={() => {}}
+                    />
                   </Grid>
                 ))}
               </Grid>
@@ -188,9 +223,12 @@ const SearchPage = () => {
           )}
           {globalResults.products.length > 0 && (
             <Box mb={4}>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Products</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Products</Typography>
+                <Chip label={`${globalResults.products.length} results`} size="small" color="primary" />
+              </Stack>
               <Grid container spacing={3}>
-                {globalResults.products.map(product => ( // Use size prop for Grid items
+                {globalResults.products.map(product => (
                   <Grid key={`product-${product._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <ProductCard product={product} showSnackbar={() => {}} />
                   </Grid>
@@ -201,9 +239,12 @@ const SearchPage = () => {
           )}
           {globalResults.users.length > 0 && (
             <Box>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Users</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Users</Typography>
+                <Chip label={`${globalResults.users.length} results`} size="small" color="info" />
+              </Stack>
               <Grid container spacing={3}>
-                {globalResults.users.map(userResult => ( // Use size prop for Grid items
+                {globalResults.users.map(userResult => (
                   <Grid key={`user-${userResult._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <UserCard user={userResult} />
                   </Grid>
@@ -218,18 +259,25 @@ const SearchPage = () => {
     return (
       <Box>
         <Grid container spacing={3}>
-          {tab === 'posts' && paginatedResults.posts.map(post => ( // Use size prop for Grid items
+          {tab === 'posts' && paginatedResults.posts.map(post => (
             <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
-              {/* Added showSnackbar prop */}
-              <PostCard post={post} user={user} onUpvote={() => {}} upvotingPosts={[]} onToggleSave={() => {}} savingPosts={[]} />
+              <PostCard 
+                post={post} 
+                user={user} 
+                onUpvote={() => {}} 
+                upvotingPosts={[]} 
+                onToggleSave={() => {}} 
+                savingPosts={[]} 
+                showSnackbar={() => {}}
+              />
             </Grid>
           ))}
-          {tab === 'products' && paginatedResults.products.map(product => ( // Use size prop for Grid items
+          {tab === 'products' && paginatedResults.products.map(product => (
             <Grid key={`product-${product._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <ProductCard product={product} showSnackbar={() => {}} />
             </Grid>
           ))}
-          {tab === 'users' && paginatedResults.users.map(userResult => ( // Use size prop for Grid items
+          {tab === 'users' && paginatedResults.users.map(userResult => (
             <Grid key={`user-${userResult._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <UserCard user={userResult} />
             </Grid>
@@ -242,6 +290,13 @@ const SearchPage = () => {
               page={pagination[tab].page}
               onChange={(e, value) => handlePageChange(tab, value)}
               color="primary"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  borderRadius: '50%',
+                  fontWeight: 600,
+                  fontFamily: theme.typography.fontFamily,
+                }
+              }}
             />
           </Box>
         )}
@@ -269,11 +324,104 @@ const SearchPage = () => {
       {query && (
         <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs value={tab} onChange={handleTabChange} aria-label="search results tabs" variant="scrollable" scrollButtons="auto">
-              <Tab label="All" value="all" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
-              <Tab label={`Posts (${globalResults.posts.length})`} value="posts" disabled={globalResults.posts.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
-              <Tab label={`Products (${globalResults.products.length})`} value="products" disabled={globalResults.products.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} /> {/* Corrected label */}
-              <Tab label={`Users (${globalResults.users.length})`} value="users" disabled={globalResults.users.length === 0} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }} />
+            <Tabs 
+              value={tab} 
+              onChange={handleTabChange} 
+              aria-label="search results tabs" 
+              variant="scrollable" 
+              scrollButtons="auto"
+              sx={{
+                '& .MuiTab-root': {
+                  fontFamily: theme.typography.fontFamily,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  minWidth: 100,
+                }
+              }}
+            >
+              <Tab 
+                label={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <span>All</span>
+                    <Chip 
+                      label={globalResults.posts.length + globalResults.products.length + globalResults.users.length} 
+                      size="small" 
+                      sx={{ 
+                        height: 18, 
+                        minWidth: 18, 
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        color: theme.palette.primary.contrastText,
+                        backgroundColor: theme.palette.primary.main
+                      }} 
+                    />
+                  </Stack>
+                } 
+                value="all" 
+              />
+              <Tab 
+                label={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <span>Posts</span>
+                    <Chip 
+                      label={globalResults.posts.length} 
+                      size="small" 
+                      sx={{ 
+                        height: 18, 
+                        minWidth: 18, 
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        color: theme.palette.secondary.contrastText,
+                        backgroundColor: theme.palette.secondary.main
+                      }} 
+                    />
+                  </Stack>
+                } 
+                value="posts" 
+                disabled={globalResults.posts.length === 0} 
+              />
+              <Tab 
+                label={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <span>Products</span>
+                    <Chip 
+                      label={globalResults.products.length} 
+                      size="small" 
+                      sx={{ 
+                        height: 18, 
+                        minWidth: 18, 
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        color: theme.palette.primary.contrastText,
+                        backgroundColor: theme.palette.primary.main
+                      }} 
+                    />
+                  </Stack>
+                } 
+                value="products" 
+                disabled={globalResults.products.length === 0} 
+              />
+              <Tab 
+                label={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <span>Users</span>
+                    <Chip 
+                      label={globalResults.users.length} 
+                      size="small" 
+                      sx={{ 
+                        height: 18, 
+                        minWidth: 18, 
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        color: theme.palette.info.contrastText,
+                        backgroundColor: theme.palette.info.main
+                      }} 
+                    />
+                  </Stack>
+                } 
+                value="users" 
+                disabled={globalResults.users.length === 0} 
+              />
             </Tabs>
           </Box>
           {renderResults()}

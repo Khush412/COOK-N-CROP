@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useCallback } from "react";
+import React, { useState, useEffect, forwardRef, useCallback, useRef } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -27,6 +27,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  InputBase,
 } from "@mui/material";
 import {
   Palette as PaletteIcon,
@@ -58,8 +59,8 @@ import notificationService from "../services/notificationService";
 import { useSocket } from "../contexts/SocketContext";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
-import { useCart } from "../contexts/CartContext"; // Add this import
-import GlobalSearch from './GlobalSearch';
+import { useCart } from "../contexts/CartContext";
+import EnhancedGlobalSearch from './EnhancedGlobalSearch';
 
 // Navigation link styles adjusted for reduced padding except first nav item
 const NavLink = styled(Button)(({ theme, active }) => ({
@@ -183,12 +184,27 @@ const StyledMenu = forwardRef((props, ref) => {
   );
 });
 
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: '50px',
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: theme.spacing(3),
+  width: 'auto',
+  [theme.breakpoints.up('sm')]: {
+    width: '300px',
+  },
+}));
+
 export default function Navbar() {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, unreadMessageCount, fetchUnreadMessageCount } = useAuth();
-  const { cart } = useCart(); // Add this line to get cart data
+  const { cart } = useCart();
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
@@ -200,6 +216,9 @@ export default function Navbar() {
   const [hasShadow, setHasShadow] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef(null);
 
   const [showChatbot, setShowChatbot] = useState(() => localStorage.getItem('showChatbot') !== 'false');
 
@@ -325,6 +344,18 @@ export default function Navbar() {
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") return;
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      setShowSuggestions(false);
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
+  const handleSuggestionSelect = () => {
+    setSearchQuery('');
   };
 
   const navItems = [
@@ -508,20 +539,8 @@ export default function Navbar() {
 
           {/* Right Section */}
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 1 } }}>
-            {/* Mobile Search Icon */}
-            <Tooltip title="Search">
-              <IconButton // This is now redundant but harmless. The real mobile search is the drawer.
-                onClick={() => setMobileSearchOpen(true)}
-                sx={{ color: 'common.white', display: { xs: 'flex', sm: 'none' } }}
-                aria-label="open search"
-              >
-                <SearchIcon />
-              </IconButton>
-            </Tooltip>
             {/* Desktop Search Bar */}
-            <Box>
-              <GlobalSearch />
-            </Box>
+            <EnhancedGlobalSearch />
             {/* Cart Button */}
             <Tooltip title="Shopping Cart" arrow>
               <IconButton
@@ -876,7 +895,7 @@ export default function Navbar() {
       >
         <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flexGrow: 1 }}>
-            <GlobalSearch fullWidth />
+            <EnhancedGlobalSearch fullWidth />
           </Box>
           <IconButton
             onClick={() => setMobileSearchOpen(false)}

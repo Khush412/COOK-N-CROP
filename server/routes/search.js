@@ -5,6 +5,14 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const { optionalAuth } = require('../middleware/auth');
 
+// Helper function to get the first image URL for a product
+const getProductImageUrl = (product) => {
+  if (product.images && product.images.length > 0) {
+    return product.images[0];
+  }
+  return null;
+};
+
 // @desc    Global search for posts, products, and users
 // @route   GET /api/search
 // @access  Public
@@ -54,7 +62,13 @@ router.get('/', optionalAuth, async (req, res) => {
       usersPromise,
     ]);
 
-    res.json({ posts, products, users });
+    // Process products to ensure they have proper image data
+    const processedProducts = products.map(product => ({
+      ...product,
+      images: product.images || []
+    }));
+
+    res.json({ posts, products: processedProducts, users });
   } catch (error) {
     console.error('Global search error:', error);
     res.status(500).json({ message: 'Server Error' });
@@ -120,7 +134,13 @@ router.get('/products', async (req, res) => {
 
     const [totalProducts, products] = await Promise.all([countPromise, productsPromise]);
 
-    res.json({ products, page: pageNum, pages: Math.ceil(totalProducts / limitNum) });
+    // Process products to ensure they have proper image data
+    const processedProducts = products.map(product => ({
+      ...product,
+      images: product.images || []
+    }));
+
+    res.json({ products: processedProducts, page: pageNum, pages: Math.ceil(totalProducts / limitNum) });
   } catch (error) {
     console.error('Search products error:', error);
     res.status(500).json({ message: 'Server Error' });

@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import searchService from '../services/searchService';
+import searchAnalyticsService from '../services/searchAnalyticsService';
 
 const Search = styled('div', {
   shouldForwardProp: (prop) => prop !== '$fullWidth',
@@ -71,13 +72,14 @@ const StyledInputBase = styled(InputBase, {
   },
 }));
 
-const GlobalSearch = ({ fullWidth = false }) => {
+const EnhancedGlobalSearch = ({ fullWidth = false }) => {
   const theme = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const [results, setResults] = useState({ posts: [], products: [], users: [] });
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
   const navigate = useNavigate();
   const anchorRef = useRef(null);
 
@@ -87,6 +89,11 @@ const GlobalSearch = ({ fullWidth = false }) => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    // Load recent searches
+    setRecentSearches(searchAnalyticsService.getRecentSearches(3));
+  }, []);
 
   useEffect(() => {
     if (debouncedTerm.length < 2) {
@@ -101,6 +108,10 @@ const GlobalSearch = ({ fullWidth = false }) => {
         const data = await searchService.globalSearch(debouncedTerm);
         setResults(data);
         setOpen(true);
+        
+        // Track the search
+        const totalResults = data.posts.length + data.products.length + data.users.length;
+        searchAnalyticsService.trackSearch(debouncedTerm, totalResults);
       } catch (error) {
         console.error("Search error:", error);
         setOpen(false);
@@ -116,6 +127,11 @@ const GlobalSearch = ({ fullWidth = false }) => {
     if (event.key === 'Enter' && searchTerm.trim()) {
       setOpen(false);
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm('');
+      
+      // Track the search
+      const totalResults = results.posts.length + results.products.length + results.users.length;
+      searchAnalyticsService.trackSearch(searchTerm.trim(), totalResults);
     }
   };
 
@@ -123,10 +139,25 @@ const GlobalSearch = ({ fullWidth = false }) => {
     setOpen(false);
   };
 
-  const handleResultClick = (path) => {
+  const handleResultClick = (path, query = null) => {
     handleClose();
     setSearchTerm('');
     navigate(path);
+    
+    // Track the search if we have a query
+    if (query) {
+      const totalResults = results.posts.length + results.products.length + results.users.length;
+      searchAnalyticsService.trackSearch(query, totalResults);
+    }
+  };
+
+  const handleRecentSearchClick = (query) => {
+    setSearchTerm(query);
+    setOpen(false);
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+    
+    // Track the search
+    searchAnalyticsService.trackSearch(query, 0); // We don't know results count yet
   };
 
   const hasResults = results.posts.length > 0 || results.products.length > 0 || results.users.length > 0;
@@ -149,13 +180,19 @@ const GlobalSearch = ({ fullWidth = false }) => {
             <SearchIcon />
           </SearchIconWrapper>
           <StyledInputBase
-            placeholder="Search…"
+            placeholder="Search products, posts, users..."
             inputProps={{ 'aria-label': 'search' }}
             value={searchTerm}
             $fullWidth={fullWidth}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleSearch}
-            onFocus={() => { if (searchTerm.length > 1 && hasResults) setOpen(true); }}
+            onFocus={() => { 
+              if (searchTerm.length < 2 && recentSearches.length > 0) {
+                setOpen(true);
+              } else if (searchTerm.length > 1 && hasResults) {
+                setOpen(true);
+              }
+            }}
           />
         </Search>
         <Popper
@@ -175,7 +212,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                 maxHeight: '70vh',
                 overflowY: 'auto',
                 borderRadius: 2,
-                background: alpha(theme.palette.background.paper, 0.9),
+                background: alpha(theme.palette.background.paper, 0.95),
                 backdropFilter: 'blur(10px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
               }}>
@@ -183,6 +220,39 @@ const GlobalSearch = ({ fullWidth = false }) => {
                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
                     <CircularProgress size={24} />
                   </Box>
+                ) : searchTerm.length < 2 && recentSearches.length > 0 ? (
+                  // Show recent searches when no search term
+                  <List dense>
+                    <Typography variant="overline" sx={{ px: 2, py: 1, fontFamily: theme.typography.fontFamily }}>
+                      Recent Searches
+                    </Typography>
+                    {recentSearches.map((query, index) => (
+                      <ListItemButton 
+                        key={index}
+                        onClick={() => handleRecentSearchClick(query)}
+                        sx={{ 
+                          py: 1,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                          }
+                        }}
+                      >
+                        <ListItemText 
+                          primary={
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 500, 
+                                fontFamily: theme.typography.fontFamily,
+                              }}
+                            >
+                              {query}
+                            </Typography>
+                          } 
+                        />
+                      </ListItemButton>
+                    ))}
+                  </List>
                 ) : hasResults ? (
                   <List dense>
                     {results.products.length > 0 && (
@@ -194,7 +264,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         {results.products.slice(0, 3).map(product => (
                           <ListItemButton 
                             key={`prod-${product._id}`} 
-                            onClick={() => handleResultClick(`/product/${product._id}`)}
+                            onClick={() => handleResultClick(`/product/${product._id}`, searchTerm)}
                             sx={{ 
                               py: 1,
                               '&:hover': {
@@ -233,11 +303,6 @@ const GlobalSearch = ({ fullWidth = false }) => {
                                   sx={{ 
                                     color: 'text.secondary', 
                                     fontFamily: theme.typography.fontFamily,
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 1,
-                                    WebkitBoxOrient: 'vertical',
                                   }}
                                 >
                                   ₹{product.price?.toFixed(2)}
@@ -258,7 +323,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         {results.posts.slice(0, 3).map(post => (
                           <ListItemButton 
                             key={`post-${post._id}`} 
-                            onClick={() => handleResultClick(`/post/${post._id}`)}
+                            onClick={() => handleResultClick(`/post/${post._id}`, searchTerm)}
                             sx={{ 
                               py: 1,
                               '&:hover': {
@@ -289,11 +354,6 @@ const GlobalSearch = ({ fullWidth = false }) => {
                                   sx={{ 
                                     color: 'text.secondary', 
                                     fontFamily: theme.typography.fontFamily,
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 1,
-                                    WebkitBoxOrient: 'vertical',
                                   }}
                                 >
                                   by {post.user?.username}
@@ -314,7 +374,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                         {results.users.slice(0, 3).map(user => (
                           <ListItemButton 
                             key={`user-${user._id}`} 
-                            onClick={() => handleResultClick(`/user/${user.username}`)}
+                            onClick={() => handleResultClick(`/user/${user.username}`, searchTerm)}
                             sx={{ 
                               py: 1,
                               '&:hover': {
@@ -353,7 +413,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
                       </>
                     )}
                     <ListItemButton 
-                      onClick={() => handleResultClick(`/search?q=${encodeURIComponent(searchTerm.trim())}`)}
+                      onClick={() => handleResultClick(`/search?q=${encodeURIComponent(searchTerm.trim())}`, searchTerm)}
                       sx={{ 
                         justifyContent: 'center',
                         py: 1.5,
@@ -379,11 +439,11 @@ const GlobalSearch = ({ fullWidth = false }) => {
                       />
                     </ListItemButton>
                   </List>
-                ) : (
+                ) : searchTerm.length >= 2 ? (
                   <Typography sx={{ p: 2, color: 'text.secondary', fontFamily: theme.typography.fontFamily, textAlign: 'center' }}>
-                    No results found. Try different keywords.
+                    No results found for "{searchTerm}". Try different keywords.
                   </Typography>
-                )}
+                ) : null}
               </Paper>
             </Fade>
           )}
@@ -393,4 +453,4 @@ const GlobalSearch = ({ fullWidth = false }) => {
   );
 };
 
-export default GlobalSearch;
+export default EnhancedGlobalSearch;
