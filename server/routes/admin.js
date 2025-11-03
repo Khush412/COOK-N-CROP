@@ -92,10 +92,10 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
     }
 
     // Get user role distribution
-    const userRoleDistribution = await User.aggregate([
-      { $group: { _id: '$role', count: { $sum: 1 } } },
-      { $project: { name: '$_id', value: '$count', _id: 0 } }
-    ]);
+    // const userRoleDistribution = await User.aggregate([
+    //   { $group: { _id: '$role', count: { $sum: 1 } } },
+    //   { $project: { name: '$_id', value: '$count', _id: 0 } }
+    // ]);
 
     // Get top selling products
     const topSellingProducts = await Order.aggregate([
@@ -168,7 +168,7 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
         totalRevenue,
         userSignups: formattedSignups,
         salesData: formattedSales,
-        userRoleDistribution,
+        // userRoleDistribution,
         topSellingProducts,
         topCustomers,
       },

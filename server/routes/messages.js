@@ -187,4 +187,34 @@ router.get('/unread-count', protect, async (req, res) => {
   }
 });
 
+// @desc    Delete a conversation
+// @route   DELETE /api/messages/conversations/:conversationId
+// @access  Private
+router.delete('/conversations/:conversationId', protect, async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+    const conversation = await Conversation.findById(req.params.conversationId);
+
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found.' });
+    }
+
+    // Check if the current user is a participant in the conversation
+    if (!conversation.participants.some(participant => participant.equals(currentUserId))) {
+      return res.status(403).json({ message: 'You are not authorized to delete this conversation.' });
+    }
+
+    // Delete all messages in the conversation
+    await Message.deleteMany({ conversation: req.params.conversationId });
+
+    // Delete the conversation
+    await Conversation.findByIdAndDelete(req.params.conversationId);
+
+    res.json({ message: 'Conversation deleted successfully.' });
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

@@ -3,7 +3,7 @@ import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack, Chip, Grid,
-  Input,
+  Input, FormControl, InputLabel, Select, MenuItem, OutlinedInput
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,6 +16,7 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 import ProductFormDialog from '../../components/ProductFormDialog';
@@ -42,6 +43,7 @@ const ManageProducts = () => {
   const [csvFile, setCsvFile] = useState(null);
   const [csvImportLoading, setCsvImportLoading] = useState(false);
   const [csvImportResult, setCsvImportResult] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState('All');
   const [lowStockThreshold] = useState(10); // Define low stock threshold
 
   // Calculate low stock count
@@ -58,7 +60,11 @@ const ManageProducts = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await productService.getAllProducts({ page, search: debouncedSearchTerm });
+      const data = await productService.getAllProducts({ 
+        page, 
+        search: debouncedSearchTerm,
+        category: categoryFilter === 'All' ? undefined : categoryFilter
+      });
       setProducts(data.products);
       setPage(data.page);
       setTotalPages(data.pages);
@@ -70,7 +76,7 @@ const ManageProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearchTerm]);
+  }, [page, debouncedSearchTerm, categoryFilter]);
 
   useEffect(() => {
     console.log('ManageProducts useEffect triggered');
@@ -223,8 +229,8 @@ const ManageProducts = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 12, py: 4, zoom: 0.9 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Products
         </Typography>
@@ -233,38 +239,61 @@ const ManageProducts = () => {
         </Typography>
       </Paper>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
             <TextField
-              label="Search by Name or Category"
+              label="Search by Name or Description"
               variant="outlined"
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: '50px' } }}
+              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             />
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Category</InputLabel>
+              <Select
+                value={categoryFilter}
+                label="Category"
+                onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      '& .MuiMenuItem-root': {
+                        fontFamily: theme.typography.fontFamily,
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="All">All Categories</MenuItem>
+                {categories.map(category => (
+                  <MenuItem key={category} value={category}>{category}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             {numSelected > 0 && (
-              <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+              <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
                 Delete Selected ({numSelected})
               </Button>
             )}
           </Stack>
           <Stack direction="row" spacing={1}>
-            <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={handleOpenCsvImportDialog} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+            <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={handleOpenCsvImportDialog} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
               Import CSV
             </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
               Add Product
             </Button>
           </Stack>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (
           <>
             <TableContainer>
@@ -284,7 +313,6 @@ const ManageProducts = () => {
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Stock</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Sales</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
                   </TableRow>
@@ -296,7 +324,12 @@ const ManageProducts = () => {
                       return (
                         <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected} sx={{
                           backgroundColor: product.countInStock <= lowStockThreshold ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
-                          '& td': { py: 1 }
+                          '& td': { py: 1.5 },
+                          '&:hover': {
+                            backgroundColor: product.countInStock <= lowStockThreshold 
+                              ? alpha(theme.palette.warning.main, 0.15) 
+                              : alpha(theme.palette.primary.main, 0.02)
+                          }
                         }}>
                           <TableCell padding="checkbox">
                             <Checkbox
@@ -308,16 +341,32 @@ const ManageProducts = () => {
                             <Avatar 
                               src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
                               variant="rounded" 
-                              sx={{ width: 40, height: 40 }} 
+                              sx={{ width: 50, height: 50, borderRadius: 2 }} 
                             />
                           </TableCell>
-                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.name}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.category}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1, fontSize: '0.875rem' }}>
-                            ₹{product.price.toFixed(2)}
+                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+                              {product.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              ID: {product._id.substring(0, 8)}...
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Chip 
+                              label={product.category} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                              ₹{product.price.toFixed(2)}
+                            </Typography>
                             {product.salePrice && product.salePrice < product.price && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                                <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontSize: '0.75rem' }}>
+                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
                                   ₹{product.price.toFixed(2)}
                                 </Typography>
                                 <Chip 
@@ -325,44 +374,58 @@ const ManageProducts = () => {
                                   label={`${Math.round(((product.price - product.salePrice) / product.price) * 100)}%`}
                                   size="small"
                                   color="error"
-                                  sx={{ height: 16, '& .MuiChip-icon': { fontSize: 10, mr: 0.2 }, '& .MuiChip-label': { px: 0.3, fontSize: '0.6rem' } }}
+                                  sx={{ height: 20, '& .MuiChip-icon': { fontSize: 10, mr: 0.2 }, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }}
                                 />
                               </Box>
                             )}
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: '0.875rem' }}>{product.countInStock}</Typography>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                {product.countInStock}
+                              </Typography>
                               {product.countInStock <= lowStockThreshold && (
-                                <WarningAmberIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+                                <Tooltip title="Low Stock">
+                                  <WarningAmberIcon sx={{ fontSize: 18, color: 'warning.main' }} />
+                                </Tooltip>
                               )}
                             </Box>
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, py: 1, fontSize: '0.875rem' }}>
-                            {product.totalSales || 0}
-                          </TableCell>
-                          <TableCell sx={{ py: 1 }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                               {product.isFeatured && <StarIcon sx={{ fontSize: 16, color: 'secondary.main' }} />}
-                              {product.badges?.isNew && <Chip label="New" size="small" color="info" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
-                              {product.badges?.isOrganic && <Chip label="Organic" size="small" color="success" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
-                              {product.badges?.isBestseller && <Chip label="Best" size="small" color="primary" sx={{ height: 16, '& .MuiChip-label': { px: 0.5, fontSize: '0.6rem' } }} />}
+                              {product.badges?.isNew && <Chip label="New" size="small" color="info" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
+                              {product.badges?.isOrganic && <Chip label="Organic" size="small" color="success" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
+                              {product.badges?.isBestseller && <Chip label="Best" size="small" color="primary" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
                             </Box>
                           </TableCell>
-                          <TableCell align="right" sx={{ py: 1 }}>
+                          <TableCell align="right">
                             <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
                               <Tooltip title={product.isFeatured ? "Unfeature Product" : "Feature Product"}>
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
                                   {product.isFeatured ? <StarIcon color="secondary" fontSize="small" /> : <StarBorderIcon fontSize="small" />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Edit Product">
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
                                   <EditIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Delete Product">
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} color="error">
+                                <IconButton 
+                                  size="small" 
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} 
+                                  color="error"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
                                   <DeleteIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
@@ -373,10 +436,15 @@ const ManageProducts = () => {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <Inventory2Icon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No products found matching your criteria.</Typography>
+                      <TableCell colSpan={8} align="center">
+                        <Box sx={{ p: 6, textAlign: 'center' }}>
+                          <Inventory2Icon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                            No products found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            Try adjusting your search criteria or add a new product
+                          </Typography>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -391,6 +459,14 @@ const ManageProducts = () => {
                   page={page}
                   onChange={(event, value) => setPage(value)}
                   color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  sx={{ 
+                    '& .MuiPaginationItem-root': { 
+                      borderRadius: 2,
+                      fontFamily: theme.typography.fontFamily
+                    }
+                  }}
                 />
               </Box>
             )}
@@ -400,55 +476,56 @@ const ManageProducts = () => {
       <ProductFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
-        onSave={handleSaveProduct}
         product={editingProduct}
+        onSave={handleSaveProduct}
         loading={formLoading}
       />
-      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
-          <WarningAmberIcon color="warning" />
-          {confirmAction?.title}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
-            {confirmAction?.message}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
-            Cancel
-          </Button>
-          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+      {/* CSV Import Dialog */}
       <Dialog open={csvImportDialogOpen} onClose={handleCloseCsvImportDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
           Import Products from CSV
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
-            Upload a CSV file to bulk import products. You can add images manually after import.
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+            Upload a CSV file to bulk import products. Make sure your file follows the required format.
           </DialogContentText>
           
           <Box sx={{ mb: 2 }}>
-            <input
-              accept=".csv"
-              style={{ display: 'none' }}
-              id="csv-file-upload"
-              type="file"
-              onChange={handleCsvFileChange}
-            />
-            <label htmlFor="csv-file-upload">
-              <Button 
-                variant="outlined" 
-                component="span" 
-                sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
-              >
-                {csvFile ? csvFile.name : 'Choose CSV File'}
-              </Button>
-            </label>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<DownloadIcon />}
+              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, mb: 2 }}
+            >
+              Download Template
+              <Input
+                type="file"
+                sx={{ display: 'none' }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // In a real implementation, this would download a template file
+                  alert('Template download would be implemented here');
+                }}
+              />
+            </Button>
+          </Box>
+          
+          <Box sx={{ mb: 2 }}>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<UploadFileIcon />}
+              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            >
+              Choose CSV File
+              <Input
+                type="file"
+                accept=".csv"
+                sx={{ display: 'none' }}
+                onChange={handleCsvFileChange}
+              />
+            </Button>
             {csvFile && (
               <Typography variant="body2" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
                 Selected: {csvFile.name}
@@ -456,57 +533,63 @@ const ManageProducts = () => {
             )}
           </Box>
           
-          <Alert severity="info" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
-            <strong>CSV Format Requirements:</strong>
-            <br />
-            Required columns: name, price, description, category, countInStock
-            <br />
-            Optional columns: unit, brand, tags (comma-separated), isFeatured (true/false)
-            <br />
-            Category must be one of: Fruits, Vegetables, Dairy, Grains, Meat, Seafood, Baked Goods, Beverages, Snacks, Other
-            <br />
-            <br />
-            Example format:
-            <br />
-            name,price,description,category,countInStock,unit,brand,tags,isFeatured
-            <br />
-            Organic Apples,120,"Fresh organic apples",Fruits,50,1 kg,Organic Farms,"organic,healthy",true
-          </Alert>
-          
           {csvImportResult && (
             <Alert 
-              severity={csvImportResult.success ? 'success' : 'error'} 
-              sx={{ fontFamily: theme.typography.fontFamily }}
+              severity={csvImportResult.success ? "success" : "error"} 
+              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
             >
               {csvImportResult.message}
-              {csvImportResult.importedCount !== undefined && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Imported {csvImportResult.importedCount} products successfully.
-                </Typography>
-              )}
-              {csvImportResult.errors && csvImportResult.errors.length > 0 && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Errors: {csvImportResult.errors.length} rows had issues.
-                </Typography>
-              )}
             </Alert>
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           <Button 
             onClick={handleCloseCsvImportDialog} 
-            disabled={csvImportLoading}
-            sx={{ fontFamily: theme.typography.fontFamily }}
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleCsvImport} 
+            variant="contained" 
             disabled={!csvFile || csvImportLoading}
-            variant="contained"
-            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+            startIcon={csvImportLoading ? <CircularProgress size={20} /> : null}
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
           >
-            {csvImportLoading ? <CircularProgress size={24} /> : 'Import Products'}
+            {csvImportLoading ? 'Importing...' : 'Import'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
+          {confirmAction?.title}
+        </DialogTitle>
+        <DialogContent sx={{ fontFamily: theme.typography.fontFamily }}>
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {confirmAction?.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setConfirmDialogOpen(false)} 
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={executeConfirmAction} 
+            variant="contained" 
+            autoFocus
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>

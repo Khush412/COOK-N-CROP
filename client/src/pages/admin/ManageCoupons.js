@@ -3,16 +3,17 @@ import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
   DialogContentText,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Container, Stack, Grid,
-  DialogContent, DialogActions, TextField, MenuItem, Chip, Checkbox, FormControlLabel, FormControl, FormLabel, FormGroup
+  DialogContent, DialogActions, TextField, MenuItem, Chip, Checkbox, FormControlLabel, FormControl, FormLabel, FormGroup, Select, InputLabel
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
-import { format } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DiscountIcon from '@mui/icons-material/Discount';
+import SearchIcon from '@mui/icons-material/Search';
 import couponService from '../../services/couponService';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -26,7 +27,7 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
     expiresAt: '',
     minPurchase: '',
     usageLimit: '',
-    tierRestrictions: ['bronze', 'silver', 'gold'], // Add tier restrictions
+    tierRestrictions: ['bronze', 'silver', 'gold'],
   });
 
   useEffect(() => {
@@ -74,35 +75,112 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>{coupon ? 'Edit Coupon' : 'Add New Coupon'}</DialogTitle>
-      <DialogContent sx={{ pt: '8px !important' }}>
+      <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
+        {coupon ? 'Edit Coupon' : 'Add New Coupon'}
+      </DialogTitle>
+      <DialogContent>
         <Box component="form" id="coupon-form" onSubmit={handleSubmit}>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField name="code" label="Coupon Code" value={formData.code} onChange={handleChange} fullWidth required helperText="Must be unique. Will be uppercased." InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+          <Stack spacing={2.5} sx={{ mt: 1 }}>
+            <TextField 
+              name="code" 
+              label="Coupon Code" 
+              value={formData.code} 
+              onChange={handleChange} 
+              fullWidth 
+              required 
+              helperText="Must be unique. Will be uppercased." 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+              sx={{ 
+                '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                '& .MuiOutlinedInput-root': { borderRadius: 2 }
+              }} 
+            />
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="discountType" label="Discount Type" select value={formData.discountType} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}>
-                  <MenuItem value="percentage" sx={{ fontFamily: theme.typography.fontFamily }}>Percentage (%)</MenuItem>
-                  <MenuItem value="fixed" sx={{ fontFamily: theme.typography.fontFamily }}>Fixed Amount ($)</MenuItem>
-                </TextField>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Discount Type</InputLabel>
+                  <Select
+                    name="discountType"
+                    value={formData.discountType}
+                    onChange={handleChange}
+                    label="Discount Type"
+                    sx={{ 
+                      borderRadius: 2, 
+                      fontFamily: theme.typography.fontFamily,
+                      '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily }
+                    }}
+                  >
+                    <MenuItem value="percentage" sx={{ fontFamily: theme.typography.fontFamily }}>Percentage (%)</MenuItem>
+                    <MenuItem value="fixed" sx={{ fontFamily: theme.typography.fontFamily }}>Fixed Amount (₹)</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="discountValue" label="Discount Value" type="number" value={formData.discountValue} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                <TextField 
+                  name="discountValue" 
+                  label="Discount Value" 
+                  type="number" 
+                  value={formData.discountValue} 
+                  onChange={handleChange} 
+                  fullWidth 
+                  required 
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+                  sx={{ 
+                    '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                  }} 
+                />
               </Grid>
             </Grid>
-            <TextField name="expiresAt" label="Expires At" type="datetime-local" value={formData.expiresAt} onChange={handleChange} fullWidth required InputLabelProps={{ shrink: true }} />
+            <TextField 
+              name="expiresAt" 
+              label="Expires At" 
+              type="datetime-local" 
+              value={formData.expiresAt} 
+              onChange={handleChange} 
+              fullWidth 
+              required 
+              InputLabelProps={{ shrink: true, sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="minPurchase" label="Minimum Purchase ($)" type="number" value={formData.minPurchase} onChange={handleChange} fullWidth helperText="Leave blank for no minimum." />
+                <TextField 
+                  name="minPurchase" 
+                  label="Minimum Purchase (₹)" 
+                  type="number" 
+                  value={formData.minPurchase} 
+                  onChange={handleChange} 
+                  fullWidth 
+                  helperText="Leave blank for no minimum." 
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                  sx={{ 
+                    '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                  }}
+                />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField name="usageLimit" label="Usage Limit" type="number" value={formData.usageLimit} onChange={handleChange} fullWidth helperText="Leave blank for unlimited uses." />
+                <TextField 
+                  name="usageLimit" 
+                  label="Usage Limit" 
+                  type="number" 
+                  value={formData.usageLimit} 
+                  onChange={handleChange} 
+                  fullWidth 
+                  helperText="Leave blank for unlimited uses." 
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                  sx={{ 
+                    '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                  }}
+                />
               </Grid>
             </Grid>
             
             {/* Tier Restrictions */}
             <FormControl component="fieldset">
-              <FormLabel component="legend" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>Available to Tiers</FormLabel>
+              <FormLabel component="legend" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, fontWeight: 'bold' }}>Available to Tiers</FormLabel>
               <FormGroup row>
                 <FormControlLabel
                   control={
@@ -110,9 +188,13 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
                       checked={formData.tierRestrictions.includes('bronze')}
                       onChange={() => handleTierChange('bronze')}
                       name="bronze"
+                      sx={{ 
+                        color: '#CD7F32',
+                        '&.Mui-checked': { color: '#CD7F32' }
+                      }}
                     />
                   }
-                  label={<Chip label="Bronze" sx={{ bgcolor: '#CD7F32', color: 'white', fontWeight: 'bold' }} />}
+                  label={<Chip label="Bronze" sx={{ bgcolor: '#CD7F32', color: 'white', fontWeight: 'bold', borderRadius: 1 }} />}
                 />
                 <FormControlLabel
                   control={
@@ -120,9 +202,13 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
                       checked={formData.tierRestrictions.includes('silver')}
                       onChange={() => handleTierChange('silver')}
                       name="silver"
+                      sx={{ 
+                        color: '#C0C0C0',
+                        '&.Mui-checked': { color: '#C0C0C0' }
+                      }}
                     />
                   }
-                  label={<Chip label="Silver" sx={{ bgcolor: '#C0C0C0', color: 'white', fontWeight: 'bold' }} />}
+                  label={<Chip label="Silver" sx={{ bgcolor: '#C0C0C0', color: 'white', fontWeight: 'bold', borderRadius: 1 }} />}
                 />
                 <FormControlLabel
                   control={
@@ -130,9 +216,13 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
                       checked={formData.tierRestrictions.includes('gold')}
                       onChange={() => handleTierChange('gold')}
                       name="gold"
+                      sx={{ 
+                        color: '#FFD700',
+                        '&.Mui-checked': { color: '#FFD700' }
+                      }}
                     />
                   }
-                  label={<Chip label="Gold" sx={{ bgcolor: '#FFD700', color: 'black', fontWeight: 'bold' }} />}
+                  label={<Chip label="Gold" sx={{ bgcolor: '#FFD700', color: 'black', fontWeight: 'bold', borderRadius: 1 }} />}
                 />
               </FormGroup>
             </FormControl>
@@ -140,8 +230,20 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
-        <Button type="submit" form="coupon-form" variant="contained" disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Button 
+          onClick={onClose} 
+          disabled={loading} 
+          sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          form="coupon-form" 
+          variant="contained" 
+          disabled={loading} 
+          sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+        >
           {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>
@@ -247,12 +349,12 @@ const ManageCoupons = () => {
   };
 
   const handleDeleteCoupon = (couponId) => {
-    openConfirmDialog('deleteCoupon', couponId, 'Confirm Coupon Deletion', 'Are you sure you want to delete this coupon?');
+    openConfirmDialog('deleteCoupon', couponId, 'Confirm Coupon Deletion', 'Are you sure you want to delete this coupon? This action cannot be undone.');
   };
 
   return (
-    <Container maxWidth="lg">
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Coupons
         </Typography>
@@ -261,7 +363,7 @@ const ManageCoupons = () => {
         </Typography>
       </Paper>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
             <TextField
@@ -271,19 +373,36 @@ const ManageCoupons = () => {
               fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { fontFamily: theme.typography.fontFamily } }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+              sx={{ 
+                '& .MuiOutlinedInput-root': { 
+                  borderRadius: 2,
+                  fontFamily: theme.typography.fontFamily 
+                },
+                '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />,
+              }}
             />
           </Box>
-          <Box>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-              Add Coupon
-            </Button>
-          </Box>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={() => handleOpenDialog()} 
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              px: 3
+            }}
+          >
+            Add Coupon
+          </Button>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (
           <>
             <TableContainer>
@@ -291,8 +410,7 @@ const ManageCoupons = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Code</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Type</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Value</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Discount</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Expires</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Usage</TableCell>
@@ -303,33 +421,124 @@ const ManageCoupons = () => {
                 <TableBody>
                   {coupons.length > 0 ? (
                     coupons.map((coupon) => {
-                      const isExpired = new Date(coupon.expiresAt) < new Date();
+                      const isExpired = isBefore(new Date(coupon.expiresAt), new Date());
                       const status = coupon.isActive && !isExpired ? 'Active' : 'Inactive';
                       return (
-                        <TableRow key={coupon._id} hover>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}><Chip label={coupon.code} color="primary" variant="outlined" /></TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{format(new Date(coupon.expiresAt), 'PPp')}</TableCell>
-                          <TableCell><Chip label={status} color={status === 'Active' ? 'success' : 'error'} size="small" /></TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{coupon.timesUsed} / {coupon.usageLimit || '∞'}</TableCell>
+                        <TableRow 
+                          key={coupon._id} 
+                          hover
+                          sx={{
+                            '& td': { py: 1.5 },
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.02)
+                            }
+                          }}
+                        >
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Chip 
+                              label={coupon.code} 
+                              color="primary" 
+                              variant="outlined" 
+                              sx={{ 
+                                fontWeight: 'bold',
+                                borderRadius: 1,
+                                fontFamily: theme.typography.fontFamily
+                              }} 
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                              {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
+                            </Typography>
+                            {coupon.minPurchase > 0 && (
+                              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block' }}>
+                                Min: ₹{coupon.minPurchase}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              {format(new Date(coupon.expiresAt), 'PP')}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              {format(new Date(coupon.expiresAt), 'p')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={status} 
+                              color={status === 'Active' ? 'success' : 'error'} 
+                              size="small" 
+                              sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                {coupon.timesUsed}
+                              </Typography>
+                              {coupon.usageLimit && (
+                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                  / {coupon.usageLimit}
+                                </Typography>
+                              )}
+                              {!coupon.usageLimit && (
+                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                  / ∞
+                                </Typography>
+                              )}
+                            </Box>
+                            {coupon.usageLimit && (
+                              <Box sx={{ width: 80, height: 6, bgcolor: 'grey.200', borderRadius: 3, mt: 0.5, overflow: 'hidden' }}>
+                                <Box 
+                                  sx={{ 
+                                    width: `${Math.min(100, (coupon.timesUsed / coupon.usageLimit) * 100)}%`, 
+                                    height: '100%', 
+                                    bgcolor: coupon.timesUsed >= coupon.usageLimit ? 'error.main' : 'success.main' 
+                                  }} 
+                                />
+                              </Box>
+                            )}
+                          </TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
                             <Stack direction="row" spacing={0.5}>
-                              {coupon.tierRestrictions.includes('bronze') && <Chip label="B" size="small" sx={{ bgcolor: '#CD7F32', color: 'white', width: 24, height: 24 }} />}
-                              {coupon.tierRestrictions.includes('silver') && <Chip label="S" size="small" sx={{ bgcolor: '#C0C0C0', color: 'white', width: 24, height: 24 }} />}
-                              {coupon.tierRestrictions.includes('gold') && <Chip label="G" size="small" sx={{ bgcolor: '#FFD700', color: 'black', width: 24, height: 24 }} />}
+                              {coupon.tierRestrictions.includes('bronze') && <Chip label="B" size="small" sx={{ bgcolor: '#CD7F32', color: 'white', width: 24, height: 24, borderRadius: 1 }} />}
+                              {coupon.tierRestrictions.includes('silver') && <Chip label="S" size="small" sx={{ bgcolor: '#C0C0C0', color: 'white', width: 24, height: 24, borderRadius: 1 }} />}
+                              {coupon.tierRestrictions.includes('gold') && <Chip label="G" size="small" sx={{ bgcolor: '#FFD700', color: 'black', width: 24, height: 24, borderRadius: 1 }} />}
                             </Stack>
                           </TableCell>
                           <TableCell align="right">
-                            <Tooltip title="View Orders">
-                              <IconButton component={RouterLink} to={`/admin/coupons/${coupon.code}/orders`}><VisibilityIcon /></IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit Coupon">
-                              <IconButton onClick={() => handleOpenDialog(coupon)}><EditIcon /></IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete Coupon">
-                              <IconButton onClick={() => handleDeleteCoupon(coupon._id)} color="error"><DeleteIcon /></IconButton>
-                            </Tooltip>
+                            <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                              <Tooltip title="View Orders">
+                                <IconButton 
+                                  component={RouterLink} 
+                                  to={`/admin/coupons/${coupon.code}/orders`}
+                                  size="small"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <VisibilityIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit Coupon">
+                                <IconButton 
+                                  onClick={() => handleOpenDialog(coupon)}
+                                  size="small"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Coupon">
+                                <IconButton 
+                                  onClick={() => handleDeleteCoupon(coupon._id)} 
+                                  color="error"
+                                  size="small"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       );
@@ -337,9 +546,14 @@ const ManageCoupons = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} align="center">
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <DiscountIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No coupons found matching your criteria.</Typography>
+                        <Box sx={{ p: 6, textAlign: 'center' }}>
+                          <DiscountIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                            No coupons found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            Try adjusting your search criteria or add a new coupon
+                          </Typography>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -349,7 +563,20 @@ const ManageCoupons = () => {
             </TableContainer>
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <Pagination count={totalPages} page={page} onChange={(event, value) => setPage(value)} color="primary" />
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={(event, value) => setPage(value)}
+                  color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  sx={{ 
+                    '& .MuiPaginationItem-root': { 
+                      borderRadius: 2,
+                      fontFamily: theme.typography.fontFamily
+                    }
+                  }}
+                />
               </Box>
             )}
           </>
@@ -363,7 +590,7 @@ const ManageCoupons = () => {
         loading={formLoading}
       />
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily, pb: 1 }}>
           <WarningAmberIcon color="warning" />
           {confirmAction?.title}
         </DialogTitle>
@@ -372,11 +599,20 @@ const ManageCoupons = () => {
             {confirmAction?.message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setConfirmDialogOpen(false)} 
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
             Cancel
           </Button>
-          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Button 
+            onClick={executeConfirmAction} 
+            color="error" 
+            variant="contained" 
+            autoFocus 
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
             Confirm
           </Button>
         </DialogActions>

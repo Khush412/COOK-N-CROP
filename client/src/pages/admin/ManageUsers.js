@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -173,8 +173,8 @@ const ManageUsers = () => {
   const rowCount = users.length;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 12, py: 4, zoom: 0.9 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
           Manage Users
         </Typography>
@@ -183,7 +183,7 @@ const ManageUsers = () => {
         </Typography>
       </Paper>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
             <TextField
@@ -192,156 +192,296 @@ const ManageUsers = () => {
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: '50px' } }}
+              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             />
             {numSelected > 0 && (
               <>
-                <Button variant="contained" color="success" onClick={() => handleBulkStatusUpdate(true)} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>Activate ({numSelected})</Button>
-                <Button variant="contained" color="warning" onClick={() => handleBulkStatusUpdate(false)} sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}>Deactivate ({numSelected})</Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<BlockIcon />}
+                  onClick={() => handleBulkStatusUpdate(false)}
+                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                >
+                  Deactivate Selected ({numSelected})
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<CheckCircleOutlineIcon />}
+                  onClick={() => handleBulkStatusUpdate(true)}
+                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                >
+                  Activate Selected
+                </Button>
               </>
             )}
           </Stack>
-          <Button variant="outlined" startIcon={exporting ? <CircularProgress size={20} /> : <DownloadIcon />} onClick={handleExport} disabled={exporting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-            {exporting ? 'Exporting...' : 'Export to CSV'}
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={exporting ? <CircularProgress size={20} /> : <DownloadIcon />}
+              onClick={handleExport}
+              disabled={exporting}
+              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            >
+              Export
+            </Button>
+          </Stack>
         </Box>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    indeterminate={numSelected > 0 && numSelected < rowCount}
-                    checked={rowCount > 0 && numSelected === rowCount}
-                    onChange={handleSelectAllClick}
-                    inputProps={{ 'aria-label': 'select all users' }}
-                  />
-                </TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Username</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Role</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Joined</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center"><CircularProgress /></TableCell>
-                </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center"><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></TableCell>
-                </TableRow>
-              ) : users.length > 0 ? (
-                users.map((user) => {
-                  const isItemSelected = isSelected(user._id);
-                  return (
-                    <TableRow key={user._id} hover onClick={(event) => handleSelectClick(event, user._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected}>
-                      <TableCell padding="checkbox"><Checkbox checked={isItemSelected} /></TableCell>
-                      <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{user.username}</TableCell>
-                      <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{user.email}</TableCell>
-                      <TableCell>
-                        {editingUserId === user._id ? (
-                          <Select
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value)}
-                            size="small"
-                            sx={{ minWidth: 100, fontFamily: theme.typography.fontFamily }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MenuItem value="user" sx={{ fontFamily: theme.typography.fontFamily }}>User</MenuItem>
-                            <MenuItem value="admin" sx={{ fontFamily: theme.typography.fontFamily }}>Admin</MenuItem>
-                          </Select>
-                        ) : (
-                          <Typography sx={{ fontFamily: theme.typography.fontFamily }}>{user.role}</Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.isActive ? 'Active' : 'Inactive'}
-                          color={user.isActive ? 'success' : 'error'}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell align="right">
-                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                          {editingUserId === user._id ? (
-                            <>
-                              <Tooltip title="Save"><IconButton onClick={(e) => { e.stopPropagation(); handleSaveClick(user._id); }} color="success"><SaveIcon /></IconButton></Tooltip>
-                              <Tooltip title="Cancel"><IconButton onClick={(e) => { e.stopPropagation(); handleCancelClick(); }}><CancelIcon /></IconButton></Tooltip>
-                            </>
-                          ) : (
-                            <>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
+        ) : (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        indeterminate={numSelected > 0 && numSelected < rowCount}
+                        checked={rowCount > 0 && numSelected === rowCount}
+                        onChange={handleSelectAllClick}
+                        inputProps={{ 'aria-label': 'select all users' }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Role</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Joined</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {users.length > 0 ? (
+                    users.map((user) => {
+                      const isItemSelected = isSelected(user._id);
+                      return (
+                        <TableRow 
+                          key={user._id} 
+                          hover 
+                          onClick={(event) => handleSelectClick(event, user._id)} 
+                          role="checkbox" 
+                          aria-checked={isItemSelected} 
+                          tabIndex={-1} 
+                          selected={isItemSelected} 
+                          sx={{
+                            '& td': { py: 1.5 },
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.02)
+                            }
+                          }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={isItemSelected}
+                              inputProps={{ 'aria-labelledby': `user-checkbox-${user._id}` }}
+                            />
+                          </TableCell>
+                          <TableCell id={`user-checkbox-${user._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Box 
+                                sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  fontWeight: 'bold',
+                                  color: 'primary.main'
+                                }}
+                              >
+                                {user.username.charAt(0).toUpperCase()}
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                                  {user.username}
+                                </Typography>
+                                {user.name && (
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                    {user.name}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              {user.email}
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            {editingUserId === user._id ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                                  <Select
+                                    value={selectedRole}
+                                    onChange={(e) => setSelectedRole(e.target.value)}
+                                    sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                                  >
+                                    <MenuItem value="user">User</MenuItem>
+                                    <MenuItem value="admin">Admin</MenuItem>
+                                    <MenuItem value="moderator">Moderator</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleSaveClick(user._id)}
+                                  sx={{ bgcolor: 'success.main', color: 'white', '&:hover': { bgcolor: 'success.dark' } }}
+                                >
+                                  <SaveIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={handleCancelClick}
+                                  sx={{ bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
+                                >
+                                  <CancelIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            ) : (
+                              <Chip 
+                                label={user.role} 
+                                size="small" 
+                                color={user.role === 'admin' ? 'primary' : user.role === 'moderator' ? 'secondary' : 'default'} 
+                                onClick={() => handleEditClick(user)}
+                                sx={{ cursor: 'pointer', borderRadius: 1 }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Chip 
+                              label={user.isActive ? 'Active' : 'Inactive'} 
+                              size="small" 
+                              color={user.isActive ? 'success' : 'error'} 
+                              icon={user.isActive ? <CheckCircleOutlineIcon /> : <BlockIcon />}
+                              sx={{ borderRadius: 1 }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                              <Tooltip title="View Profile">
+                                <IconButton 
+                                  component={RouterLink} 
+                                  to={`/profile/${user._id}`} 
+                                  size="small"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <PeopleOutlineIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
                               <Tooltip title="View Addresses">
-                                <IconButton component={RouterLink} to={`/admin/users/${user._id}/addresses`} onClick={(e) => e.stopPropagation()}><LocationOnIcon fontSize="small" /></IconButton>
+                                <IconButton 
+                                  component={RouterLink} 
+                                  to={`/admin/users/${user._id}/addresses`} 
+                                  size="small"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <LocationOnIcon fontSize="small" />
+                                </IconButton>
                               </Tooltip>
-                              <Tooltip title="Edit Role">
-                                <IconButton onClick={(e) => { e.stopPropagation(); handleEditClick(user); }} disabled={user._id === currentUser.id}><EditIcon fontSize="small" /></IconButton>
+                              <Tooltip title={user.isActive ? "Deactivate User" : "Activate User"}>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleToggleStatus(user._id, user.isActive)}
+                                  color={user.isActive ? "warning" : "success"}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  {user.isActive ? <BlockIcon fontSize="small" /> : <CheckCircleOutlineIcon fontSize="small" />}
+                                </IconButton>
                               </Tooltip>
-                              <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
-                                <span>
-                                  <IconButton onClick={(e) => { e.stopPropagation(); handleToggleStatus(user._id, user.isActive); }} disabled={user._id === currentUser.id || user.role === 'admin'} color={user.isActive ? 'warning' : 'success'}>
-                                    {user.isActive ? <BlockIcon /> : <CheckCircleOutlineIcon />}
-                                  </IconButton>
-                                </span>
+                              <Tooltip title="Delete User">
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleDeleteUser(user._id)} 
+                                  color="error"
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
                               </Tooltip>
-                              <Tooltip title="Permanently Delete User">
-                                <span>
-                                  <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteUser(user._id); }} color="error" disabled={user._id === currentUser.id || user.role === 'admin'}><DeleteIcon fontSize="small" /></IconButton>
-                                </span>
-                              </Tooltip>
-                            </>
-                          )}
-                        </Stack>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center">
+                        <Box sx={{ p: 6, textAlign: 'center' }}>
+                          <PeopleOutlineIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                            No users found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            Try adjusting your search criteria
+                          </Typography>
+                        </Box>
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Box sx={{ p: 4, textAlign: 'center' }}>
-                      <PeopleOutlineIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No users found matching your criteria.</Typography>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        {totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(event, value) => setPage(value)}
-              color="primary"
-            />
-          </Box>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={(event, value) => setPage(value)}
+                  color="primary"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  sx={{ 
+                    '& .MuiPaginationItem-root': { 
+                      borderRadius: 2,
+                      fontFamily: theme.typography.fontFamily
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </>
         )}
       </Paper>
-      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily }}>
-          <WarningAmberIcon color="warning" />
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
           {confirmAction?.title}
         </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogContent sx={{ fontFamily: theme.typography.fontFamily }}>
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
             {confirmAction?.message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setConfirmDialogOpen(false)} 
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
             Cancel
           </Button>
-          <Button onClick={executeConfirmAction} color="error" variant="contained" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Button 
+            onClick={executeConfirmAction} 
+            variant="contained" 
+            autoFocus
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+          >
             Confirm
           </Button>
         </DialogActions>

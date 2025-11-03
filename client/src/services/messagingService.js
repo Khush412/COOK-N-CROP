@@ -22,11 +22,17 @@ const getUnreadCount = async () => {
   return data;
 };
 
+const deleteConversation = async (conversationId) => {
+  const { data } = await api.delete(`${API_URL}/conversations/${conversationId}`);
+  return data;
+};
+
 const messagingService = {
   getConversations,
   getMessages,
   sendMessage,
   getUnreadCount,
+  deleteConversation,
 };
 
 export default messagingService;

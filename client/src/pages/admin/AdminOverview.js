@@ -57,17 +57,20 @@ const RecentActivityFeed = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Recent Activity</Typography>
-      {loading ? <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}><CircularProgress /></Box> : (
+    <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Recent Activity</Typography>
+        <Chip label={activities.length} color="primary" size="small" />
+      </Box>
+      {loading ? <Box sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}><CircularProgress size={32} /></Box> : (
         <Stack spacing={2.5} sx={{ maxHeight: 400, overflowY: 'auto', pr: 1 }}>
           {activities.map(activity => (
-            <Box key={`${activity.type}-${activity.id}`} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar sx={{ bgcolor: alpha(getIcon(activity.type)?.props.sx.color || theme.palette.grey[500], 0.1) }}>
+            <Box key={`${activity.type}-${activity.id}`} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, borderRadius: 2, '&:hover': { bgcolor: alpha(theme.palette.grey[500], 0.05) } }}>
+              <Avatar sx={{ bgcolor: alpha(getIcon(activity.type)?.props.sx.color || theme.palette.grey[500], 0.1), width: 40, height: 40 }}>
                 {getIcon(activity.type)}
               </Avatar>
-              <Box>
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{activity.title}</Typography>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 500 }}>{activity.title}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
                   {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                 </Typography>
@@ -80,54 +83,62 @@ const RecentActivityFeed = () => {
   );
 };
 
-const StatCard = ({ title, value, icon, color, trend, trendValue, onClick }) => (
-  <Paper 
-    elevation={3} 
-    sx={{ 
-      p: 2, 
-      display: 'flex', 
-      alignItems: 'center', 
-      borderRadius: 3, 
-      borderLeft: `4px solid ${color}`,
-      cursor: onClick ? 'pointer' : 'default',
-      transition: 'all 0.3s',
-      '&:hover': onClick ? {
-        transform: 'translateY(-4px)',
-        boxShadow: 6
-      } : {}
-    }}
-    onClick={onClick}
-  >
-    <Box sx={{
-      mr: 2,
-      p: 1.5,
-      borderRadius: '50%',
-      color: color,
-      backgroundColor: alpha(color, 0.1),
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      {icon}
-    </Box>
-    <Box sx={{ flexGrow: 1 }}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{value}</Typography>
-      <Typography color="text.secondary" sx={{ fontFamily: 'inherit', fontSize: '0.875rem' }}>{title}</Typography>
-      {trend && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-          {trend === 'up' ? (
-            <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-          ) : (
-            <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
-          )}
-          <Typography variant="caption" color={trend === 'up' ? 'success.main' : 'error.main'}>
-            {trendValue}
-          </Typography>
-        </Box>
-      )}
-    </Box>
-  </Paper>
-);
+const StatCard = ({ title, value, icon, color, trend, trendValue, onClick }) => {
+  const theme = useTheme();
+  
+  return (
+    <Paper 
+      elevation={0}
+      sx={{ 
+        p: 2.5, 
+        display: 'flex', 
+        alignItems: 'center', 
+        borderRadius: 3, 
+        border: `1px solid ${theme.palette.divider}`,
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.3s',
+        '&:hover': onClick ? {
+          transform: 'translateY(-4px)',
+          boxShadow: 4,
+          borderColor: alpha(color, 0.3)
+        } : {},
+        height: '100%'
+      }}
+      onClick={onClick}
+    >
+      <Box sx={{
+        mr: 2,
+        p: 1.5,
+        borderRadius: '50%',
+        color: color,
+        backgroundColor: alpha(color, 0.1),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 50,
+        minHeight: 50
+      }}>
+        {icon}
+      </Box>
+      <Box sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>{value}</Typography>
+        <Typography color="text.secondary" sx={{ fontFamily: 'inherit', fontSize: '0.875rem', mb: 1 }}>{title}</Typography>
+        {trend && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {trend === 'up' ? (
+              <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
+            ) : (
+              <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
+            )}
+            <Typography variant="caption" color={trend === 'up' ? 'success.main' : 'error.main'}>
+              {trendValue}
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Paper>
+  );
+};
 
 const AdminOverview = () => {
   const theme = useTheme();
@@ -167,23 +178,60 @@ const AdminOverview = () => {
     return () => document.head.removeChild(style);
   }, []);
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+      <CircularProgress size={60} />
+    </Box>
+  );
+  
+  if (error) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+      <Alert severity="error">{error}</Alert>
+    </Box>
+  );
 
   return (
-    <Box sx={{ zoom: 0.8 }}>
+    <Box>
+      {/* Header with refresh button */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+            Dashboard Overview
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            Welcome back! Here's what's happening with your store today.
+          </Typography>
+        </Box>
+        <Tooltip title="Refresh Data">
+          <IconButton 
+            onClick={fetchStats} 
+            disabled={refreshing}
+            sx={{ 
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+              width: 40,
+              height: 40
+            }}
+          >
+            <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       {/* Quick Actions Bar */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-          Quick Actions
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <Paper elevation={0} sx={{ p: 2.5, mb: 3, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+            Quick Actions
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/admin/products')}
-            size="small"
-            sx={{ borderRadius: 2 }}
+            size="medium"
+            sx={{ borderRadius: 2, px: 2 }}
           >
             Add Product
           </Button>
@@ -192,8 +240,8 @@ const AdminOverview = () => {
             color="secondary"
             startIcon={<AddIcon />}
             onClick={() => navigate('/admin/orders/create')}
-            size="small"
-            sx={{ borderRadius: 2 }}
+            size="medium"
+            sx={{ borderRadius: 2, px: 2 }}
           >
             Create Order
           </Button>
@@ -201,28 +249,25 @@ const AdminOverview = () => {
             variant="outlined"
             startIcon={<WarningIcon />}
             onClick={() => navigate('/admin/products/low-stock')}
-            size="small"
-            sx={{ borderRadius: 2 }}
+            size="medium"
+            sx={{ borderRadius: 2, px: 2 }}
           >
             Low Stock
           </Button>
-          <Tooltip title="Refresh Data">
-            <IconButton 
-              onClick={fetchStats} 
-              disabled={refreshing}
-              size="small"
-              sx={{ 
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 2
-              }}
-            >
-              <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-            </IconButton>
-          </Tooltip>
+          <Button
+            variant="outlined"
+            startIcon={<PeopleIcon />}
+            onClick={() => navigate('/admin/users')}
+            size="medium"
+            sx={{ borderRadius: 2, px: 2 }}
+          >
+            Manage Users
+          </Button>
         </Box>
       </Paper>
 
-      <Grid container spacing={3}>
+      {/* Stats Grid */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
           <StatCard 
             title="Total Users" 
@@ -272,31 +317,103 @@ const AdminOverview = () => {
             onClick={() => navigate('/admin/orders')}
           />
         </Grid>
+      </Grid>
 
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Sales Data (Last 30 Days)</Typography>
-            <Box sx={{ height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={stats?.salesData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} />
-              <YAxis tickFormatter={(val) => `$${val}`} allowDecimals={false} />
-              <ChartTooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']} />
-              <Legend />
-              <Line type="monotone" dataKey="sales" name="Sales" stroke={theme.palette.secondary.main} strokeWidth={2} activeDot={{ r: 8 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
+      {/* Charts and Activity Feed */}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Sales Data (Last 30 Days)</Typography>
+              <Chip label="Last 30 Days" variant="outlined" size="small" />
+            </Box>
+            <Box sx={{ height: 350 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={stats?.salesData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.text.primary, 0.1)} />
+                  <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} stroke={alpha(theme.palette.text.primary, 0.6)} />
+                  <YAxis tickFormatter={(val) => `$${val}`} allowDecimals={false} stroke={alpha(theme.palette.text.primary, 0.6)} />
+                  <ChartTooltip 
+                    formatter={(value) => [`$${value.toFixed(2)}`, 'Sales']} 
+                    contentStyle={{ 
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: theme.shape.borderRadius,
+                      fontFamily: theme.typography.fontFamily
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="sales" 
+                    name="Sales" 
+                    stroke={theme.palette.secondary.main} 
+                    strokeWidth={3} 
+                    dot={{ r: 4, strokeWidth: 2, fill: theme.palette.background.paper }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </Paper>
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <RecentActivityFeed />
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Top 5 Selling Products</Typography>
+              <Chip label="Top 5" variant="outlined" size="small" />
+            </Box>
+            <Box sx={{ height: 350 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stats?.topSellingProducts}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.text.primary, 0.1)} />
+                  <XAxis type="number" allowDecimals={false} stroke={alpha(theme.palette.text.primary, 0.6)} />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    width={120} 
+                    interval={0} 
+                    stroke={alpha(theme.palette.text.primary, 0.6)}
+                  />
+                  <ChartTooltip 
+                    cursor={{ fill: alpha(theme.palette.secondary.main, 0.1) }} 
+                    contentStyle={{ 
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: theme.shape.borderRadius,
+                      fontFamily: theme.typography.fontFamily
+                    }}
+                  />
+                  <Legend />
+                  <Bar 
+                    dataKey="totalQuantitySold" 
+                    name="Units Sold" 
+                    fill={theme.palette.success.main} 
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
           </Paper>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User Roles</Typography>
-            <Box sx={{ height: 300 }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User Roles</Typography>
+              <Chip label="Distribution" variant="outlined" size="small" />
+            </Box>
+            <Box sx={{ height: 350 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -307,87 +424,23 @@ const AdminOverview = () => {
                     cy="50%"
                     outerRadius={100}
                     label={({ name, percent }) => `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`}
+                    labelLine={true}
                   >
                     {[theme.palette.primary.main, theme.palette.success.main, theme.palette.warning.main, theme.palette.info.main].map((color, index) => (
                       <Cell key={`cell-${index}`} fill={color} />
                     ))}
                   </Pie>
-                  <ChartTooltip formatter={(value, name) => [value, name.charAt(0).toUpperCase() + name.slice(1)]} />
+                  <ChartTooltip 
+                    formatter={(value, name) => [value, name.charAt(0).toUpperCase() + name.slice(1)]} 
+                    contentStyle={{ 
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: theme.shape.borderRadius,
+                      fontFamily: theme.typography.fontFamily
+                    }}
+                  />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
-        </Grid>
-
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Top 5 Selling Products</Typography>
-            <Box sx={{ height: 350 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={stats?.topSellingProducts}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="name" type="category" width={120} interval={0} />
-                  <ChartTooltip cursor={{ fill: 'rgba(0,0,0,0.1)' }} />
-                  <Legend />
-                  <Bar dataKey="totalQuantitySold" name="Units Sold" fill={theme.palette.success.main} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Top 5 Customers by Spending</Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Rank</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell align="right">Orders</TableCell>
-                    <TableCell align="right">Total Spent</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {stats?.topCustomers?.map((customer, index) => (
-                    <TableRow key={index} hover>
-                      <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>#{index + 1}</TableCell>
-                      <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{customer.username}</TableCell>
-                      <TableCell align="right" sx={{ fontFamily: theme.typography.fontFamily }}>{customer.orderCount}</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>${customer.totalSpent.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <RecentActivityFeed />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>New User Signups (Last 7 Days)</Typography>
-            <Box sx={{ height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={stats?.userSignups}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} />
-                  <YAxis allowDecimals={false} />
-                  <ChartTooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="count" name="New Users" stroke={theme.palette.primary.main} strokeWidth={2} activeDot={{ r: 8 }} />
-                </LineChart>
               </ResponsiveContainer>
             </Box>
           </Paper>
