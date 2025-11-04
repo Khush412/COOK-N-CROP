@@ -910,7 +910,7 @@ export default function Navbar() {
       {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
       <IconButton
         onClick={() => setMobileSearchOpen(true)}
-        sx={{ color: 'common.white', display: mobileSearchOpen ? 'none' : { xs: 'flex', sm: 'none' }, position: 'fixed', top: 12, right: 12, zIndex: 1400 }}
+        sx={{ color: 'common.white', display: mobileSearchOpen ? 'none' : { xs: 'flex', sm: 'none' }, position: 'fixed', top: 8, right: 12, zIndex: 1400 }}
         aria-label="open search"
       ><SearchIcon /></IconButton>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, Menu, ListItemIcon, ListItemText } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,6 +12,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import adminService from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -31,6 +32,18 @@ const ManageUsers = () => {
   const [exporting, setExporting] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // { type, payload, title, message }
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleActionsClick = (event, user) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedUser(user);
+  };
+
+  const handleActionsClose = () => {
+    setAnchorEl(null);
+    setSelectedUser(null);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -103,7 +116,7 @@ const ManageUsers = () => {
       setUsers(users.map(u => u._id === userId ? { ...u, role: selectedRole } : u));
       setEditingUserId(null);
     } catch (err) {
-      alert('Failed to update role.'); // Simple alert for now
+      alert(`Failed to update role: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -370,48 +383,13 @@ const ManageUsers = () => {
                             </Typography>
                           </TableCell>
                           <TableCell align="right">
-                            <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                              <Tooltip title="View Profile">
-                                <IconButton 
-                                  component={RouterLink} 
-                                  to={`/profile/${user._id}`} 
-                                  size="small"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  <PeopleOutlineIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="View Addresses">
-                                <IconButton 
-                                  component={RouterLink} 
-                                  to={`/admin/users/${user._id}/addresses`} 
-                                  size="small"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  <LocationOnIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title={user.isActive ? "Deactivate User" : "Activate User"}>
-                                <IconButton 
-                                  size="small" 
-                                  onClick={() => handleToggleStatus(user._id, user.isActive)}
-                                  color={user.isActive ? "warning" : "success"}
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  {user.isActive ? <BlockIcon fontSize="small" /> : <CheckCircleOutlineIcon fontSize="small" />}
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete User">
-                                <IconButton 
-                                  size="small" 
-                                  onClick={() => handleDeleteUser(user._id)} 
-                                  color="error"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Stack>
+                            <IconButton
+                              size="small"
+                              onClick={(event) => handleActionsClick(event, user)}
+                              sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
                           </TableCell>
                         </TableRow>
                       );
@@ -455,6 +433,51 @@ const ManageUsers = () => {
           </>
         )}
       </Paper>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleActionsClose}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+      >
+        <MenuItem 
+          component={RouterLink} 
+          to={`/user/${selectedUser?.username}`}
+          onClick={handleActionsClose}
+        >
+          <ListItemIcon>
+            <PeopleOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>View Profile</ListItemText>
+        </MenuItem>
+        <MenuItem 
+          component={RouterLink} 
+          to={`/admin/users/${selectedUser?._id}/addresses`}
+          onClick={handleActionsClose}
+        >
+          <ListItemIcon>
+            <LocationOnIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>View Addresses</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleToggleStatus(selectedUser?._id, selectedUser?.isActive);
+          handleActionsClose();
+        }}>
+          <ListItemIcon>
+            {selectedUser?.isActive ? <BlockIcon fontSize="small" /> : <CheckCircleOutlineIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{selectedUser?.isActive ? "Deactivate User" : "Activate User"}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleDeleteUser(selectedUser?._id);
+          handleActionsClose();
+        }} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <ListItemText>Delete User</ListItemText>
+        </MenuItem>
+      </Menu>
       <Dialog
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}

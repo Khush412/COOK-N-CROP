@@ -30,7 +30,7 @@ const NewsletterSignup = () => {
     }}>
       <Container maxWidth="lg">
         <Grid container spacing={4} alignItems="center" justifyContent="center">
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, justifyContent: 'center' }}>
                 <EmailIcon sx={{ fontSize: 40, color: theme.palette.secondary.main, mr: 1 }} />
@@ -83,7 +83,7 @@ const NewsletterSignup = () => {
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ 
               p: 4, 
               borderRadius: 3, 

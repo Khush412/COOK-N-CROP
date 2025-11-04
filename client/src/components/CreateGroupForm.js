@@ -147,7 +147,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
                     fullWidth
                     size="small"
                     InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                   />
                   <TextField
                     label="Description (optional)"
@@ -157,7 +157,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
                     multiline
                     size="small"
                     InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                   />
                 </Stack>
                 <IconButton onClick={() => removeRule(index)} disabled={rules.length <= 1}><DeleteIcon /></IconButton>
@@ -182,7 +182,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
                   fullWidth
                   size="small"
                   InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                  sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                  sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
                 {/* Add color pickers here if you want to allow custom colors */}
                 <Chip
@@ -203,7 +203,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
         </Paper>
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button onClick={onCancel} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
-          <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
             {loading ? 'Saving...' : (initialData ? 'Save Changes' : 'Create Group')}
           </Button>
         </Stack>

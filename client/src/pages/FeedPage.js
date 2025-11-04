@@ -87,8 +87,8 @@ const FeedPage = () => {
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
 
   // State for collapsible sections
-  const [filtersOpen, setFiltersOpen] = useState(true);
   const [recommendationsOpen, setRecommendationsOpen] = useState(true);
+  const [groupsOpen, setGroupsOpen] = useState(true); // New state for groups section
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -125,7 +125,12 @@ const FeedPage = () => {
     };
 
     fetchFeed();
-  }, [sort, page, debouncedSearchTerm, selectedTags, contentFilter, prepTime, servings, quickCook]);
+    
+    // Also fetch recommendations when feed is loaded
+    if (user) {
+      fetchRecommendations();
+    }
+  }, [sort, page, debouncedSearchTerm, selectedTags, contentFilter, prepTime, servings, quickCook, user]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
@@ -153,6 +158,7 @@ const FeedPage = () => {
   useEffect(() => {
     // Fetch recommendations when component mounts
     if (user) {
+      console.log('Fetching recommendations for user:', user); // Debug log
       fetchRecommendations();
     }
   }, [user]);
@@ -164,21 +170,26 @@ const FeedPage = () => {
     try {
       // Fetch recommended users using the existing getRecommendations function
       const recommendations = await userService.getRecommendations();
-      console.log('Recommendations data:', recommendations); // Debug log
+      console.log('Full recommendations data:', recommendations); // Debug log
       
       // Handle different response formats
       if (recommendations.users && recommendations.groups) {
         // New format with separate users and groups
-        setRecommendedUsers(recommendations.users || []);
-        setRecommendedGroups(recommendations.groups || []);
+        setRecommendedUsers(Array.isArray(recommendations.users) ? recommendations.users : []);
+        setRecommendedGroups(Array.isArray(recommendations.groups) ? recommendations.groups : []);
+        console.log('Set recommended users:', recommendations.users); // Debug log
+        console.log('Set recommended groups:', recommendations.groups); // Debug log
       } else if (Array.isArray(recommendations)) {
         // Old format - assume all are users for now
         setRecommendedUsers(recommendations.filter(item => item && !item.memberCount) || []);
         setRecommendedGroups(recommendations.filter(item => item && item.memberCount) || []);
+        console.log('Legacy format - users:', recommendations.filter(item => item && !item.memberCount)); // Debug log
+        console.log('Legacy format - groups:', recommendations.filter(item => item && item.memberCount)); // Debug log
       } else {
         // Fallback to empty arrays
         setRecommendedUsers([]);
         setRecommendedGroups([]);
+        console.log('Fallback to empty arrays'); // Debug log
       }
     } catch (err) {
       console.error("Error fetching recommendations: ", err);
@@ -473,46 +484,35 @@ const FeedPage = () => {
             </IconButton>
           </Stack>
           <Collapse in={recommendationsOpen}>
-            <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+            <Box sx={{ maxHeight: 300, overflowY: 'auto', overflowX: 'hidden', '&::-webkit-scrollbar': { display: 'none' }, '-ms-overflow-style': 'none', 'scrollbar-width': 'none' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
                   <CircularProgress size={24} />
                 </Box>
-              ) : recommendedUsers.length > 0 ? (
+              ) : recommendedUsers && recommendedUsers.length > 0 ? (
                 <List dense>
                   {recommendedUsers.map((recommendedUser) => (
                     <ListItem 
                       key={recommendedUser._id} 
-                      sx={{ px: 0, py: 1 }}
-                      secondaryAction={
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
-                          sx={{ borderRadius: '20px', minWidth: 'auto', px: 1.5, py: 0.5, fontSize: '0.75rem' }}
-                          onClick={() => navigate(`/user/${recommendedUser.username}`)}
-                        >
-                          View
-                        </Button>
-                      }
+                      sx={{ px: 0, py: 1, cursor: 'pointer' }}
+                      onClick={() => {
+                        console.log('Navigating to user:', recommendedUser); // Debug log
+                        navigate(`/user/${recommendedUser.username}`);
+                      }}
                     >
                       <ListItemAvatar>
                         <Avatar 
                           src={recommendedUser.profilePic ? `${process.env.REACT_APP_API_URL}${recommendedUser.profilePic}` : undefined}
                           sx={{ width: 32, height: 32 }}
                         >
-                          {recommendedUser.username.charAt(0).toUpperCase()}
+                          {recommendedUser.username ? recommendedUser.username.charAt(0).toUpperCase() : 'U'}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText 
-                        primary={recommendedUser.username}
-                        secondary={`${recommendedUser.followerCount || 0} followers`}
+                        primary={recommendedUser.username || 'Unknown User'}
                         primaryTypographyProps={{ 
                           fontSize: '0.9rem', 
                           fontWeight: 600,
-                          fontFamily: theme.typography.fontFamily 
-                        }}
-                        secondaryTypographyProps={{ 
-                          fontSize: '0.75rem',
                           fontFamily: theme.typography.fontFamily 
                         }}
                       />
@@ -521,7 +521,7 @@ const FeedPage = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textAlign: 'center', py: 1 }}>
-                  Follow more users to get personalized recommendations
+                  {recommendationsLoading ? 'Loading...' : 'Follow more users to get personalized recommendations'}
                 </Typography>
               )}
             </Box>
@@ -535,43 +535,37 @@ const FeedPage = () => {
               <GroupIcon sx={{ mr: 1, color: theme.palette.secondary.main }} />
               Recommended Groups
             </Typography>
-            <IconButton size="small" onClick={() => setRecommendationsOpen(!recommendationsOpen)}>
-              {recommendationsOpen ? <ExpandLess /> : <ExpandMore />}
+            <IconButton size="small" onClick={() => setGroupsOpen(!groupsOpen)}> {/* Use separate state for groups */}
+              {groupsOpen ? <ExpandLess /> : <ExpandMore />} {/* Use separate state for groups */}
             </IconButton>
           </Stack>
-          <Collapse in={recommendationsOpen}>
-            <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+          <Collapse in={groupsOpen}> {/* Use separate state for groups */}
+            <Box sx={{ maxHeight: 300, overflowY: 'auto', overflowX: 'hidden', '&::-webkit-scrollbar': { display: 'none' }, '-ms-overflow-style': 'none', 'scrollbar-width': 'none' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
                   <CircularProgress size={24} />
                 </Box>
-              ) : recommendedGroups.length > 0 ? (
+              ) : recommendedGroups && recommendedGroups.length > 0 ? (
                 <List dense>
                   {recommendedGroups.map((group) => (
                     <ListItem 
                       key={group._id} 
-                      sx={{ px: 0, py: 1 }}
-                      secondaryAction={
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
-                          sx={{ borderRadius: '20px', minWidth: 'auto', px: 1.5, py: 0.5, fontSize: '0.75rem' }}
-                          onClick={() => navigate(`/g/${group.slug}`)}
-                        >
-                          View
-                        </Button>
-                      }
+                      sx={{ px: 0, py: 1, cursor: 'pointer' }}
+                      onClick={() => {
+                        console.log('Navigating to group:', group); // Debug log
+                        navigate(`/g/${group.slug}`);
+                      }}
                     >
                       <ListItemAvatar>
                         <Avatar 
                           src={group.coverImage ? `${process.env.REACT_APP_API_URL}${group.coverImage}` : undefined}
                           sx={{ width: 32, height: 32 }}
                         >
-                          {group.name.charAt(0).toUpperCase()}
+                          {group.name ? group.name.charAt(0).toUpperCase() : 'G'}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText 
-                        primary={group.name}
+                        primary={group.name || 'Unnamed Group'}
                         secondary={`${group.memberCount || 0} members`}
                         primaryTypographyProps={{ 
                           fontSize: '0.9rem', 
@@ -588,7 +582,7 @@ const FeedPage = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textAlign: 'center', py: 1 }}>
-                  Join more groups to get personalized recommendations
+                  {recommendationsLoading ? 'Loading...' : 'Join more groups to get personalized recommendations'}
                 </Typography>
               )}
             </Box>
@@ -789,22 +783,29 @@ const FeedPage = () => {
               startIcon={<AddIcon sx={{ fontSize: 18 }} />}
               onClick={handleCreatePost}
               sx={{ 
-                borderRadius: 2,
+                borderRadius: 3,
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
                 height: 40,
                 fontSize: '0.875rem',
-                px: 1.5,
+                px: 2,
+                boxShadow: 3,
+                '&:hover': {
+                  boxShadow: 5,
+                  transform: 'translateY(-1px)',
+                },
+                transition: 'all 0.2s ease',
               }}
             >
-              Create
+              Create Post
             </Button>
+
           </Box>
           
           {/* Filters and View Options */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2 }}>
-            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-              {/* Filter Dropdown Button */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Filter Dropdown Button - Hidden on mobile */}
               <Button
                 variant="contained"
                 startIcon={<FilterListIcon />}
@@ -818,7 +819,8 @@ const FeedPage = () => {
                   boxShadow: 2,
                   '&:hover': {
                     boxShadow: 3,
-                  }
+                  },
+                  display: { xs: 'none', sm: 'flex' }
                 }}
               >
                 Filters
@@ -885,7 +887,7 @@ const FeedPage = () => {
               exclusive
               onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
               size="small"
-              sx={{ height: 36 }}
+              sx={{ height: 36, flexShrink: 0 }}
             >
               <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                 <GridViewIcon sx={{ fontSize: 20 }} />
@@ -898,11 +900,11 @@ const FeedPage = () => {
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
-          
+
           {renderContent()}
         </Grid>
 
-        {/* Right Sidebar - Recommendations */}
+        {/* Right Sidebar - Recommendations - Hidden on mobile */}
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Box 
             sx={{ 
@@ -910,7 +912,8 @@ const FeedPage = () => {
               top: 100,
               height: 'calc(100vh - 120px)',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              overflow: 'hidden' // Add this to prevent overflow
             }}
           >
             <RecommendationsSidebar />

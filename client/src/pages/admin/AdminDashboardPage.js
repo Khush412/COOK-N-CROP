@@ -13,6 +13,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import WarningIcon from '@mui/icons-material/Warning';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import GroupsIcon from '@mui/icons-material/Groups';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -20,7 +21,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const adminNavItems = [
-  { text: 'Dashboard', path: '/admin', icon: <DashboardIcon /> },
+  { text: 'Dashboard', path: '/admin', icon: <DashboardIcon />, category: 'main' },
   { text: 'Users', path: '/admin/users', icon: <PeopleIcon />, category: 'management' },
   { text: 'Products', path: '/admin/products', icon: <InventoryIcon />, category: 'management' },
   { text: 'Low Stock', path: '/admin/products/low-stock', icon: <WarningIcon />, category: 'management' },
@@ -30,6 +31,7 @@ const adminNavItems = [
   { text: 'Coupons', path: '/admin/coupons', icon: <DiscountIcon />, category: 'actions' },
   { text: 'Reports', path: '/admin/reports', icon: <ReportIcon />, category: 'analytics' },
   { text: 'Broadcast', path: '/admin/broadcast', icon: <CampaignIcon />, category: 'communications' },
+  { text: 'Auto-Join Groups', path: '/admin/auto-join-groups', icon: <GroupsIcon />, category: 'management' },
 ];
 
 const AdminDashboardPage = () => {
@@ -93,6 +95,37 @@ const AdminDashboardPage = () => {
 
       {/* Navigation Items */}
       <List component="nav" disablePadding>
+        {/* Dashboard (standalone) */}
+        {groupedNavItems.other?.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={NavLink}
+              to={item.path}
+              end={item.path === '/admin'}
+              onClick={isMobile ? handleDrawerToggle : undefined}
+              sx={{
+                borderRadius: 2,
+                mx: 1,
+                my: 0.5,
+                '&.active': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  color: theme.palette.primary.main,
+                  fontWeight: 'bold',
+                  '& .MuiListItemIcon-root': {
+                    color: theme.palette.primary.main,
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                }
+              }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit' }} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+        
         {/* Management Section */}
         <ListItemButton 
           onClick={() => setManagementOpen(!managementOpen)}
@@ -363,69 +396,67 @@ const AdminDashboardPage = () => {
       pt: 8,
       overflowX: 'hidden',
     }}>
-      {/* Left sidebar toggle button */}
-      {!sidebarOpen && !isMobile && (
-        <IconButton
-          onClick={toggleSidebar}
-          sx={{
-            position: 'fixed',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 1200,
-            width: 24,
-            height: 24,
-            minHeight: 0,
-            minWidth: 0,
-            p: 0,
+      {/* Left sidebar toggle button - Always visible on mobile */}
+      <IconButton
+        onClick={isMobile ? handleDrawerToggle : toggleSidebar}
+        sx={{
+          position: 'fixed',
+          left: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1200,
+          width: 24,
+          height: 24,
+          minHeight: 0,
+          minWidth: 0,
+          p: 0,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: '50%',
+          boxShadow: 2,
+          '&:hover': {
             bgcolor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: '50%',
-            boxShadow: 2,
-            '&:hover': {
-              bgcolor: theme.palette.background.paper,
-              boxShadow: 4,
-            },
-          }}
-        >
-          <ChevronRightIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      )}
+            boxShadow: 4,
+          },
+          display: 'flex' // Always show the toggle button
+        }}
+      >
+        <ChevronRightIcon sx={{ fontSize: 16 }} />
+      </IconButton>
 
-      {/* Left sidebar */}
-      {sidebarOpen && (
-        <Box
-          sx={{
-            width: 280,
-            flexShrink: 0,
-            position: 'fixed',
-            height: 'calc(100vh - 64px)',
-            top: 64,
-            left: 0,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            zIndex: 1100,
-            borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: theme.palette.background.default,
-            // Custom scrollbar styling
-            '&::-webkit-scrollbar': {
-              width: '6px',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'transparent',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'transparent',
-            },
-            '&:hover::-webkit-scrollbar-thumb': {
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-              borderRadius: '10px',
-            },
-          }}
-        >
-          {drawerContent}
-        </Box>
-      )}
+      {/* Sidebar - Visible on all screens with mobile drawer for small screens */}
+      <Box
+        sx={{
+          width: 280,
+          flexShrink: 0,
+          position: 'fixed',
+          height: 'calc(100vh - 64px)',
+          top: 64,
+          left: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          zIndex: 1200,
+          borderRight: `1px solid ${theme.palette.divider}`,
+          bgcolor: theme.palette.background.default,
+          display: { xs: 'none', md: 'block' }, // Hide on mobile, show on desktop
+          // Custom scrollbar styling
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'transparent',
+          },
+          '&:hover::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '10px',
+          },
+        }}
+      >
+        {drawerContent}
+      </Box>
 
       {/* Main content area */}
       <Box
@@ -433,8 +464,8 @@ const AdminDashboardPage = () => {
         sx={{
           flexGrow: 1,
           width: '100%',
-          ml: sidebarOpen ? '280px' : 0,
-          pl: sidebarOpen ? 0 : 2,
+          ml: { xs: 0, md: sidebarOpen ? '280px' : 0 },
+          pl: { xs: 0, md: sidebarOpen ? 0 : 2 },
           pt: 2,
           pb: 4,
           transition: 'margin 0.3s ease',
@@ -449,7 +480,7 @@ const AdminDashboardPage = () => {
             onClose={handleDrawerToggle}
             ModalProps={{ keepMounted: true }}
             sx={{
-              display: { xs: 'block', lg: 'none' },
+              display: { xs: 'block', md: 'none' }, // Show on mobile, hide on desktop
               '& .MuiDrawer-paper': { 
                 boxSizing: 'border-box', 
                 width: 280,

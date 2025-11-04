@@ -32,8 +32,9 @@ const UserGeneratedContent = ({ productId, title }) => {
       
       try {
         setLoading(true);
-        // Assuming there's an API endpoint to get posts tagged with a specific product
+        // Fetch posts tagged with a specific product
         const data = await postService.getPostsByTaggedProduct(productId);
+        // Use the posts array from the response
         setContentItems(data);
       } catch (err) {
         setError('Failed to load customer content');
@@ -71,6 +72,7 @@ const UserGeneratedContent = ({ productId, title }) => {
     return null;
   }
 
+  // Check if there are no content items
   if (!contentItems || contentItems.length === 0) {
     return (
       <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center' }}>
@@ -111,7 +113,7 @@ const UserGeneratedContent = ({ productId, title }) => {
                 item.media[0].mediaType === 'image' ? (
                   <CardMedia
                     component="img"
-                    image={item.media[0].url}
+                    image={`${process.env.REACT_APP_API_URL}${item.media[0].url}`}
                     alt={item.caption || item.title}
                     sx={{
                       height: 200,
@@ -131,13 +133,14 @@ const UserGeneratedContent = ({ productId, title }) => {
                   >
                     <CardMedia
                       component="video"
-                      src={item.media[0].url}
+                      src={`${process.env.REACT_APP_API_URL}${item.media[0].url}`}
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
                       }}
                     />
+                    {/* Simple static play icon */}
                     <Box
                       sx={{
                         position: 'absolute',
@@ -180,7 +183,7 @@ const UserGeneratedContent = ({ productId, title }) => {
               <CardContent sx={{ flexGrow: 1, p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Avatar 
-                    src={item.user?.profilePic} 
+                    src={item.user?.profilePic ? `${process.env.REACT_APP_API_URL}${item.user.profilePic}` : undefined}
                     sx={{ width: 32, height: 32, mr: 1 }}
                   >
                     {item.user?.username?.charAt(0)}

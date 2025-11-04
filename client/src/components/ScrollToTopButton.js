@@ -40,6 +40,7 @@ const ScrollToTopButton = () => {
           bottom: theme.spacing(14), // Positioned above the chatbot button (4 + 8 + 2)
           right: theme.spacing(4),
           zIndex: theme.zIndex.tooltip,
+          display: { xs: 'none', sm: 'block' } // Hide on mobile
         }}
       >
         <Fab color="secondary" size="large" aria-label="scroll back to top">

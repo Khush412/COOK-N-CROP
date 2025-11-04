@@ -192,54 +192,15 @@ export default function PopularPostsPage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pt: { xs: 8, md: 12 }, pb: 4 }}>
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
-        {/* Hero Header */}
-        <Box
-          sx={{
-            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            pt: { xs: 4, sm: 6 },
-            pb: { xs: 3, sm: 4 },
-            mb: 3,
-          }}
-        >
-          <Stack spacing={2} alignItems="center" textAlign="center">
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: alpha(theme.palette.secondary.main, 0.15),
-                border: `3px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-              }}
-            >
-              <TrendingUpIcon sx={{ fontSize: 40, color: 'secondary.main' }} />
-            </Box>
-            <Typography
-              variant="h3"
-              component="h1"
-              sx={{
-                fontWeight: 800,
-                fontFamily: theme.typography.fontFamily,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Popular Posts
-            </Typography>
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 500 }}
-            >
-              Discover the most engaging content from our community
-            </Typography>
-          </Stack>
-        </Box>
+        {/* Simple Banner - Minimalist Style */}
+        <Paper sx={{ p: { xs: 1.5, md: 3 }, mb: 3, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 0.5, fontFamily: theme.typography.fontFamily }}>
+            Popular Posts
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            Discover the most engaging content from our community
+          </Typography>
+        </Paper>
 
         {/* Two Column Layout - No Right Sidebar */}
         <Grid container spacing={3}>
@@ -292,16 +253,45 @@ export default function PopularPostsPage() {
               </Box>
               
               {/* Filters and View Options */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* Sort Options Dropdown */}
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value)}
+                      MenuProps={{
+                        disableScrollLock: true,
+                      }}
+                      sx={{ 
+                        borderRadius: 2,
+                        height: 36,
+                        fontSize: '0.875rem',
+                        '& .MuiSelect-select': {
+                          py: 1,
+                          pl: 1.5,
+                          pr: 3,
+                        }
+                      }}
+                    >
+                      <MenuItem value="new">New</MenuItem>
+                      <MenuItem value="top">Top</MenuItem>
+                      <MenuItem value="hot">Hot</MenuItem>
+                      <MenuItem value="discussed">Most Discussed</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
                   {/* Content Filter Dropdown */}
-                  <FormControl size="small" sx={{ minWidth: 100 }}>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
                     <Select
                       value={contentFilter}
                       onChange={(e) => {
                         setContentFilter(e.target.value);
                         setPage(1);
                       }}
+                      MenuProps={{
+                        disableScrollLock: true,
+                      }}
                       sx={{ 
                         borderRadius: 2,
                         height: 36,
@@ -313,32 +303,9 @@ export default function PopularPostsPage() {
                         }
                       }}
                     >
-                      <MenuItem value="all">All</MenuItem>
-                      <MenuItem value="recipes">Recipes</MenuItem>
-                      <MenuItem value="discussions">Discussions</MenuItem>
-                    </Select>
-                  </FormControl>
-                  
-                  {/* Sort Options Dropdown */}
-                  <FormControl size="small" sx={{ minWidth: 120 }}>
-                    <Select
-                      value={sort}
-                      onChange={(e) => setSort(e.target.value)}
-                      sx={{ 
-                        borderRadius: 2,
-                        height: 36,
-                        fontSize: '0.875rem',
-                        '& .MuiSelect-select': {
-                          py: 1,
-                          pl: 1.5,
-                          pr: 3,
-                        }
-                      }}
-                    >
-                      <MenuItem value="top">Top</MenuItem>
-                      <MenuItem value="new">New</MenuItem>
-                      <MenuItem value="hot">Hot</MenuItem>
-                      <MenuItem value="discussed">Most Discussed</MenuItem>
+                      <MenuItem value="all">All Posts</MenuItem>
+                      <MenuItem value="recipes">Recipes Only</MenuItem>
+                      <MenuItem value="discussions">Discussions Only</MenuItem>
                     </Select>
                   </FormControl>
                 </Box>
@@ -349,7 +316,7 @@ export default function PopularPostsPage() {
                   exclusive
                   onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
                   size="small"
-                  sx={{ height: 36 }}
+                  sx={{ height: 36, flexShrink: 0 }}
                 >
                   <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                     <GridViewIcon sx={{ fontSize: 20 }} />
@@ -363,6 +330,31 @@ export default function PopularPostsPage() {
                 </ToggleButtonGroup>
               </Box>
               
+              {/* Tag Filter Chips */}
+              {selectedTags.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                  {selectedTags.map((tag) => (
+                    <Chip
+                      key={tag}
+                      label={`#${tag}`}
+                      onDelete={() => handleTagClick(tag)}
+                      color="primary"
+                      size="small"
+                      sx={{ 
+                        borderRadius: '12px',
+                        fontWeight: 600,
+                        fontSize: 11,
+                        height: 24,
+                        '& .MuiChip-deleteIcon': {
+                          fontSize: 16,
+                        },
+                        fontFamily: theme.typography.fontFamily,
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+
               {loading && <Box sx={{ textAlign: "center", py: 6 }}><CircularProgress size={50} /></Box>}
               {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
               {!loading && !error && posts.length === 0 && (

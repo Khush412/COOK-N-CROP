@@ -397,18 +397,18 @@ const FeaturedRecipesGallery = () => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        // Try to fetch all posts/recipes
+        // Try to fetch all posts/recipes with a higher limit
         let res;
         try {
-          // First try to get all posts/recipes
-          res = await api.get('/posts');
+          // First try to get all posts/recipes with a higher limit
+          res = await api.get('/posts?limit=100');
         } catch (err) {
           try {
             // If that fails, try to get most liked recipes
-            res = await api.get('/posts/most-liked');
+            res = await api.get('/posts/most-liked?limit=100');
           } catch (err2) {
             // If that also fails, fall back to featured recipes
-            res = await api.get('/posts/featured-recipes');
+            res = await api.get('/posts/featured-recipes?limit=100');
           }
         }
         
@@ -443,16 +443,7 @@ const FeaturedRecipesGallery = () => {
         });
         
         // Transform recipes into gallery items with recipe IDs
-        // Take a random sample if there are many recipes
-        if (recipes.length > 20) {
-          // Shuffle and take first 20 for better variety
-          recipes = recipes
-            .map(value => ({ value, sort: Math.random() }))
-            .sort((a, b) => a.sort - b.sort)
-            .map(({ value }) => value)
-            .slice(0, 20);
-        }
-        
+        // Show all recipes instead of limiting to a small sample
         // Store the recipes for later use
         window.allRecipes = recipes;
         
@@ -558,21 +549,22 @@ const FeaturedRecipesGallery = () => {
 
   // Use the DomeGallery component with recipes
   return (
-    <div style={{ height: '600px', position: 'relative' }}>
+    <div style={{ height: '700px', position: 'relative' }}>
       <DomeGallery 
         images={items}
-        fit={0.6}
-        minRadius={500}
-        maxVerticalRotationDeg={10}
+        fit={0.7} // Increased from 0.5 to 0.7 for a larger dome
+        minRadius={600} // Increased from 400 to 600 for a larger dome
+        maxVerticalRotationDeg={15} // Increased from 10 to 15 for more vertical movement
         dragSensitivity={15}
-        imageBorderRadius="20px"
-        openedImageBorderRadius="20px"
+        imageBorderRadius="25px" // Increased from 20px to 25px
+        openedImageBorderRadius="25px" // Increased from 20px to 25px
         grayscale={false}
         onImageClick={handleImageClick} // Add click handler
         autoRotate={true} // Enable auto-rotation
         autoRotateSpeed={0.2} // Set auto-rotation speed
         showVisualCues={true} // Show visual cues
         overlayBlurColor="transparent" // Make overlay fully transparent
+        segments={40} // Increased from 35 to 40 for more segments
       />
     </div>
   );

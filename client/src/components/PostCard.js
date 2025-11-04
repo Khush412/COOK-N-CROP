@@ -344,7 +344,7 @@ const PostCard = ({
               >
                 <ThumbUpIcon sx={{ fontSize: 16 }} />
               </IconButton>
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem' }}>
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem', fontFamily: theme.typography.fontFamily }}>
                 {post.upvoteCount}
               </Typography>
             </Stack>
@@ -369,7 +369,7 @@ const PostCard = ({
               >
                 <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 16 }} />
               </IconButton>
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem' }}>
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem', fontFamily: theme.typography.fontFamily }}>
                 {post.commentCount}
               </Typography>
             </Stack>
@@ -623,7 +623,7 @@ const PostCard = ({
               {(post.recipeDetails.prepTime || post.recipeDetails.cookTime) && (
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <AccessTimeIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
                     {post.recipeDetails.prepTime ? `${post.recipeDetails.prepTime}m prep` : ''}
                     {post.recipeDetails.prepTime && post.recipeDetails.cookTime ? ', ' : ''}
                     {post.recipeDetails.cookTime ? `${post.recipeDetails.cookTime}m cook` : ''}
@@ -633,7 +633,7 @@ const PostCard = ({
               {post.recipeDetails.servings && (
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <PeopleIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
                     {post.recipeDetails.servings} servings
                   </Typography>
                 </Stack>
@@ -704,13 +704,13 @@ const PostCard = ({
               >
                 <ThumbUpIcon sx={{ fontSize: 18 }} />
               </IconButton>
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
                 {post.upvoteCount}
               </Typography>
             </Stack>
             <Stack direction="row" alignItems="center" spacing={0.5}>
               <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
                 {post.commentCount}
               </Typography>
             </Stack>

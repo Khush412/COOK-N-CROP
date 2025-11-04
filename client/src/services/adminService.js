@@ -117,8 +117,8 @@ const getDashboardStats = async () => {
   return response.data;
 };
 
-const getAllOrders = async ({ page = 1, search = '', status = 'All' }) => {
-  const params = new URLSearchParams({ page, search, status });
+const getAllOrders = async ({ page = 1, search = '', status = 'All', limit = 10 }) => {
+  const params = new URLSearchParams({ page, search, status, limit });
   const response = await api.get(`/orders?${params.toString()}`);
   return response.data;
 };
@@ -159,6 +159,22 @@ const importProductsFromCsv = async (formData) => {
   return response.data;
 };
 
+// Auto-join groups methods
+const getAutoJoinGroupsConfig = async () => {
+  const response = await api.get('/auto-join-groups');
+  return response.data;
+};
+
+const updateAutoJoinGroupsConfig = async (groups) => {
+  const response = await api.put('/auto-join-groups', { groups });
+  return response.data;
+};
+
+const getAllPublicGroups = async () => {
+  const response = await api.get('/auto-join-groups/all-groups');
+  return response.data;
+};
+
 const adminService = {
   getAllUsers,
   deleteUser,
@@ -190,6 +206,10 @@ const adminService = {
   exportUsers,
   toggleFeatureProduct,
   importProductsFromCsv,
+  // Auto-join groups methods
+  getAutoJoinGroupsConfig,
+  updateAutoJoinGroupsConfig,
+  getAllPublicGroups,
 };
 
 export default adminService;

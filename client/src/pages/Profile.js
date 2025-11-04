@@ -364,7 +364,7 @@ const Profile = () => {
                 </Box>
               ) : (
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Typography variant="h4" fontWeight="bold" color="secondary.main" sx={{ fontFamily: theme.typography.fontFamily }}>
                         {harvestCoins.balance}
@@ -375,7 +375,7 @@ const Profile = () => {
                     </Paper>
                   </Grid>
                   
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <CurrencyRupeeIcon sx={{ fontSize: 20 }} />
@@ -389,7 +389,7 @@ const Profile = () => {
                     </Paper>
                   </Grid>
                   
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
                         {harvestCoins.totalOrders}

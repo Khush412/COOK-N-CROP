@@ -61,7 +61,6 @@ import Rating from '../components/Rating';
 import recentlyViewedService from '../services/recentlyViewedService';
 import ProductCard from '../components/ProductCard';
 import ProductAlerts from '../components/ProductAlerts';
-import UserGeneratedContent from '../components/UserGeneratedContent'; // Keep UGC
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -153,36 +152,6 @@ const ProductPage = () => {
   const [filterRating, setFilterRating] = useState(0); // 0 for all
   const [sortOption, setSortOption] = useState('newest'); // 'newest' or 'helpful'
 
-  // Mock data for UGC (in a real app, this would come from the backend)
-  const [userGeneratedContent, setUserGeneratedContent] = useState([
-    {
-      id: 1,
-      type: 'image',
-      url: '', // Will be set after product loads
-      caption: "Made a delicious salad with this product! So fresh and crisp.",
-      user: {
-        name: "Sarah Johnson",
-        avatar: ""
-      },
-      likes: 24,
-      comments: 5,
-      tags: ["#fresh", "#healthy", "#salad"]
-    },
-    {
-      id: 2,
-      type: 'image',
-      url: '', // Will be set after product loads
-      caption: "Perfect for my morning smoothie. Highly recommend!",
-      user: {
-        name: "Emma Wilson",
-        avatar: ""
-      },
-      likes: 32,
-      comments: 7,
-      tags: ["#smoothie", "#healthy", "#breakfast"]
-    }
-  ]);
-
   const fetchProduct = useCallback(async () => {
     try {
       setLoading(true);
@@ -224,17 +193,6 @@ const ProductPage = () => {
   useEffect(() => {
     fetchProduct();
   }, [id, fetchProduct]);
-
-  // Update UGC URLs when product loads
-  useEffect(() => {
-    if (product && product.images && product.images.length > 0) {
-      const mainImageUrl = `${process.env.REACT_APP_API_URL}${product.images[0]}`;
-      setUserGeneratedContent(prev => prev.map((item, index) => ({
-        ...item,
-        url: mainImageUrl
-      })));
-    }
-  }, [product]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -776,7 +734,7 @@ const ProductPage = () => {
               <Box>
                 {product.countInStock > 0 ? (
                   <Chip 
-                    label={`In Stock (${product.countInStock} available)`} 
+                    label="In Stock" 
                     color="success" 
                     variant="outlined" 
                     size="medium" 
@@ -973,7 +931,7 @@ const ProductPage = () => {
                       <Stack direction="row" spacing={1.5} alignItems="center">
                         <LocalShippingIcon color="primary" sx={{ fontSize: '1.8rem' }} />
                         <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
-                          Free shipping on orders over ₹500
+                          Free shipping on orders over ₹200
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={1.5} alignItems="center">
@@ -985,9 +943,10 @@ const ProductPage = () => {
                       <Stack direction="row" spacing={1.5} alignItems="center">
                         <AutorenewIcon color="primary" sx={{ fontSize: '1.8rem' }} />
                         <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
-                          7-day return policy
+                          1-day return policy
                         </Typography>
                       </Stack>
+
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
@@ -1263,21 +1222,53 @@ const ProductPage = () => {
           </Box>
         )}
 
-        {/* User Generated Content */}
-        <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
-          <Typography 
-            variant="h4" 
-            component="h2" 
-            sx={{ 
-              fontWeight: 800, 
-              fontFamily: theme.typography.fontFamily, 
-              mb: 3 
-            }}
-          >
-            Customer Photos & Videos
-          </Typography>
-          <UserGeneratedContent content={userGeneratedContent} />
-        </Box>
+        {/* Customer Also Ordered */}
+        {relatedProducts.length > 0 && (
+          <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 800, 
+                fontFamily: theme.typography.fontFamily, 
+                mb: 3 
+              }}
+            >
+              Customer Also Ordered
+            </Typography>
+            <Grid container spacing={3}>
+              {relatedProducts.map((relatedProduct) => (
+                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+
+        {/* Customer Also Ordered */}
+        {relatedProducts.length > 0 && (
+          <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 800, 
+                fontFamily: theme.typography.fontFamily, 
+                mb: 3 
+              }}
+            >
+              Customer Also Ordered
+            </Typography>
+            <Grid container spacing={3}>
+              {relatedProducts.map((relatedProduct) => (
+                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
       </Paper>
 
       <Snackbar

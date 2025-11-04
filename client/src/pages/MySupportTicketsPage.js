@@ -95,15 +95,7 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
             >
               {ticket.subject}
             </Typography>
-            <Chip 
-              label={ticket.status} 
-              color={statusColors[ticket.status]} 
-              size="small" 
-              sx={{ 
-                height: 26,
-                '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 600 }
-              }}
-            />
+            {/* Removed the status chip to fix the bubble buttons issue */}
           </Stack>
           
           <Stack direction="row" spacing={3}>
@@ -116,21 +108,7 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
           </Stack>
         </Box>
         
-        <Chip 
-          icon={ticket.priority === 'High' ? <PriorityHighIcon /> : ticket.priority === 'Low' ? <LowPriorityIcon /> : null}
-          label={ticket.priority} 
-          size="small" 
-          color={priorityColors[ticket.priority]}
-          variant="filled"
-          sx={{ 
-            fontFamily: theme.typography.fontFamily,
-            height: 28,
-            ml: 2,
-            '& .MuiChip-icon': { fontSize: '16px' },
-            '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 600 },
-            boxShadow: 1,
-          }}
-        />
+        {/* Removed the priority chip to fix the bubble buttons issue */}
       </Paper>
     );
   }
@@ -173,34 +151,7 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
           >
             {ticket.subject}
           </Typography>
-          <Stack direction="row" spacing={1}>
-            {ticket.priority === 'High' && (
-              <Chip 
-                icon={<PriorityHighIcon />} 
-                label="High Priority" 
-                size="small" 
-                color="error" 
-                variant="filled"
-                sx={{ 
-                  height: 26,
-                  '& .MuiChip-icon': { fontSize: '18px' },
-                  '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 600 },
-                  boxShadow: 1,
-                }}
-              />
-            )}
-            <Chip 
-              label={ticket.status} 
-              color={statusColors[ticket.status]} 
-              size="small" 
-              variant="filled"
-              sx={{ 
-                height: 26,
-                '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 600 },
-                boxShadow: 1,
-              }}
-            />
-          </Stack>
+          {/* Removed the status and priority chips to fix the bubble buttons issue */}
         </Stack>
         
         {ticket.lastMessage && (
@@ -237,33 +188,9 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
       </CardContent>
       
       <CardActions sx={{ pt: 0, px: 2, pb: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-        <Chip 
-          label={ticket.category} 
-          size="small" 
-          variant="outlined"
-          sx={{ 
-            fontFamily: theme.typography.fontFamily,
-            height: 24,
-            '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 500 },
-            borderColor: alpha(theme.palette.primary.main, 0.4),
-            color: theme.palette.primary.main,
-          }}
-        />
+        {/* Removed the category chip to fix the bubble buttons issue */}
         <Box sx={{ flexGrow: 1 }} />
-        <Chip 
-          icon={ticket.priority === 'High' ? <PriorityHighIcon /> : ticket.priority === 'Low' ? <LowPriorityIcon /> : null}
-          label={ticket.priority} 
-          size="small" 
-          color={priorityColors[ticket.priority]}
-          variant="outlined"
-          sx={{ 
-            fontFamily: theme.typography.fontFamily,
-            height: 24,
-            '& .MuiChip-icon': { fontSize: '16px' },
-            '& .MuiChip-label': { fontSize: '0.75rem', fontWeight: 500 },
-            borderColor: alpha(priorityColors[ticket.priority]?.main || theme.palette.text.secondary, 0.4),
-          }}
-        />
+        {/* Removed the priority chip to fix the bubble buttons issue */}
       </CardActions>
     </Card>
   );

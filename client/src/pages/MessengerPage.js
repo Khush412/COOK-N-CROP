@@ -31,7 +31,8 @@ import {
   ListItemIcon,
   Popover,
   alpha,
-  Collapse
+  Collapse,
+  Drawer
 } from '@mui/material';
 import { 
   Send as SendIcon,
@@ -60,7 +61,8 @@ import {
   People as PeopleIcon,
   Group as GroupIcon,
   Notifications as NotificationsIcon,
-  Forum as ForumIcon
+  Forum as ForumIcon,
+  Menu as MenuIcon
 } from '@mui/icons-material';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,6 +95,7 @@ const MessengerPage = () => {
   const [currentMessageId, setCurrentMessageId] = useState(null);
   const [processingReactions, setProcessingReactions] = useState({});
   const [messagesOpen, setMessagesOpen] = useState(true);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -505,7 +508,7 @@ const MessengerPage = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }} component="div">
                         <Typography variant="subtitle2" noWrap sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, maxWidth: '60%' }}>
                           {otherParticipant?.username || 'Unknown User'}
                         </Typography>
@@ -517,11 +520,11 @@ const MessengerPage = () => {
                       </Box>
                     }
                     secondary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography noWrap variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }} component="div">
+                        <Typography noWrap variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }} component="div">
                           {convo.lastMessage?.sender ? `${convo.lastMessage.sender._id === user.id ? 'You: ' : ''}${convo.lastMessage.content}` : convo.lastMessage?.content || 'No messages yet'}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 1 }} component="div">
                           {convo.unreadCount > 0 && (
                             <Chip 
                               label={convo.unreadCount} 
@@ -544,6 +547,7 @@ const MessengerPage = () => {
                       </Box>
                     }
                   />
+
                 </ListItemButton>
               );
             })
@@ -809,7 +813,31 @@ const MessengerPage = () => {
       bgcolor: theme.palette.background.default,
       pt: 8
     }}>
-      {/* Left sidebar toggle button */}
+      {/* Mobile sidebar toggle button - always visible on mobile */}
+      <IconButton
+        onClick={() => setMobileDrawerOpen(true)}
+        sx={{
+          position: 'fixed',
+          left: 8,
+          top: 72,
+          zIndex: 1200,
+          width: 40,
+          height: 40,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: '50%',
+          boxShadow: 2,
+          '&:hover': {
+            bgcolor: theme.palette.background.paper,
+            boxShadow: 4,
+          },
+          display: { xs: 'flex', md: 'none' } // Only show on mobile
+        }}
+      >
+        <MenuIcon sx={{ fontSize: 20 }} />
+      </IconButton>
+
+      {/* Left sidebar toggle button - desktop only */}
       {!sidebarOpen && (
         <IconButton
           onClick={toggleSidebar}
@@ -832,13 +860,14 @@ const MessengerPage = () => {
               bgcolor: theme.palette.background.paper,
               boxShadow: 4,
             },
+            display: { xs: 'none', md: 'flex' }
           }}
         >
           <ChevronRightIcon sx={{ fontSize: 16 }} />
         </IconButton>
       )}
 
-      {/* Left sidebar */}
+      {/* Left sidebar - desktop version */}
       {sidebarOpen && (
         <Box
           sx={{
@@ -854,6 +883,7 @@ const MessengerPage = () => {
             borderRight: `1px solid ${theme.palette.divider}`,
             bgcolor: theme.palette.background.default,
             boxSizing: 'border-box',
+            display: { xs: 'none', md: 'block' },
             // Custom scrollbar styling
             '&::-webkit-scrollbar': {
               width: '6px',
@@ -874,13 +904,35 @@ const MessengerPage = () => {
         </Box>
       )}
 
+      {/* Mobile drawer for sidebar */}
+      <Drawer
+        anchor="left"
+        open={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+        sx={{ display: { xs: 'block', md: 'none' } }}
+        PaperProps={{
+          sx: {
+            width: 300,
+            maxWidth: '90vw',
+            bgcolor: theme.palette.background.default,
+          }
+        }}
+      >
+        <Box sx={{ p: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <IconButton onClick={() => setMobileDrawerOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        {NavigationSidebar}
+      </Drawer>
+
       {/* Main content area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           width: '100%',
-          ml: sidebarOpen ? '300px' : 0,
+          ml: { xs: 0, md: sidebarOpen ? '300px' : 0 },
           transition: 'margin 0.3s ease',
           height: 'calc(100vh - 64px)',
           pt: 2,

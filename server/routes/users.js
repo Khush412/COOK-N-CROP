@@ -843,7 +843,7 @@ router.put('/:id/subscription', protect, async (req, res) => {
 router.put('/:id/role', protect, authorize('admin'), async (req, res) => {
   try {
     const { role } = req.body;
-    const validRoles = ['user', 'premium', 'admin'];
+    const validRoles = ['user', 'premium', 'admin', 'moderator'];
 
     if (!role || !validRoles.includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role specified' });

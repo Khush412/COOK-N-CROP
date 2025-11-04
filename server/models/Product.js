@@ -76,7 +76,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'],
+    enum: ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Baked Goods', 'Beverages', 'Snacks', 'Other'],
   },
   countInStock: {
     type: Number,

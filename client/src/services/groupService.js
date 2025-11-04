@@ -62,10 +62,11 @@ const getGroupDetails = async (slug) => {
   }
 };
 
-const getGroupPosts = async (slug, { sort, page, search }) => {
+const getGroupPosts = async (slug, { sort, page, search, isRecipe }) => {
   try {
     const params = new URLSearchParams({ sort, page });
     if (search) params.append('search', search);
+    if (isRecipe !== undefined) params.append('isRecipe', isRecipe);
     const response = await api.get(`/groups/${slug}/posts?${params.toString()}`);
     return response.data;
   } catch (error) {

@@ -382,7 +382,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
                   {preview.type === 'image' ? (
                     <Avatar src={preview.url} variant="rounded" sx={{ width: '100%', height: '100%' }} />
                   ) : (
-                    <video src={preview.url} width="100" height="100" style={{ objectFit: 'cover' }} />
+                    <video src={preview.url} width="100" height="100" style={{ objectFit: 'cover', fontFamily: theme.typography.fontFamily }} />
                   )}
                   <IconButton size="small" onClick={() => removePreview(preview.url)} sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'rgba(0,0,0,0.5)', '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' } }}>
                     <CloseIcon fontSize="small" sx={{ color: 'white' }} />
@@ -421,7 +421,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
                 </IconButton>
               </Stack>
             ))}
-            <Button onClick={() => addDynamicListItem('ingredients')} startIcon={<AddIcon />} size="small" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Button onClick={() => addDynamicListItem('ingredients')} startIcon={<AddIcon />} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
               Add Ingredient
             </Button>
 
@@ -446,7 +446,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
                 </IconButton>
               </Stack>
             ))}
-            <Button onClick={() => addDynamicListItem('instructions')} startIcon={<AddIcon />} size="small" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Button onClick={() => addDynamicListItem('instructions')} startIcon={<AddIcon />} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
               Add Step
             </Button>
           </Paper>

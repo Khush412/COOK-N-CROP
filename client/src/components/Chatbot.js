@@ -196,10 +196,11 @@ const Chatbot = () => {
         onClick={() => setOpen(!open)}
         sx={{
           position: 'fixed',
-          bottom: 32,
-          right: 32,
+          bottom: { xs: 16, sm: 32 },
+          right: { xs: 16, sm: 32 },
           zIndex: 1500,
           boxShadow: theme.shadows[6],
+          display: { xs: 'none', sm: 'flex' } // Hide on mobile
         }}
       >
         {open ? <CloseIcon /> : <SmartToyIcon />}
@@ -210,9 +211,9 @@ const Chatbot = () => {
           elevation={12}
           sx={{
             position: 'fixed',
-            bottom: 112,
-            right: 32,
-            width: { xs: 'calc(100vw - 40px)', sm: size.width },
+            bottom: { xs: 80, sm: 112 },
+            right: { xs: 16, sm: 32 },
+            width: { xs: 'calc(100vw - 32px)', sm: size.width },
             height: { xs: '70vh', sm: size.height },
             maxHeight: 'calc(100vh - 130px)',
             zIndex: 1499,
@@ -221,6 +222,7 @@ const Chatbot = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: theme.typography.fontFamily,
+            display: { xs: 'none', sm: 'flex' } // Hide on mobile
           }}
         >
           {!isMobile && (

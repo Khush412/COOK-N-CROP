@@ -3,9 +3,16 @@ import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box, Container, Typography, CircularProgress, Alert, Paper, Button, Stack, Grid, Avatar, Chip,
   ToggleButtonGroup, ToggleButton, Pagination, Divider, Tooltip, TextField, InputAdornment,
+  FormControl, Select, MenuItem, IconButton, Drawer
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
-import { Add as AddIcon, Check as CheckIcon, NewReleases as NewReleasesIcon, TrendingUp as TrendingUpIcon, Forum as ForumIcon, Whatshot as WhatshotIcon, Settings as SettingsIcon, Lock as LockIcon, PersonAdd as PersonAddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, Check as CheckIcon, NewReleases as NewReleasesIcon, TrendingUp as TrendingUpIcon, 
+  Forum as ForumIcon, Whatshot as WhatshotIcon, Settings as SettingsIcon, Lock as LockIcon, 
+  PersonAdd as PersonAddIcon, Search as SearchIcon,
+  GridView as GridViewIcon, ViewList as ViewListIcon, Apps as AppsIcon,
+  Close as CloseIcon, Menu as MenuIcon
+} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import groupService from '../services/groupService';
 import communityService from '../services/communityService';
@@ -27,12 +34,17 @@ const GroupPage = () => {
   const [memberCount, setMemberCount] = useState(0);
   const [hasRequestedToJoin, setHasRequestedToJoin] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  
+  // State for mobile sidebar toggle
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [sort, setSort] = useState('new');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [contentFilter, setContentFilter] = useState('all'); // New state for content filter
+  const [viewMode, setViewMode] = useState('card'); // New state for view mode
 
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
@@ -66,7 +78,12 @@ const GroupPage = () => {
   const fetchGroupPosts = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, posts: true }));
-      const postData = await groupService.getGroupPosts(slug, { sort, page, search: debouncedSearchTerm });
+      const postData = await groupService.getGroupPosts(slug, { 
+        sort, 
+        page, 
+        search: debouncedSearchTerm,
+        isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined
+      });
       setPosts(postData.posts);
       setTotalPages(postData.pages);
     } catch (err) {
@@ -74,7 +91,7 @@ const GroupPage = () => {
     } finally {
       setLoading(prev => ({ ...prev, posts: false }));
     }
-  }, [slug, sort, page, debouncedSearchTerm]);
+  }, [slug, sort, page, debouncedSearchTerm, contentFilter]);
 
   useEffect(() => {
     fetchGroupDetails();
@@ -84,7 +101,7 @@ const GroupPage = () => {
     if (group) {
       fetchGroupPosts();
     }
-  }, [group, fetchGroupPosts]);
+  }, [group, fetchGroupPosts, contentFilter]); // Add contentFilter as dependency
 
   const handleJoinLeave = async () => {
     if (!isAuthenticated) return navigate(`/login?redirect=/g/${slug}`);
@@ -158,12 +175,13 @@ const GroupPage = () => {
   }
 
   const isMod = group && (group.moderators && group.moderators.some(mod => mod._id === user?.id) || group.creator._id === user?.id || user?.role === 'admin');
+
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-      {/* Group Header */}
+    <Box sx={{ bgcolor: 'background.default', minHeight: 'calc(100vh - 64px)', pb: '50px', pt: { xs: 8, sm: 0 } }}>
+      {/* Group Header - Mobile responsive */}
       <Paper
         sx={{
-          height: 300,
+          height: { xs: 200, sm: 250, md: 300 },
           position: 'relative',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -171,15 +189,32 @@ const GroupPage = () => {
           color: '#fff',
           display: 'flex',
           alignItems: 'flex-end',
-          p: 4,
+          p: { xs: 2, sm: 3, md: 4 },
         }}
       >
         <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
-        <Stack direction="row" spacing={3} alignItems="center" sx={{ position: 'relative', zIndex: 2 }}>
-          <Avatar src={group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`} sx={{ width: 120, height: 120, border: '4px solid white' }} />
-          <Box>
-            <Typography variant="h2" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>{group.name}</Typography>
-            <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ position: 'relative', zIndex: 2, width: '100%' }}>
+          <Avatar 
+            src={group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`} 
+            sx={{ 
+              width: { xs: 80, sm: 100, md: 120 }, 
+              height: { xs: 80, sm: 100, md: 120 }, 
+              border: '4px solid white' 
+            }} 
+          />
+          <Box sx={{ textAlign: { xs: 'center', sm: 'left' }, width: '100%' }}>
+            <Typography 
+              variant="h2" 
+              component="h1" 
+              sx={{ 
+                fontWeight: 800, 
+                fontFamily: theme.typography.fontFamily, 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+              }}
+            >
+              {group.name}
+            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: 'center', sm: 'flex-start' }}>
               <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9 }}>g/{group.slug}</Typography>
               {group.isPrivate && (
                 <Tooltip title="Private Group">
@@ -191,11 +226,31 @@ const GroupPage = () => {
                   size="small"
                   startIcon={<SettingsIcon />}
                   onClick={() => navigate(`/g/${slug}/edit`)}
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' }, fontFamily: theme.typography.fontFamily }}
-                >Edit Group</Button>
+                  sx={{ 
+                    color: 'white', 
+                    borderColor: 'rgba(255,255,255,0.5)', 
+                    '&:hover': { borderColor: 'white' }, 
+                    fontFamily: theme.typography.fontFamily,
+                    mt: { xs: 1, sm: 0 }
+                  }}
+                >
+                  Edit Group
+                </Button>
               )}
             </Stack>
-            <Typography variant="body1" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>{group.description}</Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                mt: 1, 
+                fontFamily: theme.typography.fontFamily,
+                display: '-webkit-box',
+                WebkitLineClamp: { xs: 2, sm: 3 },
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}
+            >
+              {group.description}
+            </Typography>
           </Box>
         </Stack>
       </Paper>
@@ -209,10 +264,28 @@ const GroupPage = () => {
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => navigate('/create-post', { state: { groupId: group._id, groupName: group.name } })}
-                sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+                sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', mb: { xs: 1, sm: 0 } }}
               >
                 Create Post
               </Button>
+              
+              {/* Mobile sidebar toggle button - placed next to Create Post button */}
+              <IconButton
+                onClick={() => setMobileSidebarOpen(true)}
+                sx={{ 
+                  display: { xs: 'flex', md: 'none' }, 
+                  bgcolor: theme.palette.primary.main,
+                  color: 'white',
+                  '&:hover': { bgcolor: theme.palette.primary.dark },
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  mb: { xs: 1, sm: 0 }
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              
               <TextField
                 label="Search in this group"
                 size="small"
@@ -223,32 +296,208 @@ const GroupPage = () => {
                   startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
                 }}
               />
-              <ToggleButtonGroup value={sort} exclusive onChange={(e, newSort) => { if (newSort) { setSort(newSort); setPage(1); } }} size="small" sx={{ flexShrink: 0 }}>
-                <ToggleButton value="new"><NewReleasesIcon sx={{ mr: 0.5, fontSize: 20 }} /> New</ToggleButton>
-                <ToggleButton value="top"><TrendingUpIcon sx={{ mr: 0.5, fontSize: 20 }} /> Top</ToggleButton>
-                <ToggleButton value="hot"><WhatshotIcon sx={{ mr: 0.5, fontSize: 20 }} /> Hot</ToggleButton>
-                <ToggleButton value="discussed"><ForumIcon sx={{ mr: 0.5, fontSize: 20 }} /> Discussed</ToggleButton>
-              </ToggleButtonGroup>
+              {/* Filters and View Options - Responsive for mobile */}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', width: '100%', mt: { xs: 2, sm: 0 } }}>
+                {/* Content Filter Dropdown */}
+                <FormControl size="small" sx={{ minWidth: { xs: '45%', sm: 100 } }}>
+                  <Select
+                    value={contentFilter}
+                    onChange={(e) => {
+                      setContentFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    MenuProps={{
+                      disableScrollLock: true,
+                    }}
+                    sx={{ 
+                      borderRadius: 2,
+                      height: 36,
+                      fontSize: '0.875rem',
+                      '& .MuiSelect-select': {
+                        py: 1,
+                        pl: 1.5,
+                        pr: 3,
+                      }
+                    }}
+                  >
+                    <MenuItem value="all">All</MenuItem>
+                    <MenuItem value="recipes">Recipes</MenuItem>
+                    <MenuItem value="discussions">Discussions</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                {/* Sort Options Dropdown */}
+                <FormControl size="small" sx={{ minWidth: { xs: '45%', sm: 120 } }}>
+                  <Select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                    MenuProps={{
+                      disableScrollLock: true,
+                    }}
+                    sx={{ 
+                      borderRadius: 2,
+                      height: 36,
+                      fontSize: '0.875rem',
+                      '& .MuiSelect-select': {
+                        py: 1,
+                        pl: 1.5,
+                        pr: 3,
+                      }
+                    }}
+                  >
+                    <MenuItem value="new">New</MenuItem>
+                    <MenuItem value="top">Top</MenuItem>
+                    <MenuItem value="hot">Hot</MenuItem>
+                    <MenuItem value="discussed">Most Discussed</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                {/* View Mode Toggle */}
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
+                  size="small"
+                  sx={{ height: 36, mt: { xs: 1, sm: 0 } }}
+                >
+                  <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <GridViewIcon sx={{ fontSize: 20 }} />
+                  </ToggleButton>
+                  <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <ViewListIcon sx={{ fontSize: 20 }} />
+                  </ToggleButton>
+                  <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <AppsIcon sx={{ fontSize: 20 }} />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
             </Paper>
 
             {loading.posts ? <CircularProgress /> : (
-              <Stack spacing={3}>
-                {posts.length > 0 ? posts.map(post => (
-                  <PostCard
-                    key={post._id}
-                    post={post}
-                    user={user}
-                    onUpvote={handleUpvote}
-                    upvotingPosts={upvotingPosts}
-                    onToggleSave={handleToggleSave}
-                    savingPosts={savingPosts}
-                    showSnackbar={setSnackbar}
-                    displayMode="feed"
-                  />
-                )) : (
-                  <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontFamily: theme.typography.fontFamily }}>No posts in this group yet. Be the first!</Typography>
-                )}
-              </Stack>
+              viewMode !== 'grid' ? (
+                <Stack spacing={3}>
+                  {posts.length > 0 ? posts.map(post => (
+                    <PostCard
+                      key={post._id}
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                      showSnackbar={setSnackbar}
+                      displayMode={viewMode} // Use the selected view mode
+                    />
+                  )) : (
+                    <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontFamily: theme.typography.fontFamily }}>No posts in this group yet. Be the first!</Typography>
+                  )}
+                </Stack>
+              ) : (
+                // Grid view - only show posts with images
+                <Grid container spacing={2}>
+                  {posts.filter(post => post.media && post.media.length > 0).length > 0 ? (
+                    posts.filter(post => post.media && post.media.length > 0).map((post) => (
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                        <Box 
+                          onClick={() => navigate(`/post/${post._id}`)}
+                          sx={{
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            boxShadow: 2,
+                            '&:hover': {
+                              boxShadow: 4,
+                              transform: 'translateY(-2px)',
+                            },
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            transition: 'all 0.3s ease',
+                            bgcolor: theme.palette.background.paper,
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
+                            alt={post.title}
+                            sx={{
+                              width: '100%',
+                              height: { xs: 150, sm: 180, md: 200 },
+                              objectFit: 'cover',
+                              borderBottom: `1px solid ${theme.palette.divider}`,
+                            }}
+                          />
+                          <Box sx={{ p: 2 }}>
+                            <Typography 
+                              variant="h6" 
+                              sx={{ 
+                                fontWeight: 700, 
+                                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                                lineHeight: 1.4,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                fontFamily: theme.typography.fontFamily,
+                                mb: 1,
+                              }}
+                            >
+                              {post.title}
+                            </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                              <Avatar 
+                                src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+                                alt={post.user?.username || 'User'}
+                                sx={{ width: 24, height: 24, fontSize: 12 }}
+                              >
+                                {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                              </Avatar>
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  fontWeight: 500, 
+                                  color: 'text.secondary',
+                                  fontFamily: theme.typography.fontFamily,
+                                }}
+                              >
+                                {post.user?.username || 'Unknown'}
+                              </Typography>
+                            </Stack>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    ))
+                  ) : (
+                    <Grid size={12}>
+                      <Paper 
+                        elevation={0}
+                        sx={{ 
+                          p: { xs: 4, sm: 6, md: 8 }, 
+                          textAlign: 'center', 
+                          borderRadius: 3,
+                          border: `1px solid ${theme.palette.divider}`,
+                        }}
+                      >
+                        <Typography variant="h5" sx={{ color: "text.secondary", fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.75rem' }, fontWeight: 700, mb: 2 }}>
+                          No image posts yet
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                          Be the first to share a post with images!
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          onClick={() => navigate('/create-post', { state: { groupId: group._id, groupName: group.name } })}
+                          startIcon={<AddIcon />}
+                          sx={{ borderRadius: 3, px: { xs: 2, sm: 4 }, py: { xs: 1, sm: 1.5 }, fontWeight: 700 }}
+                        >
+                          Create Post
+                        </Button>
+                      </Paper>
+                    </Grid>
+                  )}
+                </Grid>
+              )
             )}
 
             {totalPages > 1 && (
@@ -258,97 +507,210 @@ const GroupPage = () => {
             )}
           </Grid>
 
-          {/* Right Sidebar */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ 
-              position: 'relative',
-              top: 100,
-            }}>
-              <Box sx={{
+          {/* Right Sidebar - Toggleable on mobile */}
+          <Grid size={{ xs: 12, md: 4 }} sx={{ display: { md: 'block' } }}>
+            <Box 
+              sx={{ 
                 position: 'sticky',
                 top: 100,
-              }}>
-                {/* Join Requests Management for Moderators */}
-                {isMod && group.isPrivate && (
-                  <Box sx={{ mb: 3 }}>
-                    <GroupJoinRequests groupId={group._id} />
-                  </Box>
-                )}
-              
-              <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
-                {group.isPrivate && !isMember && !hasRequestedToJoin ? (
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={handleJoinLeave}
-                    disabled={isJoining}
-                    startIcon={isJoining ? <CircularProgress size={20} /> : <PersonAddIcon />}
-                    sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
-                  >
-                    Request to Join
-                  </Button>
-                ) : (
-                  <Button
-                    fullWidth
-                    variant={isMember ? 'outlined' : 'contained'}
-                    onClick={handleJoinLeave}
-                    disabled={isJoining || hasRequestedToJoin}
-                    startIcon={isJoining ? <CircularProgress size={20} /> : (isMember && <CheckIcon />)}
-                    sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
-                  >
-                    {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
-                  </Button>
-                )}
-                <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{memberCount.toLocaleString()}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
-                  {group.isPrivate ? 'Members (Private Group)' : 'Members'}
-                </Typography>
-                <Divider sx={{ my: 2 }} />
-                {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Created by{' '}
-                  <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit' }}>
-                    {group.creator.username}
-                  </Typography> {/* Added profilePic check */}
-                </Typography>}
-                {group.moderators.length > 0 && (
-                  <>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Moderators</Typography>
-                    <Stack spacing={1}>
-                      {group.moderators.map(mod => (
-                        <Stack key={mod._id} direction="row" spacing={1.5} alignItems="center" component={RouterLink} to={`/user/${mod.username}`} sx={{ textDecoration: 'none', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}> {/* Added profilePic check */}
-                          <Avatar
-                            sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
-                            src={mod.profilePic && mod.profilePic.startsWith('http') ? mod.profilePic : mod.profilePic ? `${process.env.REACT_APP_API_URL}${mod.profilePic}` : undefined}
-                          >
-                            {mod.username.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{mod.username}</Typography>
-                        </Stack>
-                      ))}
-                    </Stack>
-                  </>
-                )}
-                {group.rules && group.rules.length > 0 && (
-                  <> {/* Added profilePic check */}
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Group Rules</Typography>
-                    <Stack spacing={1.5}>
-                      {group.rules.map((rule, index) => (
-                        <Box key={index}>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{index + 1}. {rule.title}</Typography>
-                          {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily }}>{rule.description}</Typography>}
-                        </Box>
-                      ))}
-                    </Stack>
-                  </>
-                )}
-              </Paper>
-            </Box>
+                alignSelf: 'flex-start',
+                pb: 2,
+                mb: 4,
+                display: { xs: 'none', md: 'block' }
+              }}
+            >
+              {/* Join Requests Management for Moderators */}
+              {isMod && group.isPrivate && (
+                <Box sx={{ mb: 3 }}>
+                  <GroupJoinRequests groupId={group._id} />
+                </Box>
+              )}
+            
+            <Paper sx={{ p: 3, borderRadius: 3, mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
+              {group.isPrivate && !isMember && !hasRequestedToJoin ? (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleJoinLeave}
+                  disabled={isJoining}
+                  startIcon={isJoining ? <CircularProgress size={20} /> : <PersonAddIcon />}
+                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                >
+                  Request to Join
+                </Button>
+              ) : (
+                <Button
+                  fullWidth
+                  variant={isMember ? 'outlined' : 'contained'}
+                  onClick={handleJoinLeave}
+                  disabled={isJoining || hasRequestedToJoin}
+                  startIcon={isJoining ? <CircularProgress size={20} /> : (isMember && <CheckIcon />)}
+                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                >
+                  {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
+                </Button>
+              )}
+              <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{memberCount.toLocaleString()}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+                {group.isPrivate ? 'Members (Private Group)' : 'Members'}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Created by{' '}
+                <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit' }}>
+                  {group.creator.username}
+                </Typography> {/* Added profilePic check */}
+              </Typography>}
+              {group.moderators.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Moderators</Typography>
+                  <Stack spacing={1}>
+                    {group.moderators.map(mod => (
+                      <Stack key={mod._id} direction="row" spacing={1.5} alignItems="center" component={RouterLink} to={`/user/${mod.username}`} sx={{ textDecoration: 'none', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}> {/* Added profilePic check */}
+                        <Avatar
+                          sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
+                          src={mod.profilePic && mod.profilePic.startsWith('http') ? mod.profilePic : mod.profilePic ? `${process.env.REACT_APP_API_URL}${mod.profilePic}` : undefined}
+                        >
+                          {mod.username.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{mod.username}</Typography>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </>
+              )}
+              {group.rules && group.rules.length > 0 && (
+                <> {/* Added profilePic check */}
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Group Rules</Typography>
+                  <Stack spacing={1.5}>
+                    {group.rules.map((rule, index) => (
+                      <Box key={index}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{index + 1}. {rule.title}</Typography>
+                        {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily }}>{rule.description}</Typography>}
+                      </Box>
+                    ))}
+                  </Stack>
+                </>
+              )}
+            </Paper>
           </Box>
           </Grid>
         </Grid>
       </Container>
+      
+      {/* Mobile Sidebar Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: '100%', sm: 300 } }
+        }}
+      >
+        {/* Close button positioned outside the main content */}
+        <IconButton 
+          onClick={() => setMobileSidebarOpen(false)} 
+          sx={{ 
+            position: 'absolute', 
+            top: 32, 
+            right: 16, 
+            zIndex: 1000,
+            bgcolor: 'background.paper',
+            '&:hover': { bgcolor: 'action.hover' },
+            width: 40,
+            height: 40
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        
+        <Box sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', pt: 8 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>
+              Group Info
+            </Typography>
+          </Box>
+
+          {/* Join Requests Management for Moderators */}
+          {isMod && group.isPrivate && (
+            <Box sx={{ mb: 3 }}>
+              <GroupJoinRequests groupId={group._id} />
+            </Box>
+          )}
+        
+          <Paper sx={{ p: 2, borderRadius: 2, mb: 2, flexGrow: 1, overflow: 'auto' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
+            {group.isPrivate && !isMember && !hasRequestedToJoin ? (
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleJoinLeave}
+                disabled={isJoining}
+                startIcon={isJoining ? <CircularProgress size={20} /> : <PersonAddIcon />}
+                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+              >
+                Request to Join
+              </Button>
+            ) : (
+              <Button
+                fullWidth
+                variant={isMember ? 'outlined' : 'contained'}
+                onClick={handleJoinLeave}
+                disabled={isJoining || hasRequestedToJoin}
+                startIcon={isJoining ? <CircularProgress size={20} /> : (isMember && <CheckIcon />)}
+                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+              >
+                {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
+              </Button>
+            )}
+            <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{memberCount.toLocaleString()}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+              {group.isPrivate ? 'Members (Private Group)' : 'Members'}
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Created by{' '}
+              <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit' }}>
+                {group.creator.username}
+              </Typography> {/* Added profilePic check */}
+            </Typography>}
+            {group.moderators.length > 0 && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Moderators</Typography>
+                <Stack spacing={1}>
+                  {group.moderators.map(mod => (
+                    <Stack key={mod._id} direction="row" spacing={1.5} alignItems="center" component={RouterLink} to={`/user/${mod.username}`} sx={{ textDecoration: 'none', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}> {/* Added profilePic check */}
+                      <Avatar
+                        sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
+                        src={mod.profilePic && mod.profilePic.startsWith('http') ? mod.profilePic : mod.profilePic ? `${process.env.REACT_APP_API_URL}${mod.profilePic}` : undefined}
+                      >
+                        {mod.username.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{mod.username}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </>
+            )}
+            {group.rules && group.rules.length > 0 && (
+              <> {/* Added profilePic check */}
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Group Rules</Typography>
+                <Stack spacing={1.5}>
+                  {group.rules.map((rule, index) => (
+                    <Box key={index}>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{index + 1}. {rule.title}</Typography>
+                      {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily }}>{rule.description}</Typography>}
+                    </Box>
+                  ))}
+                </Stack>
+              </>
+            )}
+          </Paper>
+        </Box>
+      </Drawer>
     </Box>
   );
 };

@@ -3,7 +3,7 @@ import {
   Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack, Chip, Grid,
-  Input, FormControl, InputLabel, Select, MenuItem, OutlinedInput
+  Input, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Menu, ListItemIcon, ListItemText
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -17,6 +17,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 import ProductFormDialog from '../../components/ProductFormDialog';
@@ -45,6 +46,18 @@ const ManageProducts = () => {
   const [csvImportResult, setCsvImportResult] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [lowStockThreshold] = useState(10); // Define low stock threshold
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleActionsClick = (event, product) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedProduct(product);
+  };
+
+  const handleActionsClose = () => {
+    setAnchorEl(null);
+    setSelectedProduct(null);
+  };
 
   // Calculate low stock count
   const lowStockCount = products.filter(p => p.countInStock <= lowStockThreshold).length;
@@ -348,9 +361,6 @@ const ManageProducts = () => {
                             <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
                               {product.name}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                              ID: {product._id.substring(0, 8)}...
-                            </Typography>
                           </TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
                             <Chip 
@@ -400,36 +410,13 @@ const ManageProducts = () => {
                             </Box>
                           </TableCell>
                           <TableCell align="right">
-                            <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
-                              <Tooltip title={product.isFeatured ? "Unfeature Product" : "Feature Product"}>
-                                <IconButton 
-                                  size="small" 
-                                  onClick={(e) => { e.stopPropagation(); handleFeatureToggle(product._id); }}
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  {product.isFeatured ? <StarIcon color="secondary" fontSize="small" /> : <StarBorderIcon fontSize="small" />}
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Edit Product">
-                                <IconButton 
-                                  size="small" 
-                                  onClick={(e) => { e.stopPropagation(); handleOpenDialog(product); }}
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete Product">
-                                <IconButton 
-                                  size="small" 
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product._id); }} 
-                                  color="error"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Stack>
+                            <IconButton
+                              size="small"
+                              onClick={(event) => handleActionsClick(event, product)}
+                              sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
                           </TableCell>
                         </TableRow>
                       );
@@ -473,6 +460,40 @@ const ManageProducts = () => {
           </>
         )}
       </Paper>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleActionsClose}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+      >
+        <MenuItem onClick={() => {
+          handleFeatureToggle(selectedProduct?._id);
+          handleActionsClose();
+        }}>
+          <ListItemIcon>
+            {selectedProduct?.isFeatured ? <StarBorderIcon fontSize="small" /> : <StarIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{selectedProduct?.isFeatured ? "Unfeature Product" : "Feature Product"}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleOpenDialog(selectedProduct);
+          handleActionsClose();
+        }}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit Product</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleDeleteProduct(selectedProduct?._id);
+          handleActionsClose();
+        }} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <ListItemText>Delete Product</ListItemText>
+        </MenuItem>
+      </Menu>
       <ProductFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}

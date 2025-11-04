@@ -12,7 +12,7 @@ const ProminentCTA = () => {
     {
       icon: <LocalShippingIcon sx={{ fontSize: 40 }} />,
       title: "Free Shipping",
-      description: "On orders over ₹2000"
+      description: "On orders over ₹200"
     },
     {
       icon: <EmojiEventsIcon sx={{ fontSize: 40 }} />,
@@ -63,7 +63,7 @@ const ProminentCTA = () => {
         <Box sx={{ mb: 6 }}>
           <Grid container spacing={4} justifyContent="center">
             {benefits.map((benefit, index) => (
-              <Grid item size={{ xs: 12, sm: 4 }} key={index}>
+              <Grid size={{ xs: 12, sm: 4 }} key={index}>
                 <Box sx={{ 
                   textAlign: 'center',
                   p: 3,

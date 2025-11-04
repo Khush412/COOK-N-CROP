@@ -11,7 +11,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Avatar
+  Avatar,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
@@ -36,6 +38,9 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAccountNotFoundPopup, setShowAccountNotFoundPopup] = useState(false);
   const [showIncorrectPasswordPopup, setShowIncorrectPasswordPopup] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("error");
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -44,14 +49,40 @@ export default function AuthPage() {
     }
   }, [isAuthenticated, loading, navigate]);
 
+  // Function to show snackbar messages
+  const showSnackbar = (message, severity = "error") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  // Function to handle snackbar close
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+    setLocalError(null);
+    clearError();
+  };
+
   const handleSignIn = async (e) => {
     e.preventDefault(); // MUST be first to stop reload
     setIsSubmitting(true);
     setLocalError(null);
     clearError();
 
+    // Client-side validation
     if (!email || !password) {
-      setLocalError("Please fill in all fields");
+      showSnackbar("Please fill in all fields", "error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showSnackbar("Please enter a valid email address", "error");
       setIsSubmitting(false);
       return;
     }
@@ -59,27 +90,39 @@ export default function AuthPage() {
     try {
       const result = await login(email, password);
       if (!result.success) {
-        const { status, code } = result;
+        const { status, code, message } = result;
+        const errorMessage = message || "Login failed";
 
+        // Handle specific error cases
         if (status === 404 || code === 'USER_NOT_FOUND') {
           setShowAccountNotFoundPopup(true);
-          setLocalError(null);
         } else if (status === 401) {
-          const msg = (result.message || '').toLowerCase();
-          if (code === 'INCORRECT_PASSWORD' || msg.includes('incorrect password')) {
+          if (code === 'INCORRECT_PASSWORD' || errorMessage.toLowerCase().includes('incorrect password')) {
             setShowIncorrectPasswordPopup(true);
-            setLocalError(null);
+          } else if (errorMessage.includes('deactivated') || errorMessage.includes('Account is deactivated')) {
+            showSnackbar("This account has been deactivated. Please contact support.", "error");
           } else {
             // Fallback: treat generic 401 as user not found to avoid always showing incorrect password
             setShowAccountNotFoundPopup(true);
-            setLocalError(null);
           }
+        } else if (status === 500) {
+          showSnackbar("Server error during login. Please try again later.", "error");
+        } else if (status === 429) {
+          showSnackbar("Too many login attempts. Please wait a few minutes and try again.", "warning");
+        } else if (errorMessage.includes("Network Error")) {
+          showSnackbar("Network connection failed. Please check your internet connection and try again.", "error");
         } else {
-          setLocalError(result.message);
+          showSnackbar(errorMessage, "error");
         }
       }
     } catch (err) {
-      setLocalError("An unexpected error occurred. Please try again.");
+      console.error("Login error:", err);
+      // Handle network errors specifically
+      if (err.message && err.message.includes("Network Error")) {
+        showSnackbar("Network connection failed. Please check your internet connection and try again.", "error");
+      } else {
+        showSnackbar("An unexpected error occurred. Please try again.", "error");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -91,14 +134,37 @@ export default function AuthPage() {
     setLocalError(null);
     clearError();
 
+    // Client-side validation
     if (!username || !email || !password) {
-      setLocalError("Please fill in all fields");
+      showSnackbar("Please fill in all fields", "error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (username.length < 3) {
+      showSnackbar("Username must be at least 3 characters long", "error");
       setIsSubmitting(false);
       return;
     }
 
     if (password.length < 6) {
-      setLocalError("Password must be at least 6 characters long");
+      showSnackbar("Password must be at least 6 characters long", "error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showSnackbar("Please enter a valid email address", "error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Username validation (no special characters except underscore and hyphen)
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!usernameRegex.test(username)) {
+      showSnackbar("Username can only contain letters, numbers, underscores, and hyphens", "error");
       setIsSubmitting(false);
       return;
     }
@@ -106,10 +172,78 @@ export default function AuthPage() {
     try {
       const result = await register({ username, email, password });
       if (!result.success) {
-        setLocalError(result.message);
+        // Handle specific error cases with more detailed messages
+        const errorMessage = result.message || "Registration failed";
+        
+        // Handle duplicate email/username errors - MORE COMPREHENSIVE CHECKS
+        if (errorMessage.includes("User already exists with this email") || 
+            errorMessage.includes("email already exists") ||
+            (errorMessage.includes("email") && errorMessage.includes("exists")) ||
+            errorMessage.toLowerCase().includes("email taken") ||
+            errorMessage.toLowerCase().includes("email already registered")) {
+          showSnackbar("An account with this email already exists. Please use a different email or sign in instead.", "error");
+        } else if (errorMessage.includes("Username is already taken") || 
+                   errorMessage.includes("username already taken") ||
+                   (errorMessage.includes("username") && errorMessage.includes("taken")) ||
+                   (errorMessage.includes("username") && errorMessage.includes("exists"))) {
+          showSnackbar("This username is already taken. Please choose a different username.", "error");
+        } 
+        // Handle MongoDB duplicate key errors
+        else if (errorMessage.includes("email") && errorMessage.includes("exists")) {
+          showSnackbar("An account with this email already exists. Please use a different email or sign in instead.", "error");
+        } else if (errorMessage.includes("username") && errorMessage.includes("exists")) {
+          showSnackbar("This username is already taken. Please choose a different username.", "error");
+        }
+        // Handle validation errors
+        else if (errorMessage.includes("Validation Error")) {
+          // Extract specific validation messages if possible
+          if (errorMessage.includes("username") && errorMessage.includes("required")) {
+            showSnackbar("Username is required.", "error");
+          } else if (errorMessage.includes("email") && errorMessage.includes("required")) {
+            showSnackbar("Email is required.", "error");
+          } else if (errorMessage.includes("password") && errorMessage.includes("required")) {
+            showSnackbar("Password is required.", "error");
+          } else if (errorMessage.includes("email") && errorMessage.includes("unique")) {
+            showSnackbar("An account with this email already exists.", "error");
+          } else if (errorMessage.includes("username") && errorMessage.includes("unique")) {
+            showSnackbar("This username is already taken.", "error");
+          } else {
+            showSnackbar("Please check your information and try again.", "error");
+          }
+        }
+        // Handle server errors
+        else if (errorMessage.includes("Server error")) {
+          showSnackbar("Server error during registration. Please try again later.", "error");
+        }
+        // Handle network errors
+        else if (errorMessage.includes("Network Error")) {
+          showSnackbar("Network connection failed. Please check your internet connection and try again.", "error");
+        }
+        // Fallback for other errors
+        else {
+          showSnackbar(errorMessage, "error");
+        }
       }
     } catch (err) {
-      setLocalError("An unexpected error occurred. Please try again.");
+      console.error("Registration error:", err);
+      // Handle network errors specifically
+      if (err.message && err.message.includes("Network Error")) {
+        showSnackbar("Network connection failed. Please check your internet connection and try again.", "error");
+      } 
+      // Handle duplicate key errors that might come from the catch block
+      else if (err.response && err.response.data && err.response.data.message) {
+        const serverMessage = err.response.data.message;
+        if (serverMessage.includes("email") && serverMessage.includes("exists")) {
+          showSnackbar("An account with this email already exists. Please use a different email or sign in instead.", "error");
+        } else if (serverMessage.includes("username") && serverMessage.includes("exists")) {
+          showSnackbar("This username is already taken. Please choose a different username.", "error");
+        } else {
+          showSnackbar(serverMessage || "An unexpected error occurred. Please try again.", "error");
+        }
+      }
+      else {
+        showSnackbar("An unexpected error occurred. Please try again.", "error");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -163,12 +297,6 @@ export default function AuthPage() {
       }}
     >
       <C.Container>
-        {(error || localError) && (
-          <Box sx={{ color: "error.main", mb: 2, textAlign: "center", fontWeight: "bold" }}>
-            {error || localError}
-          </Box>
-        )}
-
         <C.SignUpContainer $signingIn={signingIn}>
           <C.Form onSubmit={handleSignUp} autoComplete="off">
             <C.Title>Create Account</C.Title>
@@ -525,6 +653,41 @@ export default function AuthPage() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          sx={{ 
+            zIndex: 9999,
+            width: "100%",
+            maxWidth: 600,
+            left: "50%",
+            transform: "translateX(-50%)",
+            bottom: 20,
+            "& .MuiAlert-root": {
+              width: "100%",
+              justifyContent: "center",
+              borderRadius: 8,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+            }
+          }}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbarSeverity}
+            sx={{ 
+              width: "100%", 
+              fontFamily: theme.typography.fontFamily,
+              fontWeight: "bold",
+              fontSize: "0.9rem"
+            }}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </C.Container>
     </Box>
   );

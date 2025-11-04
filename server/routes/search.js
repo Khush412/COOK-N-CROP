@@ -28,7 +28,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     // Base query for posts, excluding blocked users if logged in
     const postMatchQuery = {
-      $or: [{ title: searchRegex }, { tags: searchRegex }, { content: searchRegex }],
+      $or: [{ title: searchRegex }, { tags: searchRegex }, { hashtags: searchRegex }, { content: searchRegex }],
     };
     if (req.user) {
       const currentUser = await User.findById(req.user.id).select('blockedUsers');
@@ -38,7 +38,7 @@ router.get('/', optionalAuth, async (req, res) => {
     const postsPromise = Post.find(postMatchQuery)
       .limit(limit)
       .populate('user', 'username profilePic')
-      .select('title content user tags upvoteCount commentCount createdAt isFeatured')
+      .select('title content user tags hashtags upvoteCount commentCount createdAt isFeatured')
       .lean();
 
     const productsPromise = Product.find({
@@ -85,7 +85,24 @@ router.get('/posts', optionalAuth, async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const postMatchQuery = { $text: { $search: q } };
+    // Check if this is a hashtag search (starts with #)
+    const isHashtagSearch = q.startsWith('#');
+    const cleanQuery = isHashtagSearch ? q.substring(1) : q;
+
+    let postMatchQuery;
+    if (isHashtagSearch) {
+      // For hashtag searches, look in both tags and hashtags fields
+      postMatchQuery = {
+        $or: [
+          { tags: cleanQuery },
+          { hashtags: cleanQuery }
+        ]
+      };
+    } else {
+      // For regular text searches, use text index
+      postMatchQuery = { $text: { $search: q } };
+    }
+
     if (req.user) {
       const currentUser = await User.findById(req.user.id).select('blockedUsers');
       postMatchQuery.user = { $nin: currentUser.blockedUsers };
@@ -99,7 +116,7 @@ router.get('/posts', optionalAuth, async (req, res) => {
       .limit(limitNum)
       .populate('user', 'username profilePic')
       .populate('group', 'name slug')
-      .select('title content user tags isRecipe isFeatured flair group createdAt upvotes comments')
+      .select('title content user tags hashtags isRecipe isFeatured flair group createdAt upvotes comments')
       .lean();
 
     const [totalPosts, posts] = await Promise.all([countPromise, postsPromise]);
@@ -180,6 +197,51 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// @desc    Search posts by hashtag
+// @route   GET /api/search/hashtag/:hashtag
+// @access  Public
+router.get('/hashtag/:hashtag', optionalAuth, async (req, res) => {
+  try {
+    const { hashtag } = req.params;
+    const { page = 1, limit = 9 } = req.query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Create match query for posts with the specified hashtag
+    const postMatchQuery = {
+      $or: [
+        { tags: hashtag },
+        { hashtags: hashtag }
+      ]
+    };
+
+    // Exclude blocked users if logged in
+    if (req.user) {
+      const currentUser = await User.findById(req.user.id).select('blockedUsers');
+      postMatchQuery.user = { $nin: currentUser.blockedUsers };
+    }
+
+    const countPromise = Post.countDocuments(postMatchQuery);
+    
+    const postsPromise = Post.find(postMatchQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .populate('user', 'username profilePic')
+      .populate('group', 'name slug')
+      .select('title content user tags hashtags isRecipe isFeatured flair group createdAt upvotes comments')
+      .lean();
+
+    const [totalPosts, posts] = await Promise.all([countPromise, postsPromise]);
+
+    res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum), total: totalPosts });
+  } catch (error) {
+    console.error('Search hashtag error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // @desc    Get trending hashtags
 // @route   GET /api/search/trending-hashtags
 // @access  Public
@@ -190,12 +252,12 @@ router.get('/trending-hashtags', async (req, res) => {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const hashtags = await Post.aggregate([
-      { $match: { createdAt: { $gte: sevenDaysAgo }, tags: { $ne: null, $not: { $size: 0 } } } },
-      { $unwind: '$tags' },
-      { $group: { _id: '$tags', count: { $sum: 1 } } },
+      { $match: { createdAt: { $gte: sevenDaysAgo }, hashtags: { $ne: null, $not: { $size: 0 } } } }, // Keep the date filter
+      { $unwind: '$hashtags' },
+      { $group: { _id: '$hashtags', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 10 },
-      { $project: { _id: 0, hashtag: '$_id', count: 1 } }
+      { $project: { _id: 0, tag: '$_id', count: 1 } }
     ]);
     
     res.json(hashtags);

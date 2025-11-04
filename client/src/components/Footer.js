@@ -18,6 +18,8 @@ export default function Footer() {
         borderTop: `2.5px solid ${theme.palette.secondary.main}`,
         fontSize: 14,
         userSelect: "none",
+        position: 'relative',
+        zIndex: 1
       }}
     >
       <Container maxWidth="lg">

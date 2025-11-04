@@ -1,6 +1,5 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
-import { useEffect, useRef } from 'react';
-
+import { useEffect, useRef, useState } from 'react';
 import './CircularGallery.css';
 
 function debounce(func, wait) {
@@ -706,10 +705,34 @@ export default function CircularGallery({
   onEyeButtonClick // Add eye button click handler prop
 }) {
   const containerRef = useRef(null);
+  
+  // Responsive bend parameter based on screen size
+  const [responsiveBend, setResponsiveBend] = useState(bend);
+
+  // Update bend parameter based on screen size
+  useEffect(() => {
+    const updateResponsiveBend = () => {
+      const isMobile = window.innerWidth <= 768;
+      // Use minimal bend (-0.1) for mobile, original bend for desktop
+      setResponsiveBend(isMobile ? -0.1 : bend);
+    };
+
+    // Initial update
+    updateResponsiveBend();
+    
+    // Add resize listener
+    window.addEventListener('resize', updateResponsiveBend);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', updateResponsiveBend);
+    };
+  }, [bend]);
+
   useEffect(() => {
     const app = new App(containerRef.current, { 
       items, 
-      bend, 
+      bend: responsiveBend, // Use responsive bend
       textColor, 
       borderRadius, 
       font, 
@@ -723,7 +746,7 @@ export default function CircularGallery({
     return () => {
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed, onImageClick, onEyeButtonClick]);
+  }, [items, responsiveBend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoScroll, autoScrollSpeed, onImageClick, onEyeButtonClick]);
   
   // Apply height style
   useEffect(() => {

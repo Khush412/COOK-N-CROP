@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const crypto = require('crypto');
 const User = require('../models/User');
+const Group = require('../models/Group'); // Add this import
+const AutoJoinGroups = require('../models/AutoJoinGroups'); // Add this import
 const { protect } = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 const { registerValidation, validate } = require('../middleware/validation');
@@ -51,12 +53,18 @@ router.post('/register', registerValidation, validate, async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: existingUser.email === email 
-          ? 'User already exists with this email' 
-          : 'Username is already taken'
-      });
+      // Be more specific about which field is duplicate
+      if (existingUser.email === email) {
+        return res.status(400).json({
+          success: false,
+          message: 'User already exists with this email. Please use a different email or sign in instead.'
+        });
+      } else if (existingUser.username === username) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username is already taken. Please choose a different username.'
+        });
+      }
     }
     
     // Create user
@@ -65,6 +73,39 @@ router.post('/register', registerValidation, validate, async (req, res) => {
       email,
       password
     });
+
+    // Auto-join groups configuration
+    try {
+      const autoJoinConfig = await AutoJoinGroups.findOne({ isActive: true });
+      if (autoJoinConfig && autoJoinConfig.groups.length > 0) {
+        // Add user to each auto-join group
+        for (const groupId of autoJoinConfig.groups) {
+          try {
+            const group = await Group.findById(groupId);
+            if (group && !group.isPrivate) {
+              // Only add to public groups
+              if (!group.members.includes(user._id)) {
+                group.members.push(user._id);
+                group.memberCount = group.members.length;
+                await group.save();
+                
+                // Add group to user's subscriptions
+                if (!user.subscriptions.includes(group._id)) {
+                  user.subscriptions.push(group._id);
+                  await user.save();
+                }
+              }
+            }
+          } catch (groupError) {
+            console.error(`Error adding user to group ${groupId}:`, groupError);
+            // Continue with other groups even if one fails
+          }
+        }
+      }
+    } catch (configError) {
+      console.error('Error fetching auto-join configuration:', configError);
+      // Don't fail registration if auto-join config is broken
+    }
 
     // Send welcome email
     const welcomeMessage = `

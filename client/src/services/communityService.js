@@ -141,9 +141,9 @@ const reportComment = async (commentId, reason) => {
   }
 };
 
-const getTrendingTags = async () => {
+const getTrendingTags = async (limit = 7) => {
   try {
-    const response = await api.get('/posts/tags/trending');
+    const response = await api.get(`/search/trending-hashtags?limit=${limit}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching trending tags:', error);

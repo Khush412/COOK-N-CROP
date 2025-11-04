@@ -64,3 +64,43 @@
   background-color: rgba(0, 0, 0, 0.8);
   transform: scale(1.1);
 }
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .circular-gallery-eye-button {
+    width: 30px;
+    height: 30px;
+    bottom: 8px;
+    right: 8px;
+  }
+  
+  .circular-gallery-eye-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Reduce the height of the gallery on mobile */
+  .circular-gallery-container {
+    height: 400px !important;
+  }
+}
+
+/* Further adjustments for small mobile screens */
+@media (max-width: 480px) {
+  .circular-gallery-eye-button {
+    width: 24px;
+    height: 24px;
+    bottom: 6px;
+    right: 6px;
+  }
+  
+  .circular-gallery-eye-button svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* Further reduce the height of the gallery on small screens */
+  .circular-gallery-container {
+    height: 300px !important;
+  }
+}

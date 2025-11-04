@@ -9,14 +9,13 @@ export const Container = styled.div`
       : "0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)"};
   position: relative;
   overflow: hidden;
-  width: 700px;
-  max-width: 99vw;
+  width: 100%;
+  max-width: 700px;
   min-height: 440px;
   color: ${({ theme }) => theme.palette.text.primary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
 
   @media (max-width: 768px) {
-    width: 480px;
     max-width: 95vw;
     min-height: 920px;
   }

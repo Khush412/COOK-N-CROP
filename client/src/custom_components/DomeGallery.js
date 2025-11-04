@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
 import './DomeGallery.css';
 
@@ -150,6 +150,27 @@ export default function DomeGallery({
   const lastInteractionTime = useRef(0); // Track last interaction time
   const isAutoRotating = useRef(false); // Track auto-rotation state
 
+  // Responsive parameters based on screen size
+  const [responsiveParams, setResponsiveParams] = useState({
+    fit: fit,
+    minRadius: minRadius,
+    imageBorderRadius: imageBorderRadius,
+    openedImageBorderRadius: openedImageBorderRadius,
+    segments: segments
+  });
+
+  // Update parameters based on screen size
+  useEffect(() => {
+    // Set fixed parameters for all screen sizes
+    setResponsiveParams({
+      fit: fit,
+      minRadius: minRadius,
+      imageBorderRadius: imageBorderRadius,
+      openedImageBorderRadius: openedImageBorderRadius,
+      segments: segments
+    });
+  }, [fit, minRadius, imageBorderRadius, openedImageBorderRadius, segments]);
+
   const scrollLockedRef = useRef(false);
   const lockScroll = useCallback(() => {
     if (scrollLockedRef.current) return;
@@ -163,7 +184,7 @@ export default function DomeGallery({
     document.body.classList.remove('dg-scroll-lock');
   }, []);
 
-  const items = useMemo(() => buildItems(images, segments), [images, segments]);
+  const items = useMemo(() => buildItems(images, responsiveParams.segments), [images, responsiveParams.segments]);
 
   const applyTransform = (xDeg, yDeg) => {
     const el = sphereRef.current;
@@ -232,18 +253,18 @@ export default function DomeGallery({
         default:
           basis = aspect >= 1.3 ? w : minDim;
       }
-      let radius = basis * fit;
+      let radius = basis * responsiveParams.fit; // Use responsive fit
       const heightGuard = h * 1.35;
       radius = Math.min(radius, heightGuard);
-      radius = clamp(radius, minRadius, maxRadius);
+      radius = clamp(radius, responsiveParams.minRadius, maxRadius); // Use responsive minRadius
       lockedRadiusRef.current = Math.round(radius);
 
       const viewerPad = Math.max(8, Math.round(minDim * padFactor));
       root.style.setProperty('--radius', `${lockedRadiusRef.current}px`);
       root.style.setProperty('--viewer-pad', `${viewerPad}px`);
       root.style.setProperty('--overlay-blur-color', overlayBlurColor);
-      root.style.setProperty('--tile-radius', imageBorderRadius);
-      root.style.setProperty('--enlarge-radius', openedImageBorderRadius);
+      root.style.setProperty('--tile-radius', responsiveParams.imageBorderRadius); // Use responsive border radius
+      root.style.setProperty('--enlarge-radius', responsiveParams.openedImageBorderRadius); // Use responsive border radius
       root.style.setProperty('--image-filter', grayscale ? 'grayscale(1)' : 'none');
       applyTransform(rotationRef.current.x, rotationRef.current.y);
 
@@ -276,17 +297,17 @@ export default function DomeGallery({
     ro.observe(root);
     return () => ro.disconnect();
   }, [
-    fit,
     fitBasis,
-    minRadius,
     maxRadius,
     padFactor,
     overlayBlurColor,
     grayscale,
-    imageBorderRadius,
-    openedImageBorderRadius,
     openedImageWidth,
-    openedImageHeight
+    openedImageHeight,
+    responsiveParams.fit,
+    responsiveParams.minRadius,
+    responsiveParams.imageBorderRadius,
+    responsiveParams.openedImageBorderRadius
   ]);
 
   useEffect(() => {

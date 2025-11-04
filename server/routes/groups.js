@@ -297,12 +297,12 @@ router.post('/:id/toggle-membership', protect, async (req, res) => {
   }
 });
 
-// @desc    Get posts within a group
+// @desc    Get a group's posts
 // @route   GET /api/groups/:slug/posts
 // @access  Public
 router.get('/:slug/posts', async (req, res) => {
   try {
-    const { sort = 'new', page = 1, limit = 10, search } = req.query;
+    const { sort = 'new', page = 1, limit = 10, search, isRecipe } = req.query;
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
@@ -316,6 +316,11 @@ router.get('/:slug/posts', async (req, res) => {
     if (search) {
       // Add text search condition if a search term is provided
       matchConditions.$text = { $search: search };
+    }
+    
+    // Add isRecipe filter if provided
+    if (isRecipe !== undefined) {
+      matchConditions.isRecipe = isRecipe === 'true';
     }
 
     let sortOption = { createdAt: -1 }; // Default to 'new'
@@ -335,7 +340,7 @@ router.get('/:slug/posts', async (req, res) => {
       pipeline.push({ $addFields: { ageInHours: { $divide: [{ $subtract: [new Date(), '$createdAt'] }, 3600000] } } });
       pipeline.push({ $addFields: { hotScore: { $divide: ['$voteScore', { $pow: [{ $add: ['$ageInHours', 2] }, gravity] }] } } });
       pipeline.push({ $sort: { isPinned: -1, hotScore: -1 } });
-    } else { // new
+    } else {
       pipeline.push({ $sort: { isPinned: -1, createdAt: -1 } });
     }
 

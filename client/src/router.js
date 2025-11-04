@@ -59,6 +59,7 @@ import PopularPostsPage from './pages/PopularPostsPage'; // New: Import PopularP
 import CommunityGuidelinesPage from './pages/CommunityGuidelinesPage'; // New: Import CommunityGuidelinesPage
 import HelpCenterPage from './pages/HelpCenterPage'; // New: Import HelpCenterPage
 import FeedbackPage from './pages/FeedbackPage'; // New: Import FeedbackPage
+import ManageAutoJoinGroups from './pages/admin/ManageAutoJoinGroups'; // New: Import ManageAutoJoinGroups
 
 export default function AppRouter() {
   return (
@@ -129,6 +130,7 @@ export default function AppRouter() {
           <Route path="broadcast" element={<BroadcastPage />} />
           <Route path="coupons" element={<ManageCoupons />} />
           <Route path="coupons/:code/orders" element={<CouponOrdersPage />} />
+          <Route path="auto-join-groups" element={<ManageAutoJoinGroups />} /> {/* New: Auto-Join Groups Route */}
         </Route>
       </Route>
       

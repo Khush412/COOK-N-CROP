@@ -465,7 +465,7 @@ const RewardsPage = () => {
                 </Box>
                 
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Typography variant="h3" fontWeight="bold" color="secondary.main" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
                         {harvestCoins.balance}
@@ -476,7 +476,7 @@ const RewardsPage = () => {
                     </Paper>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
                         <CurrencyRupeeIcon sx={{ fontSize: 24 }} />
@@ -490,7 +490,7 @@ const RewardsPage = () => {
                     </Paper>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Typography variant="h3" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
                         {harvestCoins.totalOrders}
@@ -501,7 +501,7 @@ const RewardsPage = () => {
                     </Paper>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
                       <Typography variant="h3" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, color: 'secondary.main' }}>
                         {harvestCoins.harvestCoinsPercentage}%
@@ -726,7 +726,7 @@ const RewardsPage = () => {
           
           <Grid container spacing={{ xs: 2, md: 3 }} justifyContent="center">
             {tiers.map((tier, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                 <Card 
                   sx={{ 
                     height: '100%', 
@@ -911,7 +911,7 @@ const RewardsPage = () => {
           
           <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} justifyContent="center">
             {redemptionRates.map((option, index) => (
-              <Grid item xs={6} sm={3} key={index}>
+              <Grid size={{ xs: 6, sm: 3 }} key={index}>
                 <Card 
                   sx={{ 
                     height: '100%', 

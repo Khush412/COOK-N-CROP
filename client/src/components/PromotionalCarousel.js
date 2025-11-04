@@ -11,7 +11,7 @@ const PromotionalCarousel = () => {
     {
       title: "Summer Harvest Sale",
       subtitle: "Fresh seasonal produce at unbeatable prices",
-      description: "Get 25% off on all seasonal fruits and vegetables. Limited time offer - stock up on the best of summer!",
+      description: "Get 15% off on all seasonal fruits and vegetables. Limited time offer - stock up on the best of summer!",
       ctaText: "Shop Summer Harvest",
       ctaLink: "/CropCorner",
       image: `${process.env.PUBLIC_URL}/images/seasonal-promo.jpg`
@@ -30,7 +30,7 @@ const PromotionalCarousel = () => {
       description: "Our chefs have selected the finest ingredients for your kitchen. Premium quality produce for exceptional meals.",
       ctaText: "See Chef's Picks",
       ctaLink: "/CropCorner?collection=chefs-choice",
-      image: `${process.env.PUBLIC_URL}/images/hero-banner-image-1.png`
+      image: `${process.env.PUBLIC_URL}/images/chefspecial.png`
     },
     {
       title: "Harvest Coins Rewards",
@@ -109,10 +109,10 @@ const PromotionalCarousel = () => {
                 component="h2"
                 sx={{ 
                   fontWeight: 800, 
-                  mb: 2, 
+                  mb: 1.5, 
                   fontFamily: theme.typography.fontFamily,
                   textShadow: '2px 2px 6px rgba(0,0,0,0.9)', // Enhanced text shadow
-                  fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' } // Responsive font sizing
+                  fontSize: { xs: '1.25rem', sm: '2rem', md: '3.5rem' } // Further reduced font size for mobile
                 }}
               >
                 {slides[currentSlide].title}
@@ -122,10 +122,11 @@ const PromotionalCarousel = () => {
                 variant="h4" // Increased subtitle size
                 sx={{ 
                   fontWeight: 600, 
-                  mb: 3, // Increased margin for better spacing
+                  mb: 1.5, // Further reduced margin for better spacing on mobile
                   fontFamily: theme.typography.fontFamily,
                   textShadow: '1px 1px 4px rgba(0,0,0,0.9)',
-                  color: theme.palette.secondary.main // Added accent color
+                  color: theme.palette.secondary.main, // Added accent color
+                  fontSize: { xs: '1rem', sm: '1.25rem', md: '2rem' } // Further reduced font size for mobile
                 }}
               >
                 {slides[currentSlide].subtitle}
@@ -134,11 +135,12 @@ const PromotionalCarousel = () => {
               <Typography 
                 variant="h6" // Increased description size
                 sx={{ 
-                  mb: 5, // Increased margin for better spacing
+                  mb: 2, // Further reduced margin for better spacing on mobile
                   fontFamily: theme.typography.fontFamily,
                   maxWidth: '650px', // Slightly increased max width
                   textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
-                  lineHeight: 1.6 // Improved line height for readability
+                  lineHeight: 1.5, // Improved line height for readability
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.25rem' } // Further reduced font size for mobile
                 }}
               >
                 {slides[currentSlide].description}
@@ -148,14 +150,14 @@ const PromotionalCarousel = () => {
                 component={RouterLink}
                 to={slides[currentSlide].ctaLink}
                 variant="contained"
-                size="large"
+                size="medium" // Changed from large to medium
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   fontWeight: 'bold', 
                   borderRadius: '50px', 
-                  px: 5, // Increased padding
-                  py: 2, // Increased padding
-                  fontSize: '1.1rem', // Larger font size
+                  px: { xs: 2.5, sm: 3.5, md: 5 }, // Further reduced padding for mobile
+                  py: { xs: 1, sm: 1.5, md: 2 }, // Further reduced padding for mobile
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1.1rem' }, // Further reduced font size for mobile
                   boxShadow: '0 6px 25px rgba(0,0,0,0.4)', // Enhanced shadow
                   transition: 'all 0.3s ease',
                   '&:hover': { 

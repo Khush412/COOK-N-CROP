@@ -2,15 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination,
   TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Select, MenuItem, IconButton, Container, Stack,
-  TextField, FormControl, InputLabel, useTheme, alpha, Stepper, Step, StepLabel,
+  TextField, FormControl, InputLabel, useTheme, alpha, Stepper, Step, StepLabel, Menu, ListItemIcon, ListItemText
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link as RouterLink } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const ManageOrders = () => {
   const theme = useTheme();
@@ -23,6 +25,8 @@ const ManageOrders = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [updatingStatus, setUpdatingStatus] = useState(null); // Tracks which order is being updated
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const statusColors = {
     Pending: 'warning',
@@ -73,6 +77,16 @@ const ManageOrders = () => {
     } finally {
       setUpdatingStatus(null);
     }
+  };
+
+  const handleActionsClick = (event, order) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedOrder(order);
+  };
+
+  const handleActionsClose = () => {
+    setAnchorEl(null);
+    setSelectedOrder(null);
   };
 
   return (
@@ -265,33 +279,13 @@ const ManageOrders = () => {
                           </Box>
                         </TableCell>
                         <TableCell align="right">
-                          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
-                            <Button 
-                              component={RouterLink} 
-                              to={`/order/${order._id}`} 
-                              size="small" 
-                              variant="outlined"
-                              sx={{ 
-                                fontFamily: theme.typography.fontFamily, 
-                                borderRadius: 2, 
-                                px: 2,
-                                py: 0.5,
-                                minWidth: 'auto'
-                              }}
-                            >
-                              Details
-                            </Button>
-                            <Tooltip title="Edit Order">
-                              <IconButton 
-                                component={RouterLink} 
-                                to={`/admin/orders/edit/${order._id}`} 
-                                size="small"
-                                sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Stack>
+                          <IconButton
+                            size="small"
+                            onClick={(event) => handleActionsClick(event, order)}
+                            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))
@@ -334,6 +328,33 @@ const ManageOrders = () => {
           </>
         )}
       </Paper>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleActionsClose}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+      >
+        <MenuItem 
+          component={RouterLink} 
+          to={`/order/${selectedOrder?._id}`}
+          onClick={handleActionsClose}
+        >
+          <ListItemIcon>
+            <VisibilityIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>View Details</ListItemText>
+        </MenuItem>
+        <MenuItem 
+          component={RouterLink} 
+          to={`/admin/orders/edit/${selectedOrder?._id}`}
+          onClick={handleActionsClose}
+        >
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit Order</ListItemText>
+        </MenuItem>
+      </Menu>
     </Container>
   );
 };

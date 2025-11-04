@@ -195,14 +195,43 @@ router.get('/', optionalAuth, async (req, res) => {
       matchConditions.isRecipe = false;
     }
 
+    // Handle search parameter
     if (search) {
-      matchConditions.$text = { $search: search };
+      // Check if this is a hashtag search (starts with #)
+      if (search.startsWith('#')) {
+        const cleanSearch = search.substring(1);
+        if (matchConditions.$or) {
+          // If we already have an $or condition, add to it
+          matchConditions.$or.push({ tags: cleanSearch });
+          matchConditions.$or.push({ hashtags: cleanSearch });
+        } else {
+          // Otherwise, create a new $or condition
+          matchConditions.$or = [
+            { tags: cleanSearch },
+            { hashtags: cleanSearch }
+          ];
+        }
+      } else {
+        // Regular text search
+        matchConditions.$text = { $search: search };
+      }
     }
 
+    // Handle tags parameter
     if (tags) {
       const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
       if (tagsArray.length > 0) {
-        matchConditions.tags = { $in: tagsArray };
+        if (matchConditions.$or) {
+          // If we already have an $or condition from search, add to it
+          matchConditions.$or.push({ tags: { $in: tagsArray } });
+          matchConditions.$or.push({ hashtags: { $in: tagsArray } });
+        } else {
+          // Otherwise, create a new $or condition
+          matchConditions.$or = [
+            { tags: { $in: tagsArray } },
+            { hashtags: { $in: tagsArray } }
+          ];
+        }
       }
     }
 
@@ -928,8 +957,8 @@ router.get('/tagged-product/:productId', optionalAuth, async (req, res) => {
 
     // Find posts tagged with this product
     const matchConditions = {
-      taggedProducts: productId,
-      isRecipe: true // Only show recipe posts
+      taggedProducts: productId
+      // Removed isRecipe: true filter to show all posts tagged with this product
     };
 
     // Exclude posts from users that the current user has blocked
