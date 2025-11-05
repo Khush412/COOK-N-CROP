@@ -520,7 +520,7 @@ router.get('/:id', async (req, res) => {
         path: 'recipeReviews.user',
         select: 'username profilePic'
       }) // Populate the user for each recipe review
-      .populate('taggedProducts', 'name price image countInStock'); // Populate tagged products
+      .populate('taggedProducts', 'name price images countInStock'); // Populate tagged products with images array
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });

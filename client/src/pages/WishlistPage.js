@@ -12,8 +12,6 @@ import {
   alpha,
   TextField,
   InputAdornment,
-  ToggleButtonGroup,
-  ToggleButton,
   Pagination,
   Stack,
   Chip,
@@ -27,8 +25,6 @@ import ProductCard from '../components/ProductCard';
 import {
   FavoriteBorder as FavoriteBorderIcon,
   Search as SearchIcon,
-  ViewModule as ViewModuleIcon,
-  ViewList as ViewListIcon,
   Sort as SortIcon,
 } from '@mui/icons-material';
 
@@ -40,7 +36,6 @@ const WishlistPage = () => {
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('grid');
   const [sortOption, setSortOption] = useState('newest');
   const [page, setPage] = useState(1);
   const productsPerPage = 6;
@@ -178,42 +173,47 @@ const WishlistPage = () => {
                 InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
               
-              <FormControl>
-                <ToggleButtonGroup
-                  value={sortOption}
-                  exclusive
-                  onChange={(e, newValue) => newValue && setSortOption(newValue)}
-                  size="small"
-                  sx={{ height: 40 }}
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant={sortOption === 'newest' ? 'contained' : 'outlined'}
+                  onClick={() => setSortOption('newest')}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    fontSize: '0.875rem'
+                  }}
                 >
-                  <ToggleButton value="newest" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    Newest
-                  </ToggleButton>
-                  <ToggleButton value="price-low" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    Price ↑
-                  </ToggleButton>
-                  <ToggleButton value="price-high" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    Price ↓
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </FormControl>
-              
-              <FormControl>
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={(e, newValue) => newValue && setViewMode(newValue)}
-                  size="small"
-                  sx={{ height: 40 }}
+                  Newest
+                </Button>
+                <Button
+                  variant={sortOption === 'price-low' ? 'contained' : 'outlined'}
+                  onClick={() => setSortOption('price-low')}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    fontSize: '0.875rem'
+                  }}
                 >
-                  <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewModuleIcon />
-                  </ToggleButton>
-                  <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewListIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </FormControl>
+                  Price ↑
+                </Button>
+                <Button
+                  variant={sortOption === 'price-high' ? 'contained' : 'outlined'}
+                  onClick={() => setSortOption('price-high')}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Price ↓
+                </Button>
+              </Stack>
             </Stack>
           </Paper>
           
@@ -225,26 +225,13 @@ const WishlistPage = () => {
             </Paper>
           ) : (
             <>
-              {viewMode === 'grid' ? (
-                <Grid container spacing={3}>
-                  {paginatedProducts.filter(p => p).map((product) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
-                      <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
-                    </Grid>
-                  ))}
-                </Grid>
-              ) : (
-                <Stack spacing={2}>
-                  {paginatedProducts.filter(p => p).map((product) => (
-                    <ProductCard 
-                      key={product._id} 
-                      product={product} 
-                      showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} 
-                      variant="list" 
-                    />
-                  ))}
-                </Stack>
-              )}
+              <Grid container spacing={3}>
+                {paginatedProducts.filter(p => p).map((product) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
+                    <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
+                  </Grid>
+                ))}
+              </Grid>
               
               {totalPages > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>

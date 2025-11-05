@@ -231,51 +231,6 @@ const OrderDetailsPage = () => {
         </Paper>
       )}
 
-      {/* Trust Section */}
-      <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <LocalShippingIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Free Delivery
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  On orders over ₹2000
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <SecurityIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  100% Secure
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Protected payments
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <AutorenewIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  Easy Returns
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  30-day guarantee
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
         <Grid container spacing={4}>
           {/* Order Items */}
           <Grid size={{ xs: 12 }}>
@@ -331,10 +286,10 @@ const OrderDetailsPage = () => {
           </Grid>
 
           {/* Shipping & Payment Summary */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
               <Grid container spacing={4}> 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
                     Shipping Address
                   </Typography>

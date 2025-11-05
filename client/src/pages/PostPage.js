@@ -37,7 +37,7 @@ import "slick-carousel/slick/slick.css";
 import {
   ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
   Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, Gavel as GavelIcon,
-  Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon
+  Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon, Collections as CollectionsIcon
 } from '@mui/icons-material';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
@@ -49,6 +49,7 @@ import CommentThreadItem from '../components/CommentThreadItem';
 import CreatePostForm from '../components/CreatePostForm';
 import ReportDialog from '../components/ReportDialog';
 import RichTextDisplay from '../components/RichTextDisplay';
+import AddToCollectionDialog from '../components/AddToCollectionDialog';
 
 const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick, isAdding }) => {
   const theme = useTheme();
@@ -125,10 +126,24 @@ const TaggedProductCard = ({ product }) => {
     return null;
   }
 
+  // Get the main image URL for the product
+  const getProductImageUrl = () => {
+    // Check if product has images array (new format)
+    if (product.images && product.images.length > 0) {
+      return `${process.env.REACT_APP_API_URL}${product.images[0]}`;
+    }
+    // Check if product has single image field (old format)
+    if (product.image) {
+      return `${process.env.REACT_APP_API_URL}${product.image}`;
+    }
+    // Fallback to placeholder
+    return `${process.env.PUBLIC_URL}/images/placeholder.png`;
+  };
+
   return (
     <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, transition: 'box-shadow .2s', '&:hover': { boxShadow: theme.shadows[3] } }}>
       <Avatar 
-        src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
+        src={getProductImageUrl()} 
         variant="rounded" 
         sx={{ width: 60, height: 60, mr: 2 }} 
       />
@@ -178,6 +193,7 @@ const PostPage = () => {
   const [recipeRating, setRecipeRating] = useState(0);
   const [recipeComment, setRecipeComment] = useState('');
   const [recipeReviewLoading, setRecipeReviewLoading] = useState(false);
+  const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
 
   const fetchPost = useCallback(async () => {
     try {
@@ -563,6 +579,17 @@ const PostPage = () => {
               </Menu>
             </Box>
           )}
+          {/* Add to Collection button for all authenticated users */}
+          {isAuthenticated && (
+            <Box sx={{ position: 'absolute', top: 0, right: user.id === post.user._id || user.role === 'admin' || isModerator ? 40 : 0, zIndex: 10 }}>
+              <IconButton
+                aria-label="add to collection"
+                onClick={() => setCollectionDialogOpen(true)}
+              >
+                <CollectionsIcon />
+              </IconButton>
+            </Box>
+          )}
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
@@ -799,44 +826,40 @@ const PostPage = () => {
           )}
 
           <List>
-            {post.comments && post.comments.length > 0 ? (
-              post.comments.map((comment) => (
-                <CommentThreadItem
-                  key={comment._id}
-                  comment={comment}
-                  replyingTo={replyingTo}
-                  onReply={handleReplyClick}
-                  onCancelReply={() => setReplyingTo(null)}
-                  onCommentSubmit={handleCommentSubmit}
-                  isSubmitting={isCommenting}
-                  onCommentUpvote={handleCommentUpvote}
-                  upvotingComments={upvotingComments}
-                  onCommentUpdate={handleUpdateComment}
-                  onCommentDelete={openDeleteCommentConfirm}
-                  onReportComment={handleOpenReportDialog}
-                  depth={0}
-                  postGroup={post.group} // Pass the post's group for moderation checks
-                />
-              ))
-            ) : (
-              <Typography color="text.secondary" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>
-                No comments yet. Be the first to share your thoughts!
-              </Typography>
-            )}
+            {post.comments.map((comment) => (
+              <CommentThreadItem
+                key={comment._id}
+                comment={comment}
+                onReplyClick={handleReplyClick}
+                onUpvote={handleCommentUpvote}
+                upvotingComments={upvotingComments}
+                isEditing={comment._id === replyingTo && replyingTo !== null}
+                onEdit={handleUpdateComment}
+                onDelete={openDeleteCommentConfirm}
+                onReport={handleOpenReportDialog}
+                currentUser={user}
+                isAuthenticated={isAuthenticated}
+                postId={id}
+              />
+            ))}
           </List>
         </Paper>
-      </Paper>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        {/* Add To Collection Dialog */}
+        <AddToCollectionDialog 
+          open={collectionDialogOpen} 
+          onClose={() => setCollectionDialogOpen(false)} 
+          post={post} 
+          showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} 
+        />
+
+        {/* Snackbar for notifications */}
+        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Paper>
 
       <Dialog
         open={deleteConfirmOpen}

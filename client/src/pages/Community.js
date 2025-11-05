@@ -75,8 +75,6 @@ import communityService from "../services/communityService";
 import userService from "../services/userService";
 import PostCard from "../components/PostCard";
 import groupService from "../services/groupService";
-import RotatingText from "../custom_components/RotatingText";
-import Shuffle from "../custom_components/Shuffle";
 
 // Notification badge component
 const NotificationBadge = ({ count }) => {

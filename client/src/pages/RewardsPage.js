@@ -182,12 +182,12 @@ const RewardsPage = () => {
     };
   };
 
-  // Real redemption rates from backend
+  // Updated redemption rates with more meaningful options for a food/produce site
   const redemptionRates = [
-    { coins: 200, value: "₹100 off", description: "Minimum purchase ₹500" },
-    { coins: 500, value: "₹300 off", description: "Minimum purchase ₹1000" },
-    { coins: 1000, value: "₹700 off", description: "Minimum purchase ₹2000" },
-    { coins: 2000, value: "₹1500 off", description: "Minimum purchase ₹5000" }
+    { coins: 100, value: "₹50 off", description: "On orders ₹300+" },
+    { coins: 250, value: "₹150 off", description: "On orders ₹600+" },
+    { coins: 500, value: "₹350 off", description: "On orders ₹1200+" },
+    { coins: 1000, value: "₹800 off", description: "On orders ₹2500+" }
   ];
 
   // How it works steps based on real functionality
@@ -875,119 +875,6 @@ const RewardsPage = () => {
               </Grid>
             ))}
           </Grid>
-        </Box>
-
-        <Divider sx={{ my: { xs: 4, md: 6 } }} />
-
-        {/* Redemption Options */}
-        <Box sx={{ mb: { xs: 6, md: 8 } }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontWeight: 800, 
-              mb: { xs: 3, sm: 4 }, 
-              fontFamily: theme.typography.fontFamily,
-              textAlign: 'center',
-              color: theme.palette.text.primary,
-              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
-            }}
-          >
-            Redeem Your Harvest Coins
-          </Typography>
-          <Typography 
-            variant="h6" 
-            color="text.secondary" 
-            sx={{ 
-              mb: { xs: 4, md: 6 }, 
-              fontFamily: theme.typography.fontFamily, 
-              textAlign: 'center',
-              maxWidth: '600px', 
-              mx: 'auto',
-              fontSize: { xs: '0.95rem', sm: '1.1rem' }
-            }}
-          >
-            Use your coins for instant discounts on your next purchase (Maximum 5% off)
-          </Typography>
-          
-          <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} justifyContent="center">
-            {redemptionRates.map((option, index) => (
-              <Grid size={{ xs: 6, sm: 3 }} key={index}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    textAlign: 'center',
-                    borderRadius: { xs: 2, md: 3 },
-                    boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.1)}`,
-                    p: { xs: 2, sm: 3 },
-                    border: `2px solid ${theme.palette.secondary.main}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.3)}`
-                    }
-                  }}
-                >
-                  <Box sx={{ 
-                    width: { xs: 50, sm: 60 }, 
-                    height: { xs: 50, sm: 60 }, 
-                    borderRadius: '50%', 
-                    bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 2,
-                    color: 'secondary.main'
-                  }}>
-                    <CurrencyRupeeIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />
-                  </Box>
-                  
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      mb: 1, 
-                      fontFamily: theme.typography.fontFamily,
-                      color: 'secondary.main',
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
-                    }}
-                  >
-                    {option.coins}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      fontFamily: theme.typography.fontFamily,
-                      color: 'text.primary',
-                      fontSize: { xs: '0.9rem', sm: '1rem' }
-                    }}
-                  >
-                    {option.value}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{ 
-                      fontFamily: theme.typography.fontFamily,
-                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                      mt: 1
-                    }}
-                  >
-                    {option.description}
-                  </Typography>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-          
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, maxWidth: 600, mx: 'auto' }}>
-              * Maximum discount is limited to 5% of your order value. Coins never expire and can be used on any future purchase.
-            </Typography>
-          </Box>
         </Box>
 
         {/* CTA Section */}

@@ -465,13 +465,14 @@ const FeedPage = () => {
       sx={{ 
         p: 2, 
         borderRadius: 2,
-        height: '100%',
+        height: 'auto',
+        maxHeight: 'none',
         display: 'flex',
         flexDirection: 'column',
         borderLeft: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Stack spacing={3} sx={{ flex: 1, overflow: 'hidden' }}>
+      <Stack spacing={3} sx={{ flex: 1, overflow: 'visible' }}>
         {/* Recommended Users */}
         <Paper sx={{ p: 2, borderRadius: 2 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -484,7 +485,7 @@ const FeedPage = () => {
             </IconButton>
           </Stack>
           <Collapse in={recommendationsOpen}>
-            <Box sx={{ maxHeight: 300, overflowY: 'auto', overflowX: 'hidden', '&::-webkit-scrollbar': { display: 'none' }, '-ms-overflow-style': 'none', 'scrollbar-width': 'none' }}>
+            <Box sx={{ maxHeight: 'none', overflowY: 'visible', overflowX: 'hidden' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
                   <CircularProgress size={24} />
@@ -540,7 +541,7 @@ const FeedPage = () => {
             </IconButton>
           </Stack>
           <Collapse in={groupsOpen}> {/* Use separate state for groups */}
-            <Box sx={{ maxHeight: 300, overflowY: 'auto', overflowX: 'hidden', '&::-webkit-scrollbar': { display: 'none' }, '-ms-overflow-style': 'none', 'scrollbar-width': 'none' }}>
+            <Box sx={{ maxHeight: 'none', overflowY: 'visible', overflowX: 'hidden' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
                   <CircularProgress size={24} />
@@ -908,12 +909,13 @@ const FeedPage = () => {
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Box 
             sx={{ 
-              position: 'sticky', 
-              top: 100,
-              height: 'calc(100vh - 120px)',
+              position: 'relative', 
+              top: 0,
+              height: 'auto',
+              maxHeight: 'none',
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden' // Add this to prevent overflow
+              overflow: 'visible'
             }}
           >
             <RecommendationsSidebar />
