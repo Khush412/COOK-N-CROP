@@ -52,8 +52,9 @@ import EnhancedSearch from '../components/EnhancedSearch';
 import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
 import PersonalizedOffers from '../components/PersonalizedOffers';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../custom_components/Loader';
 
-const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
+const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
 export default function CropCorner() {
   const theme = useTheme();
@@ -119,29 +120,11 @@ export default function CropCorner() {
     const fetchTags = async () => {
       try {
         const tags = await productService.getUniqueTags();
-        // Filter out any empty, null, or whitespace-only tags
-        const validTags = tags.filter(tag => tag && tag.trim() !== '');
-        
-        // If we have fewer than 8 tags, add some common tags to reach at least 8
-        let finalTags = [...validTags];
-        if (finalTags.length < 8) {
-          const additionalTags = ['Organic', 'Fresh', 'Local', 'Seasonal', 'Healthy', 'Natural', 'Sustainable', 'Farm-Fresh'];
-          // Add additional tags that aren't already in the list
-          additionalTags.forEach(tag => {
-            if (!finalTags.includes(tag) && finalTags.length < 8) {
-              finalTags.push(tag);
-            }
-          });
-        }
-        
-        // Limit to 12 tags max to avoid overcrowding
-        setUniqueTags(finalTags.slice(0, 12));
+        setUniqueTags(tags);
       } catch (err) {
         console.error('Failed to fetch tags:', err);
-        // Fallback to default tags
-        const defaultTags = ['Organic', 'Gluten-Free', 'Vegan', 'Non-GMO', 'Local', 'Seasonal', 'Fresh', 'Healthy'];
-        const validDefaultTags = defaultTags.filter(tag => tag && tag.trim() !== '');
-        setUniqueTags(validDefaultTags);
+        // Fallback to some default tags if API fails
+        setUniqueTags(['Organic', 'Gluten-Free', 'Vegan', 'Non-GMO', 'Local', 'Seasonal']);
       }
     };
 
@@ -337,27 +320,8 @@ export default function CropCorner() {
           <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>Tags</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Box sx={{ 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: 1,
-            maxHeight: 300,
-            overflowY: 'auto',
-            pr: 1,
-            '&::-webkit-scrollbar': {
-              width: '6px',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'transparent',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(0,0,0,0.2)',
-              borderRadius: '3px',
-            },
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(0,0,0,0.2) transparent',
-          }}>
-            {uniqueTags.filter(tag => tag && tag.trim() !== '').map((tag) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {uniqueTags.map((tag) => (
               <Chip
                 key={tag}
                 label={tag}
@@ -370,15 +334,7 @@ export default function CropCorner() {
                 }}
                 color={selectedTags.includes(tag) ? 'primary' : 'default'}
                 variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                sx={{ 
-                  fontFamily: theme.typography.fontFamily,
-                  maxWidth: '100%',
-                  '& .MuiChip-label': {
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }
-                }}
+                sx={{ fontFamily: theme.typography.fontFamily }}
               />
             ))}
           </Box>
@@ -490,15 +446,9 @@ export default function CropCorner() {
           </Paper>
 
           {loading ? (
-            <Grid container spacing={4}>
-              {[...Array(8)].map((_, index) => ( 
-                <Grid key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                  <Skeleton />
-                  <Skeleton width="60%" />
-                </Grid>
-              ))}
-            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <Loader size="medium" />
+            </Box>
           ) : error ? (
             <Typography color="error" sx={{ textAlign: 'center', mt: 4, fontFamily: theme.typography.fontFamily }}>
               {error}

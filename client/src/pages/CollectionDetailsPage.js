@@ -21,6 +21,7 @@ import {
   Share as ShareIcon,
   BookmarkRemove as BookmarkRemoveIcon
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const CollectionDetailsPage = () => {
   const { id } = useParams();
@@ -135,7 +136,7 @@ const CollectionDetailsPage = () => {
 
   if (loading) return (
     <Container maxWidth="lg" sx={{ mt: 12, py: 4, display: 'flex', justifyContent: 'center' }}>
-      <CircularProgress />
+      <Loader size="large" />
     </Container>
   );
   

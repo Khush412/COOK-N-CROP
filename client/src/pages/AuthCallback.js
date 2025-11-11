@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Box, Typography, CircularProgress, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
+import Loader from '../custom_components/Loader';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function AuthCallback() {
         fontFamily: theme.typography.fontFamily,
       }}
     >
-      <CircularProgress size={60} />
+      <Loader size="large" />
       <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
         Completing authentication...
       </Typography>

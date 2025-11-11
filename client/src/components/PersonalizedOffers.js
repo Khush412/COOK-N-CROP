@@ -14,6 +14,7 @@ import {
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarsIcon from '@mui/icons-material/Stars';
 import offerService from '../services/offerService';
+import Loader from '../custom_components/Loader';
 
 const PersonalizedOffers = ({ onApplyCoupon }) => {
   const theme = useTheme();
@@ -61,7 +62,7 @@ const PersonalizedOffers = ({ onApplyCoupon }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Box>
     );
   }

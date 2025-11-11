@@ -45,6 +45,7 @@ import {
   Pending as PendingIcon,
   AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const OrderHistoryPage = () => {
   const theme = useTheme();
@@ -186,7 +187,7 @@ const OrderHistoryPage = () => {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Container>
     );
   }

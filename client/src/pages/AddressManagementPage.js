@@ -4,7 +4,6 @@ import {
   Typography,
   Button,
   IconButton,
-  CircularProgress,
   Container,
   Paper,
   Alert,
@@ -47,6 +46,7 @@ import {
 } from '@mui/icons-material';
 import addressService from '../services/addressService';
 import AddressForm from '../components/AddressForm';
+import Loader from '../custom_components/Loader';
 
 const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
   const theme = useTheme();
@@ -309,7 +309,7 @@ const AddressManagementPage = () => {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><Loader size="large" /></Box>;
   }
 
   if (error) {

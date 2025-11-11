@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Typography, CircularProgress, Alert, Box, Paper, Grid, IconButton, Tooltip, Button, Container, Stack, Chip,
+  Typography, Alert, Box, Paper, Grid, IconButton, Tooltip, Button, Container, Stack, Chip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -10,6 +10,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import adminService from '../../services/adminService';
+import Loader from '../../custom_components/Loader';
 
 const AddressCard = ({ address, onDelete }) => {
   const theme = useTheme();
@@ -83,7 +84,7 @@ const AdminUserAddressesPage = () => {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Loader size="large" /></Box>;
   }
 
   if (error) {

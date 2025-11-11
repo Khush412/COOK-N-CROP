@@ -13,6 +13,7 @@ import NoAccountsIcon from '@mui/icons-material/NoAccounts';
 import CreateGroupForm from '../components/CreateGroupForm';
 import groupService from '../services/groupService';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../custom_components/Loader';
 
 const JoinRequestsManager = ({ group }) => {
   const [requests, setRequests] = useState([]);
@@ -44,7 +45,7 @@ const JoinRequestsManager = ({ group }) => {
     }
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading) return <Loader size="small" />;
   if (requests.length === 0) return <Typography sx={{ fontFamily: theme.typography.fontFamily }}>No pending join requests.</Typography>;
 
   return (
@@ -244,7 +245,7 @@ const MemberManager = ({ group }) => {
   const isCreator = (memberId) => group.creator._id === memberId;
   const isModerator = (memberId) => group.moderators && group.moderators.some(mod => mod._id === memberId);
 
-  if (loading) return <CircularProgress />;
+  if (loading) return <Loader size="small" />;
   return (
     <>
       <List>
@@ -366,7 +367,7 @@ const EditGroupPage = () => {
     setTab(newValue);
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>;
   if (error) return <Container maxWidth="md" sx={{ mt: 12, py: 4 }}><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></Container>;
   if (!group) return null; // Don't render the form until group data is loaded
 
@@ -444,7 +445,7 @@ const EditGroupPage = () => {
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)} disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
           <Button onClick={handleDeleteGroup} color="error" autoFocus disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-            {isSubmitting ? <CircularProgress size={24} /> : 'Delete'}
+            {isSubmitting ? <Loader size="small" /> : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

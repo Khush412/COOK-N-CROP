@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell,
+  Box, Typography, Button, Alert, Table, TableBody, TableCell,
   DialogContentText,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Dialog, DialogTitle, Pagination, Container, Stack, Grid,
   DialogContent, DialogActions, TextField, MenuItem, Chip, Checkbox, FormControlLabel, FormControl, FormLabel, FormGroup, Select, InputLabel
@@ -16,6 +16,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import SearchIcon from '@mui/icons-material/Search';
 import couponService from '../../services/couponService';
 import { Link as RouterLink } from 'react-router-dom';
+import Loader from '../../custom_components/Loader';
 
 // Coupon Form Dialog Component
 const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
@@ -244,7 +245,7 @@ const CouponFormDialog = ({ open, onClose, onSave, coupon, loading }) => {
           disabled={loading} 
           sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
         >
-          {loading ? <CircularProgress size={24} /> : 'Save'}
+          {loading ? <Loader size="small" /> : 'Save'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -400,7 +401,7 @@ const ManageCoupons = () => {
           </Button>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (

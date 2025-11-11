@@ -13,13 +13,13 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import StarIcon from '@mui/icons-material/Star';
-import CircularProgress from '@mui/material/CircularProgress';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import Loader from '../custom_components/Loader';
 
 const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCategoryAndUnit = false, hideQuantitySelector = false }) => {
   // All hooks must be called at the top level, before any conditional logic
@@ -431,7 +431,7 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                   disabled={isCartLoading}
                   sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontWeight: 'bold', textTransform: 'none', px: 2 }}
                 >
-                  {isCartLoading ? <CircularProgress size={16} color="inherit" /> : 'Add'}
+                  {isCartLoading ? <Loader size="small" color="inherit" /> : 'Add'}
                 </Button>
               ) : quantityInCart > 0 ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
@@ -447,7 +447,7 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 <Button
                   variant="contained"
                   size="small"
-                  startIcon={isCartLoading ? <CircularProgress size={16} color="inherit" /> : <AddShoppingCartIcon fontSize="small" />}
+                  startIcon={isCartLoading ? <Loader size="small" color="inherit" /> : <AddShoppingCartIcon fontSize="small" />}
                   onClick={handleAddToCart}
                   disabled={isCartLoading}
                   sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontWeight: 'bold', textTransform: 'none', px: 2 }}

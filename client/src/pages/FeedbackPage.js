@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Container, Typography, Paper, Box, TextField, Button, Rating, CircularProgress, Alert, Snackbar, alpha
+  Container, Typography, Paper, Box, TextField, Button, Rating, Alert, Snackbar, alpha
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Feedback as FeedbackIcon, Send as SendIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import userService from '../services/userService';
+import Loader from '../custom_components/Loader';
 
 const FeedbackPage = () => {
   const theme = useTheme();
@@ -192,7 +193,7 @@ const FeedbackPage = () => {
             size="large"
             fullWidth
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+            startIcon={loading ? <Loader size="small" color="inherit" /> : <SendIcon />}
             sx={{ 
               py: 1.5, 
               fontFamily: theme.typography.fontFamily, 

@@ -13,7 +13,6 @@ import {
   ListItemAvatar,
   Avatar,
   ListItemText,
-  CircularProgress,
   Typography,
   Divider,
   Fade,
@@ -23,6 +22,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import searchService from '../services/searchService';
 import searchAnalyticsService from '../services/searchAnalyticsService';
+import Loader from '../custom_components/Loader';
 
 const Search = styled('div', {
   shouldForwardProp: (prop) => prop !== '$fullWidth',
@@ -218,7 +218,7 @@ const EnhancedGlobalSearch = ({ fullWidth = false }) => {
               }}>
                 {loading ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                    <CircularProgress size={24} />
+                    <Loader size="small" />
                   </Box>
                 ) : searchTerm.length < 2 && recentSearches.length > 0 ? (
                   // Show recent searches when no search term

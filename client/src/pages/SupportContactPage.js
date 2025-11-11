@@ -10,7 +10,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CircularProgress,
   Alert,
   Snackbar,
   FormControl,
@@ -27,6 +26,7 @@ import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import { useAuth } from '../contexts/AuthContext';
 import SearchIcon from '@mui/icons-material/Search';
 import supportService from '../services/supportService';
+import Loader from '../custom_components/Loader';
 
 // Sample FAQs
 const faqs = [
@@ -272,7 +272,7 @@ const SupportContactPage = () => {
                   size="large" 
                   fullWidth 
                   disabled={loading} 
-                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />} 
+                  startIcon={loading ? <Loader size="small" color="inherit" /> : <SendIcon />}
                   sx={{ 
                     py: 1.5, 
                     fontFamily: theme.typography.fontFamily, 

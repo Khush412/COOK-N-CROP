@@ -6,6 +6,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import Rating from './Rating';
 import productService from '../services/productService';
+import Loader from '../custom_components/Loader';
 
 const ReviewModal = ({ open, onClose, product, onReviewSubmitted }) => {
   const [rating, setRating] = useState(0);
@@ -69,7 +70,7 @@ const ReviewModal = ({ open, onClose, product, onReviewSubmitted }) => {
           onClick={handleSubmit}
           variant="contained"
           disabled={loading}
-          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          startIcon={loading ? <Loader size="small" color="inherit" /> : null}
           sx={{ fontFamily: theme.typography.fontFamily }}
         >
           {loading ? 'Submitting...' : 'Submit Review'}

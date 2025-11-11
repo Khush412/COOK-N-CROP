@@ -5,7 +5,6 @@ import {
   alpha,
   Box,
   Typography,
-  CircularProgress,
   Container,
   Paper,
   Grid,
@@ -39,6 +38,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SecurityIcon from '@mui/icons-material/Security';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import Loader from '../custom_components/Loader';
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
@@ -130,7 +130,7 @@ const OrderDetailsPage = () => {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <CircularProgress />
+        <Loader size="large" />
       </Container>
     );
   }
@@ -194,7 +194,7 @@ const OrderDetailsPage = () => {
             <Button
               variant="contained"
               color="secondary"
-              startIcon={reordering ? <CircularProgress size={20} color="inherit" /> : <ReplayIcon />}
+              startIcon={reordering ? <Loader size="small" color="inherit" /> : <ReplayIcon />}
               onClick={handleReorder}
               disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
               sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}

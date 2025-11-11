@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination,
+  Typography, Alert, Table, TableBody, TableCell, Box, Pagination,
   TableContainer, TableHead, TableRow, Paper, Avatar, Slider, Container,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import adminService from '../../services/adminService';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import Loader from '../../custom_components/Loader';
 
 const LowStockPage = () => {
   const [products, setProducts] = useState([]);
@@ -69,7 +70,7 @@ const LowStockPage = () => {
           />
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>
         ) : error ? (
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
         ) : (

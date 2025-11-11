@@ -57,6 +57,7 @@ import communityService from '../services/communityService';
 import userService from '../services/userService';
 import groupService from '../services/groupService';
 import PostCard from '../components/PostCard';
+import Loader from '../custom_components/Loader';
 
 const FeedPage = () => {
   const theme = useMuiTheme();
@@ -488,7 +489,7 @@ const FeedPage = () => {
             <Box sx={{ maxHeight: 'none', overflowY: 'visible', overflowX: 'hidden' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                  <CircularProgress size={24} />
+                  <Loader size="small" />
                 </Box>
               ) : recommendedUsers && recommendedUsers.length > 0 ? (
                 <List dense>
@@ -544,7 +545,7 @@ const FeedPage = () => {
             <Box sx={{ maxHeight: 'none', overflowY: 'visible', overflowX: 'hidden' }}>
               {recommendationsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                  <CircularProgress size={24} />
+                  <Loader size="small" />
                 </Box>
               ) : recommendedGroups && recommendedGroups.length > 0 ? (
                 <List dense>
@@ -597,7 +598,7 @@ const FeedPage = () => {
     if (loading) {
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
+          <Loader size="medium" />
         </Box>
       );
     }

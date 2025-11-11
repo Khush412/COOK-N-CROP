@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Chip, CircularProgress, Alert, useTheme, alpha, Stack, Card, CardContent, CardActions, Divider, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, Chip, Alert, useTheme, alpha, Stack, Card, CardContent, CardActions, Divider, LinearProgress } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { getHarvestCoinsBalance } from '../services/loyaltyService';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarsIcon from '@mui/icons-material/Stars';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
+import Loader from '../custom_components/Loader';
 
 const HarvestCoinsRedeem = ({ cartTotal, onDiscountApply, reservedCoins, reservedDiscount }) => {
   const theme = useTheme();
@@ -144,7 +145,7 @@ const HarvestCoinsRedeem = ({ cartTotal, onDiscountApply, reservedCoins, reserve
         
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <CircularProgress size={32} sx={{ color: 'secondary.main' }} />
+            <Loader size="large" />
           </Box>
         ) : (
           <>

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Paper, Typography, Box, Grid, TextField, Autocomplete, Button, IconButton, Container, Stack,
-  List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, CircularProgress, Alert
+  List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Alert
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import adminService from '../../services/adminService';
+import Loader from '../../custom_components/Loader';
 
 const CreateOrderPage = () => {
   const navigate = useNavigate();
@@ -147,7 +148,7 @@ const CreateOrderPage = () => {
               loading={userLoading}
               renderInput={(params) => (
                 <TextField {...params} label="Search for a user..." variant="outlined"
-                  InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                  InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>),}}
                   InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                   sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                 />
@@ -164,7 +165,7 @@ const CreateOrderPage = () => {
                 onInputChange={handleProductSearch} loading={productLoading}
                 renderInput={(params) => (
                   <TextField {...params} label="Search for a product..." variant="outlined"
-                    InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                    InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>),}}
                     InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                     sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                   />
@@ -201,7 +202,7 @@ const CreateOrderPage = () => {
               <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
             </Box>
             <Button variant="contained" color="primary" fullWidth size="large" onClick={handlePlaceOrder} disabled={placingOrder} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', py: 1.5 }}>
-              {placingOrder ? <CircularProgress size={24} /> : 'Place Order'}
+              {placingOrder ? <Loader size="small" /> : 'Place Order'}
             </Button>
           </Paper>
         </Grid>

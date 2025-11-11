@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress, Alert,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert,
   List, ListItem, ListItemText, Checkbox, TextField, Stack, Typography, Divider, Box
 } from '@mui/material';
 import api from '../config/axios';
 import { useTheme } from '@mui/material/styles';
+import Loader from '../custom_components/Loader';
 
 const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
   const [collections, setCollections] = useState([]);
@@ -83,7 +84,7 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>Add "{post?.title}" to...</DialogTitle>
       <DialogContent dividers>
-        {loading ? <CircularProgress /> : error ? <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert> : (
+        {loading ? <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}><Loader size="medium" /></Box> : error ? <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert> : (
           <List dense>
             {collections.map(collection => (
               <ListItem key={collection._id} secondaryAction={
@@ -111,7 +112,7 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
             />
             <Button onClick={handleCreateAndAdd} disabled={saving || !newCollectionName.trim()} sx={{ fontFamily: theme.typography.fontFamily }}>
-              {saving ? <CircularProgress size={20} /> : 'Create'}
+              {saving ? <Loader size="small" /> : 'Create'}
             </Button>
           </Stack>
         ) : (
@@ -123,7 +124,7 @@ const AddToCollectionDialog = ({ open, onClose, post, showSnackbar }) => {
       <DialogActions>
         <Button onClick={onClose} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
         <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ fontFamily: theme.typography.fontFamily }}>
-          {saving ? <CircularProgress size={24} /> : 'Save'}
+          {saving ? <Loader size="small" /> : 'Save'}
         </Button>
       </DialogActions>
     </Dialog>

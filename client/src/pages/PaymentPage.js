@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Container, Paper, Typography, Box, Grid, Radio, RadioGroup, FormControl, Button, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Divider, List, ListItem, ListItemAvatar, Avatar, ListItemText, useTheme, alpha, Card, CardContent, CardHeader, Chip, LinearProgress, Select, MenuItem, InputLabel, FormControlLabel, Checkbox, TextField
+  Container, Paper, Typography, Box, Grid, Radio, RadioGroup, FormControl, Button, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Divider, List, ListItem, ListItemAvatar, Avatar, ListItemText, useTheme, alpha, Card, CardContent, CardHeader, Chip, LinearProgress, Select, MenuItem, InputLabel, FormControlLabel, Checkbox, TextField
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -19,6 +19,7 @@ import orderService from '../services/orderService';
 import productService from '../services/productService';
 import addressService from '../services/addressService';
 import { useCart } from '../contexts/CartContext';
+import Loader from '../custom_components/Loader';
 
 const PaymentPage = () => {
   const theme = useTheme();
@@ -170,7 +171,7 @@ const PaymentPage = () => {
   };
 
   if (loadingCart || !cart) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>;
   }
 
   const subtotal = validItems.reduce((acc, item) => {
@@ -651,7 +652,7 @@ const PaymentPage = () => {
                   }
                 }}
               >
-                {isPlacingOrder ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Place Order'}
+                {isPlacingOrder ? <Loader size="small" sx={{ color: 'white' }} /> : 'Place Order'}
               </Button>
             </CardContent>
           </Card>

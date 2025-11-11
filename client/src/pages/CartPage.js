@@ -49,6 +49,7 @@ import couponService from '../services/couponService';
 import { redeemHarvestCoins } from '../services/loyaltyService';
 import HarvestCoinsRedeem from '../components/HarvestCoinsRedeem';
 import api from '../config/axios';
+import Loader from '../custom_components/Loader';
 
 const CartPage = () => {
   const theme = useTheme();
@@ -436,7 +437,7 @@ const CartPage = () => {
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
-            <CircularProgress />
+            <Loader size="medium" />
           </Box>
         ) : error ? (
           <Typography color="error" sx={{ my: 4, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{error}</Typography>
@@ -1066,7 +1067,7 @@ const CartPage = () => {
                       px: 2
                     }}
                   >
-                    {isApplyingCoupon ? <CircularProgress size={20} /> : 'Apply'}
+                    {isApplyingCoupon ? <Loader size="small" /> : 'Apply'}
                   </Button>
                 </Box>
                 <Button 

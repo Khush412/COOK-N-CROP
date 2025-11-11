@@ -9,12 +9,12 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Button,
-  CircularProgress,
   Alert,
   Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import groupService from '../services/groupService';
+import Loader from '../custom_components/Loader';
 
 const GroupJoinRequests = ({ groupId }) => {
   const theme = useTheme();
@@ -54,7 +54,7 @@ const GroupJoinRequests = ({ groupId }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Box>
     );
   }
@@ -110,7 +110,7 @@ const GroupJoinRequests = ({ groupId }) => {
                   disabled={processing.includes(user._id)}
                   sx={{ mr: 1, borderRadius: 2, textTransform: 'none' }}
                 >
-                  {processing.includes(user._id) ? <CircularProgress size={20} /> : 'Approve'}
+                  {processing.includes(user._id) ? <Loader size="small" /> : 'Approve'}
                 </Button>
                 <Button
                   size="small"
@@ -120,7 +120,7 @@ const GroupJoinRequests = ({ groupId }) => {
                   disabled={processing.includes(user._id)}
                   sx={{ borderRadius: 2, textTransform: 'none' }}
                 >
-                  {processing.includes(user._id) ? <CircularProgress size={20} /> : 'Deny'}
+                  {processing.includes(user._id) ? <Loader size="small" /> : 'Deny'}
                 </Button>
               </ListItemSecondaryAction>
             </ListItem>

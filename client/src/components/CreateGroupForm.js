@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Box, TextField, Button, CircularProgress, Stack, Avatar, FormControlLabel, Switch, IconButton, Paper, Typography, Chip
+  Box, TextField, Button, Stack, Avatar, FormControlLabel, Switch, IconButton, Paper, Typography, Chip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Loader from '../custom_components/Loader';
 
 const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
   const theme = useTheme();
@@ -203,7 +204,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
         </Paper>
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button onClick={onCancel} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
-          <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+          <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={loading ? <Loader size="small" /> : null} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
             {loading ? 'Saving...' : (initialData ? 'Save Changes' : 'Create Group')}
           </Button>
         </Stack>

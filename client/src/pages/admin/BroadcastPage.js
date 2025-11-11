@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Paper, Typography, Box, TextField, Button, CircularProgress, Alert, Container, Stack,
+  Paper, Typography, Box, TextField, Button, Alert, Container, Stack,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import adminService from '../../services/adminService';
+import Loader from '../../custom_components/Loader';
 
 const BroadcastPage = () => {
   const theme = useTheme();
@@ -77,7 +78,7 @@ const BroadcastPage = () => {
               variant="contained"
               size="large"
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CampaignIcon />}
+              startIcon={loading ? <Loader size="small" color="inherit" /> : <CampaignIcon />}
               sx={{ mt: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 4, alignSelf: 'flex-start' }}
             >
               {loading ? 'Sending...' : 'Send Broadcast'}

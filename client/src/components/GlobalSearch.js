@@ -13,7 +13,6 @@ import {
   ListItemAvatar,
   Avatar,
   ListItemText,
-  CircularProgress,
   Typography,
   Divider,
   Fade,
@@ -22,6 +21,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import searchService from '../services/searchService';
+import Loader from '../custom_components/Loader';
 
 const Search = styled('div', {
   shouldForwardProp: (prop) => prop !== '$fullWidth',
@@ -181,7 +181,7 @@ const GlobalSearch = ({ fullWidth = false }) => {
               }}>
                 {loading ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                    <CircularProgress size={24} />
+                    <Loader size="small" />
                   </Box>
                 ) : hasResults ? (
                   <List dense>

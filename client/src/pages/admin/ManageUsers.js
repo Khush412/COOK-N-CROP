@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, Menu, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Typography, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Select, MenuItem, Chip, Button, TextField, Pagination, Checkbox, Container, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, Menu, ListItemIcon, ListItemText } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,6 +15,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import adminService from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
+import Loader from '../../custom_components/Loader';
 
 const ManageUsers = () => {
   const { user: currentUser } = useAuth();
@@ -234,7 +235,7 @@ const ManageUsers = () => {
           <Stack direction="row" spacing={1}>
             <Button
               variant="outlined"
-              startIcon={exporting ? <CircularProgress size={20} /> : <DownloadIcon />}
+              startIcon={exporting ? <Loader size="small" /> : <DownloadIcon />}
               onClick={handleExport}
               disabled={exporting}
               sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
@@ -244,7 +245,7 @@ const ManageUsers = () => {
           </Stack>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Container, useTheme, alpha, Grid, Card, CardContent, List, ListItem, ListItemIcon, ListItemText, Divider, Stack, Paper, Chip, LinearProgress, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Container, useTheme, alpha, Grid, Card, CardContent, List, ListItem, ListItemIcon, ListItemText, Divider, Stack, Paper, Chip, LinearProgress } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
@@ -13,6 +13,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useAuth } from '../contexts/AuthContext';
 import { getHarvestCoinsBalance } from '../services/loyaltyService';
+import Loader from '../custom_components/Loader';
 
 const RewardsPage = () => {
   const theme = useTheme();
@@ -222,7 +223,7 @@ const RewardsPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-        <CircularProgress size={60} sx={{ color: 'secondary.main' }} />
+        <Loader size="large" />
       </Box>
     );
   }

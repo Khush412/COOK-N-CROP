@@ -17,6 +17,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ShareIcon from '@mui/icons-material/Share';
 import postService from '../services/postService'; // Assuming you have a post service
+import Loader from '../custom_components/Loader';
 
 const UserGeneratedContent = ({ productId, title }) => {
   const theme = useTheme();
@@ -62,7 +63,7 @@ const UserGeneratedContent = ({ productId, title }) => {
   if (loading) {
     return (
       <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Box>
     );
   }

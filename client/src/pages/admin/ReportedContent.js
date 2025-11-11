@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, CircularProgress, Alert, Button, Divider, Chip, Paper, Container, Stack, IconButton, Tooltip,
+  Box, Typography, Alert, Button, Divider, Chip, Paper, Container, Stack, IconButton, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -9,6 +9,7 @@ import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import adminService from '../../services/adminService';
 import { Link as RouterLink } from 'react-router-dom';
+import Loader from '../../custom_components/Loader';
 
 const ReportedItemCard = ({ item, type, onDelete }) => {
   const theme = useTheme();
@@ -123,7 +124,7 @@ const ReportedContent = () => {
     openConfirmDialog('deleteComment', commentId, 'Confirm Comment Deletion', 'Are you sure you want to permanently delete this comment and all its replies?');
   };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>;
 
   return (
     <Container maxWidth="lg">

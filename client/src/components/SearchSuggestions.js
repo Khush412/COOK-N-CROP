@@ -16,6 +16,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import searchService from '../services/searchService';
+import Loader from '../custom_components/Loader';
 
 const SearchSuggestions = ({ query, onClose, onSelect }) => {
   const theme = useTheme();
@@ -88,7 +89,7 @@ const SearchSuggestions = ({ query, onClose, onSelect }) => {
     >
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-          <CircularProgress size={24} />
+          <Loader size="small" />
         </Box>
       ) : error ? (
         <Typography sx={{ p: 2, color: 'error.main', fontFamily: theme.typography.fontFamily }}>

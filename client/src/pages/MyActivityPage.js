@@ -4,7 +4,6 @@ import {
   Box,
   Container,
   Typography,
-  CircularProgress,
   Alert,
   Paper,
   Tabs,
@@ -36,6 +35,7 @@ import {
   ChatBubbleOutline as ChatBubbleOutlineIcon,
 } from '@mui/icons-material';
 import userService from '../services/userService';
+import Loader from '../custom_components/Loader';
 
 const ActivityCard = ({ item, type }) => {
   const theme = useTheme();
@@ -227,7 +227,7 @@ const MyActivityPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+        <Loader size="large" />
       </Box>
     );
   }

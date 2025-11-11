@@ -4,7 +4,6 @@ import {
   Typography,
   Paper,
   Grid,
-  CircularProgress,
   Alert,
   Chip,
   Button,
@@ -25,6 +24,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useNavigate } from 'react-router-dom';
 import offerService from '../services/offerService';
+import Loader from '../custom_components/Loader';
 
 const OffersPage = () => {
   const theme = useTheme();
@@ -105,7 +105,7 @@ const OffersPage = () => {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+          <Loader size="large" />
         </Box>
       </Container>
     );

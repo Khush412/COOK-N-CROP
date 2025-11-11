@@ -7,7 +7,6 @@ import {
   Grid,
   Button,
   Paper,
-  CircularProgress,
   Alert,
   Stack,
   Avatar,
@@ -30,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import groupService from '../services/groupService';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../custom_components/Loader';
 
 const GroupCard = ({ group }) => {
   const theme = useTheme();
@@ -230,7 +230,7 @@ const ExploreGroupsPage = () => {
       </Paper>
 
       {loading ? (
-        <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress /></Box>
+        <Box sx={{ textAlign: "center", py: 4 }}><Loader size="medium" /></Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : filteredGroups.length === 0 ? (

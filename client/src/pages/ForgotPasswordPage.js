@@ -6,7 +6,6 @@ import {
   TextField,
   Button,
   Paper,
-  CircularProgress,
   Alert,
   Stack,
   Avatar,
@@ -15,6 +14,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { forgotPassword } from '../services/authService';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import Loader from '../custom_components/Loader';
 
 const ForgotPasswordPage = () => {
   const theme = useTheme();
@@ -80,7 +80,7 @@ const ForgotPasswordPage = () => {
               disabled={loading || feedback.severity === 'success'}
               sx={{ py: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}
             >
-              {loading ? <CircularProgress size={24} /> : 'Send Reset Link'}
+              {loading ? <Loader size="small" /> : 'Send Reset Link'}
             </Button>
             <Button component={RouterLink} to="/login" sx={{ fontFamily: theme.typography.fontFamily }}>
               Back to Login

@@ -6,7 +6,6 @@ import {
   Box,
   Container,
   Typography,
-  CircularProgress,
   Alert,
   Grid,
   Paper,
@@ -61,6 +60,7 @@ import Rating from '../components/Rating';
 import recentlyViewedService from '../services/recentlyViewedService';
 import ProductCard from '../components/ProductCard';
 import ProductAlerts from '../components/ProductAlerts';
+import Loader from '../custom_components/Loader';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -340,7 +340,7 @@ const ProductPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Box>
     );
   }
@@ -828,7 +828,7 @@ const ProductPage = () => {
                           }
                         }}
                       >
-                        {cartLoading ? <CircularProgress size={24} color="inherit" /> : 'Add to Cart'}
+                        {cartLoading ? <Loader size="small" color="inherit" /> : 'Add to Cart'}
                       </Button>
                     )}
                     <Tooltip title={user?.wishlist?.includes(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}>
@@ -1034,7 +1034,7 @@ const ProductPage = () => {
                       }
                     }}
                   >
-                    {reviewLoading ? <CircularProgress size={24} color="inherit" /> : 'Submit Review'}
+                    {reviewLoading ? <Loader size="small" color="inherit" /> : 'Submit Review'}
                   </Button>
                 </Stack>
               </form>

@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import Loader from '../custom_components/Loader';
 
 const REPORT_REASONS = [
   'Spam or Misleading',
@@ -82,7 +83,7 @@ const ReportDialog = ({ open, onClose, onSubmit, loading, contentType = 'content
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={handleClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
         <Button onClick={handleSubmit} variant="contained" color="error" disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 2 }}>
-          {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit Report'}
+          {loading ? <Loader size="small" color="inherit" /> : 'Submit Report'}
         </Button>
       </DialogActions>
     </Dialog>

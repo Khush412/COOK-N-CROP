@@ -6,7 +6,6 @@ import {
   Box,
   Container,
   Typography,
-  CircularProgress,
   Alert,
   Paper,
   Avatar,
@@ -50,6 +49,7 @@ import CreatePostForm from '../components/CreatePostForm';
 import ReportDialog from '../components/ReportDialog';
 import RichTextDisplay from '../components/RichTextDisplay';
 import AddToCollectionDialog from '../components/AddToCollectionDialog';
+import Loader from '../custom_components/Loader';
 
 const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick, isAdding }) => {
   const theme = useTheme();
@@ -76,7 +76,7 @@ const RecipeDisplay = ({ recipe, description, shoppableIngredients, onShopClick,
           <Button
             variant="contained"
             color="secondary"
-            startIcon={isAdding ? <CircularProgress size={20} color="inherit" /> : <ShoppingCartIcon />}
+            startIcon={isAdding ? <Loader size="small" color="inherit" /> : <ShoppingCartIcon />}
             onClick={onShopClick}
             disabled={isAdding}
             sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
@@ -159,7 +159,7 @@ const TaggedProductCard = ({ product }) => {
         </Box>
       </Box>
       <Button variant="contained" size="small" onClick={handleAddToCart} disabled={isAdding || product.countInStock === 0} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-        {product.countInStock > 0 ? (isAdding ? <CircularProgress size={20} /> : 'Add') : 'Out of Stock'}
+        {product.countInStock > 0 ? (isAdding ? <Loader size="small" /> : 'Add') : 'Out of Stock'}
       </Button>
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ open: false, message: '' })} message={snackbar.message} />
     </Paper>
@@ -495,7 +495,7 @@ const PostPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+        <Loader />
       </Box>
     );
   }
@@ -772,7 +772,7 @@ const PostPage = () => {
                       type="submit"
                       variant="contained"
                       disabled={recipeReviewLoading}
-                      startIcon={recipeReviewLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                      startIcon={recipeReviewLoading ? <Loader size={20} color="inherit" /> : null}
                       sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
                     >
                       {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}

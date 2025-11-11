@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, Button, CircularProgress, Alert, Table, TableBody, TableCell, TextField, Avatar,
+  Box, Typography, Button, Alert, Table, TableBody, TableCell, TextField, Avatar,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Pagination, Checkbox, Container, Stack, Chip, Grid,
   Input, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Menu, ListItemIcon, ListItemText
@@ -21,6 +21,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import productService from '../../services/productService';
 import adminService from '../../services/adminService';
 import ProductFormDialog from '../../components/ProductFormDialog';
+import Loader from '../../custom_components/Loader';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
@@ -304,7 +305,7 @@ const ManageProducts = () => {
           </Stack>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (
@@ -574,7 +575,7 @@ const ManageProducts = () => {
             onClick={handleCsvImport} 
             variant="contained" 
             disabled={!csvFile || csvImportLoading}
-            startIcon={csvImportLoading ? <CircularProgress size={20} /> : null}
+            startIcon={csvImportLoading ? <Loader size="small" /> : null}
             sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
           >
             {csvImportLoading ? 'Importing...' : 'Import'}

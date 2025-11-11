@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Box, Container, Typography, CircularProgress, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination, Chip, Stack, useTheme, alpha
+  Box, Container, Typography, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination, Chip, Stack, useTheme, alpha
 } from '@mui/material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import searchService from '../services/searchService';
@@ -9,6 +9,7 @@ import searchAnalyticsService from '../services/searchAnalyticsService';
 import ProductCard from '../components/ProductCard';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../custom_components/Loader';
 
 const UserCard = ({ user }) => {
   const theme = useTheme();
@@ -171,7 +172,7 @@ const SearchPage = () => {
     const noResults = globalResults.posts.length === 0 && globalResults.products.length === 0 && globalResults.users.length === 0;
 
     if (loading) {
-      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress size={60} /></Box>;
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><Loader size="large" /></Box>;
     }
     if (error) {
       return <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>;
@@ -191,7 +192,7 @@ const SearchPage = () => {
     }
 
     if (tabLoading) {
-      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><Loader size="medium" /></Box>;
     }
 
     if (tab === 'all') {

@@ -4,7 +4,6 @@ import {
   Box,
   TextField,
   Button,
-  CircularProgress,
   Stack,
   Chip,
   FormControlLabel,
@@ -30,6 +29,7 @@ import { useTheme } from '@mui/material/styles';
 import productService from '../services/productService';
 import groupService from '../services/groupService';
 import RichTextInput from './RichTextInput';
+import Loader from '../custom_components/Loader';
 
 const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData }) => {
   const [title, setTitle] = useState('');
@@ -480,7 +480,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
                 <TextField {...params} label="Search for a product to tag..." variant="outlined"
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
                   InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                  InputProps={{ ...params.InputProps, endAdornment: (<>{productSearchLoading ? <CircularProgress color="inherit" size={20} /> : null}{params.InputProps.endAdornment}</>),}}
+                  InputProps={{ ...params.InputProps, endAdornment: (<>{productSearchLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>),}}
                 />
               )}
             />
@@ -505,7 +505,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
             type="submit"
             variant="contained"
             disabled={loading || !title.trim() || !content.trim() || !selectedGroup}
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            startIcon={loading ? <Loader size="small" color="inherit" /> : null}
             sx={{ borderRadius: '50px', px: 4, py: 1.2, fontFamily: theme.typography.fontFamily }}
           >
             {loading ? (initialData ? 'Saving...' : 'Posting...') : (initialData ? 'Save Changes' : 'Submit Post')}

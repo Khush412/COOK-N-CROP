@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Container, Grid, Paper, alpha, Snackbar, Alert, Divider, Avatar, Stack, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,15 @@ import CircularGallery from '../custom_components/CircularGallery'; // Import th
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import DomeGallery from '../custom_components/DomeGallery';
+// Import the custom animated testimonials component
+import { AnimatedTestimonials } from '../custom_components/animatedTestimonials';
+// Import the ThreeDMarque component
+import { ThreeDMarquee } from '../custom_components/ThreeDMarque';
+// Import the 3D Carousel component
+import ThreeDCarousel from '../custom_components/ThreeDCarousel';
+// Import the custom Loader component
+import Loader from '../custom_components/Loader';
+
 // Reusable component for animated sections
 const AnimatedSection = React.forwardRef(({ children, sx = {}, id }, ref) => {
   // If no ref is passed from the parent, we still need one for useInView to work.
@@ -55,6 +64,48 @@ const TESTIMONIALS = [
     avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-3.jpg`,
     rating: 5
   },
+  {
+    quote: "The variety of products available is impressive. I can always find what I need for my weekly meal prep.",
+    author: "Jessica Williams",
+    role: "Health Enthusiast",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-4.jpg`,
+    rating: 5
+  },
+  {
+    quote: "Customer service is outstanding. They go above and beyond to ensure customer satisfaction.",
+    author: "Robert Garcia",
+    role: "Regular Customer",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-5.jpg`,
+    rating: 5
+  },
+  {
+    quote: "The quality of organic produce is consistently excellent. I've never been disappointed with my orders.",
+    author: "Emily Davis",
+    role: "Organic Food Lover",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-6.jpg`,
+    rating: 5
+  },
+  {
+    quote: "Fast delivery and the vegetables stay fresh for days. This service has transformed my weekly shopping routine!",
+    author: "David Wilson",
+    role: "Busy Professional",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-7.jpg`,
+    rating: 5
+  },
+  {
+    quote: "The seasonal produce boxes are a great way to try new vegetables and support local agriculture.",
+    author: "Sarah Miller",
+    role: "Eco-Conscious Consumer",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-8.jpg`,
+    rating: 5
+  },
+  {
+    quote: "Their recipe suggestions have helped me cook more diverse meals. My family loves the new flavors!",
+    author: "Thomas Anderson",
+    role: "Family Cook",
+    avatar: `${process.env.PUBLIC_URL}/images/avatars/avatar-9.jpg`,
+    rating: 5
+  }
 ];
 
 const LandingPage = () => {
@@ -130,8 +181,76 @@ const LandingPage = () => {
         </Box>
       </Box>
 
+      {/* 3D Carousel Section - Added below the hero section */}
+      <Box sx={{ py: 6, bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+              Featured Highlights
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
+              Discover our latest products, recipes, and community highlights
+            </Typography>
+            <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
+          </Box>
+          
+          <ThreeDCarousel 
+            items={[
+              {
+                id: 1,
+                title: "Farm Fresh Produce",
+                brand: "Organic",
+                description: "Handpicked seasonal vegetables and fruits delivered fresh from local farms to your doorstep. Experience the taste of nature.",
+                imageUrl: `${process.env.PUBLIC_URL}/images/seasonal-produce.jpg`,
+                link: "/CropCorner",
+                tags: ["Organic", "Seasonal", "Local"]
+              },
+              {
+                id: 2,
+                title: "Artisanal Baked Goods",
+                brand: "Homemade",
+                description: "Freshly baked breads, pastries, and desserts made with organic ingredients by local artisans.",
+                imageUrl: `${process.env.PUBLIC_URL}/images/bakery.jpg`,
+                link: "/CropCorner",
+                tags: ["Bakery", "Fresh", "Artisanal"]
+              },
+              {
+                id: 3,
+                title: "Sustainable Farming",
+                brand: "Eco-Friendly",
+                description: "Learn about our commitment to sustainable farming practices and how we're protecting the environment for future generations.",
+                imageUrl: `${process.env.PUBLIC_URL}/images/sustainable-farming.jpg`,
+                link: "/about",
+                tags: ["Sustainability", "Eco", "Farm"]
+              },
+              {
+                id: 4,
+                title: "Seasonal Recipe Kits",
+                brand: "Chef Approved",
+                description: "Weekly recipe kits with seasonal ingredients and step-by-step cooking instructions from professional chefs.",
+                imageUrl: `${process.env.PUBLIC_URL}/images/recipe-kits.jpg`,
+                link: "/CropCorner",
+                tags: ["Recipes", "Seasonal", "Chef"]
+              },
+              {
+                id: 5,
+                title: "Farmers Market",
+                brand: "Local Vendors",
+                description: "Connect directly with local farmers and artisans at our weekly farmers market events. Fresh produce and handmade goods.",
+                imageUrl: `${process.env.PUBLIC_URL}/images/farmers-market.jpg`,
+                link: "/CropCorner",
+                tags: ["Local", "Community", "Events"]
+              }
+            ]}
+            autoRotate={true}
+            rotateInterval={3000}
+            cardHeight={500}
+          />
+        </Container>
+      </Box>
+
       {/* Featured Products Section - Replaced with CircularGallery */}
-      <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper' }}>
+      <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
@@ -143,10 +262,12 @@ const LandingPage = () => {
             <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
           </Box>
           
-          {/* Fetch featured products and pass them to CircularGallery */}
-          <FeaturedProductsGallery />
+          {/* ThreeDMarque component - replacing CircularGallery */}
+          <Box sx={{ mb: 8, height: '650px' }}> {/* Increased container height from 450px to 650px */}
+            <FeaturedProductsMarquee />
+          </Box>
           
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
+          <Box sx={{ textAlign: 'center' }}>
             <Button
               component={RouterLink}
               to="/CropCorner"
@@ -199,10 +320,12 @@ const LandingPage = () => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
+          height: 'auto',
+          minHeight: '400px',
         }}
       >
         <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.6)', zIndex: 1 }} />
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pt: 4, pb: 8 }}>
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily, color: 'white' }}>
               What Our Community Says
@@ -212,36 +335,14 @@ const LandingPage = () => {
             </Typography>
             <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
           </Box>
-          <Grid container spacing={4}>
-            {TESTIMONIALS.map((testimonial, index) => ( 
-              <Grid size={{ xs: 12, md: 4 }} key={index} sx={{ display: 'flex' }}>
-                <Paper
-                  component={motion.div}
-                  whileHover={{ y: -8, boxShadow: theme.shadows[10] }}
-                  sx={{
-                    p: 4, height: '100%', borderRadius: 4, display: 'flex', flexDirection: 'column', textAlign: 'center',
-                    bgcolor: alpha(theme.palette.background.paper, 0.85),
-                    backdropFilter: 'blur(10px)',
-                  }}
-                >
-                  <FormatQuote sx={{ fontSize: 48, color: 'secondary.main', transform: 'rotate(180deg)', alignSelf: 'center' }} />
-                  <Typography variant="body1" sx={{ fontStyle: 'italic', flexGrow: 1, my: 2, color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                    {testimonial.quote}
-                  </Typography>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 2 }}>
-                    <Avatar src={testimonial.avatar} alt={testimonial.author} sx={{ width: 56, height: 56 }} />
-                    <Box textAlign="left">
-                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.primary' }}>{testimonial.author}</Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{testimonial.role}</Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+          
+          {/* Animated Testimonials Component */}
+          <Box sx={{ mb: 12, height: '650px', overflow: 'hidden' }}>
+            <AnimatedTestimonials data={TESTIMONIALS} />
+          </Box>
 
           {/* Join CTA merged into parallax section */}
-          <Box sx={{ mt: 12, textAlign: 'center' }}>
+          <Box sx={{ mt: 8, textAlign: 'center' }}>
             <Typography variant="h2" sx={{ fontWeight: 900, mb: 2, fontFamily: theme.typography.fontFamily, color: 'white' }}>
               Join the Cook'n'Crop Family
             </Typography>
@@ -296,6 +397,86 @@ const LandingPage = () => {
   );
 };
 
+// Add this component to fetch featured products and pass them to the ThreeDMarque
+const FeaturedProductsMarquee = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const theme = useTheme();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Fetch all products without a limit
+        const res = await api.get('/products?getAll=true');
+        
+        // Handle array response
+        let products = Array.isArray(res.data) ? res.data : [];
+        
+        // Transform products into gallery items with product IDs
+        const galleryItems = products
+          .filter(product => {
+            // Only include products that have images
+            return (product.images && product.images.length > 0) || product.image;
+          })
+          .map(product => ({
+            id: product._id, // Add product ID for click handling
+            src: product.images && product.images.length > 0 
+              ? `${process.env.REACT_APP_API_URL}${product.images[0]}` 
+              : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`),
+            alt: product.name,
+            href: `/product/${product._id}`
+          }))
+          // Limit to 18 products for better performance and display
+          .slice(0, 18);
+        
+        setItems(galleryItems);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load products');
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader size="large" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
+  }
+
+  // If no items, show a message
+  if (items.length === 0) {
+    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No products available</div>;
+  }
+
+  // Use the ThreeDMarque component with all products
+  return (
+    <Box sx={{ my: 6, height: '450px' }}>
+      <ThreeDMarquee 
+        images={items}
+        cols={4}
+        onImageClick={(image) => {
+          // Navigate to product detail page
+          navigate(`/product/${image.id}`);
+        }}
+      />
+    </Box>
+  );
+};
+
 // Add this component to fetch featured products and pass them to the CircularGallery
 const FeaturedProductsGallery = () => {
   const [items, setItems] = useState([]);
@@ -342,7 +523,11 @@ const FeaturedProductsGallery = () => {
   }, []);
 
   if (loading) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+    return (
+      <Box sx={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader size="large" />
+      </Box>
+    );
   }
 
   if (error) {

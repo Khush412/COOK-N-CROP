@@ -46,6 +46,7 @@ import userService from '../services/userService';
 import api from '../config/axios';
 import { useAuth } from "../contexts/AuthContext";
 import { getHarvestCoinsBalance } from '../services/loyaltyService';
+import Loader from '../custom_components/Loader';
 
 const SOCIALS = [
   { name: "Google", key: "google", icon: GoogleIcon, color: "#DB4437" },
@@ -126,7 +127,7 @@ const ProfileEditModal = ({ open, onClose, user, onSave }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />} sx={{ fontFamily: theme.typography.fontFamily }}>Save</Button>
+        <Button onClick={handleSave} variant="contained" disabled={loading} startIcon={loading ? <Loader size="small" /> : <SaveIcon />} sx={{ fontFamily: theme.typography.fontFamily }}>Save</Button>
       </DialogActions>
     </Dialog>
   );
@@ -282,7 +283,7 @@ const Profile = () => {
   if (loading) {
     return (
       <Box sx={{ mt: 20, textAlign: "center" }}>
-        <CircularProgress size={48} />
+        <Loader size="large" />
       </Box>
     );
   }
@@ -360,7 +361,7 @@ const Profile = () => {
               
               {harvestCoinsLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                  <CircularProgress />
+                  <Loader size="small" />
                 </Box>
               ) : (
                 <Grid container spacing={2}>
@@ -507,7 +508,7 @@ const Profile = () => {
                   <TextField type="password" label="New Password" name="newPassword" variant="filled" fullWidth required value={passwordForm.newPassword} onChange={handlePasswordChange} disabled={passwordLoading} helperText="Min 6 characters." InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                   <TextField type="password" label="Confirm New Password" name="confirmPassword" variant="filled" fullWidth required value={passwordForm.confirmPassword} onChange={handlePasswordChange} disabled={passwordLoading} InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button type="submit" variant="contained" disabled={passwordLoading} startIcon={passwordLoading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Button type="submit" variant="contained" disabled={passwordLoading} startIcon={passwordLoading ? <Loader size="small" /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
                       {passwordLoading ? 'Updating...' : 'Change Password'}
                     </Button>
                   </Box>
@@ -577,7 +578,7 @@ const Profile = () => {
             <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleteLoading} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
             <Button
               onClick={handleDeleteAccount} color="error" variant="contained"
-              disabled={deleteLoading || !deletePassword} startIcon={deleteLoading ? <CircularProgress size={20} /> : null}
+              disabled={deleteLoading || !deletePassword} startIcon={deleteLoading ? <Loader size="small" /> : null}
               sx={{ fontFamily: theme.typography.fontFamily }}
             >
               {deleteLoading ? 'Deleting...' : 'Delete Account'}

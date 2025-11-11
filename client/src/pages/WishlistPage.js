@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
   Container,
   Paper,
   Alert,
@@ -22,6 +21,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from '../components/ProductCard';
+import Loader from '../custom_components/Loader';
 import {
   FavoriteBorder as FavoriteBorderIcon,
   Search as SearchIcon,
@@ -111,7 +111,7 @@ const WishlistPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+        <Loader size="large" />
       </Box>
     );
   }

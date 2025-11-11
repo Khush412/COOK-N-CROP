@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import ProductCard from './ProductCard';
 import productService from '../services/productService'; // Use productService instead
+import Loader from '../custom_components/Loader';
 
 const PersonalizedRecommendations = ({ showSnackbar }) => {
   const theme = useTheme();
@@ -51,7 +52,7 @@ const PersonalizedRecommendations = ({ showSnackbar }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
+        <Loader size="medium" />
       </Box>
     );
   }

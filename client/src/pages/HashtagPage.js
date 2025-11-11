@@ -4,7 +4,6 @@ import {
   Container,
   Typography,
   Grid,
-  CircularProgress,
   Box,
   Paper,
   Pagination,
@@ -27,6 +26,7 @@ import searchService from '../services/searchService';
 import { useAuth } from '../contexts/AuthContext';
 import userService from '../services/userService';
 import communityService from '../services/communityService';
+import Loader from '../custom_components/Loader';
 
 const HashtagPage = () => {
   const theme = useTheme();
@@ -191,7 +191,7 @@ const HashtagPage = () => {
                   py: 8,
                 }}
               >
-                <CircularProgress size={60} />
+                <Loader size="large" />
               </Box>
             ) : error ? (
               <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>

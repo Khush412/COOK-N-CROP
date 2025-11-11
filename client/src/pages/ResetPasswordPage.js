@@ -7,7 +7,6 @@ import {
   TextField,
   Button,
   Paper,
-  CircularProgress,
   Alert,
   Stack,
   Avatar,
@@ -16,6 +15,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { resetPassword } from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import Loader from '../custom_components/Loader';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
@@ -106,7 +106,7 @@ const ResetPasswordPage = () => {
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
             <Button type="submit" fullWidth variant="contained" disabled={loading || !!success} sx={{ py: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px' }}>
-              {loading ? <CircularProgress size={24} /> : 'Reset Password'}
+              {loading ? <Loader size="small" /> : 'Reset Password'}
             </Button>
           </Stack>
         </Box>

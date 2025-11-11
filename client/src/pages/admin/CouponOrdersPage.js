@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination, Container,
+  Typography, Alert, Table, TableBody, TableCell, Box, Pagination, Container,
   TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Stack
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import couponService from '../../services/couponService';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Loader from '../../custom_components/Loader';
 
 const CouponOrdersPage = () => {
   const { code } = useParams();
@@ -55,7 +56,7 @@ const CouponOrdersPage = () => {
       </Paper>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : (

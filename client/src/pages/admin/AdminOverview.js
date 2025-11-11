@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Typography, Box, Paper, Grid, CircularProgress, Alert, useTheme, alpha, 
+  Typography, Box, Paper, Grid, Alert, useTheme, alpha, 
   Avatar, Stack, Button, Chip, IconButton, Tooltip, Tabs, Tab, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Divider, LinearProgress
@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import groupService from '../../services/groupService';
 import productService from '../../services/productService';
+import Loader from '../../custom_components/Loader';
 
 // Stat Card Component
 const StatCard = ({ title, value, icon, color, trend, trendValue, onClick }) => {
@@ -98,7 +99,7 @@ const RecentOrdersTable = ({ orders, loading, navigate }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress size={32} />
+        <Loader size="medium" />
       </Box>
     );
   }
@@ -190,7 +191,7 @@ const RecentPostsTable = ({ posts, loading }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress size={32} />
+        <Loader size="medium" />
       </Box>
     );
   }
@@ -260,7 +261,7 @@ const PendingRequestsTable = ({ requests, loading, type }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress size={32} />
+        <Loader size="medium" />
       </Box>
     );
   }
@@ -427,7 +428,7 @@ const AdminOverview = () => {
 
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-      <CircularProgress size={60} />
+      <Loader size="large" />
     </Box>
   );
   

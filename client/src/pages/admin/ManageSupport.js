@@ -9,7 +9,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress,
   Alert,
   Select,
   MenuItem,
@@ -34,6 +33,7 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import api from "../../config/axios";
+import Loader from "../../custom_components/Loader";
 
 const ManageSupport = () => {
   const theme = useTheme();
@@ -140,7 +140,7 @@ const ManageSupport = () => {
 
   const statusColors = { Open: 'warning', 'In Progress': 'info', Closed: 'success' };
 
-  if (loading) return <CircularProgress />;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
@@ -304,7 +304,7 @@ const ManageSupport = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={handleCloseDialog} disabled={replyLoading} sx={{ fontFamily: theme.typography.fontFamily }}>Close</Button>
-          <Button onClick={handleSendReply} variant="contained" disabled={replyLoading || !replyContent.trim()} startIcon={replyLoading ? <CircularProgress size={20} /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Button onClick={handleSendReply} variant="contained" disabled={replyLoading || !replyContent.trim()} startIcon={replyLoading ? <Loader size="small" /> : null} sx={{ fontFamily: theme.typography.fontFamily }}>
             {replyLoading ? "Sending..." : "Send Reply"}
           </Button>
         </DialogActions>

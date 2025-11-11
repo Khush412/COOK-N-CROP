@@ -7,6 +7,7 @@ import {
 import { useTheme, alpha } from '@mui/material/styles';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Loader from '../custom_components/Loader';
 
 const categories = ['Fruits', 'Vegetables', 'Dairy', 'Grains', 'Meat', 'Seafood', 'Baked Goods', 'Beverages', 'Snacks', 'Other'];
 
@@ -489,7 +490,7 @@ const ProductFormDialog = ({ open, onClose, onSave, product, loading }) => {
             disabled={loading}
             sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, px: 3 }}
           >
-            {loading ? <CircularProgress size={24} /> : product ? 'Update Product' : 'Add Product'}
+            {loading ? <Loader size="small" /> : product ? 'Update Product' : 'Add Product'}
           </Button>
         </DialogActions>
       </form>

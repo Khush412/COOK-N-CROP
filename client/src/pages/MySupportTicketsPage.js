@@ -7,8 +7,6 @@ import {
   Paper,
   List,
   ListItem,
-  ListItemText,
-  CircularProgress,
   Alert,
   Chip,
   useTheme,
@@ -38,6 +36,7 @@ import {
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const TicketCard = ({ ticket, variant = 'card' }) => {
   const theme = useTheme();
@@ -253,7 +252,7 @@ const MySupportTicketsPage = () => {
             Track the status of your inquiries.
           </Typography>
         </Paper>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>
       </Container>
     );
   }

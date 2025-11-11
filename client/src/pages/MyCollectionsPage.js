@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  Box, Container, Typography, CircularProgress, Alert, Paper, Grid, Button, IconButton, Tooltip,
+  Box, Container, Typography, Alert, Paper, Grid, Button, IconButton, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Switch, FormControlLabel, alpha,
   Card, CardContent, CardActions, Chip, Avatar, Divider, Pagination, ToggleButtonGroup, ToggleButton,
   InputAdornment, InputBase, useTheme, FormControl
@@ -20,6 +20,7 @@ import {
   ViewList as ViewListIcon,
   CollectionsBookmark as CollectionsBookmarkIcon
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const CollectionCard = ({ collection, onEdit, onDelete, viewMode }) => {
   const theme = useTheme();
@@ -235,7 +236,7 @@ const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
           disabled={loading || !formData.name.trim()} 
           sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
         >
-          {loading ? <CircularProgress size={24} /> : 'Save'}
+          {loading ? <Loader size="small" /> : 'Save'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -351,7 +352,7 @@ const MyCollectionsPage = () => {
 
   if (loading) return (
     <Container maxWidth="lg" sx={{ mt: 12, py: 4, display: 'flex', justifyContent: 'center' }}>
-      <CircularProgress />
+      <Loader size="large" />
     </Container>
   );
   

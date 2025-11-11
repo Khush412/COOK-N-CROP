@@ -4,7 +4,6 @@ import {
   Box,
   Container,
   Typography,
-  CircularProgress,
   Alert,
   Paper,
   Avatar,
@@ -58,6 +57,7 @@ import {
 } from '@mui/icons-material';
 import userService from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
+import Loader from '../custom_components/Loader';
 
 // Styled components for better visual design
 const ProfileHeader = styled(Paper)(({ theme }) => ({
@@ -344,7 +344,7 @@ const PublicProfilePage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+        <Loader size="large" />
       </Box>
     );
   }

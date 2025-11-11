@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import { GroupAdd as GroupAddIcon, Info as InfoIcon } from '@mui/icons-material';
 import groupService from '../services/groupService';
 import CreateGroupForm from '../components/CreateGroupForm';
+import Loader from '../custom_components/Loader';
 
 const CreateGroupPage = () => {
   const theme = useTheme();

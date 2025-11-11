@@ -16,7 +16,6 @@ import {
   ToggleButtonGroup,
   TextField,
   Stack,
-  Pagination,
   Drawer,
   Chip,
   IconButton,
@@ -34,6 +33,7 @@ import {
   FormControl,
   Select,
   MenuItem,
+  Pagination,
 } from "@mui/material";
 import {
   Forum as ForumIcon,
@@ -75,6 +75,7 @@ import communityService from "../services/communityService";
 import userService from "../services/userService";
 import PostCard from "../components/PostCard";
 import groupService from "../services/groupService";
+import Loader from "../custom_components/Loader";
 
 // Notification badge component
 const NotificationBadge = ({ count }) => {
@@ -134,8 +135,8 @@ const GroupCard = ({ group }) => {
         {group.name?.charAt(0)?.toUpperCase() || 'G'}
       </Avatar>
       <Box>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{group.name}</Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>{group.memberCount} members</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{group.name}</Typography>
+        <Typography variant="caption" color="text.secondary">{group.memberCount} members</Typography>
       </Box>
     </Paper>
   );
@@ -249,7 +250,7 @@ export default function Community() {
   useEffect(() => {
     const fetchTrendingTags = async () => {
       try {
-        const tags = await communityService.getTrendingTags(7);
+        const tags = await communityService.getTrendingTags();
         setTrendingTags(tags);
       } catch (err) { console.error("Error fetching trending tags: ", err); }
     };
@@ -407,9 +408,12 @@ export default function Community() {
   };
 
   const handleTagClick = (tagToToggle) => {
-    // Navigate to search with the hashtag
-    navigate(`/community?search=%23${encodeURIComponent(tagToToggle)}`);
     setPage(1);
+    setSelectedTags((prev) =>
+      prev.includes(tagToToggle)
+        ? prev.filter((tag) => tag !== tagToToggle)
+        : [tagToToggle]
+    );
   };
 
   // New collapsible navigation sidebar content
@@ -531,7 +535,7 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="My Groups" 
-                  primaryTypographyProps={{ fontWeight: 700, color: 'info.main', sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ fontWeight: 700, color: 'info.main' }} 
                 />
                 {myGroupsOpen ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
@@ -564,7 +568,7 @@ export default function Community() {
                       <ListItemText 
                         primary={
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <span style={{ fontFamily: theme.typography.fontFamily }}>{group.name}</span>
+                            <span>{group.name}</span>
                             {pendingRequests[group._id] > 0 && (
                               <Box
                                 sx={{
@@ -589,9 +593,7 @@ export default function Community() {
                         primaryTypographyProps={{ 
                           variant: 'body2',
                           noWrap: true,
-                          fontWeight: 500,
-                          component: 'div',
-                          sx: { fontFamily: theme.typography.fontFamily }
+                          fontWeight: 500
                         }} 
                       />
                     </ListItemButton>
@@ -613,11 +615,9 @@ export default function Community() {
                         primaryTypographyProps={{ 
                           variant: 'body2',
                           fontWeight: 600,
-                          color: 'primary.main',
-                          sx: { fontFamily: theme.typography.fontFamily }
+                          color: 'primary.main'
                         }} 
                       />
-
                     </ListItemButton>
                   )}
                 </List>
@@ -644,7 +644,7 @@ export default function Community() {
             </ListItemIcon>
             <ListItemText 
               primary="Community" 
-              primaryTypographyProps={{ fontWeight: 700, color: 'secondary.main', sx: { fontFamily: theme.typography.fontFamily } }} 
+              primaryTypographyProps={{ fontWeight: 700, color: 'secondary.main' }} 
             />
             {communityOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
@@ -668,7 +668,7 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Create Group" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
               </ListItemButton>
               <ListItemButton 
@@ -688,9 +688,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Explore Groups" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
               
               {/* Display 3 random groups from the database */}
@@ -723,11 +722,9 @@ export default function Community() {
                     primaryTypographyProps={{ 
                       variant: 'body2',
                       noWrap: true,
-                      fontWeight: 500,
-                      sx: { fontFamily: theme.typography.fontFamily }
+                      fontWeight: 500
                     }} 
                   />
-
                 </ListItemButton>
               ))}
             </List>
@@ -752,7 +749,7 @@ export default function Community() {
             </ListItemIcon>
             <ListItemText 
               primary="Resources" 
-              primaryTypographyProps={{ fontWeight: 700, color: 'info.main', sx: { fontFamily: theme.typography.fontFamily } }} 
+              primaryTypographyProps={{ fontWeight: 700, color: 'info.main' }} 
             />
             {resourcesOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
@@ -776,9 +773,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Community Rules" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
               <ListItemButton 
                 sx={{ 
@@ -798,9 +794,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Privacy Policy" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
               <ListItemButton 
                 sx={{ 
@@ -820,9 +815,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Terms of Service" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
               <ListItemButton 
                 sx={{ 
@@ -842,9 +836,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Community Guidelines" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
             </List>
           </Collapse>
@@ -868,7 +861,7 @@ export default function Community() {
             </ListItemIcon>
             <ListItemText 
               primary="Support" 
-              primaryTypographyProps={{ fontWeight: 700, color: 'success.main', sx: { fontFamily: theme.typography.fontFamily } }} 
+              primaryTypographyProps={{ fontWeight: 700, color: 'success.main' }} 
             />
             {supportOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
@@ -891,7 +884,7 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Help Center" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
               </ListItemButton>
               <ListItemButton 
@@ -912,9 +905,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Contact Us" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
               <ListItemButton 
                 sx={{ 
@@ -933,9 +925,8 @@ export default function Community() {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Feedback" 
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500, sx: { fontFamily: theme.typography.fontFamily } }} 
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} 
                 />
-
               </ListItemButton>
             </List>
           </Collapse>
@@ -1064,8 +1055,8 @@ export default function Community() {
         sx={{
           flexGrow: 1,
           width: '100%',
-          ml: { xs: 0, md: leftSidebarVisible ? '280px' : 0 },
-          pl: { xs: 0, md: leftSidebarVisible ? 0 : 2 },
+          ml: leftSidebarVisible ? '280px' : 0,
+          pl: leftSidebarVisible ? 0 : 2,
           pt: { xs: 8, md: 12 },
           pb: 4,
           transition: 'margin 0.3s ease',
@@ -1076,7 +1067,7 @@ export default function Community() {
           {/* Three Column Layout */}
           <Grid container spacing={3}>
             {/* Middle Content - Posts Feed */}
-            <Grid size={{ xs: 12 }} sx={{ overflowX: 'hidden', pr: { xs: 0, md: '320px' }, pl: { xs: 0, md: leftSidebarVisible ? 0 : 3 } }}>
+            <Grid size={{ xs: 12 }} sx={{ overflowX: 'hidden', pr: '320px', pl: leftSidebarVisible ? 0 : 3 }}>
               <Stack spacing={2.5}>
                 {/* Search Bar and Create Post Button */}
                 <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
@@ -1103,12 +1094,6 @@ export default function Community() {
                       '& .MuiInputBase-input': {
                         fontFamily: theme.typography.fontFamily,
                         fontSize: '0.875rem',
-                      },
-                      '& .MuiInputLabel-root': {
-                        fontFamily: theme.typography.fontFamily,
-                      },
-                      '& .MuiInputBase-input::placeholder': {
-                        fontFamily: theme.typography.fontFamily,
                       }
                     }}
                   />
@@ -1117,24 +1102,16 @@ export default function Community() {
                     startIcon={<AddIcon sx={{ fontSize: 18 }} />}
                     onClick={handleCreateClick}
                     sx={{ 
-                      borderRadius: 3,
+                      borderRadius: 2,
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
                       height: 40,
                       fontSize: '0.875rem',
-                      px: 2,
-                      fontFamily: theme.typography.fontFamily,
-                      boxShadow: 3,
-                      '&:hover': {
-                        boxShadow: 5,
-                        transform: 'translateY(-1px)',
-                      },
-                      transition: 'all 0.2s ease',
+                      px: 1.5,
                     }}
                   >
-                    Create Post
+                    Create
                   </Button>
-
                 </Box>
                 
                 {/* Filters and View Options */}
@@ -1159,13 +1136,12 @@ export default function Community() {
                             py: 1,
                             pl: 1.5,
                             pr: 3,
-                            fontFamily: theme.typography.fontFamily,
                           }
                         }}
                       >
-                        <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All</MenuItem>
-                        <MenuItem value="recipes" sx={{ fontFamily: theme.typography.fontFamily }}>Recipes</MenuItem>
-                        <MenuItem value="discussions" sx={{ fontFamily: theme.typography.fontFamily }}>Discussions</MenuItem>
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="recipes">Recipes</MenuItem>
+                        <MenuItem value="discussions">Discussions</MenuItem>
                       </Select>
                     </FormControl>
                     
@@ -1185,14 +1161,13 @@ export default function Community() {
                             py: 1,
                             pl: 1.5,
                             pr: 3,
-                            fontFamily: theme.typography.fontFamily,
                           }
                         }}
                       >
-                        <MenuItem value="new" sx={{ fontFamily: theme.typography.fontFamily }}>New</MenuItem>
-                        <MenuItem value="top" sx={{ fontFamily: theme.typography.fontFamily }}>Top</MenuItem>
-                        <MenuItem value="hot" sx={{ fontFamily: theme.typography.fontFamily }}>Hot</MenuItem>
-                        <MenuItem value="discussed" sx={{ fontFamily: theme.typography.fontFamily }}>Most Discussed</MenuItem>
+                        <MenuItem value="new">New</MenuItem>
+                        <MenuItem value="top">Top</MenuItem>
+                        <MenuItem value="hot">Hot</MenuItem>
+                        <MenuItem value="discussed">Most Discussed</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -1205,19 +1180,23 @@ export default function Community() {
                     size="small"
                     sx={{ height: 36 }}
                   >
-                    <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, fontFamily: theme.typography.fontFamily }}>
+                    <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                       <GridViewIcon sx={{ fontSize: 20 }} />
                     </ToggleButton>
-                    <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, fontFamily: theme.typography.fontFamily }}>
+                    <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                       <ViewListIcon sx={{ fontSize: 20 }} />
                     </ToggleButton>
-                    <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, fontFamily: theme.typography.fontFamily }}>
+                    <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                       <AppsIcon sx={{ fontSize: 20 }} />
                     </ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
-                {loading && <Box sx={{ textAlign: "center", py: 6 }}><CircularProgress size={50} /></Box>}
-                {error && <Alert severity="error" sx={{ borderRadius: 3, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
+                {loading && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <Loader size="medium" />
+                  </Box>
+                )}
+                {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
                 {!loading && !error && posts.length === 0 && (
                   viewMode !== 'grid' ? (
                     <Paper 
@@ -1229,10 +1208,10 @@ export default function Community() {
                         border: `1px solid ${theme.palette.divider}`,
                       }}
                     >
-                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2 }}>
                         No posts yet
                       </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                         Be the first to start a conversation!
                       </Typography>
                       <Button 
@@ -1254,13 +1233,20 @@ export default function Community() {
                         border: `1px solid ${theme.palette.divider}`,
                       }}
                     >
-                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2 }}>
                         No image posts yet
                       </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                         Be the first to share a post with images!
                       </Typography>
-
+                      <Button 
+                        variant="contained" 
+                        onClick={handleCreateClick}
+                        startIcon={<AddIcon />}
+                        sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700 }}
+                      >
+                        Create Post
+                      </Button>
                     </Paper>
                   )
                 )}
@@ -1388,11 +1374,9 @@ export default function Community() {
                           borderRadius: '50%',
                           fontWeight: 600,
                           fontSize: 15,
-                          fontFamily: theme.typography.fontFamily,
                         }
                       }}
                     />
-
                   </Box>
                 )}
               </Stack>
@@ -1412,7 +1396,6 @@ export default function Community() {
                 zIndex: 1100,
                 borderLeft: `1px solid ${theme.palette.divider}`,
                 bgcolor: theme.palette.background.default,
-                display: { xs: 'none', md: 'block' },
                 // Custom scrollbar styling - hidden but functional
                 '&::-webkit-scrollbar': {
                   width: '6px',
@@ -1454,7 +1437,7 @@ export default function Community() {
                         Popular Topics
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                        {trendingTags.length > 0 ? trendingTags.slice(0, 7).map(item => (
+                        {trendingTags.length > 0 ? trendingTags.slice(0, 8).map(item => (
                           <Chip
                             key={item.tag}
                             label={`#${item.tag}`}
@@ -1595,8 +1578,24 @@ export default function Community() {
           </Drawer>
 
           {/* Snackbar */}
-          <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
-            <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            <Alert 
+              onClose={handleSnackbarClose} 
+              severity={snackbar.severity} 
+              sx={{ width: "100%" }}
+              action={
+                snackbar.severity === "info" ? (
+                  <Button color="inherit" size="small" onClick={handleNotificationClick}>
+                    View
+                  </Button>
+                ) : null
+              }
+            >
               {snackbar.message}
             </Alert>
           </Snackbar>

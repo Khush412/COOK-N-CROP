@@ -11,7 +11,6 @@ import {
   Typography, 
   TextField, 
   IconButton, 
-  CircularProgress, 
   useTheme, 
   useMediaQuery, 
   InputAdornment, 
@@ -69,6 +68,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import messagingService from '../services/messagingService';
 import userService from '../services/userService';
+import Loader from '../custom_components/Loader';
 
 const MessengerPage = () => {
   const theme = useTheme();
@@ -469,7 +469,7 @@ const MessengerPage = () => {
         <List component="div" disablePadding>
           {loading.convos ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-              <CircularProgress size={24} />
+              <Loader size="small" />
             </Box>
           ) : filteredConversations.length > 0 ? (
             filteredConversations.map(convo => {
@@ -633,7 +633,7 @@ const MessengerPage = () => {
       {/* Messages area */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, bgcolor: 'background.default' }}>
         {loading.messages ? (
-          <CircularProgress sx={{ display: 'block', m: 'auto', mt: 4 }} />
+          <Loader size="medium" sx={{ display: 'block', m: 'auto', mt: 4 }} />
         ) : (
           <>
             {messages.map((msg, index) => {
@@ -792,7 +792,7 @@ const MessengerPage = () => {
                       '&:disabled': { bgcolor: 'action.disabled', color: 'action.disabled' }
                     }}
                   >
-                    {isSending ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                    {isSending ? <Loader size="small" color="inherit" /> : <SendIcon />}
                   </IconButton>
                 </InputAdornment>
               ),

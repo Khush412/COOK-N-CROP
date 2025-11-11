@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Box, Container, Typography, CircularProgress, Alert, Paper, Button, Stack, Grid, Avatar, Chip,
+  Box, Container, Typography, Alert, Paper, Button, Stack, Grid, Avatar, Chip,
   ToggleButtonGroup, ToggleButton, Pagination, Divider, Tooltip, TextField, InputAdornment,
   FormControl, Select, MenuItem, IconButton, Drawer
 } from '@mui/material';
@@ -19,6 +19,7 @@ import communityService from '../services/communityService';
 import userService from '../services/userService';
 import PostCard from '../components/PostCard';
 import GroupJoinRequests from '../components/GroupJoinRequests'; // Import the new component
+import Loader from '../custom_components/Loader';
 
 const GroupPage = () => {
   const { slug } = useParams();
@@ -167,7 +168,7 @@ const GroupPage = () => {
   };
 
   if (loading.group) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><Loader size="large" /></Box>;
   }
 
   if (error) {
@@ -373,7 +374,11 @@ const GroupPage = () => {
               </Box>
             </Paper>
 
-            {loading.posts ? <CircularProgress /> : (
+            {loading.posts ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <Loader size="medium" />
+              </Box>
+            ) : (
               viewMode !== 'grid' ? (
                 <Stack spacing={3}>
                   {posts.length > 0 ? posts.map(post => (
@@ -534,7 +539,7 @@ const GroupPage = () => {
                   variant="contained"
                   onClick={handleJoinLeave}
                   disabled={isJoining}
-                  startIcon={isJoining ? <CircularProgress size={20} /> : <PersonAddIcon />}
+                  startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon />}
                   sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
                 >
                   Request to Join
@@ -545,7 +550,7 @@ const GroupPage = () => {
                   variant={isMember ? 'outlined' : 'contained'}
                   onClick={handleJoinLeave}
                   disabled={isJoining || hasRequestedToJoin}
-                  startIcon={isJoining ? <CircularProgress size={20} /> : (isMember && <CheckIcon />)}
+                  startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon />)}
                   sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
                 >
                   {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
@@ -648,7 +653,7 @@ const GroupPage = () => {
                 variant="contained"
                 onClick={handleJoinLeave}
                 disabled={isJoining}
-                startIcon={isJoining ? <CircularProgress size={20} /> : <PersonAddIcon />}
+                startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon />}
                 sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
               >
                 Request to Join
@@ -659,7 +664,7 @@ const GroupPage = () => {
                 variant={isMember ? 'outlined' : 'contained'}
                 onClick={handleJoinLeave}
                 disabled={isJoining || hasRequestedToJoin}
-                startIcon={isJoining ? <CircularProgress size={20} /> : (isMember && <CheckIcon />)}
+                startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon />)}
                 sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
               >
                 {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}

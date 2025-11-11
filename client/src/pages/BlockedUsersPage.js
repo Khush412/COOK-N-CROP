@@ -27,6 +27,7 @@ import {
   Search as SearchIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const BlockedUserCard = ({ blockedUser, onUnblock }) => {
   const theme = useTheme();
@@ -172,7 +173,7 @@ const BlockedUsersPage = () => {
           </Typography>
         </Paper>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress />
+          <Loader size="large" />
         </Box>
       </Container>
     );

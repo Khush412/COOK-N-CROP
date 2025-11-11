@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import { CssBaseline, GlobalStyles } from "@mui/material";
 import Chatbot from "./components/Chatbot";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import MobileDock from "./components/MobileDock";
 
 function App() {
   return (
@@ -21,12 +22,13 @@ function App() {
               <GlobalStyles styles={{ body: { overflowY: 'scroll' } }} />
               <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                 <Navbar />
-                <main style={{ flexGrow: 1 }}>
+                <main style={{ flexGrow: 1, paddingBottom: '80px' }}>
                   <AppRouter />
                 </main>
                  <Chatbot />
                 <ScrollToTopButton />
                 <Footer />
+                <MobileDock />
               </div>
             </ThemeProvider>
         </CartProvider>

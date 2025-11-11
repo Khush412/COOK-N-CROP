@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { Box, Container, Typography, Paper, CircularProgress, Alert, Chip, Divider, Stack, Avatar, useTheme, alpha, Button, TextField } from '@mui/material';
+import { Box, Container, Typography, Paper, Alert, Chip, Divider, Stack, Avatar, useTheme, alpha, Button, TextField } from '@mui/material';
 import { format } from 'date-fns';
 import supportService from '../services/supportService';
 import { useAuth } from '../contexts/AuthContext';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
+import Loader from '../custom_components/Loader';
 
 const SupportTicketDetailsPage = () => {
   const { id } = useParams();
@@ -49,7 +50,7 @@ const SupportTicketDetailsPage = () => {
   
   const statusColors = { Open: 'warning', 'In Progress': 'info', Closed: 'success' };
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>;
   if (error) return <Container maxWidth="md" sx={{ mt: 12, py: 4 }}><Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert></Container>;
   if (!ticket) return <Container maxWidth="md" sx={{ mt: 12, py: 4 }}><Alert severity="info" sx={{ fontFamily: theme.typography.fontFamily }}>Ticket not found.</Alert></Container>;
 
@@ -125,7 +126,7 @@ const SupportTicketDetailsPage = () => {
           <Box component="form" onSubmit={handleReplySubmit} sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
             <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Add a Reply</Typography> 
             <TextField fullWidth multiline rows={4} value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder="Type your reply here..." disabled={isReplying} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <Button type="submit" variant="contained" sx={{ mt: 2, fontFamily: theme.typography.fontFamily, borderRadius: '50px' }} disabled={isReplying || !replyContent.trim()} startIcon={isReplying ? <CircularProgress size={20} /> : <SendIcon />}>
+            <Button type="submit" variant="contained" sx={{ mt: 2, fontFamily: theme.typography.fontFamily, borderRadius: '50px' }} disabled={isReplying || !replyContent.trim()} startIcon={isReplying ? <Loader size="small" /> : <SendIcon />}>
               {isReplying ? 'Sending...' : 'Send Reply'}
             </Button>
           </Box>

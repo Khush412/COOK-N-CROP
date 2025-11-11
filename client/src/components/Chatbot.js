@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Paper, IconButton, Typography, TextField, CircularProgress, Fab, Stack, alpha, Slide, Avatar, Chip, useMediaQuery } from '@mui/material';
+import { Box, Paper, IconButton, Typography, TextField, Fab, Stack, alpha, Slide, Avatar, Chip, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import api from '../config/axios';
 import { useCart } from '../contexts/CartContext';
+import Loader from '../custom_components/Loader';
 
 const TypingIndicator = () => {
   const theme = useTheme();
@@ -284,8 +285,8 @@ const Chatbot = () => {
               )}
               {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <Paper sx={{ p: 0.5, bgcolor: alpha(theme.palette.primary.main, 0.1), borderRadius: '16px 16px 16px 4px' }}>
-                    <TypingIndicator />
+                  <Paper sx={{ p: 1.5, bgcolor: alpha(theme.palette.primary.main, 0.1), borderRadius: '16px 16px 16px 4px' }}>
+                    <Loader size="small" />
                   </Paper>
                 </Box>
               )}

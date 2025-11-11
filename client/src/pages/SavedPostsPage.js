@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
   Container,
   Paper,
   Alert,
@@ -31,6 +30,7 @@ import {
   ViewList as ViewListIcon,
   Sort as SortIcon,
 } from '@mui/icons-material';
+import Loader from '../custom_components/Loader';
 
 const SavedPostsPage = () => {
   const theme = useTheme();
@@ -147,7 +147,7 @@ const SavedPostsPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+        <Loader size="large" />
       </Box>
     );
   }

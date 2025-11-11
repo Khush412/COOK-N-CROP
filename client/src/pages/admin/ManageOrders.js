@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Typography, CircularProgress, Alert, Table, TableBody, TableCell, Box, Pagination,
+  Typography, Alert, Table, TableBody, TableCell, Box, Pagination,
   TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Select, MenuItem, IconButton, Container, Stack,
   TextField, FormControl, InputLabel, useTheme, alpha, Stepper, Step, StepLabel, Menu, ListItemIcon, ListItemText
 } from '@mui/material';
@@ -13,6 +13,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import Loader from '../../custom_components/Loader';
 
 const ManageOrders = () => {
   const theme = useTheme();
@@ -154,7 +155,7 @@ const ManageOrders = () => {
           </Button>
         </Box>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><CircularProgress size={48} /></Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (
@@ -275,7 +276,7 @@ const ManageOrders = () => {
                                 <MenuItem value="Canceled">Canceled</MenuItem>
                               </Select>
                             </FormControl>
-                            {updatingStatus === order._id && <CircularProgress size={24} />}
+                            {updatingStatus === order._id && <Loader size="small" />}
                           </Box>
                         </TableCell>
                         <TableCell align="right">

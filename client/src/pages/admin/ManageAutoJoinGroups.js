@@ -5,7 +5,6 @@ import {
   Paper, 
   Container, 
   useTheme, 
-  CircularProgress, 
   Alert, 
   List, 
   ListItem, 
@@ -29,6 +28,7 @@ import { alpha } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import adminService from '../../services/adminService';
+import Loader from '../../custom_components/Loader';
 
 const ManageAutoJoinGroups = () => {
   const theme = useTheme();
@@ -154,7 +154,7 @@ const ManageAutoJoinGroups = () => {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <CircularProgress />
+          <Loader size="large" />
         </Box>
       </Container>
     );
@@ -298,7 +298,7 @@ const ManageAutoJoinGroups = () => {
                     fontWeight: 600
                   }}
                 >
-                  {saving ? <CircularProgress size={20} /> : 'Save Configuration'}
+                  {saving ? <Loader size="small" /> : 'Save Configuration'}
                 </Button>
               </Box>
             </CardContent>

@@ -199,7 +199,7 @@ const Search = styled('div')(({ theme }) => ({
   },
 }));
 
-export default function Navbar() {
+const Navbar = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -285,7 +285,17 @@ export default function Navbar() {
     }
   }, [socket, showSnackbar, fetchNotifications, fetchUnreadMessageCount]);
 
-  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  // Handle profile menu open/close
+  const handleOpenUserMenu = (event) => {
+    // Only open the mobile menu on mobile devices
+    if (window.innerWidth < 600) {
+      setAnchorElUser(event.currentTarget);
+    } else {
+      // Keep existing behavior for desktop
+      setAnchorElUser(event.currentTarget);
+    }
+  };
+
   const handleCloseUserMenu = () => setAnchorElUser(null);
 
   const handleLogout = async () => {
@@ -512,6 +522,9 @@ export default function Navbar() {
               to="/"
               tabIndex={0}
               aria-label="Go to homepage"
+              sx={{
+                fontSize: { xs: '1.2rem', sm: '1.5rem' }, // Smaller logo on mobile
+              }}
             >
               Cook’n’Crop
             </SiteName>
@@ -537,7 +550,7 @@ export default function Navbar() {
           {/* Spacer */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Right Section */}
+          {/* Right Section - Desktop */}
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 1 } }}>
             {/* Desktop Search Bar */}
             <EnhancedGlobalSearch />
@@ -633,7 +646,7 @@ export default function Navbar() {
                       color: theme.palette.primary.main,
                       fontWeight: "bold",
                       fontSize: 14,
-                       fontFamily: theme.typography.fontFamily,
+                      fontFamily: theme.typography.fontFamily,
                       userSelect: "none",
                     }}
                   >
@@ -645,7 +658,7 @@ export default function Navbar() {
                 <StyledMenu
                   id="user-menu"
                   anchorEl={anchorElUser}
-                  open={Boolean(anchorElUser)}
+                  open={Boolean(anchorElUser) && window.innerWidth >= 600}
                   disableScrollLock={true}
                   onClose={handleCloseUserMenu}
                   MenuListProps={{
@@ -883,36 +896,127 @@ export default function Navbar() {
               </Button>
             )}
           </Box>
+
+          {/* Right Section - Mobile */}
+          <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 1 }}>
+            {/* Mobile Notifications Icon */}
+            {isAuthenticated && (
+              <IconButton
+                size="small"
+                onClick={handleOpenNotificationsMenu}
+                sx={{ color: theme.palette.common.white }}
+                aria-label="notifications"
+              >
+                <Badge badgeContent={unreadCount} color="secondary">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+            )}
+
+            {/* Mobile Profile Icon with Avatar */}
+            {isAuthenticated ? (
+              <>
+                <IconButton
+                  size="small"
+                  aria-controls={anchorElUser ? "mobile-user-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={anchorElUser ? "true" : undefined}
+                  onClick={handleOpenUserMenu}
+                  sx={{ p: 0.5 }}
+                  aria-label="User account menu"
+                >
+                  <Avatar
+                    src={user?.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user?.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
+                    alt={user?.username || "User"}
+                    sx={{
+                      width: 30,
+                      height: 30,
+                      fontSize: '14px',
+                      bgcolor: theme.palette.secondary.main,
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    {user?.username?.charAt(0).toUpperCase() || "U"}
+                  </Avatar>
+                </IconButton>
+
+                <Menu
+                  id="mobile-user-menu"
+                  anchorEl={anchorElUser}
+                  open={Boolean(anchorElUser) && window.innerWidth < 600}
+                  onClose={handleCloseUserMenu}
+                  disableScrollLock={true}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      minWidth: 180,
+                    }
+                  }}
+                >
+                  <MenuItem onClick={handleProfile} sx={{ borderRadius: 1, px: 2 }}>
+                    <ListItemIcon>
+                      <PersonIcon fontSize="small" />
+                    </ListItemIcon>
+                    Profile
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/orders");
+                    }}
+                    sx={{ borderRadius: 1, px: 2 }}
+                  >
+                    <ListItemIcon>
+                      <ReceiptLongIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Orders
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      navigate("/profile/collections");
+                    }}
+                    sx={{ borderRadius: 1, px: 2 }}
+                  >
+                    <ListItemIcon>
+                      <CollectionsBookmarkIcon fontSize="small" />
+                    </ListItemIcon>
+                    My Collections
+                  </MenuItem>
+                  <Divider sx={{ my: 0.5 }} />
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{ borderRadius: 1, color: "error.main", px: 2 }}
+                  >
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
+                    </ListItemIcon>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <IconButton
+                size="small"
+                component={RouterLink}
+                to="/login"
+                sx={{ color: theme.palette.common.white }}
+                aria-label="login"
+              >
+                <PersonIcon />
+              </IconButton>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
-
-      {/* Mobile Search Drawer */}
-      <Drawer
-        anchor="top"
-        open={mobileSearchOpen}
-        onClose={() => setMobileSearchOpen(false)}
-        PaperProps={{ sx: { bgcolor: 'primary.main' } }}
-      >
-        <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ flexGrow: 1 }}>
-            <EnhancedGlobalSearch fullWidth />
-          </Box>
-          <IconButton
-            onClick={() => setMobileSearchOpen(false)}
-            sx={{ color: 'common.white' }}
-            aria-label="close search"
-          >
-            <CloseIcon />
-          </IconButton>
-        </Toolbar>
-      </Drawer>
-
-      {/* Mobile Search Icon - Placed here to not interfere with flex layout */}
-      <IconButton
-        onClick={() => setMobileSearchOpen(true)}
-        sx={{ color: 'common.white', display: mobileSearchOpen ? 'none' : { xs: 'flex', sm: 'none' }, position: 'fixed', top: 8, right: 12, zIndex: 1400 }}
-        aria-label="open search"
-      ><SearchIcon /></IconButton>
 
       {/* Mobile Drawer */}
       <Drawer
@@ -965,4 +1069,6 @@ export default function Navbar() {
       </Snackbar>
     </>
   );
-}
+};
+
+export default Navbar;
