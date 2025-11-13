@@ -5,6 +5,7 @@ import {
   Paper, 
   Container, 
   useTheme, 
+  alpha,
   Alert, 
   List, 
   ListItem, 
@@ -22,23 +23,34 @@ import {
   CardHeader,
   Grid,
   TextField,
-  Autocomplete
+  Tooltip,
+  CircularProgress,
+  Stack,
+  InputAdornment,
+  Avatar
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
+import { Link as RouterLink } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
+import GroupIcon from '@mui/icons-material/Group';
+import PeopleIcon from '@mui/icons-material/People';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SearchIcon from '@mui/icons-material/Search';
 import adminService from '../../services/adminService';
 import Loader from '../../custom_components/Loader';
 
 const ManageAutoJoinGroups = () => {
-  const theme = useTheme();
+  const theme = useMuiTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [config, setConfig] = useState({ groups: [], isActive: false });
   const [allGroups, setAllGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -68,6 +80,19 @@ const ManageAutoJoinGroups = () => {
     fetchAllGroups();
   }, [fetchConfig, fetchAllGroups]);
 
+  // Filter groups based on search term
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setSearchResults([]);
+    } else {
+      const filtered = allGroups.filter(group => 
+        group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (group.description && group.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setSearchResults(filtered);
+    }
+  }, [searchTerm, allGroups]);
+
   const handleToggleActive = async (event) => {
     const isActive = event.target.checked;
     try {
@@ -84,12 +109,10 @@ const ManageAutoJoinGroups = () => {
     }
   };
 
-  const handleAddGroup = async () => {
-    if (!selectedGroup) return;
-    
+  const handleAddGroup = async (group) => {
     // Check if group is already in the list
     const isAlreadyAdded = config.groups.some(
-      g => (g._id || g) === selectedGroup._id
+      g => (g._id || g) === group._id
     );
     
     if (isAlreadyAdded) {
@@ -99,13 +122,12 @@ const ManageAutoJoinGroups = () => {
     
     try {
       setSaving(true);
-      const updatedGroups = [...config.groups.map(g => g._id || g), selectedGroup._id];
+      const updatedGroups = [...config.groups.map(g => g._id || g), group._id];
       const response = await adminService.updateAutoJoinGroupsConfig(updatedGroups);
       setConfig({ 
         ...config, 
-        groups: [...config.groups, selectedGroup] 
+        groups: [...config.groups, group] 
       });
-      setSelectedGroup(null);
       setSuccess('Group added successfully.');
     } catch (err) {
       setError('Failed to add group.');
@@ -150,6 +172,11 @@ const ManageAutoJoinGroups = () => {
     }
   };
 
+  // Check if a group is already selected
+  const isGroupSelected = (groupId) => {
+    return config.groups.some(g => (g._id || g) === groupId);
+  };
+
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -162,9 +189,9 @@ const ManageAutoJoinGroups = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
-          Auto-Join Groups Configuration
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+          Auto-Join Groups Management
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
           Configure which groups new users should automatically join upon registration
@@ -191,226 +218,433 @@ const ManageAutoJoinGroups = () => {
         </Alert>
       )}
 
-      <Grid container spacing={4}>
-        <Grid item size={{ xs: 12, lg: 8 }}>
-          <Card sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-            <CardHeader
-              title="Auto-Join Groups"
-              subheader="Groups that new users will automatically join upon registration"
-              sx={{ 
-                '& .MuiCardHeader-title': { 
-                  fontWeight: 700, 
-                  fontFamily: theme.typography.fontFamily 
-                },
-                '& .MuiCardHeader-subheader': { 
-                  fontFamily: theme.typography.fontFamily 
-                }
-              }}
-            />
-            <CardContent>
-              <FormGroup sx={{ mb: 3 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={config.isActive}
-                      onChange={handleToggleActive}
-                      disabled={saving}
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontFamily: theme.typography.fontFamily }}>
-                      Enable Auto-Join Groups
-                    </Typography>
-                  }
+      <Card sx={{ borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+        <CardHeader
+          title="Auto-Join Configuration"
+          subheader="Manage groups that new users will automatically join upon registration"
+          sx={{ 
+            '& .MuiCardHeader-title': { 
+              fontWeight: 700, 
+              fontFamily: theme.typography.fontFamily 
+            },
+            '& .MuiCardHeader-subheader': { 
+              fontFamily: theme.typography.fontFamily 
+            },
+            background: alpha(theme.palette.background.default, 0.5)
+          }}
+        />
+        <CardContent>
+          <FormGroup sx={{ mb: 4 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={config.isActive}
+                  onChange={handleToggleActive}
+                  disabled={saving}
+                  sx={{ 
+                    '& .MuiSwitch-switchBase.Mui-checked': {
+                      color: theme.palette.success.main,
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      backgroundColor: theme.palette.success.main,
+                    },
+                  }}
                 />
-              </FormGroup>
+              }
+              label={
+                <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                  Enable Auto-Join Groups
+                </Typography>
+              }
+            />
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}
+            >
+              When enabled, new users will automatically join all selected groups upon registration.
+            </Typography>
+          </FormGroup>
 
-              <Typography 
-                variant="h6" 
+          {/* Stats Overview */}
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item size={{ xs: 6, md: 3 }}>
+              <Paper 
+                elevation={0} 
                 sx={{ 
-                  fontWeight: 700, 
-                  mb: 2, 
+                  p: 2, 
+                  borderRadius: 3, 
+                  border: `1px solid ${theme.palette.divider}`,
+                  textAlign: 'center',
+                  background: alpha(theme.palette.background.default, 0.7)
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <GroupIcon sx={{ color: theme.palette.primary.main }} />
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                  {config.groups.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Groups
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item size={{ xs: 6, md: 3 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 3, 
+                  border: `1px solid ${theme.palette.divider}`,
+                  textAlign: 'center',
+                  background: alpha(theme.palette.background.default, 0.7)
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <PeopleIcon sx={{ color: theme.palette.secondary.main }} />
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                  {config.groups.reduce((total, group) => total + (group.memberCount || 0), 0)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Total Members
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item size={{ xs: 6, md: 3 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 3, 
+                  border: `1px solid ${theme.palette.divider}`,
+                  textAlign: 'center',
+                  background: alpha(theme.palette.background.default, 0.7)
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <CheckCircleIcon 
+                    sx={{ 
+                      color: config.isActive ? theme.palette.success.main : theme.palette.warning.main 
+                    }} 
+                  />
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                  {config.isActive ? 'Active' : 'Inactive'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Status
+                </Typography>
+              </Paper>
+            </Grid>
+            
+            <Grid item size={{ xs: 6, md: 3 }}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 2, 
+                  borderRadius: 3, 
+                  border: `1px solid ${theme.palette.divider}`,
+                  textAlign: 'center',
+                  background: alpha(theme.palette.background.default, 0.7)
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <GroupIcon sx={{ color: theme.palette.info.main }} />
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                  {allGroups.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Public Groups
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 2, 
+              fontFamily: theme.typography.fontFamily 
+            }}
+          >
+            Selected Groups ({config.groups.length})
+          </Typography>
+
+          {config.groups.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <GroupIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+              <Typography 
+                color="text.secondary" 
+                sx={{ 
+                  fontStyle: 'italic', 
                   fontFamily: theme.typography.fontFamily 
                 }}
               >
-                Selected Groups
+                No groups selected for auto-join. Search and add groups below.
               </Typography>
+            </Box>
+          ) : (
+            <List sx={{ 
+              border: `1px solid ${theme.palette.divider}`, 
+              borderRadius: 2, 
+              overflow: 'hidden' 
+            }}>
+              {config.groups.map((group) => (
+                <React.Fragment key={group._id || group}>
+                  <ListItem 
+                    sx={{ 
+                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.03) },
+                      cursor: 'pointer'
+                    }}
+                    component={RouterLink}
+                    to={`/g/${group.slug || group._id}`}
+                  >
+                    <ListItemText
+                      primary={
+                        <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                          {group.name || 'Unknown Group'}
+                        </Typography>
+                      }
+                      secondary={
+                        <Box component="div" sx={{ mt: 1 }}>
+                          <Stack direction="row" spacing={1}>
+                            <Chip 
+                              icon={<PeopleIcon />} 
+                              label={`${group.memberCount || 0} members`} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ 
+                                height: 24, 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: '0.75rem'
+                              }} 
+                            />
+                            <Chip 
+                              label={group.description || 'No description'} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ 
+                                height: 24, 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: '0.75rem'
+                              }} 
+                            />
+                          </Stack>
+                        </Box>
+                      }
+                    />
+                    <ListItemSecondaryAction>
+                      <Tooltip title="Remove from auto-join">
+                        <IconButton 
+                          edge="end" 
+                          aria-label="delete"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveGroup(group._id || group);
+                          }}
+                          disabled={saving}
+                          sx={{ 
+                            '&:hover': { 
+                              bgcolor: alpha(theme.palette.error.main, 0.1) 
+                            } 
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                </React.Fragment>
+              ))}
+            </List>
+          )}
 
-              {config.groups.length === 0 ? (
+          {/* Divider between sections */}
+          <Divider sx={{ my: 4 }} />
+
+          {/* Search and Add Groups Section */}
+          <Box>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 2, 
+                fontFamily: theme.typography.fontFamily 
+              }}
+            >
+              Search & Add Groups
+            </Typography>
+            
+            <TextField
+              fullWidth
+              placeholder="Search groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': { 
+                  borderRadius: 2,
+                  fontFamily: theme.typography.fontFamily
+                }
+              }}
+            />
+            
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 2, 
+                fontFamily: theme.typography.fontFamily 
+              }}
+            >
+              Search Results ({searchResults.length})
+            </Typography>
+            
+            {searchResults.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <GroupIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
                 <Typography 
                   color="text.secondary" 
                   sx={{ 
                     fontStyle: 'italic', 
-                    py: 2,
                     fontFamily: theme.typography.fontFamily 
                   }}
                 >
-                  No groups selected for auto-join. Add groups below.
+                  {searchTerm ? 'No groups found matching your search.' : 'Start typing to search for groups.'}
                 </Typography>
-              ) : (
-                <List>
-                  {config.groups.map((group) => (
-                    <React.Fragment key={group._id || group}>
-                      <ListItem>
-                        <ListItemText
-                          primary={group.name || 'Unknown Group'}
-                          secondary={
-                            <Typography 
-                              component="span" 
-                              variant="body2" 
-                              color="text.primary"
-                              sx={{ fontFamily: theme.typography.fontFamily }}
-                            >
-                              {group.description || 'No description'}
-                            </Typography>
-                          }
-                          primaryTypographyProps={{ 
-                            fontWeight: 600, 
-                            fontFamily: theme.typography.fontFamily 
-                          }}
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton 
-                            edge="end" 
-                            aria-label="delete"
-                            onClick={() => handleRemoveGroup(group._id || group)}
-                            disabled={saving}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                      <Divider component="li" />
-                    </React.Fragment>
-                  ))}
-                </List>
-              )}
-
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSaveConfig}
-                  disabled={saving}
-                  sx={{ 
-                    borderRadius: '50px',
-                    fontFamily: theme.typography.fontFamily,
-                    fontWeight: 600
-                  }}
-                >
-                  {saving ? <Loader size="small" /> : 'Save Configuration'}
-                </Button>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item size={{ xs: 12, lg: 4 }}>
-          <Card sx={{ borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-            <CardHeader
-              title="Add Group"
-              subheader="Select a public group to add to the auto-join list"
-              sx={{ 
-                '& .MuiCardHeader-title': { 
-                  fontWeight: 700, 
-                  fontFamily: theme.typography.fontFamily 
-                },
-                '& .MuiCardHeader-subheader': { 
-                  fontFamily: theme.typography.fontFamily 
-                }
-              }}
-            />
-            <CardContent>
-              <Autocomplete
-                options={allGroups}
-                getOptionLabel={(option) => option.name || ''}
-                value={selectedGroup}
-                onChange={(event, newValue) => setSelectedGroup(newValue)}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    label="Select Group" 
-                    variant="outlined" 
-                    fullWidth
-                    sx={{ fontFamily: theme.typography.fontFamily }}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                      <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
-                        {option.name}
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{ fontFamily: theme.typography.fontFamily }}
+            ) : (
+              <List sx={{ 
+                border: `1px solid ${theme.palette.divider}`, 
+                borderRadius: 2, 
+                overflow: 'hidden'
+              }}>
+                {searchResults.map((group) => (
+                  <React.Fragment key={group._id}>
+                    <ListItem 
+                      sx={{ 
+                        '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.03) },
+                        alignItems: 'flex-start'
+                      }}
+                    >
+                      <Avatar 
+                        sx={{ 
+                          bgcolor: alpha(theme.palette.primary.main, 0.1), 
+                          color: theme.palette.primary.main,
+                          mr: 2,
+                          mt: 0.5
+                        }}
                       >
-                        {option.description}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                        <Chip 
-                          label={`${option.memberCount || 0} members`} 
-                          size="small" 
-                          sx={{ 
-                            height: 20, 
-                            fontFamily: theme.typography.fontFamily,
-                            fontSize: '0.7rem'
-                          }} 
-                        />
-                      </Box>
-                    </Box>
-                  </li>
-                )}
-                sx={{ mb: 2 }}
-              />
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleAddGroup}
-                disabled={!selectedGroup || saving}
-                sx={{ 
-                  borderRadius: '50px',
-                  fontFamily: theme.typography.fontFamily,
-                  fontWeight: 600
-                }}
-              >
-                Add to Auto-Join List
-              </Button>
+                        <GroupIcon />
+                      </Avatar>
+                      <ListItemText
+                        primary={
+                          <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                            {group.name}
+                          </Typography>
+                        }
+                        secondary={
+                          <Box component="div" sx={{ mt: 0.5 }}>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              component="div"
+                              sx={{ 
+                                fontFamily: theme.typography.fontFamily,
+                                mb: 1,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              {group.description || 'No description available'}
+                            </Typography>
+                            <Chip 
+                              icon={<PeopleIcon />} 
+                              label={`${group.memberCount || 0} members`} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ 
+                                height: 24, 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: '0.75rem'
+                              }} 
+                            />
+                          </Box>
+                        }
+                      />
+                      <ListItemSecondaryAction sx={{ top: '50%', transform: 'translateY(-50%)' }}>
+                        {isGroupSelected(group._id) ? (
+                          <Chip 
+                            label="Added" 
+                            size="small" 
+                            color="success" 
+                            sx={{ 
+                              height: 24, 
+                              fontFamily: theme.typography.fontFamily,
+                              fontSize: '0.75rem'
+                            }} 
+                          />
+                        ) : (
+                          <Tooltip title="Add to auto-join">
+                            <IconButton 
+                              edge="end" 
+                              aria-label="add"
+                              onClick={() => handleAddGroup(group)}
+                              disabled={saving}
+                              sx={{ 
+                                '&:hover': { 
+                                  bgcolor: alpha(theme.palette.success.main, 0.1) 
+                                } 
+                              }}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    <Divider component="li" />
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </Box>
 
-              <Box sx={{ mt: 4 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    mb: 2, 
-                    fontFamily: theme.typography.fontFamily 
-                  }}
-                >
-                  How It Works
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    mb: 2,
-                    fontFamily: theme.typography.fontFamily 
-                  }}
-                >
-                  When enabled, new users will automatically join all selected groups upon registration.
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: theme.typography.fontFamily 
-                  }}
-                >
-                  Only public groups can be added to the auto-join list. Private groups are not eligible.
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="contained"
+              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+              onClick={handleSaveConfig}
+              disabled={saving}
+              sx={{ 
+                borderRadius: '50px',
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 600,
+                px: 4
+              }}
+            >
+              {saving ? 'Saving...' : 'Save Configuration'}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
     </Container>
   );
 };

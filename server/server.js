@@ -51,6 +51,7 @@ const io = new Server(server, {
 });
 
 let onlineUsers = {};
+let messageReactions = {}; // Store message reactions
 
 // Periodic cleanup of stale connections (every 5 minutes)
 setInterval(() => {
@@ -81,6 +82,59 @@ io.on("connection", (socket) => {
   socket.on('join_admin_room', () => {
     socket.join('admin_room');
     // console.log(`Socket ${socket.id} joined admin_room`); // Optional: uncomment for debugging
+  });
+
+  // Handle message reactions
+  socket.on('add_reaction', (data) => {
+    const { messageId, reaction, conversationId, userId } = data;
+    
+    // Initialize reactions for this message if not exists
+    if (!messageReactions[messageId]) {
+      messageReactions[messageId] = {};
+    }
+    
+    // Toggle reaction - if user already reacted with same emoji, remove it
+    if (messageReactions[messageId][userId] === reaction) {
+      delete messageReactions[messageId][userId];
+    } else {
+      // Otherwise, set the new reaction
+      messageReactions[messageId][userId] = reaction;
+    }
+    
+    // Broadcast the reaction update to all users in the conversation
+    socket.to(conversationId).emit('message_reaction', {
+      messageId,
+      reaction: messageReactions[messageId][userId],
+      conversationId,
+      userId
+    });
+  });
+
+  // Handle request for message reactions
+  socket.on('request_message_reactions', (data) => {
+    const { conversationId, messageIds } = data;
+    
+    // Join the conversation room
+    socket.join(conversationId);
+    
+    // Send reactions for all requested messages
+    const reactionsData = {};
+    messageIds.forEach(messageId => {
+      if (messageReactions[messageId]) {
+        reactionsData[messageId] = messageReactions[messageId];
+      }
+    });
+    
+    socket.emit('message_reactions_response', {
+      conversationId,
+      reactions: reactionsData
+    });
+  });
+
+  // Handle typing indicators
+  socket.on('typing', (data) => {
+    const { conversationId, userId, isTyping } = data;
+    socket.to(conversationId).emit('user_typing', { userId, isTyping });
   });
 
   socket.on("disconnect", () => {

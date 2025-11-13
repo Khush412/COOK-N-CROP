@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -69,6 +69,8 @@ const FeedPage = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [upvotingPosts, setUpvotingPosts] = useState([]);
   const [savingPosts, setSavingPosts] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -90,6 +92,45 @@ const FeedPage = () => {
   // State for collapsible sections
   const [recommendationsOpen, setRecommendationsOpen] = useState(true);
   const [groupsOpen, setGroupsOpen] = useState(true); // New state for groups section
+  
+  // Create refs for infinite scroll
+  const observer = useRef();
+  const lastPostRef = useRef();
+
+  // Modified fetchFeed function for infinite scrolling
+  const fetchFeed = useCallback(async (pageToFetch = 1, append = false) => {
+    try {
+      if (pageToFetch === 1) {
+        setLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+      
+      const data = await communityService.getPosts(sort, pageToFetch, {
+        isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
+        search: debouncedSearchTerm,
+        tags: selectedTags,
+        maxPrepTime: quickCook ? 30 : (prepTime < 120 ? prepTime : undefined),
+        minServings: servings > 1 ? servings : undefined,
+      });
+      
+      if (append) {
+        setPosts(prevPosts => [...prevPosts, ...data.posts]);
+      } else {
+        setPosts(data.posts);
+      }
+      
+      setHasMore(pageToFetch < data.pages);
+      setTotalPages(data.pages);
+      setPage(pageToFetch);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load your feed.');
+    } finally {
+      setLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [sort, debouncedSearchTerm, selectedTags, contentFilter, prepTime, servings, quickCook]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -105,33 +146,44 @@ const FeedPage = () => {
   }, [searchTerm, isAuthenticated, navigate]);
 
   useEffect(() => {
-    const fetchFeed = async () => {
-      try {
-        setLoading(true);
-        const data = await communityService.getPosts(sort, page, {
-          isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
-          search: debouncedSearchTerm,
-          tags: selectedTags,
-          maxPrepTime: quickCook ? 30 : (prepTime < 120 ? prepTime : undefined),
-          minServings: servings > 1 ? servings : undefined,
-        });
-        setPosts(data.posts);
-        setTotalPages(data.pages);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load your feed.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeed();
+    fetchFeed(1, false);
     
     // Also fetch recommendations when feed is loaded
     if (user) {
       fetchRecommendations();
     }
-  }, [sort, page, debouncedSearchTerm, selectedTags, contentFilter, prepTime, servings, quickCook, user]);
+  }, [sort, debouncedSearchTerm, selectedTags, contentFilter, prepTime, servings, quickCook, user, fetchFeed]);
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    if (loading || isLoadingMore) return;
+    
+    // Disconnect existing observer
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+    
+    const observerCallback = (entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchFeed(page + 1, true);
+      }
+    };
+    
+    observer.current = new IntersectionObserver(observerCallback, {
+      rootMargin: '100px'
+    });
+    
+    // Observe the last post element if it exists
+    if (lastPostRef.current) {
+      observer.current.observe(lastPostRef.current);
+    }
+    
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [loading, isLoadingMore, hasMore, page, fetchFeed, viewMode, posts]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
@@ -626,113 +678,145 @@ const FeedPage = () => {
       <>
         {viewMode !== 'grid' ? (
           <Grid container spacing={2} sx={{ alignContent: 'flex-start' }}>
-            {posts.map((post) => (
+            {posts.map((post, index) => (
               <Grid 
                 size={{ xs: 12, md: viewMode === 'compact' ? 12 : 6 }} 
                 key={post._id} 
                 sx={{ display: 'flex' }}
               >
-                <PostCard
-                  post={post}
-                  user={user}
-                  onUpvote={handleUpvote}
-                  upvotingPosts={upvotingPosts}
-                  onToggleSave={handleToggleSave}
-                  savingPosts={savingPosts}
-                  showSnackbar={setSnackbar}
-                  displayMode={viewMode}
-                  sx={{ height: '100%' }}
-                />
+                {viewMode === 'card' && (
+                  <div ref={index === posts.length - 1 ? lastPostRef : null} style={{ width: '100%' }}>
+                    <PostCard
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                      showSnackbar={setSnackbar}
+                      displayMode="card"
+                      sx={{ height: '100%' }}
+                    />
+                  </div>
+                )}
+                {viewMode === 'compact' && (
+                  <div ref={index === posts.length - 1 ? lastPostRef : null} style={{ width: '100%' }}>
+                    <PostCard
+                      post={post}
+                      user={user}
+                      onUpvote={handleUpvote}
+                      upvotingPosts={upvotingPosts}
+                      onToggleSave={handleToggleSave}
+                      savingPosts={savingPosts}
+                      showSnackbar={setSnackbar}
+                      displayMode="compact"
+                      sx={{ height: '100%' }}
+                    />
+                  </div>
+                )}
               </Grid>
             ))}
           </Grid>
         ) : (
           // Grid view - only show posts with images
           <Grid container spacing={2}>
-            {posts.filter(post => post.media && post.media.length > 0).map((post) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
-                <Box 
-                  onClick={() => navigate(`/post/${post._id}`)}
-                  sx={{
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    boxShadow: 2,
-                    '&:hover': {
-                      boxShadow: 4,
-                      transform: 'translateY(-2px)',
-                    },
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s ease',
-                    bgcolor: theme.palette.background.paper,
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
-                    alt={post.title}
+            {(() => {
+              const imagePosts = posts.filter(post => post.media && post.media.length > 0);
+              return imagePosts.map((post, index) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                  <Box 
+                    ref={index === imagePosts.length - 1 ? lastPostRef : null}
+                    onClick={() => navigate(`/post/${post._id}`)}
                     sx={{
-                      width: '100%',
-                      height: 200,
-                      objectFit: 'cover',
-                      borderBottom: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      boxShadow: 2,
+                      '&:hover': {
+                        boxShadow: 4,
+                        transform: 'translateY(-2px)',
+                      },
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.3s ease',
+                      bgcolor: theme.palette.background.paper,
                     }}
-                  />
-                  <Box sx={{ p: 2 }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        fontSize: 16, 
-                        lineHeight: 1.4,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        fontFamily: theme.typography.fontFamily,
-                        mb: 1,
+                  >
+                    <Box
+                      component="img"
+                      src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
+                      alt={post.title}
+                      sx={{
+                        width: '100%',
+                        height: 200,
+                        objectFit: 'cover',
+                        borderBottom: `1px solid ${theme.palette.divider}`,
                       }}
-                    >
-                      {post.title}
-                    </Typography>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                      <Avatar 
-                        src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
-                        alt={post.user?.username || 'User'}
-                        sx={{ width: 24, height: 24, fontSize: 12 }}
-                      >
-                        {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                      </Avatar>
+                    />
+                    <Box sx={{ p: 2 }}>
                       <Typography 
-                        variant="caption" 
+                        variant="h6" 
                         sx={{ 
-                          fontWeight: 500, 
-                          color: 'text.secondary',
+                          fontWeight: 700, 
+                          fontSize: 16, 
+                          lineHeight: 1.4,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
                           fontFamily: theme.typography.fontFamily,
+                          mb: 1,
                         }}
                       >
-                        {post.user?.username || 'Unknown'}
+                        {post.title}
                       </Typography>
-                    </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                        <Avatar 
+                          src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+                          alt={post.user?.username || 'User'}
+                          sx={{ width: 24, height: 24, fontSize: 12 }}
+                        >
+                          {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                        </Avatar>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            fontWeight: 500, 
+                            color: 'text.secondary',
+                            fontFamily: theme.typography.fontFamily,
+                          }}
+                        >
+                          {post.user?.username || 'Unknown'}
+                        </Typography>
+                      </Stack>
+                    </Box>
                   </Box>
-                </Box>
-              </Grid>
-            ))}
+                </Grid>
+              ));
+            })()}
           </Grid>
         )}
+        {/* Infinite Scroll Indicators */}
         {totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="large"
-            />
-          </Box>
+          <>
+            {/* Loading indicator for infinite scroll */}
+            {isLoadingMore && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Loader size="medium" />
+              </Box>
+            )}
+
+            {/* End of content message */}
+            {!hasMore && posts.length > 0 && (
+              <Box sx={{ textAlign: 'center', mt: 3, mb: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  You've reached the end of the content
+                </Typography>
+              </Box>
+            )}
+          </>
         )}
       </>
     );

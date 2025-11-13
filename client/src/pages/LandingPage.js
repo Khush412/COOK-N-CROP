@@ -181,6 +181,43 @@ const LandingPage = () => {
         </Box>
       </Box>
 
+      {/* Featured Products Section - Replaced with CircularGallery */}
+      <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 10 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+              Fresh From The Farm
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
+              Handpicked, locally sourced produce delivered to your doorstep
+            </Typography>
+            <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
+          </Box>
+          
+          {/* ThreeDMarque component - replacing CircularGallery */}
+          <Box sx={{ mb: 8, height: '650px' }}> {/* Increased container height from 450px to 650px */}
+            <FeaturedProductsMarquee />
+          </Box>
+          
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              component={RouterLink}
+              to="/CropCorner"
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForward />}
+              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 5, py: 1.5,
+                boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                transition: 'box-shadow 0.3s ease',
+                '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.primary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.primary.main, 0.6)}` }
+              }}
+            >
+              Explore The Full Store
+            </Button>
+          </Box>
+        </Container>
+      </AnimatedSection>
+
       {/* 3D Carousel Section - Added below the hero section */}
       <Box sx={{ py: 6, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
@@ -248,43 +285,6 @@ const LandingPage = () => {
           />
         </Container>
       </Box>
-
-      {/* Featured Products Section - Replaced with CircularGallery */}
-      <AnimatedSection id="featured-products" sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 10 } }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
-              Fresh From The Farm
-            </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
-              Handpicked, locally sourced produce delivered to your doorstep
-            </Typography>
-            <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
-          </Box>
-          
-          {/* ThreeDMarque component - replacing CircularGallery */}
-          <Box sx={{ mb: 8, height: '650px' }}> {/* Increased container height from 450px to 650px */}
-            <FeaturedProductsMarquee />
-          </Box>
-          
-          <Box sx={{ textAlign: 'center' }}>
-            <Button
-              component={RouterLink}
-              to="/CropCorner"
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForward />}
-              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 5, py: 1.5,
-                boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.primary.main, 0.4)}`,
-                transition: 'box-shadow 0.3s ease',
-                '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.primary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.primary.main, 0.6)}` }
-              }}
-            >
-              Explore The Full Store
-            </Button>
-          </Box>
-        </Container>
-      </AnimatedSection>
 
       {/* Explore Recipes Section - DomeGallery */}
       <AnimatedSection id="explore-recipes" sx={{ bgcolor: 'background.default', py: { xs: 8, md: 12 } }}>

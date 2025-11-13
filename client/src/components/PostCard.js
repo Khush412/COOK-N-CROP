@@ -31,6 +31,7 @@ import {
   MoreVert as MoreVertIcon,
   PlayArrow as PlayArrowIcon,
   Image as ImageIcon,
+  Share as ShareIcon,
 } from "@mui/icons-material";
 import communityService from "../services/communityService";
 import AddToCollectionDialog from "./AddToCollectionDialog";
@@ -75,6 +76,40 @@ const PostCard = ({
       return `${diffInHours}h ago`;
     } else {
       return date.toLocaleDateString();
+    }
+  };
+
+  // Share post functionality
+  const handleSharePost = async () => {
+    const postUrl = `${window.location.origin}/post/${post._id}`;
+    
+    try {
+      if (navigator.share) {
+        // Use Web Share API if available
+        await navigator.share({
+          title: post.title,
+          text: `Check out this post: ${post.title}`,
+          url: postUrl,
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(postUrl);
+        if (showSnackbar) {
+          showSnackbar('Post link copied to clipboard!', 'success');
+        }
+      }
+    } catch (err) {
+      // Fallback: copy to clipboard if Web Share fails
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        if (showSnackbar) {
+          showSnackbar('Post link copied to clipboard!', 'success');
+        }
+      } catch (clipboardErr) {
+        if (showSnackbar) {
+          showSnackbar('Failed to share post. Please try again.', 'error');
+        }
+      }
     }
   };
 
@@ -214,10 +249,6 @@ const PostCard = ({
                 sx={{ width: 24, height: 24, fontSize: 12, boxShadow: 1 }}
                 component={RouterLink}
                 to={`/user/${post.user.username}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
               >
                 {post.user.username.charAt(0).toUpperCase()}
               </Avatar>
@@ -238,10 +269,6 @@ const PostCard = ({
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                     }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
                   >
                     {post.user.username}
                   </Typography>
@@ -260,10 +287,6 @@ const PostCard = ({
                           textDecoration: 'none',
                           '&:hover': { textDecoration: 'underline' },
                           fontFamily: theme.typography.fontFamily,
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
                         }}
                       >
                         g/{post.group.name}
@@ -407,6 +430,28 @@ const PostCard = ({
                 }}
               >
                 {isSaved ? <BookmarkIcon color="secondary" sx={{ fontSize: 16 }} /> : <BookmarkBorderIcon sx={{ fontSize: 16 }} />}
+              </IconButton>
+              
+              {/* Share button for compact view */}
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSharePost();
+                }}
+                aria-label="share post"
+                sx={{
+                  color: theme.palette.action.active,
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                  width: 32,
+                  height: 32,
+                  p: 0.5,
+                }}
+              >
+                <ShareIcon sx={{ fontSize: 16 }} />
               </IconButton>
               
               {/* View button */}
@@ -772,6 +817,30 @@ const PostCard = ({
                   <CollectionsBookmarkIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               )}
+              
+              {/* Share button */}
+              <Tooltip title="Share post">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSharePost();
+                  }}
+                  aria-label="share post"
+                  sx={{
+                    color: theme.palette.action.active,
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    },
+                    width: 36,
+                    height: 36
+                  }}
+                >
+                  <ShareIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+              
               <Button
                 component={RouterLink}
                 to={`/post/${post._id}`}

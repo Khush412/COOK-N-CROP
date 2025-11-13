@@ -36,7 +36,8 @@ import "slick-carousel/slick/slick.css";
 import {
   ThumbUp as ThumbUpIcon, ArrowBack as ArrowBackIcon, MoreVert as MoreVertIcon, Edit as EditIcon,
   Delete as DeleteIcon, Report as ReportIcon, Bookmark as BookmarkIcon, BookmarkBorder as BookmarkBorderIcon, Gavel as GavelIcon,
-  Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon, Collections as CollectionsIcon
+  Timer as TimerIcon, People as PeopleIcon, ShoppingCart as ShoppingCartIcon, Collections as CollectionsIcon,
+  Share as ShareIcon
 } from '@mui/icons-material';
 import communityService from '../services/communityService';
 import userService from '../services/userService';
@@ -164,6 +165,15 @@ const TaggedProductCard = ({ product }) => {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ open: false, message: '' })} message={snackbar.message} />
     </Paper>
   );
+};
+
+// Add this helper component to scroll to top on navigation
+const ScrollToTop = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  return null;
 };
 
 const PostPage = () => {
@@ -386,6 +396,34 @@ const PostPage = () => {
     }
   };
 
+  // Share post functionality
+  const handleSharePost = async () => {
+    const postUrl = `${window.location.origin}/post/${id}`;
+    
+    try {
+      if (navigator.share) {
+        // Use Web Share API if available
+        await navigator.share({
+          title: post.title,
+          text: `Check out this post: ${post.title}`,
+          url: postUrl,
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(postUrl);
+        setSnackbar({ open: true, message: 'Post link copied to clipboard!', severity: 'success' });
+      }
+    } catch (err) {
+      // Fallback: copy to clipboard if Web Share fails
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        setSnackbar({ open: true, message: 'Post link copied to clipboard!', severity: 'success' });
+      } catch (clipboardErr) {
+        setSnackbar({ open: true, message: 'Failed to share post. Please try again.', severity: 'error' });
+      }
+    }
+  };
+
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
@@ -524,395 +562,402 @@ const PostPage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Add ScrollToTop component to ensure we're at the top of the page
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
-        {/* Back Button - uses navigate(-1) to go to the previous page */}
-        <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-          Back
-        </Button>
+    <>
+      <ScrollToTop />
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
+          {/* Back Button - uses navigate(-1) to go to the previous page */}
+          <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+            Back
+          </Button>
 
-        {/* Post Header */}
-        <Box sx={{ position: 'relative', mb: 2 }}> 
-          {isAuthenticated && (user.id === post.user._id || user.role === 'admin' || isModerator) && (
-            <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-              <IconButton
-                aria-label="settings"
-                id="post-actions-button"
-                aria-controls={anchorEl ? 'post-actions-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={anchorEl ? 'true' : undefined}
-                onClick={handleMenuOpen}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="post-actions-menu"
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                disableScrollLock={true}
-                PaperProps={{
-                  sx: {
-                    borderRadius: 2,
-                    boxShadow: theme.shadows[4],
-                  }
-                }}
-                MenuListProps={{
-                  'aria-labelledby': 'post-actions-button',
-                }}
-              >
-                {user.id === post.user._id && (
-                  <MenuItem onClick={handleEdit}>
-                    <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                    <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</ListItemText>
-                  </MenuItem>
-                )}
-                <MenuItem onClick={() => { setDeleteConfirmOpen(true); handleMenuClose(); }}>
-                  <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                  <ListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={() => handleOpenReportDialog('post', post._id)}>
-                  <ListItemIcon><ReportIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</ListItemText>
-                </MenuItem>
-              </Menu>
-            </Box>
-          )}
-          {/* Add to Collection button for all authenticated users */}
-          {isAuthenticated && (
-            <Box sx={{ position: 'absolute', top: 0, right: user.id === post.user._id || user.role === 'admin' || isModerator ? 40 : 0, zIndex: 10 }}>
-              <IconButton
-                aria-label="add to collection"
-                onClick={() => setCollectionDialogOpen(true)}
-              >
-                <CollectionsIcon />
-              </IconButton>
-            </Box>
-          )}
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar
-              src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
-              component={RouterLink} to={`/user/${post.user.username}`}
-            >
-              {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
-            </Avatar>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
-                {post.flair && (
-                  <Chip
-                    label={post.flair}
-                    size="small"
-                    sx={{
-                      mr: 1,
-                      borderRadius: '8px', // More rounded
-                      fontFamily: theme.typography.fontFamily,
-                      // In a more advanced version, you'd pass flair color/bg from the group settings
-                      bgcolor: alpha(theme.palette.secondary.main, 0.2),
-                    }}
-                  />
-                )}
-                {post.title}
-              </Typography>
-              {post.isRecipe && post.numRecipeReviews > 0 && (
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                  <Rating value={post.recipeRating} readOnly precision={0.5} />
-                  <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">({post.numRecipeReviews} recipe reviews)</Typography>
-                </Box>
-              )}
-              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                Posted by{' '}
-                <Typography component={RouterLink} to={`/user/${post.user.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: theme.typography.fontFamily }}>
-                  {post.user.username}
-                </Typography> • {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {post.media && post.media.length > 0 && (
-          <Box sx={{ mb: 3, '.slick-dots li button:before': { color: 'primary.main' } }}>
-            <Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1}>
-              {post.media.map((mediaItem, index) => (
-                <Box key={index} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                  {mediaItem.mediaType === 'image' ? (
-                    <Box
-                      component="img"
-                      src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
-                      alt={`${post.title} - media ${index + 1}`}
-                      sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
-                    />
-                  ) : (
-                    <Box
-                      component="video"
-                      controls
-                      src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
-                      sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
-                    >
-                      Your browser does not support the video tag.
-                    </Box>
+          {/* Post Header */}
+          <Box sx={{ position: 'relative', mb: 2 }}> 
+            {isAuthenticated && (user.id === post.user._id || user.role === 'admin' || isModerator) && (
+              <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                <IconButton
+                  aria-label="settings"
+                  id="post-actions-button"
+                  aria-controls={anchorEl ? 'post-actions-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={anchorEl ? 'true' : undefined}
+                  onClick={handleMenuOpen}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  id="post-actions-menu"
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  disableScrollLock={true}
+                  PaperProps={{
+                    sx: {
+                      borderRadius: 2,
+                      boxShadow: theme.shadows[4],
+                    }
+                  }}
+                  MenuListProps={{
+                    'aria-labelledby': 'post-actions-button',
+                  }}
+                >
+                  {user.id === post.user._id && (
+                    <MenuItem onClick={handleEdit}>
+                      <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                      <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</ListItemText>
+                    </MenuItem>
                   )}
-                </Box>
-              ))}
-            </Slider>
+                  {isAuthenticated && (
+                    <MenuItem onClick={() => { setCollectionDialogOpen(true); handleMenuClose(); }}>
+                      <ListItemIcon><CollectionsIcon fontSize="small" /></ListItemIcon>
+                      <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Add to Collection</ListItemText>
+                    </MenuItem>
+                  )}
+                
+                  {/* Share menu item */}
+                  <MenuItem onClick={() => { handleSharePost(); handleMenuClose(); }}>
+                    <ListItemIcon><ShareIcon fontSize="small" /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Share</ListItemText>
+                  </MenuItem>
+                
+                  <MenuItem onClick={() => { setDeleteConfirmOpen(true); handleMenuClose(); }}>
+                    <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={() => handleOpenReportDialog('post', post._id)}>
+                    <ListItemIcon><ReportIcon fontSize="small" /></ListItemIcon>
+                    <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</ListItemText>
+                  </MenuItem>
+                </Menu>
+              </Box>
+            )}
+          
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar
+                src={post.user.profilePic && post.user.profilePic.startsWith('http') ? post.user.profilePic : post.user.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined} alt={post.user.username} sx={{ width: 56, height: 56 }}
+                component={RouterLink} to={`/user/${post.user.username}`}
+              >
+                {!post.user.profilePic && post.user.username.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+                  {post.flair && (
+                    <Chip
+                      label={post.flair}
+                      size="small"
+                      sx={{
+                        mr: 1,
+                        borderRadius: '8px', // More rounded
+                        fontFamily: theme.typography.fontFamily,
+                        // In a more advanced version, you'd pass flair color/bg from the group settings
+                        bgcolor: alpha(theme.palette.secondary.main, 0.2),
+                      }}
+                    />
+                  )}
+                  {post.title}
+                </Typography>
+                {post.isRecipe && post.numRecipeReviews > 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                    <Rating value={post.recipeRating} readOnly precision={0.5} />
+                    <Typography sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily }} color="text.secondary">({post.numRecipeReviews} recipe reviews)</Typography>
+                  </Box>
+                )}
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Posted by{' '}
+                  <Typography component={RouterLink} to={`/user/${post.user.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: theme.typography.fontFamily }}>
+                    {post.user.username}
+                  </Typography> • {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                </Typography>
+              </Box>
+            </Stack>
           </Box>
-        )}
-        {isEditing ? (
-          <CreatePostForm
-            initialData={post}
-            onSubmit={handleUpdatePost}
-            onCancel={() => setIsEditing(false)}
-            loading={loading}
-            forceRecipe={post.isRecipe}
-          />
-        ) : (
-          <>
-            {/* Post Content */}
-            {post.isRecipe ? (
-              <RecipeDisplay
-                recipe={post.recipeDetails}
-                description={post.content}
-                shoppableIngredients={shoppableIngredients}
-                onShopClick={handleAddIngredientsToCart}
-                isAdding={isAddingIngredients}
-              />
-            ) : (
-              <Typography variant="body1" component="div" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
-                <RichTextDisplay text={post.content} />
+
+          <Divider sx={{ my: 2 }} />
+
+          {post.media && post.media.length > 0 && (
+            <Box sx={{ mb: 3, '.slick-dots li button:before': { color: 'primary.main' } }}>
+              <Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1}>
+                {post.media.map((mediaItem, index) => (
+                  <Box key={index} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                    {mediaItem.mediaType === 'image' ? (
+                      <Box
+                        component="img"
+                        src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
+                        alt={`${post.title} - media ${index + 1}`}
+                        sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
+                      />
+                    ) : (
+                      <Box
+                        component="video"
+                        controls
+                        src={`${process.env.REACT_APP_API_URL}${mediaItem.url}`}
+                        sx={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block', margin: 'auto' }}
+                      >
+                        Your browser does not support the video tag.
+                      </Box>
+                    )}
+                  </Box>
+                ))}
+              </Slider>
+            </Box>
+          )}
+          {isEditing ? (
+            <CreatePostForm
+              initialData={post}
+              onSubmit={handleUpdatePost}
+              onCancel={() => setIsEditing(false)}
+              loading={loading}
+              forceRecipe={post.isRecipe}
+            />
+          ) : (
+            <>
+              {/* Post Content */}
+              {post.isRecipe ? (
+                <RecipeDisplay
+                  recipe={post.recipeDetails}
+                  description={post.content}
+                  shoppableIngredients={shoppableIngredients}
+                  onShopClick={handleAddIngredientsToCart}
+                  isAdding={isAddingIngredients}
+                />
+              ) : (
+                <Typography variant="body1" component="div" sx={{ my: 3, whiteSpace: 'pre-wrap', lineHeight: 1.7, fontFamily: theme.typography.fontFamily }}>
+                  <RichTextDisplay text={post.content} />
+                </Typography>
+              )}
+
+              {/* Tags */}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+                {post.tags.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    size="small"
+                    sx={{ borderRadius: '8px', bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.dark, fontWeight: 600, fontFamily: theme.typography.fontFamily }}
+                  />
+                ))}
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Actions */}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button
+                  variant="outlined"
+                  startIcon={<ThumbUpIcon color={post.upvotes.includes(user?.id) ? 'primary' : 'action'} />}
+                  onClick={() => handleUpvote(post._id)}
+                  disabled={isUpvoting}
+                  sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                >
+                  {post.upvoteCount} Upvotes
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={user?.savedPosts?.includes(post._id) ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
+                  onClick={() => handleToggleSave(post._id)}
+                  disabled={isSaving}
+                  sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                >
+                  {user?.savedPosts?.includes(post._id) ? 'Saved' : 'Save'}
+                </Button>
+              </Stack>
+            </>
+          )}
+
+          <Divider sx={{ my: 3 }} />
+
+          {/* Tagged Products Section */}
+          {!isEditing && post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily,fontWeight: 700, mb: 2 }}>
+                Products Used in this Recipe
               </Typography>
+              <Grid container spacing={2}>
+                {post.taggedProducts.filter(p => p).map(product => ( 
+                  <Grid size={{ xs: 12, sm: 6 }} key={product._id}>
+                    <TaggedProductCard product={product} />
+                  </Grid>
+                ))}
+              </Grid>
+              <Divider sx={{ my: 3 }} />
+            </Box>
+          )}
+
+          {/* Recipe Reviews Section */}
+          {!isEditing && post.isRecipe && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+                Recipe Reviews
+              </Typography>
+              {isAuthenticated ? (
+                hasUserReviewedRecipe ? (
+                  <Alert severity="success">You have already reviewed this recipe.</Alert>
+                ) : (
+                  <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontFamily: theme.typography.fontFamily }}>Leave a Review</Typography>
+                    <Box component="form" onSubmit={handleRecipeReviewSubmit}>
+                      <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
+                      <Rating value={recipeRating} onChange={(newValue) => setRecipeRating(newValue)} />
+                      <TextField
+                        label="Your Review Comment"
+                        multiline
+                        rows={3}
+                        fullWidth
+                        margin="normal"
+                        value={recipeComment}
+                        onChange={(e) => setRecipeComment(e.target.value)}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                        InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                      />
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={recipeReviewLoading}
+                        startIcon={recipeReviewLoading ? <Loader size={20} color="inherit" /> : null}
+                        sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
+                      >
+                        {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}
+                      </Button>
+                    </Box>
+                  </Paper>
+                )
+              ) : (
+                <Alert severity="info">
+                  <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> to leave a recipe review.
+                </Alert>
+              )}
+
+              {post.recipeReviews.length > 0 ? (
+                <List>
+                  {post.recipeReviews.map((review) => (
+                    <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar src={review.user?.profilePic && review.user.profilePic.startsWith('http') ? review.user.profilePic : review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
+                          <Rating value={review.rating} readOnly />
+                        </Box>
+                      </Stack>
+                      <Typography variant="body2" sx={{ mt: 1.5, pl: 7, fontFamily: theme.typography.fontFamily }}>{review.comment}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1, fontFamily: theme.typography.fontFamily }}>
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </List>
+              ) : <Typography color="text.secondary" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>No recipe reviews yet.</Typography>}
+              <Divider sx={{ my: 3 }} />
+            </Box>
+          )}
+
+          {/* Comments Section */}
+          <Paper sx={{ p: { xs: 2, sm: 4 }, mt: 4, borderRadius: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+              Comments ({post.comments.length})
+            </Typography>
+
+            {isAuthenticated && !replyingTo ? ( // Only show main comment form if not replying
+              <CommentForm onSubmit={handleCommentSubmit} loading={isCommenting} />
+            ) : (
+              !isAuthenticated && (
+                <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                  <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> or <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>sign up</RouterLink> to leave a comment.
+                </Typography>
+              )
             )}
 
-            {/* Tags */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-              {post.tags.map((tag, index) => (
-                <Chip
-                  key={index}
-                  label={tag}
-                  size="small"
-                  sx={{ borderRadius: '8px', bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.dark, fontWeight: 600, fontFamily: theme.typography.fontFamily }}
+            <List>
+              {post.comments.map((comment) => (
+                <CommentThreadItem
+                  key={comment._id}
+                  comment={comment}
+                  onReplyClick={handleReplyClick}
+                  onUpvote={handleCommentUpvote}
+                  upvotingComments={upvotingComments}
+                  isEditing={comment._id === replyingTo && replyingTo !== null}
+                  onEdit={handleUpdateComment}
+                  onDelete={openDeleteCommentConfirm}
+                  onReport={handleOpenReportDialog}
+                  currentUser={user}
+                  isAuthenticated={isAuthenticated}
+                  postId={id}
                 />
               ))}
-            </Box>
+            </List>
+          </Paper>
 
-            <Divider sx={{ my: 2 }} />
+          {/* Add To Collection Dialog */}
+          <AddToCollectionDialog 
+            open={collectionDialogOpen} 
+            onClose={() => setCollectionDialogOpen(false)} 
+            post={post} 
+            showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} 
+          />
 
-            {/* Actions */}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Button
-                variant="outlined"
-                startIcon={<ThumbUpIcon color={post.upvotes.includes(user?.id) ? 'primary' : 'action'} />}
-                onClick={() => handleUpvote(post._id)}
-                disabled={isUpvoting}
-                sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
-              >
-                {post.upvoteCount} Upvotes
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={user?.savedPosts?.includes(post._id) ? <BookmarkIcon color="secondary" /> : <BookmarkBorderIcon />}
-                onClick={() => handleToggleSave(post._id)}
-                disabled={isSaving}
-                sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
-              >
-                {user?.savedPosts?.includes(post._id) ? 'Saved' : 'Save'}
-              </Button>
-            </Stack>
-          </>
-        )}
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Tagged Products Section */}
-        {!isEditing && post.isRecipe && post.taggedProducts && post.taggedProducts.length > 0 && (
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily,fontWeight: 700, mb: 2 }}>
-              Products Used in this Recipe
-            </Typography>
-            <Grid container spacing={2}>
-              {post.taggedProducts.filter(p => p).map(product => ( 
-                <Grid size={{ xs: 12, sm: 6 }} key={product._id}>
-                  <TaggedProductCard product={product} />
-                </Grid>
-              ))}
-            </Grid>
-            <Divider sx={{ my: 3 }} />
-          </Box>
-        )}
-
-        {/* Recipe Reviews Section */}
-        {!isEditing && post.isRecipe && (
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
-              Recipe Reviews
-            </Typography>
-            {isAuthenticated ? (
-              hasUserReviewedRecipe ? (
-                <Alert severity="success">You have already reviewed this recipe.</Alert>
-              ) : (
-                <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 4 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontFamily: theme.typography.fontFamily }}>Leave a Review</Typography>
-                  <Box component="form" onSubmit={handleRecipeReviewSubmit}>
-                    <Typography component="legend" sx={{ fontFamily: theme.typography.fontFamily }}>Your Rating</Typography>
-                    <Rating value={recipeRating} onChange={(newValue) => setRecipeRating(newValue)} />
-                    <TextField
-                      label="Your Review Comment"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      margin="normal"
-                      value={recipeComment}
-                      onChange={(e) => setRecipeComment(e.target.value)}
-                      required
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
-                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                    />
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={recipeReviewLoading}
-                      startIcon={recipeReviewLoading ? <Loader size={20} color="inherit" /> : null}
-                      sx={{ mt: 1, borderRadius: '50px', px: 3, fontFamily: theme.typography.fontFamily }}
-                    >
-                      {recipeReviewLoading ? 'Submitting...' : 'Submit Review'}
-                    </Button>
-                  </Box>
-                </Paper>
-              )
-            ) : (
-              <Alert severity="info">
-                <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> to leave a recipe review.
-              </Alert>
-            )}
-
-            {post.recipeReviews.length > 0 ? (
-              <List>
-                {post.recipeReviews.map((review) => (
-                  <Paper key={review._id} variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={review.user?.profilePic && review.user.profilePic.startsWith('http') ? review.user.profilePic : review.user?.profilePic ? `${process.env.REACT_APP_API_URL}${review.user.profilePic}` : undefined}>{review.user?.username?.charAt(0).toUpperCase() || review.name.charAt(0).toUpperCase()}</Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{review.user?.username || review.name}</Typography>
-                        <Rating value={review.rating} readOnly />
-                      </Box>
-                    </Stack>
-                    <Typography variant="body2" sx={{ mt: 1.5, pl: 7, fontFamily: theme.typography.fontFamily }}>{review.comment}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'right', mt: 1, fontFamily: theme.typography.fontFamily }}>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </Paper>
-                ))}
-              </List>
-            ) : <Typography color="text.secondary" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>No recipe reviews yet.</Typography>}
-            <Divider sx={{ my: 3 }} />
-          </Box>
-        )}
-
-        {/* Comments Section */}
-        <Paper sx={{ p: { xs: 2, sm: 4 }, mt: 4, borderRadius: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
-            Comments ({post.comments.length})
-          </Typography>
-
-          {isAuthenticated && !replyingTo ? ( // Only show main comment form if not replying
-            <CommentForm onSubmit={handleCommentSubmit} loading={isCommenting} />
-          ) : (
-            !isAuthenticated && (
-              <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>Log in</RouterLink> or <RouterLink to={`/login?redirect=/post/${id}`} style={{ fontFamily: theme.typography.fontFamily }}>sign up</RouterLink> to leave a comment.
-              </Typography>
-            )
-          )}
-
-          <List>
-            {post.comments.map((comment) => (
-              <CommentThreadItem
-                key={comment._id}
-                comment={comment}
-                onReplyClick={handleReplyClick}
-                onUpvote={handleCommentUpvote}
-                upvotingComments={upvotingComments}
-                isEditing={comment._id === replyingTo && replyingTo !== null}
-                onEdit={handleUpdateComment}
-                onDelete={openDeleteCommentConfirm}
-                onReport={handleOpenReportDialog}
-                currentUser={user}
-                isAuthenticated={isAuthenticated}
-                postId={id}
-              />
-            ))}
-          </List>
+          {/* Snackbar for notifications */}
+          <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
+            <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
         </Paper>
 
-        {/* Add To Collection Dialog */}
-        <AddToCollectionDialog 
-          open={collectionDialogOpen} 
-          onClose={() => setCollectionDialogOpen(false)} 
-          post={post} 
-          showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} 
+        <Dialog
+          open={deleteConfirmOpen}
+          onClose={() => setDeleteConfirmOpen(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {"Confirm Post Deletion"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+            <Button onClick={handleDelete} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={deleteCommentConfirmOpen}
+          onClose={() => setDeleteCommentConfirmOpen(false)}
+          aria-labelledby="alert-dialog-comment-delete-title"
+          aria-describedby="alert-dialog-comment-delete-description"
+        >
+          <DialogTitle id="alert-dialog-comment-delete-title" sx={{ fontFamily: theme.typography.fontFamily }}>
+            {"Confirm Comment Deletion"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-comment-delete-description" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteCommentConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+            <Button onClick={handleDeleteComment} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <ReportDialog
+          open={reportDialogOpen}
+          onClose={() => setReportDialogOpen(false)}
+          onSubmit={handleReportSubmit}
+          loading={isReporting}
+          contentType={reportingContent?.type}
         />
-
-        {/* Snackbar for notifications */}
-        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
-          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Paper>
-
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>
-          {"Confirm Post Deletion"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
-            Are you sure you want to delete this post? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={deleteCommentConfirmOpen}
-        onClose={() => setDeleteCommentConfirmOpen(false)}
-        aria-labelledby="alert-dialog-comment-delete-title"
-        aria-describedby="alert-dialog-comment-delete-description"
-      >
-        <DialogTitle id="alert-dialog-comment-delete-title" sx={{ fontFamily: theme.typography.fontFamily }}>
-          {"Confirm Comment Deletion"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-comment-delete-description" sx={{ fontFamily: theme.typography.fontFamily }}>
-            Are you sure you want to delete this comment? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteCommentConfirmOpen(false)} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
-          <Button onClick={handleDeleteComment} color="error" autoFocus sx={{ fontFamily: theme.typography.fontFamily }}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <ReportDialog
-        open={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
-        onSubmit={handleReportSubmit}
-        loading={isReporting}
-        contentType={reportingContent?.type}
-      />
-    </Container>
+      </Container>
+    </>
   );
 };
 

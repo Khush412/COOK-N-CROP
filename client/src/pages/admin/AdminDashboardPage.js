@@ -21,7 +21,6 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const adminNavItems = [
-  { text: 'Dashboard', path: '/admin', icon: <DashboardIcon />, category: 'main' },
   { text: 'Users', path: '/admin/users', icon: <PeopleIcon />, category: 'management' },
   { text: 'Products', path: '/admin/products', icon: <InventoryIcon />, category: 'management' },
   { text: 'Low Stock', path: '/admin/products/low-stock', icon: <WarningIcon />, category: 'management' },
@@ -42,10 +41,10 @@ const AdminDashboardPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [managementOpen, setManagementOpen] = useState(true);
-  const [actionsOpen, setActionsOpen] = useState(true);
-  const [analyticsOpen, setAnalyticsOpen] = useState(true);
-  const [communicationsOpen, setCommunicationsOpen] = useState(true);
+  const [managementOpen, setManagementOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [communicationsOpen, setCommunicationsOpen] = useState(false);
 
   useEffect(() => {
     if (socket) {
@@ -77,78 +76,130 @@ const AdminDashboardPage = () => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: theme.palette.background.default,
+        bgcolor: theme.palette.background.paper,
         p: 2,
+        borderRight: `1px solid ${theme.palette.divider}`,
+        boxShadow: sidebarOpen ? theme.shadows[2] : 'none',
+        transition: 'box-shadow 0.3s ease',
+        overflow: 'hidden', // Prevent visual glitches from overflow
       }}
     >
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 3,
+        pb: 2,
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`
+      }}>
+        <Typography variant="h6" sx={{ 
+          fontWeight: 'bold', 
+          fontFamily: theme.typography.fontFamily,
+          color: theme.palette.primary.main,
+          transition: 'all 0.3s ease'
+        }}>
           Admin Panel
         </Typography>
         {!isMobile && (
-          <IconButton onClick={toggleSidebar} size="small">
-            <ChevronLeftIcon />
+          <IconButton 
+            onClick={toggleSidebar} 
+            size="small"
+            sx={{
+              transition: 'transform 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.1)',
+                bgcolor: alpha(theme.palette.primary.main, 0.1)
+              }
+            }}
+          >
+            <MenuIcon />
           </IconButton>
         )}
       </Box>
 
       {/* Navigation Items */}
-      <List component="nav" disablePadding>
-        {/* Dashboard (standalone) */}
-        {groupedNavItems.other?.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              component={NavLink}
-              to={item.path}
-              end={item.path === '/admin'}
-              onClick={isMobile ? handleDrawerToggle : undefined}
-              sx={{
-                borderRadius: 2,
-                mx: 1,
-                my: 0.5,
-                '&.active': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      <List component="nav" disablePadding sx={{ overflowY: 'auto', flex: 1, 
+        // Invisible scrollbars
+        '&::-webkit-scrollbar': {
+          width: '0px',
+          background: 'transparent',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'transparent',
+          background: 'transparent',
+        },
+        // For Firefox
+        scrollbarWidth: 'none',
+        // For IE/Edge
+        '-ms-overflow-style': 'none',
+      }}>
+        {/* Dashboard - Always at the top and visible */}
+        <ListItem disablePadding>
+          <ListItemButton
+            component={NavLink}
+            to="/admin"
+            end
+            onClick={isMobile ? handleDrawerToggle : undefined}
+            sx={{
+              borderRadius: 2,
+              mx: 1,
+              my: 0.5,
+              '&.active': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                color: theme.palette.primary.main,
+                fontWeight: 'bold',
+                '& .MuiListItemIcon-root': {
                   color: theme.palette.primary.main,
-                  fontWeight: 'bold',
-                  '& .MuiListItemIcon-root': {
-                    color: theme.palette.primary.main,
-                  },
                 },
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                }
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit' }} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+              },
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              }
+            }}
+          >
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }} />
+          </ListItemButton>
+        </ListItem>
+        
+        <Divider sx={{ my: 2 }} />
         
         {/* Management Section */}
         <ListItemButton 
           onClick={() => setManagementOpen(!managementOpen)}
           sx={{ 
-            borderRadius: 2, 
+            borderRadius: 3, 
             mb: 1,
-            backgroundColor: managementOpen ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+            backgroundColor: managementOpen ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            }
+              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+              transform: 'translateX(4px)',
+            },
+            transition: 'all 0.3s ease',
+            transform: managementOpen ? 'translateX(2px)' : 'none',
           }}
         >
           <ListItemIcon>
-            <InventoryIcon sx={{ color: theme.palette.primary.main }} />
+            <InventoryIcon sx={{ color: theme.palette.primary.main, transition: 'all 0.3s ease' }} />
           </ListItemIcon>
           <ListItemText 
             primary="Management" 
-            primaryTypographyProps={{ fontWeight: 700, color: 'primary.main' }} 
+            primaryTypographyProps={{ 
+              fontWeight: 700, 
+              color: 'primary.main',
+              transition: 'all 0.3s ease'
+            }} 
           />
-          {managementOpen ? <ExpandLess /> : <ExpandMore />}
+          {managementOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
         </ListItemButton>
         <Collapse in={managementOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
+          <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
             {groupedNavItems.management?.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
@@ -187,25 +238,32 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setActionsOpen(!actionsOpen)}
           sx={{ 
-            borderRadius: 2, 
+            borderRadius: 3, 
             mb: 1,
-            backgroundColor: actionsOpen ? alpha(theme.palette.info.main, 0.05) : 'transparent',
+            backgroundColor: actionsOpen ? alpha(theme.palette.info.main, 0.1) : 'transparent',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.info.main, 0.1),
-            }
+              backgroundColor: alpha(theme.palette.info.main, 0.15),
+              transform: 'translateX(4px)',
+            },
+            transition: 'all 0.3s ease',
+            transform: actionsOpen ? 'translateX(2px)' : 'none',
           }}
         >
           <ListItemIcon>
-            <AddShoppingCartIcon sx={{ color: theme.palette.info.main }} />
+            <AddShoppingCartIcon sx={{ color: theme.palette.info.main, transition: 'all 0.3s ease' }} />
           </ListItemIcon>
           <ListItemText 
             primary="Actions" 
-            primaryTypographyProps={{ fontWeight: 700, color: 'info.main' }} 
+            primaryTypographyProps={{ 
+              fontWeight: 700, 
+              color: 'info.main',
+              transition: 'all 0.3s ease'
+            }} 
           />
-          {actionsOpen ? <ExpandLess /> : <ExpandMore />}
+          {actionsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
         </ListItemButton>
         <Collapse in={actionsOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
+          <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
             {groupedNavItems.actions?.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
@@ -244,25 +302,32 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setAnalyticsOpen(!analyticsOpen)}
           sx={{ 
-            borderRadius: 2, 
+            borderRadius: 3, 
             mb: 1,
-            backgroundColor: analyticsOpen ? alpha(theme.palette.success.main, 0.05) : 'transparent',
+            backgroundColor: analyticsOpen ? alpha(theme.palette.success.main, 0.1) : 'transparent',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.success.main, 0.1),
-            }
+              backgroundColor: alpha(theme.palette.success.main, 0.15),
+              transform: 'translateX(4px)',
+            },
+            transition: 'all 0.3s ease',
+            transform: analyticsOpen ? 'translateX(2px)' : 'none',
           }}
         >
           <ListItemIcon>
-            <ReportIcon sx={{ color: theme.palette.success.main }} />
+            <ReportIcon sx={{ color: theme.palette.success.main, transition: 'all 0.3s ease' }} />
           </ListItemIcon>
           <ListItemText 
             primary="Analytics" 
-            primaryTypographyProps={{ fontWeight: 700, color: 'success.main' }} 
+            primaryTypographyProps={{ 
+              fontWeight: 700, 
+              color: 'success.main',
+              transition: 'all 0.3s ease'
+            }} 
           />
-          {analyticsOpen ? <ExpandLess /> : <ExpandMore />}
+          {analyticsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
         </ListItemButton>
         <Collapse in={analyticsOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
+          <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
             {groupedNavItems.analytics?.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
@@ -301,25 +366,32 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setCommunicationsOpen(!communicationsOpen)}
           sx={{ 
-            borderRadius: 2, 
+            borderRadius: 3, 
             mb: 1,
-            backgroundColor: communicationsOpen ? alpha(theme.palette.warning.main, 0.05) : 'transparent',
+            backgroundColor: communicationsOpen ? alpha(theme.palette.warning.main, 0.1) : 'transparent',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.warning.main, 0.1),
-            }
+              backgroundColor: alpha(theme.palette.warning.main, 0.15),
+              transform: 'translateX(4px)',
+            },
+            transition: 'all 0.3s ease',
+            transform: communicationsOpen ? 'translateX(2px)' : 'none',
           }}
         >
           <ListItemIcon>
-            <CampaignIcon sx={{ color: theme.palette.warning.main }} />
+            <CampaignIcon sx={{ color: theme.palette.warning.main, transition: 'all 0.3s ease' }} />
           </ListItemIcon>
           <ListItemText 
             primary="Communications" 
-            primaryTypographyProps={{ fontWeight: 700, color: 'warning.main' }} 
+            primaryTypographyProps={{ 
+              fontWeight: 700, 
+              color: 'warning.main',
+              transition: 'all 0.3s ease'
+            }} 
           />
-          {communicationsOpen ? <ExpandLess /> : <ExpandMore />}
+          {communicationsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
         </ListItemButton>
         <Collapse in={communicationsOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
+          <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
             {groupedNavItems.communications?.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
@@ -353,37 +425,6 @@ const AdminDashboardPage = () => {
             ))}
           </List>
         </Collapse>
-
-        {/* Dashboard (standalone) */}
-        {groupedNavItems.other?.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              component={NavLink}
-              to={item.path}
-              end={item.path === '/admin'}
-              onClick={isMobile ? handleDrawerToggle : undefined}
-              sx={{
-                borderRadius: 2,
-                mx: 1,
-                my: 0.5,
-                '&.active': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main,
-                  fontWeight: 'bold',
-                  '& .MuiListItemIcon-root': {
-                    color: theme.palette.primary.main,
-                  },
-                },
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                }
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit' }} />
-            </ListItemButton>
-          </ListItem>
-        ))}
       </List>
     </Box>
   );
@@ -396,32 +437,38 @@ const AdminDashboardPage = () => {
       pt: 8,
       overflowX: 'hidden',
     }}>
-      {/* Left sidebar toggle button - Always visible on mobile */}
+      {/* Left sidebar toggle button - Visible only when sidebar is closed */}
       <IconButton
         onClick={isMobile ? handleDrawerToggle : toggleSidebar}
         sx={{
           position: 'fixed',
-          left: 0,
-          top: '50%',
-          transform: 'translateY(-50%)',
+          left: 16,
+          top: 80,
           zIndex: 1200,
-          width: 24,
-          height: 24,
+          width: 40,
+          height: 40,
           minHeight: 0,
           minWidth: 0,
           p: 0,
           bgcolor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
           borderRadius: '50%',
-          boxShadow: 2,
+          boxShadow: 4,
           '&:hover': {
             bgcolor: theme.palette.background.paper,
-            boxShadow: 4,
+            boxShadow: 8,
+            transform: 'scale(1.1)',
           },
-          display: 'flex' // Always show the toggle button
+          display: sidebarOpen ? 'none' : 'flex', // Show only when sidebar is closed
+          transition: 'all 0.3s ease', // Smooth transition
+          cursor: 'pointer',
+          transform: 'rotate(0deg)',
+          '& .hamburger-line': {
+            transition: 'all 0.3s ease',
+          }
         }}
       >
-        <ChevronRightIcon sx={{ fontSize: 16 }} />
+        <MenuIcon sx={{ fontSize: 24 }} />
       </IconButton>
 
       {/* Sidebar - Visible on all screens with mobile drawer for small screens */}
@@ -437,22 +484,28 @@ const AdminDashboardPage = () => {
           overflowX: 'hidden',
           zIndex: 1200,
           borderRight: `1px solid ${theme.palette.divider}`,
-          bgcolor: theme.palette.background.default,
-          display: { xs: 'none', md: 'block' }, // Hide on mobile, show on desktop
-          // Custom scrollbar styling
+          bgcolor: theme.palette.background.paper,
+          display: { xs: 'none', md: sidebarOpen ? 'block' : 'none' }, // Control visibility based on state
+          // Custom scrollbar styling - invisible scrollbars
           '&::-webkit-scrollbar': {
-            width: '6px',
+            width: '0px',
+            background: 'transparent',
           },
           '&::-webkit-scrollbar-track': {
             background: 'transparent',
           },
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: 'transparent',
+            background: 'transparent',
           },
-          '&:hover::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-            borderRadius: '10px',
-          },
+          // For Firefox
+          scrollbarWidth: 'none',
+          // For IE/Edge
+          '-ms-overflow-style': 'none',
+          transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)', // Smooth transition with custom easing
+          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)', // Slide effect
+          boxShadow: sidebarOpen ? theme.shadows[8] : 'none',
+          contain: 'layout style paint', // Improve rendering performance and prevent visual glitches
         }}
       >
         {drawerContent}
@@ -468,8 +521,24 @@ const AdminDashboardPage = () => {
           pl: { xs: 0, md: sidebarOpen ? 0 : 2 },
           pt: 2,
           pb: 4,
-          transition: 'margin 0.3s ease',
+          transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
           overflowX: 'hidden',
+          // Invisible scrollbars
+          '&::-webkit-scrollbar': {
+            width: '0px',
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'transparent',
+            background: 'transparent',
+          },
+          // For Firefox
+          scrollbarWidth: 'none',
+          // For IE/Edge
+          '-ms-overflow-style': 'none',
         }}
       >
         <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, overflowX: 'hidden' }}>
@@ -485,7 +554,24 @@ const AdminDashboardPage = () => {
                 boxSizing: 'border-box', 
                 width: 280,
                 borderRight: `1px solid ${theme.palette.divider}`,
-                bgcolor: theme.palette.background.default,
+                bgcolor: theme.palette.background.paper,
+                boxShadow: theme.shadows[8],
+                // Invisible scrollbars
+                '&::-webkit-scrollbar': {
+                  width: '0px',
+                  background: 'transparent',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'transparent',
+                  background: 'transparent',
+                },
+                // For Firefox
+                scrollbarWidth: 'none',
+                // For IE/Edge
+                '-ms-overflow-style': 'none',
               },
             }}
           >

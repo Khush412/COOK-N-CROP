@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, Typography, Checkbox, FormControlLabel, Grid, Stack } from '@mui/material';
+import { TextField, Button, Box, Typography, Checkbox, FormControlLabel, Grid, Stack, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
+
+// Predefined address labels
+const ADDRESS_LABELS = [
+  { value: 'home', label: 'Home' },
+  { value: 'work', label: 'Work' },
+  { value: 'office', label: 'Office' },
+  { value: 'shipping', label: 'Shipping Address' },
+  { value: 'billing', label: 'Billing Address' },
+  { value: 'other', label: 'Other' }
+];
 
 const AddressForm = ({ address: initialAddress, onSubmit, onCancel }) => {
     const theme = useTheme();
@@ -81,7 +91,25 @@ const AddressForm = ({ address: initialAddress, onSubmit, onCancel }) => {
                     <TextField label="Phone Number" name="phone" value={address.phone} onChange={handleChange} fullWidth required InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
                 </Grid>
                 <Grid item size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Label (e.g., Home, Work)" name="label" value={address.label} onChange={handleChange} fullWidth InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 }, '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+                    <FormControl fullWidth>
+                        <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Label</InputLabel>
+                        <Select
+                            name="label"
+                            value={address.label}
+                            onChange={handleChange}
+                            sx={{ 
+                                '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                            }}
+                        >
+                            <MenuItem value="" sx={{ fontFamily: theme.typography.fontFamily }}><em>None</em></MenuItem>
+                            {ADDRESS_LABELS.map((option) => (
+                                <MenuItem key={option.value} value={option.value} sx={{ fontFamily: theme.typography.fontFamily }}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Grid>
                 <Grid item size={12}>
                     <FormControlLabel

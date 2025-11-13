@@ -25,8 +25,12 @@ import {
   ToggleButton,
   FormControl,
   Grid,
+  Zoom,
+  Slide,
+  Collapse,
+  Avatar,
 } from '@mui/material';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import supportService from '../services/supportService';
 import {
   QuestionAnswer as QuestionAnswerIcon,
@@ -35,6 +39,9 @@ import {
   LowPriority as LowPriorityIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
+  Category as CategoryIcon,
+  Update as UpdateIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import Loader from '../custom_components/Loader';
 
@@ -55,34 +62,137 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
     Low: 'info'
   };
   
+  const categoryIcons = {
+    'Technical Issue': <PriorityHighIcon />,
+    'Account': <PersonIcon />,
+    'Billing': <UpdateIcon />,
+    'General Inquiry': <QuestionAnswerIcon />,
+    'Feature Request': <CategoryIcon />,
+  };
+  
   if (variant === 'list') {
     // Compact list view
     return (
-      <Paper
+      <Zoom in={true} timeout={500}>
+        <Paper
+          component={RouterLink}
+          to={`/support/ticket/${ticket._id}`}
+          sx={{
+            textDecoration: 'none',
+            color: 'inherit',
+            borderRadius: 3,
+            border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            p: 2.5,
+            display: 'flex',
+            alignItems: 'center',
+            boxShadow: theme.shadows[2],
+            '&:hover': {
+              boxShadow: theme.shadows[6],
+              borderColor: alpha(theme.palette.primary.main, 0.6),
+              backgroundColor: alpha(theme.palette.primary.main, 0.03),
+              transform: 'translateY(-2px)',
+            },
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
+              <Typography 
+                variant="subtitle1" 
+                fontWeight="700" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {ticket.subject}
+              </Typography>
+              <Chip 
+                label={ticket.status} 
+                color={statusColors[ticket.status]} 
+                size="small"
+                sx={{ 
+                  fontWeight: 600,
+                  fontFamily: theme.typography.fontFamily,
+                  height: 24,
+                }}
+              />
+            </Stack>
+            
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <CategoryIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {ticket.category}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <UpdateIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  {formatDistanceToNow(new Date(ticket.updatedAt || ticket.createdAt), { addSuffix: true })}
+                </Typography>
+              </Box>
+            </Stack>
+            
+            <Stack direction="row" spacing={3}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <strong>Ticket #:</strong> {ticket.ticketNumber}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <strong>Created:</strong> {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
+              </Typography>
+            </Stack>
+          </Box>
+          
+          <Chip 
+            icon={categoryIcons[ticket.category] || <CategoryIcon />}
+            label={ticket.priority}
+            color={priorityColors[ticket.priority]}
+            size="small"
+            sx={{ 
+              fontWeight: 600,
+              fontFamily: theme.typography.fontFamily,
+              height: 24,
+              ml: 2,
+            }}
+          />
+        </Paper>
+      </Zoom>
+    );
+  }
+  
+  // Default card view
+  return (
+    <Zoom in={true} timeout={500}>
+      <Card
         component={RouterLink}
         to={`/support/ticket/${ticket._id}`}
         sx={{
           textDecoration: 'none',
           color: 'inherit',
-          borderRadius: 3,
-          border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
-          transition: '0.3s',
-          p: 2.5,
+          borderRadius: 4,
+          border: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
+          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          boxShadow: theme.shadows[2],
+          flexDirection: 'column',
+          boxShadow: theme.shadows[4],
           '&:hover': {
-            boxShadow: theme.shadows[4],
-            borderColor: alpha(theme.palette.primary.main, 0.4),
-            backgroundColor: alpha(theme.palette.primary.main, 0.02),
+            boxShadow: theme.shadows[12],
+            borderColor: alpha(theme.palette.primary.main, 0.7),
+            transform: 'translateY(-6px)',
           },
         }}
       >
-        <Box sx={{ flex: 1 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
+        <CardContent sx={{ pb: 1, flexGrow: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
             <Typography 
-              variant="subtitle1" 
-              fontWeight="bold" 
+              variant="h6" 
+              fontWeight="800" 
               sx={{ 
                 fontFamily: theme.typography.fontFamily,
                 display: '-webkit-box',
@@ -94,10 +204,53 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
             >
               {ticket.subject}
             </Typography>
-            {/* Removed the status chip to fix the bubble buttons issue */}
+            <Chip 
+              label={ticket.status} 
+              color={statusColors[ticket.status]} 
+              size="small"
+              sx={{ 
+                fontWeight: 700,
+                fontFamily: theme.typography.fontFamily,
+                height: 26,
+              }}
+            />
           </Stack>
           
-          <Stack direction="row" spacing={3}>
+          {ticket.lastMessage && (
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 2,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                fontFamily: theme.typography.fontFamily,
+                minHeight: 60,
+                lineHeight: 1.6,
+              }}
+            >
+              {ticket.lastMessage}
+            </Typography>
+          )}
+          
+          <Stack direction="row" spacing={2} sx={{ mb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CategoryIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                {ticket.category}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <UpdateIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                {formatDistanceToNow(new Date(ticket.updatedAt || ticket.createdAt), { addSuffix: true })}
+              </Typography>
+            </Box>
+          </Stack>
+          
+          <Stack direction="row" spacing={3} sx={{ mt: 1 }}>
             <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
               <strong>Ticket #:</strong> {ticket.ticketNumber}
             </Typography>
@@ -105,93 +258,24 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
               <strong>Created:</strong> {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
             </Typography>
           </Stack>
-        </Box>
+        </CardContent>
         
-        {/* Removed the priority chip to fix the bubble buttons issue */}
-      </Paper>
-    );
-  }
-  
-  // Default card view
-  return (
-    <Card
-      component={RouterLink}
-      to={`/support/ticket/${ticket._id}`}
-      sx={{
-        textDecoration: 'none',
-        color: 'inherit',
-        borderRadius: 4,
-        border: `2px solid ${alpha(theme.palette.divider, 0.8)}`,
-        transition: '0.3s',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: theme.shadows[4],
-        '&:hover': {
-          boxShadow: theme.shadows[8],
-          borderColor: alpha(theme.palette.primary.main, 0.5),
-          transform: 'translateY(-4px)',
-        },
-      }}
-    >
-      <CardContent sx={{ pb: 1, flexGrow: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-          <Typography 
-            variant="h6" 
-            fontWeight="bold" 
+        <CardActions sx={{ pt: 0, px: 2, pb: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+          <Chip 
+            icon={categoryIcons[ticket.category] || <CategoryIcon />}
+            label={ticket.priority}
+            color={priorityColors[ticket.priority]}
+            size="small"
             sx={{ 
+              fontWeight: 600,
               fontFamily: theme.typography.fontFamily,
-              display: '-webkit-box',
-              WebkitLineClamp: 1,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              color: theme.palette.primary.main,
+              height: 26,
             }}
-          >
-            {ticket.subject}
-          </Typography>
-          {/* Removed the status and priority chips to fix the bubble buttons issue */}
-        </Stack>
-        
-        {ticket.lastMessage && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            sx={{ 
-              mb: 2,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              fontFamily: theme.typography.fontFamily,
-              minHeight: 60,
-            }}
-          >
-            {ticket.lastMessage}
-          </Typography>
-        )}
-        
-        <Stack direction="row" spacing={2} sx={{ mb: 1.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-            <strong>Ticket #:</strong> {ticket.ticketNumber}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-            <strong>Created:</strong> {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
-          </Typography>
-          {ticket.updatedAt && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-              <strong>Updated:</strong> {format(new Date(ticket.updatedAt), 'MMM d, yyyy')}
-            </Typography>
-          )}
-        </Stack>
-      </CardContent>
-      
-      <CardActions sx={{ pt: 0, px: 2, pb: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-        {/* Removed the category chip to fix the bubble buttons issue */}
-        <Box sx={{ flexGrow: 1 }} />
-        {/* Removed the priority chip to fix the bubble buttons issue */}
-      </CardActions>
-    </Card>
+          />
+          <Box sx={{ flexGrow: 1 }} />
+        </CardActions>
+      </Card>
+    </Zoom>
   );
 };
 
@@ -203,7 +287,7 @@ const MySupportTicketsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid');
   const [page, setPage] = useState(1);
-  const ticketsPerPage = 5;
+  const ticketsPerPage = 6;
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -244,14 +328,16 @@ const MySupportTicketsPage = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-        <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-          <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
-            My Support Tickets
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-            Track the status of your inquiries.
-          </Typography>
-        </Paper>
+        <Slide direction="down" in={true} timeout={600}>
+          <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+              My Support Tickets
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Track the status of your inquiries.
+            </Typography>
+          </Paper>
+        </Slide>
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>
       </Container>
     );
@@ -260,6 +346,24 @@ const MySupportTicketsPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+        <Slide direction="down" in={true} timeout={600}>
+          <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+              My Support Tickets
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              Track the status of your inquiries.
+            </Typography>
+          </Paper>
+        </Slide>
+        <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+      <Slide direction="down" in={true} timeout={600}>
         <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
           <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
             My Support Tickets
@@ -268,125 +372,199 @@ const MySupportTicketsPage = () => {
             Track the status of your inquiries.
           </Typography>
         </Paper>
-        <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
-      </Container>
-    );
-  }
-
-  return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
-          My Support Tickets
-        </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-          Track the status of your inquiries.
-        </Typography>
-      </Paper>
+      </Slide>
 
       {tickets.length === 0 ? (
-        <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
-          <QuestionAnswerIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
-            You haven't submitted any support tickets yet.
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
-            Need help? Submit a support ticket and our team will assist you.
-          </Typography>
-          <Button component={RouterLink} to="/support" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
-            Contact Support
-          </Button>
-        </Paper>
+        <Slide direction="up" in={true} timeout={800}>
+          <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+            <QuestionAnswerIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+            <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2, fontWeight: 700 }}>
+              You haven't submitted any support tickets yet.
+            </Typography>
+            <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto', lineHeight: 1.6 }}>
+              Need help? Submit a support ticket and our team will assist you.
+            </Typography>
+            <Slide direction="up" in={true} timeout={1000}>
+              <Button 
+                component={RouterLink} 
+                to="/support" 
+                variant="contained" 
+                size="large"
+                sx={{ 
+                  mt: 3, 
+                  borderRadius: '50px', 
+                  px: 4, 
+                  py: 1.5,
+                  fontFamily: theme.typography.fontFamily,
+                  fontWeight: 600,
+                  boxShadow: 3,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: 6,
+                  }
+                }}
+              >
+                Contact Support
+              </Button>
+            </Slide>
+          </Paper>
+        </Slide>
       ) : (
         <>
           {/* Search and View Mode */}
-          <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-              <TextField
-                placeholder="Search tickets..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ 
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': { borderRadius: '20px' },
-                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
-                }}
-                InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-              />
-              
-              <FormControl>
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={(e, newValue) => newValue && setViewMode(newValue)}
-                  size="small"
-                  sx={{ height: 40 }}
-                >
-                  <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewModuleIcon />
-                  </ToggleButton>
-                  <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewListIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </FormControl>
-              
-              <Chip 
-                label={`${filteredTickets.length} ticket${filteredTickets.length !== 1 ? 's' : ''}`} 
-                sx={{ 
-                  fontFamily: theme.typography.fontFamily,
-                  height: 32,
-                }} 
-              />
-            </Stack>
-          </Paper>
+          <Slide direction="up" in={true} timeout={800}>
+            <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: theme.shadows[2] }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                <TextField
+                  placeholder="Search tickets by subject, category, or message..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  size="medium"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '24px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: theme.shadows[2],
+                      }
+                    },
+                    '& .MuiInputBase-input': { 
+                      fontFamily: theme.typography.fontFamily,
+                      py: 1.5,
+                    }
+                  }}
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                />
+                
+                <FormControl>
+                  <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={(e, newValue) => newValue && setViewMode(newValue)}
+                    size="medium"
+                    sx={{ height: 48, borderRadius: '24px', overflow: 'hidden' }}
+                  >
+                    <ToggleButton 
+                      value="grid" 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily, 
+                        px: 3,
+                        transition: 'all 0.2s ease',
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        }
+                      }}
+                    >
+                      <ViewModuleIcon sx={{ mr: 1 }} /> Grid
+                    </ToggleButton>
+                    <ToggleButton 
+                      value="list" 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily, 
+                        px: 3,
+                        transition: 'all 0.2s ease',
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        }
+                      }}
+                    >
+                      <ViewListIcon sx={{ mr: 1 }} /> List
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </FormControl>
+                
+                <Chip 
+                  label={`${filteredTickets.length} ticket${filteredTickets.length !== 1 ? 's' : ''}`} 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    height: 36,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                  }} 
+                />
+              </Stack>
+            </Paper>
+          </Slide>
           
           {paginatedTickets.length === 0 ? (
-            <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3 }}>
-              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                No tickets found matching your search.
-              </Typography>
-            </Paper>
+            <Slide direction="up" in={true} timeout={1000}>
+              <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, boxShadow: theme.shadows[2] }}>
+                <QuestionAnswerIcon sx={{ fontSize: 60, color: 'grey.400', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
+                  No tickets found matching your search.
+                </Typography>
+                <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+                  Try adjusting your search terms.
+                </Typography>
+              </Paper>
+            </Slide>
           ) : (
             <>
               {viewMode === 'grid' ? (
                 <Grid container spacing={3}>
-                  {paginatedTickets.map(ticket => (
+                  {paginatedTickets.map((ticket, index) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={ticket._id}>
-                      <TicketCard ticket={ticket} />
+                      <Collapse in={true} timeout={500 + (index * 100)}>
+                        <TicketCard ticket={ticket} />
+                      </Collapse>
                     </Grid>
                   ))}
                 </Grid>
               ) : (
                 <Stack spacing={2}>
-                  {paginatedTickets.map(ticket => (
-                    <TicketCard key={ticket._id} ticket={ticket} variant="list" />
+                  {paginatedTickets.map((ticket, index) => (
+                    <Collapse key={ticket._id} in={true} timeout={500 + (index * 100)}>
+                      <TicketCard key={ticket._id} ticket={ticket} variant="list" />
+                    </Collapse>
                   ))}
                 </Stack>
               )}
               
               {totalPages > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                  <Pagination
-                    count={totalPages}
-                    page={page}
-                    onChange={handlePageChange}
-                    color="primary"
-                    siblingCount={1}
-                    boundaryCount={1}
-                    sx={{ 
-                      '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily },
-                      '& .Mui-selected': { fontWeight: 'bold' }
-                    }}
-                  />
+                  <Slide direction="up" in={true} timeout={1200}>
+                    <Pagination
+                      count={totalPages}
+                      page={page}
+                      onChange={handlePageChange}
+                      color="primary"
+                      siblingCount={1}
+                      boundaryCount={1}
+                      size="large"
+                      sx={{ 
+                        '& .MuiPaginationItem-root': { 
+                          fontFamily: theme.typography.fontFamily,
+                          borderRadius: '12px',
+                          margin: '0 2px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          }
+                        },
+                        '& .Mui-selected': { 
+                          fontWeight: 'bold',
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                          '&:hover': {
+                            backgroundColor: theme.palette.primary.dark,
+                          }
+                        }
+                      }}
+                    />
+                  </Slide>
                 </Box>
               )}
             </>

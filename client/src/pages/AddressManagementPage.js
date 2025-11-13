@@ -29,6 +29,10 @@ import {
   ToggleButton,
   Pagination,
   FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  Autocomplete,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,6 +47,10 @@ import {
   Phone as PhoneIcon,
   Person as PersonIcon,
   Label as LabelIcon,
+  FilterList as FilterListIcon,
+  Map as MapIcon,
+  Business as BusinessIcon,
+  LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
 import addressService from '../services/addressService';
 import AddressForm from '../components/AddressForm';
@@ -50,6 +58,26 @@ import Loader from '../custom_components/Loader';
 
 const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
   const theme = useTheme();
+  
+  // Get icon based on address label
+  const getAddressIcon = (label) => {
+    if (!label) return <LocationOnIcon />;
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes('home')) return <HomeWorkIcon />;
+    if (lowerLabel.includes('work') || lowerLabel.includes('office')) return <BusinessIcon />;
+    if (lowerLabel.includes('shipping')) return <LocalShippingIcon />;
+    return <LocationOnIcon />;
+  };
+  
+  // Get color based on address label
+  const getAddressColor = (label) => {
+    if (!label) return theme.palette.grey;
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes('home')) return theme.palette.primary;
+    if (lowerLabel.includes('work') || lowerLabel.includes('office')) return theme.palette.secondary;
+    if (lowerLabel.includes('shipping')) return theme.palette.info;
+    return theme.palette.grey; // fallback to grey for unknown labels
+  };
   
   if (viewMode === 'list') {
     return (
@@ -75,6 +103,9 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <IconButton size="small" sx={{ p: 0.5, mr: 1, color: getAddressColor(address.label).main }}>
+                  {getAddressIcon(address.label)}
+                </IconButton>
                 <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
                   {address.label || 'Address'}
                 </Typography>
@@ -143,9 +174,14 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
       )}
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
-            {address.label || 'Address'}
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton size="small" sx={{ p: 0.5, color: getAddressColor(address.label).main }}>
+              {getAddressIcon(address.label)}
+            </IconButton>
+            <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+              {address.label || 'Address'}
+            </Typography>
+          </Stack>
           <Box>
             <Tooltip title="Edit">
               <IconButton size="small" onClick={() => onEdit(address)}><EditIcon /></IconButton>
@@ -183,6 +219,22 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
             )}
           </Stack>
         </Box>
+        {address.label && (
+          <Chip 
+            icon={getAddressIcon(address.label)} 
+            label={address.label} 
+            size="small" 
+            variant="outlined"
+            sx={{ 
+              height: 24, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: '0.75rem',
+              mt: 1,
+              borderColor: getAddressColor(address.label).main,
+              color: getAddressColor(address.label).main
+            }} 
+          />
+        )}
       </CardContent>
       {!address.isDefault && (
         <CardActions sx={{ p: 2, pt: 0 }}>
@@ -208,6 +260,7 @@ const AddressManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid');
   const [page, setPage] = useState(1);
+  const [filterType, setFilterType] = useState('all');
   const addressesPerPage = 6;
 
   const showSnackbar = useCallback((message, severity) => {
@@ -233,14 +286,24 @@ const AddressManagementPage = () => {
 
   // Filter addresses
   const filteredAddresses = useMemo(() => {
-    return addresses.filter(address => 
-      (address.label && address.label.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (address.fullName && address.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (address.street && address.street.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (address.city && address.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (address.state && address.state.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [addresses, searchTerm]);
+    return addresses.filter(address => {
+      const matchesSearch = 
+        (address.label && address.label.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (address.fullName && address.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (address.street && address.street.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (address.city && address.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (address.state && address.state.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesFilter = 
+        filterType === 'all' || 
+        (filterType === 'default' && address.isDefault) ||
+        (filterType === 'home' && address.label && address.label.toLowerCase().includes('home')) ||
+        (filterType === 'work' && address.label && (address.label.toLowerCase().includes('work') || address.label.toLowerCase().includes('office'))) ||
+        (filterType === 'other' && address.label && !address.label.toLowerCase().includes('home') && !address.label.toLowerCase().includes('work') && !address.label.toLowerCase().includes('office'));
+      
+      return matchesSearch && matchesFilter;
+    });
+  }, [addresses, searchTerm, filterType]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAddresses.length / addressesPerPage);
@@ -308,6 +371,16 @@ const AddressManagementPage = () => {
     setPage(value);
   };
 
+  // Get unique address labels for filter options
+  const addressLabels = useMemo(() => {
+    const labels = addresses
+      .map(addr => addr.label)
+      .filter(label => label)
+      .map(label => label.toLowerCase());
+    
+    return [...new Set(labels)];
+  }, [addresses]);
+
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><Loader size="large" /></Box>;
   }
@@ -317,13 +390,13 @@ const AddressManagementPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
-          Manage Your Addresses
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+          Address Management
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-          Manage your saved shipping addresses.
+          Manage your saved shipping addresses for faster checkout.
         </Typography>
       </Paper>
 
@@ -348,6 +421,47 @@ const AddressManagementPage = () => {
             }}
             InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
           />
+          
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter</InputLabel>
+            <Select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              sx={{ 
+                borderRadius: '20px',
+                fontFamily: theme.typography.fontFamily
+              }}
+              IconComponent={FilterListIcon}
+            >
+              <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All Types</MenuItem>
+              <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default Only</MenuItem>
+              <MenuItem value="home" sx={{ fontFamily: theme.typography.fontFamily }}>Home</MenuItem>
+              <MenuItem value="work" sx={{ fontFamily: theme.typography.fontFamily }}>Work</MenuItem>
+              <MenuItem value="other" sx={{ fontFamily: theme.typography.fontFamily }}>Other</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(e, newMode) => newMode && setViewMode(newMode)}
+            size="small"
+            sx={{ 
+              height: 40,
+              '& .MuiToggleButton-root': { 
+                borderRadius: '50px',
+                border: `1px solid ${theme.palette.divider}`,
+                fontFamily: theme.typography.fontFamily
+              }
+            }}
+          >
+            <ToggleButton value="grid" aria-label="grid view">
+              <ViewModuleIcon />
+            </ToggleButton>
+            <ToggleButton value="list" aria-label="list view">
+              <ViewListIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
           
           <Button
             variant="contained"
@@ -374,17 +488,17 @@ const AddressManagementPage = () => {
         {addresses.length === 0 ? (
           <Box sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center' }}>
             <HomeWorkIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-            <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, mb: 2, color: theme.palette.primary.main }}>
               No Saved Addresses
             </Typography>
             <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
-              Add an address to make checkout faster.
+              Add an address to make checkout faster and more convenient.
             </Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => openForm()}
-              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4 }}
+              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4, py: 1.5 }}
             >
               Add Your First Address
             </Button>
@@ -392,11 +506,39 @@ const AddressManagementPage = () => {
         ) : paginatedAddresses.length === 0 ? (
           <Box sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-              No addresses found matching your search.
+              No addresses found matching your search or filter criteria.
             </Typography>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setSearchTerm('');
+                setFilterType('all');
+              }}
+              sx={{ 
+                mt: 2, 
+                fontFamily: theme.typography.fontFamily, 
+                borderRadius: '50px' 
+              }}
+            >
+              Clear Filters
+            </Button>
           </Box>
         ) : (
           <>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 2, 
+                fontFamily: theme.typography.fontFamily,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <MapIcon /> Your Saved Addresses ({filteredAddresses.length})
+            </Typography>
+            
             {viewMode === 'grid' ? (
               <Grid container spacing={3}>
                 {paginatedAddresses.map((address) => (
@@ -447,7 +589,7 @@ const AddressManagementPage = () => {
       </Paper>
 
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily }}>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>
           {editingAddress ? 'Edit Address' : 'Add New Address'}
         </DialogTitle>
         <DialogContent>
@@ -464,10 +606,10 @@ const AddressManagementPage = () => {
         onClose={() => setDeleteConfirmOpen(false)}
         aria-labelledby="alert-dialog-title"
       >
-        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily }}>{"Confirm Deletion"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>{"Confirm Deletion"}</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
-            Are you sure you want to delete this address?
+            Are you sure you want to delete this address? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

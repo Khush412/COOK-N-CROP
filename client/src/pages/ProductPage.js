@@ -53,6 +53,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ShareIcon from '@mui/icons-material/Share';
 import userService from '../services/userService';
 import productService from '../services/productService';
 import { useAuth } from '../contexts/AuthContext';
@@ -228,33 +229,59 @@ const ProductPage = () => {
     const reviewIndex = product.reviews.findIndex(r => r._id === reviewId);
     if (reviewIndex === -1) return;
 
-    const reviewToUpdate = { ...product.reviews[reviewIndex] };
-    const hasUpvoted = (reviewToUpdate.upvotes || []).includes(user.id);
-
-    // Optimistic UI update
-    reviewToUpdate.upvotes = hasUpvoted
-      ? (reviewToUpdate.upvotes || []).filter(uid => uid !== user.id)
-      : [...(reviewToUpdate.upvotes || []), user.id];
-
-    // Create a new reviews array to ensure React detects the change
-    const newReviews = [...product.reviews];
-    newReviews[reviewIndex] = reviewToUpdate;
-
-    const newProductState = { ...product, reviews: newReviews };
-    setProduct(newProductState);
+    // Optimistically update the UI
+    const updatedReviews = [...product.reviews];
+    const hasUpvoted = updatedReviews[reviewIndex].upvotes.includes(user.id);
+    
+    if (hasUpvoted) {
+      updatedReviews[reviewIndex].upvotes = updatedReviews[reviewIndex].upvotes.filter(id => id !== user.id);
+    } else {
+      updatedReviews[reviewIndex].upvotes.push(user.id);
+    }
+    
+    updatedReviews[reviewIndex].upvoteCount = updatedReviews[reviewIndex].upvotes.length;
+    
+    setProduct(prev => ({
+      ...prev,
+      reviews: updatedReviews
+    }));
 
     try {
-      const res = await productService.toggleReviewUpvote(id, reviewId);
-      // Update with server response
-      reviewToUpdate.upvotes = res.upvotes;
-      newReviews[reviewIndex] = reviewToUpdate;
-      setProduct({ ...product, reviews: newReviews });
+      await productService.upvoteProductReview(reviewId);
     } catch (err) {
       // Revert on error
       setProduct(originalProduct);
-      console.error("Failed to upvote review:", err);
+      setSnackbar({ open: true, message: 'Failed to update vote.' });
     } finally {
       setUpvotingReviewId(null);
+    }
+  };
+
+  // Share product functionality
+  const handleShareProduct = async () => {
+    const productUrl = `${window.location.origin}/product/${id}`;
+    
+    try {
+      if (navigator.share) {
+        // Use Web Share API if available
+        await navigator.share({
+          title: product.name,
+          text: `Check out this product: ${product.name}`,
+          url: productUrl,
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(productUrl);
+        setSnackbar({ open: true, message: 'Product link copied to clipboard!' });
+      }
+    } catch (err) {
+      // Fallback: copy to clipboard if Web Share fails
+      try {
+        await navigator.clipboard.writeText(productUrl);
+        setSnackbar({ open: true, message: 'Product link copied to clipboard!' });
+      } catch (clipboardErr) {
+        setSnackbar({ open: true, message: 'Failed to share product. Please try again.' });
+      }
     }
   };
 
@@ -845,6 +872,22 @@ const ProductPage = () => {
                         {user?.wishlist?.includes(product._id) ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
                       </IconButton>
                     </Tooltip>
+                    
+                    {/* Share Product Button */}
+                    <Tooltip title="Share Product">
+                      <IconButton 
+                        onClick={handleShareProduct}
+                        sx={{ 
+                          border: `2px solid ${theme.palette.divider}`,
+                          borderRadius: 3,
+                          width: 50,
+                          height: 50
+                        }}
+                      >
+                        <ShareIcon />
+                      </IconButton>
+                    </Tooltip>
+
                   </Stack>
                 ) : (
                   <ProductAlerts productId={product._id} productName={product.name} />
@@ -1211,30 +1254,6 @@ const ProductPage = () => {
               }}
             >
               Related Products
-            </Typography>
-            <Grid container spacing={3}>
-              {relatedProducts.map((relatedProduct) => (
-                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
-                  <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
-
-        {/* Customer Also Ordered */}
-        {relatedProducts.length > 0 && (
-          <Box sx={{ mt: 8, pt: 4, borderTop: `1px solid ${theme.palette.divider}` }}>
-            <Typography 
-              variant="h4" 
-              component="h2" 
-              sx={{ 
-                fontWeight: 800, 
-                fontFamily: theme.typography.fontFamily, 
-                mb: 3 
-              }}
-            >
-              Customer Also Ordered
             </Typography>
             <Grid container spacing={3}>
               {relatedProducts.map((relatedProduct) => (

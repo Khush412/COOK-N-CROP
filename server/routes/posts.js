@@ -490,10 +490,10 @@ router.put('/:id/pin', protect, async (req, res) => {
   }
 });
 
-// @desc    Get single post by ID
+// @desc    Get single post
 // @route   GET /api/posts/:id
 // @access  Public
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
       .populate('user', 'username profilePic')
@@ -1005,6 +1005,28 @@ router.get('/tagged-product/:productId', optionalAuth, async (req, res) => {
     res.json({ posts, page: pageNum, pages: Math.ceil(totalPosts / limitNum) });
   } catch (error) {
     console.error('Get posts by tagged product error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @desc    Clear reports for a post (Admin only)
+// @route   PUT /api/posts/:id/clear-reports
+// @access  Private/Admin
+router.put('/:id/clear-reports', protect, authorize('admin'), async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    
+    // Clear all reports
+    post.reports = [];
+    await post.save();
+    
+    res.json({ success: true, message: 'Post reports cleared successfully' });
+  } catch (error) {
+    console.error('Clear post reports error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

@@ -3,6 +3,7 @@ import { ThemeProviderComponent as ThemeProvider } from "./contexts/ThemeContext
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext"; // New
 import { CartProvider } from "./contexts/CartContext";
+import { useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import AppRouter from "./router";
@@ -12,25 +13,35 @@ import Chatbot from "./components/Chatbot";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import MobileDock from "./components/MobileDock";
 
+function AppContent() {
+  const location = useLocation();
+  // Don't show footer on messenger page
+  const hideFooter = location.pathname === '/messages';
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <Navbar />
+      <main style={{ flexGrow: 1, paddingBottom: hideFooter ? '0px' : '80px' }}>
+        <AppRouter />
+      </main>
+      <Chatbot />
+      <ScrollToTopButton />
+      {!hideFooter && <Footer />}
+      <MobileDock />
+    </div>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <SocketProvider>
         <CartProvider>
-            <ThemeProvider>
-              <CssBaseline />
-              <GlobalStyles styles={{ body: { overflowY: 'scroll' } }} />
-              <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-                <Navbar />
-                <main style={{ flexGrow: 1, paddingBottom: '80px' }}>
-                  <AppRouter />
-                </main>
-                 <Chatbot />
-                <ScrollToTopButton />
-                <Footer />
-                <MobileDock />
-              </div>
-            </ThemeProvider>
+          <ThemeProvider>
+            <CssBaseline />
+            <GlobalStyles styles={{ body: { overflowY: 'scroll' } }} />
+            <AppContent />
+          </ThemeProvider>
         </CartProvider>
       </SocketProvider>
     </AuthProvider>

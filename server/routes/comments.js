@@ -236,4 +236,26 @@ router.get('/reported', protect, authorize('admin'), async (req, res) => {
   }
 });
 
+// @desc    Clear reports for a comment (Admin only)
+// @route   PUT /api/comments/:id/clear-reports
+// @access  Private/Admin
+router.put('/:id/clear-reports', protect, authorize('admin'), async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.id);
+    
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    // Clear all reports
+    comment.reports = [];
+    await comment.save();
+    
+    res.json({ success: true, message: 'Comment reports cleared successfully' });
+  } catch (error) {
+    console.error('Clear comment reports error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

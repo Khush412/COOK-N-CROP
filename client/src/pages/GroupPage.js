@@ -104,6 +104,16 @@ const GroupPage = () => {
     }
   }, [group, fetchGroupPosts, contentFilter]); // Add contentFilter as dependency
 
+  if (loading.group) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><Loader size="large" /></Box>;
+  }
+
+  if (error) {
+    return <Container maxWidth="md" sx={{ py: 4, mt: 12 }}><Alert severity="error">{error}</Alert></Container>;
+  }
+
+  const isMod = group && (group.moderators && group.moderators.some(mod => mod._id === user?.id) || group.creator._id === user?.id || user?.role === 'admin');
+
   const handleJoinLeave = async () => {
     if (!isAuthenticated) return navigate(`/login?redirect=/g/${slug}`);
     setIsJoining(true);
@@ -166,16 +176,6 @@ const GroupPage = () => {
       setSavingPosts(prev => prev.filter(id => id !== postId));
     }
   };
-
-  if (loading.group) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}><Loader size="large" /></Box>;
-  }
-
-  if (error) {
-    return <Container maxWidth="md" sx={{ py: 4, mt: 12 }}><Alert severity="error">{error}</Alert></Container>;
-  }
-
-  const isMod = group && (group.moderators && group.moderators.some(mod => mod._id === user?.id) || group.creator._id === user?.id || user?.role === 'admin');
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: 'calc(100vh - 64px)', pb: '50px', pt: { xs: 8, sm: 0 } }}>

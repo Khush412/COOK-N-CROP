@@ -7,12 +7,14 @@ const profilePicsDir = path.join(__dirname, '..', 'public', 'uploads', 'profileP
 const productImagesDir = path.join(__dirname, '..', 'public', 'uploads', 'productImages');
 const recipeMediaDir = path.join(__dirname, '..', 'public', 'uploads', 'recipes');
 const groupCoversDir = path.join(__dirname, '..', 'public', 'uploads', 'groupCovers');
+const messagesDir = path.join(__dirname, '..', 'public', 'uploads', 'messages'); // Add messages directory
 
 // Ensure directories exist
 fs.mkdirSync(profilePicsDir, { recursive: true });
 fs.mkdirSync(productImagesDir, { recursive: true });
 fs.mkdirSync(recipeMediaDir, { recursive: true });
 fs.mkdirSync(groupCoversDir, { recursive: true });
+fs.mkdirSync(messagesDir, { recursive: true }); // Create messages directory
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -25,6 +27,8 @@ const storage = multer.diskStorage({
       cb(null, recipeMediaDir);
     } else if (file.fieldname === 'coverImage') {
       cb(null, groupCoversDir);
+    } else if (file.fieldname === 'attachments') { // Add attachments fieldname for messages
+      cb(null, messagesDir);
     } else {
       // Fallback or error
       cb(new Error('Invalid upload fieldname for file storage.'), null);
@@ -32,13 +36,15 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    // Preserve original filename but make it safe
+    const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, file.fieldname + '-' + uniqueSuffix + '-' + originalName);
   }
 });
 
 function checkFileType(file, cb) {
   // Allowed ext
-  const filetypes = /jpeg|jpg|png|gif|webp|mp4|mov|avi|mkv|webm|ogg/;
+  const filetypes = /jpeg|jpg|png|gif|webp|mp4|mov|avi|mkv|webm|ogg|pdf|doc|docx|txt/;
   // Check ext
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   // Check mime
@@ -47,14 +53,14 @@ function checkFileType(file, cb) {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Error: Images Only!'));
+    cb(new Error('Error: Unsupported file type!'));
   }
 }
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5 // 5MB file size limit
+    fileSize: 1024 * 1024 * 10 // 10MB file size limit for messages
   },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);

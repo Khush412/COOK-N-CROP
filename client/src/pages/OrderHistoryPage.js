@@ -44,6 +44,7 @@ import {
   Cancel as CancelIcon,
   Pending as PendingIcon,
   AccessTime as AccessTimeIcon,
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import Loader from '../custom_components/Loader';
 
@@ -342,59 +343,106 @@ const OrderHistoryPage = () => {
                 <Stack spacing={3}>
                   {paginatedOrders.map((order) => (
                     <Card
-                      key={order._id}
                       component={RouterLink}
                       to={`/order/${order._id}`}
+                      key={order._id}
+                      elevation={3}
                       sx={{
-                        p: 2,
+                        p: 3,
                         borderRadius: 3,
-                        transition: '0.3s',
-                        display: 'block',
+                        transition: 'all 0.3s ease',
                         textDecoration: 'none',
                         color: 'inherit',
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                         '&:hover': {
                           boxShadow: 8,
+                          transform: 'translateY(-4px)',
+                          borderColor: alpha(theme.palette.primary.main, 0.3),
                           cursor: 'pointer',
                         },
                       }}
                     >
-                      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2} mb={2}>
-                        <Box>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER PLACED</Typography>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>TOTAL</Typography>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>₹{order.totalPrice.toFixed(2)}</Typography>
-                        </Box>
-                        <Box sx={{ minWidth: 150 }}>
-                          <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>ORDER # {order._id.substring(0, 8)}</Typography>
-                          <Chip
-                            icon={getStatusIcon(order.status)}
-                            label={order.status}
-                            color={statusColors[order.status] || 'default'}
-                            size="small"
-                            sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
-                          />
-                        </Box>
-                      </Stack>
-                      <Divider />
-                      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2} mt={2}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 60, height: 60, border: `2px solid ${theme.palette.background.paper}` } }}>
-                            {order.orderItems.slice(0, 4).map(item => (
-                              <Avatar 
-                                key={item._id} 
-                                src={item.images && item.images.length > 0 ? `${process.env.REACT_APP_API_URL}${item.images[0]}` : (item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
-                                alt={item.name} 
+                      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={3}>
+                        <Box sx={{ flex: 1 }}>
+                          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={2}>
+                            <Box sx={{ 
+                              p: 1.5, 
+                              borderRadius: 2, 
+                              bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              minWidth: 140
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+                                ORDER PLACED
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ 
+                              p: 1.5, 
+                              borderRadius: 2, 
+                              bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                              minWidth: 140
+                            }}>
+                              <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+                                TOTAL
+                              </Typography>
+                              <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', color: theme.palette.primary.main }}>
+                                ₹{order.totalPrice.toFixed(2)}
+                              </Typography>
+                            </Box>
+                            
+                            <Box sx={{ minWidth: 180 }}>
+                              <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+                                ORDER # {order._id.substring(0, 8)}
+                              </Typography>
+                              <Chip
+                                icon={getStatusIcon(order.status)}
+                                label={order.status}
+                                color={statusColors[order.status] || 'default'}
+                                size="medium"
+                                sx={{ 
+                                  fontFamily: theme.typography.fontFamily, 
+                                  fontWeight: 'bold',
+                                  height: 28
+                                }}
                               />
-                            ))}
-                          </AvatarGroup>
-                          {order.orderItems.length > 4 && (
-                            <Typography variant="body2" sx={{ ml: 1, fontFamily: theme.typography.fontFamily }}>+ {order.orderItems.length - 4} more</Typography>
-                          )}
+                            </Box>
+                          </Stack>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                            <AvatarGroup max={5} sx={{ '& .MuiAvatar-root': { width: 48, height: 48, border: `2px solid ${theme.palette.background.paper}`, boxShadow: 2 } }}>
+                              {order.orderItems.slice(0, 5).map(item => (
+                                <Avatar 
+                                  key={item._id} 
+                                  src={item.images && item.images.length > 0 ? `${process.env.REACT_APP_API_URL}${item.images[0]}` : (item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
+                                  alt={item.name} 
+                                  sx={{ boxShadow: 2 }}
+                                />
+                              ))}
+                            </AvatarGroup>
+                            {order.orderItems.length > 5 && (
+                              <Typography variant="body2" sx={{ ml: 1.5, fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                                + {order.orderItems.length - 5} more
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
-                        <Button variant="contained" size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                        
+                        <Button 
+                          variant="contained" 
+                          size="large" 
+                          endIcon={<ArrowForwardIcon />}
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily, 
+                            borderRadius: '50px',
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 'bold',
+                            minWidth: 150
+                          }}
+                        >
                           View Details
                         </Button>
                       </Stack>
@@ -408,27 +456,31 @@ const OrderHistoryPage = () => {
                       <Card
                         component={RouterLink}
                         to={`/order/${order._id}`}
+                        elevation={3}
                         sx={{
                           height: '100%',
                           display: 'flex',
                           flexDirection: 'column',
                           borderRadius: 3,
-                          transition: '0.3s',
+                          transition: 'all 0.3s ease',
                           textDecoration: 'none',
                           color: 'inherit',
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                           '&:hover': {
-                            boxShadow: 8,
+                            boxShadow: 12,
+                            transform: 'translateY(-6px)',
+                            borderColor: alpha(theme.palette.primary.main, 0.3),
                             cursor: 'pointer',
                           },
                         }}
                       >
-                        <CardContent sx={{ flexGrow: 1 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
                             <Box>
-                              <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
                                 ORDER #{order._id.substring(0, 8)}
                               </Typography>
-                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
                                 {new Date(order.createdAt).toLocaleDateString()}
                               </Typography>
                             </Box>
@@ -436,28 +488,35 @@ const OrderHistoryPage = () => {
                               icon={getStatusIcon(order.status)}
                               label={order.status}
                               color={statusColors[order.status] || 'default'}
-                              size="small"
-                              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
+                              size="medium"
+                              sx={{ 
+                                fontFamily: theme.typography.fontFamily, 
+                                fontWeight: 'bold',
+                                height: 28
+                              }}
                             />
                           </Box>
                           
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 40, height: 40, border: `2px solid ${theme.palette.background.paper}` } }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 56, height: 56, border: `3px solid ${theme.palette.background.paper}`, boxShadow: 3 } }}>
                               {order.orderItems.slice(0, 3).map(item => (
                                 <Avatar 
                                   key={item._id} 
                                   src={item.images && item.images.length > 0 ? `${process.env.REACT_APP_API_URL}${item.images[0]}` : (item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
                                   alt={item.name} 
+                                  sx={{ boxShadow: 3 }}
                                 />
                               ))}
                             </AvatarGroup>
                             {order.orderItems.length > 3 && (
-                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>+ {order.orderItems.length - 3} more</Typography>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                                + {order.orderItems.length - 3} more
+                              </Typography>
                             )}
                           </Box>
                           
                           <Box sx={{ mt: 'auto' }}>
-                            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                            <Typography variant="h5" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', color: theme.palette.primary.main, mb: 0.5 }}>
                               ₹{order.totalPrice.toFixed(2)}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
@@ -466,12 +525,18 @@ const OrderHistoryPage = () => {
                           </Box>
                         </CardContent>
                         
-                        <CardActions sx={{ p: 2, pt: 0 }}>
+                        <CardActions sx={{ p: 3, pt: 0 }}>
                           <Button 
                             fullWidth 
                             variant="contained" 
-                            size="small" 
-                            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+                            size="large"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              fontFamily: theme.typography.fontFamily, 
+                              borderRadius: '50px',
+                              py: 1.5,
+                              fontWeight: 'bold'
+                            }}
                           >
                             View Details
                           </Button>
@@ -481,7 +546,7 @@ const OrderHistoryPage = () => {
                   ))}
                 </Grid>
               )}
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>

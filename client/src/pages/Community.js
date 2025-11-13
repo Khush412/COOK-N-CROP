@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -155,6 +155,8 @@ export default function Community() {
   const [savingPosts, setSavingPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [viewMode, setViewMode] = useState('card'); // 'card', 'compact', 'grid'
   const [sort, setSort] = useState("new");
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,8 +179,71 @@ export default function Community() {
   // State for left sidebar visibility
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
   
+  // Create refs for infinite scroll
+  const observer = useRef();
+  const lastPostRef = useRef();
+  
   // Background image URL for the header
   const headerImageURL = `${process.env.PUBLIC_URL}/images/CooknCrop.png`;
+  
+  // Modified fetchPosts function for infinite scrolling
+  const fetchPosts = useCallback(async (pageToFetch = 1, append = false) => {
+    try {
+      if (pageToFetch === 1) {
+        setLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+      
+      // Determine which page we're on
+      const currentPath = window.location.pathname;
+      
+      let data;
+      if (currentPath === '/community/popular') {
+        // For popular page, fetch top posts
+        data = await communityService.getPosts('top', pageToFetch, {
+          isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
+          tags: selectedTags,
+          search: debouncedSearchTerm,
+        });
+      } else if (currentPath === '/community') {
+        // For home page, fetch randomized posts
+        data = await communityService.getPosts('new', pageToFetch, {
+          isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
+          tags: selectedTags,
+          search: debouncedSearchTerm,
+        });
+        
+        // Shuffle the posts to create a randomized feed (only for first page)
+        if (pageToFetch === 1) {
+          data.posts = [...data.posts].sort(() => Math.random() - 0.5);
+        }
+      } else {
+        // For explore and other pages, use normal sorting
+        data = await communityService.getPosts(sort, pageToFetch, {
+          isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
+          tags: selectedTags,
+          search: debouncedSearchTerm,
+        });
+      }
+      
+      if (append) {
+        setPosts(prevPosts => [...prevPosts, ...data.posts]);
+      } else {
+        setPosts(data.posts);
+      }
+      
+      setHasMore(pageToFetch < data.pages);
+      setTotalPages(data.pages);
+      setPage(pageToFetch);
+      setError(null);
+    } catch {
+      setError("Failed to load posts.");
+    } finally {
+      setLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [sort, selectedTags, debouncedSearchTerm, contentFilter]);
 
   // Initialize search term from URL parameters
   useEffect(() => {
@@ -199,60 +264,58 @@ export default function Community() {
   }, [searchTerm]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        // Determine which page we're on
-        const currentPath = window.location.pathname;
-        
-        if (currentPath === '/community/popular') {
-          // For popular page, fetch top posts
-          const data = await communityService.getPosts('top', page, {
-            isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
-            tags: selectedTags,
-            search: debouncedSearchTerm,
-          });
-          setPosts(data.posts);
-          setTotalPages(data.pages);
-        } else if (currentPath === '/community') {
-          // For home page, fetch randomized posts
-          const data = await communityService.getPosts('new', page, {
-            isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
-            tags: selectedTags,
-            search: debouncedSearchTerm,
-          });
-          
-          // Shuffle the posts to create a randomized feed
-          const shuffledPosts = [...data.posts].sort(() => Math.random() - 0.5);
-          setPosts(shuffledPosts);
-          setTotalPages(data.pages);
-        } else {
-          // For explore and other pages, use normal sorting
-          const data = await communityService.getPosts(sort, page, {
-            isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
-            tags: selectedTags,
-            search: debouncedSearchTerm,
-          });
-          setPosts(data.posts);
-          setTotalPages(data.pages);
-        }
-        setError(null);
-      } catch {
-        setError("Failed to load posts.");
-      } finally {
-        setLoading(false);
+    fetchPosts(1, false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [sort, selectedTags, debouncedSearchTerm, contentFilter, fetchPosts]);
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    if (loading || isLoadingMore) return;
+    
+    // Disconnect existing observer
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+    
+    const observerCallback = (entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchPosts(page + 1, true);
       }
     };
-    fetchPosts();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [sort, page, selectedTags, debouncedSearchTerm, contentFilter]);
+    
+    observer.current = new IntersectionObserver(observerCallback, {
+      rootMargin: '100px'
+    });
+    
+    // Observe the last post element if it exists
+    if (lastPostRef.current) {
+      observer.current.observe(lastPostRef.current);
+    }
+    
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [loading, isLoadingMore, hasMore, page, fetchPosts, viewMode, posts]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
       try {
-        const tags = await communityService.getTrendingTags();
+        const tags = await communityService.getTrendingTags(10); // Increase limit to ensure we get enough tags
+        console.log('Fetched trending tags:', tags); // Debug log
         setTrendingTags(tags);
-      } catch (err) { console.error("Error fetching trending tags: ", err); }
+      } catch (err) { 
+        console.error("Error fetching trending tags: ", err); 
+        // Set some default tags for testing
+        setTrendingTags([
+          { tag: 'cooking', count: 15 },
+          { tag: 'recipe', count: 12 },
+          { tag: 'food', count: 10 },
+          { tag: 'healthy', count: 8 },
+          { tag: 'vegetarian', count: 7 }
+        ]);
+      }
     };
     const fetchGroups = async () => {
       try {
@@ -1253,31 +1316,35 @@ export default function Community() {
                 
                 {viewMode !== 'grid' ? (
                   <Stack spacing={2}>
-                    {posts.map((post) => (
+                    {posts.map((post, index) => (
                       <React.Fragment key={post._id}>
                         {viewMode === 'card' && (
-                          <PostCard
-                            post={post}
-                            user={user}
-                            onUpvote={handleUpvote}
-                            upvotingPosts={upvotingPosts}
-                            onToggleSave={handleToggleSave}
-                            savingPosts={savingPosts}
-                            showSnackbar={setSnackbar}
-                            displayMode="card"
-                          />
+                          <div ref={index === posts.length - 1 ? lastPostRef : null}>
+                            <PostCard
+                              post={post}
+                              user={user}
+                              onUpvote={handleUpvote}
+                              upvotingPosts={upvotingPosts}
+                              onToggleSave={handleToggleSave}
+                              savingPosts={savingPosts}
+                              showSnackbar={setSnackbar}
+                              displayMode="card"
+                            />
+                          </div>
                         )}
                         {viewMode === 'compact' && (
-                          <PostCard
-                            post={post}
-                            user={user}
-                            onUpvote={handleUpvote}
-                            upvotingPosts={upvotingPosts}
-                            onToggleSave={handleToggleSave}
-                            savingPosts={savingPosts}
-                            showSnackbar={setSnackbar}
-                            displayMode="compact"
-                          />
+                          <div ref={index === posts.length - 1 ? lastPostRef : null}>
+                            <PostCard
+                              post={post}
+                              user={user}
+                              onUpvote={handleUpvote}
+                              upvotingPosts={upvotingPosts}
+                              onToggleSave={handleToggleSave}
+                              savingPosts={savingPosts}
+                              showSnackbar={setSnackbar}
+                              displayMode="compact"
+                            />
+                          </div>
                         )}
                       </React.Fragment>
                     ))}
@@ -1285,99 +1352,104 @@ export default function Community() {
                 ) : (
                   // Grid view - only show posts with images
                   <Grid container spacing={2}>
-                    {posts.filter(post => post.media && post.media.length > 0).map((post) => (
-                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
-                        <Box 
-                          onClick={() => navigate(`/post/${post._id}`)}
-                          sx={{
-                            borderRadius: 3,
-                            overflow: 'hidden',
-                            cursor: 'pointer',
-                            boxShadow: 2,
-                            '&:hover': {
-                              boxShadow: 4,
-                              transform: 'translateY(-2px)',
-                            },
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            transition: 'all 0.3s ease',
-                            bgcolor: theme.palette.background.paper,
-                          }}
-                        >
-                          <Box
-                            component="img"
-                            src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
-                            alt={post.title}
+                    {(() => {
+                      const imagePosts = posts.filter(post => post.media && post.media.length > 0);
+                      return imagePosts.map((post, index) => (
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                          <Box 
+                            ref={index === imagePosts.length - 1 ? lastPostRef : null}
+                            onClick={() => navigate(`/post/${post._id}`)}
                             sx={{
-                              width: '100%',
-                              height: 200,
-                              objectFit: 'cover',
-                              borderBottom: `1px solid ${theme.palette.divider}`,
+                              borderRadius: 3,
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              boxShadow: 2,
+                              '&:hover': {
+                                boxShadow: 4,
+                                transform: 'translateY(-2px)',
+                              },
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              transition: 'all 0.3s ease',
+                              bgcolor: theme.palette.background.paper,
                             }}
-                          />
-                          <Box sx={{ p: 2 }}>
-                            <Typography 
-                              variant="h6" 
-                              sx={{ 
-                                fontWeight: 700, 
-                                fontSize: 16, 
-                                lineHeight: 1.4,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                fontFamily: theme.typography.fontFamily,
-                                mb: 1,
+                          >
+                            <Box
+                              component="img"
+                              src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
+                              alt={post.title}
+                              sx={{
+                                width: '100%',
+                                height: 200,
+                                objectFit: 'cover',
+                                borderBottom: `1px solid ${theme.palette.divider}`,
                               }}
-                            >
-                              {post.title}
-                            </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                              <Avatar 
-                                src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
-                                alt={post.user?.username || 'User'}
-                                sx={{ width: 24, height: 24, fontSize: 12 }}
-                              >
-                                {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                              </Avatar>
+                            />
+                            <Box sx={{ p: 2 }}>
                               <Typography 
-                                variant="caption" 
+                                variant="h6" 
                                 sx={{ 
-                                  fontWeight: 500, 
-                                  color: 'text.secondary',
+                                  fontWeight: 700, 
+                                  fontSize: 16, 
+                                  lineHeight: 1.4,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
                                   fontFamily: theme.typography.fontFamily,
+                                  mb: 1,
                                 }}
                               >
-                                {post.user?.username || 'Unknown'}
+                                {post.title}
                               </Typography>
-                            </Stack>
+                              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                                <Avatar 
+                                  src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+                                  alt={post.user?.username || 'User'}
+                                  sx={{ width: 24, height: 24, fontSize: 12 }}
+                                >
+                                  {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                                </Avatar>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    fontWeight: 500, 
+                                    color: 'text.secondary',
+                                    fontFamily: theme.typography.fontFamily,
+                                  }}
+                                >
+                                  {post.user?.username || 'Unknown'}
+                                </Typography>
+                              </Stack>
+                            </Box>
                           </Box>
-                        </Box>
-                      </Grid>
-                    ))}
+                        </Grid>
+                      ));
+                    })()}
                   </Grid>
                 )}
 
-                {/* Pagination */}
+                {/* Infinite Scroll Indicators */}
                 {totalPages > 1 && (
-                  <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
-                    <Pagination
-                      color="primary"
-                      size="large"
-                      count={totalPages}
-                      page={page}
-                      onChange={handlePageChange}
-                      sx={{
-                        '& .MuiPaginationItem-root': {
-                          borderRadius: '50%',
-                          fontWeight: 600,
-                          fontSize: 15,
-                        }
-                      }}
-                    />
-                  </Box>
+                  <>
+                    {/* Loading indicator for infinite scroll */}
+                    {isLoadingMore && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                        <Loader size="medium" />
+                      </Box>
+                    )}
+
+                    {/* End of content message */}
+                    {!hasMore && posts.length > 0 && (
+                      <Box sx={{ textAlign: 'center', mt: 3, mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          You've reached the end of the content
+                        </Typography>
+                      </Box>
+                    )}
+                  </>
                 )}
               </Stack>
             </Grid>
@@ -1437,14 +1509,14 @@ export default function Community() {
                         Popular Topics
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                        {trendingTags.length > 0 ? trendingTags.slice(0, 8).map(item => (
+                        {trendingTags && trendingTags.length > 0 ? trendingTags.slice(0, 8).map((item, index) => (
                           <Chip
-                            key={item.tag}
-                            label={`#${item.tag}`}
-                            onClick={() => handleTagClick(item.tag)}
+                            key={item.tag || index}
+                            label={`#${item.tag || item}`}
+                            onClick={() => handleTagClick(item.tag || item)}
                             clickable
-                            color={selectedTags.includes(item.tag) ? 'primary' : 'default'}
-                            variant={selectedTags.includes(item.tag) ? 'filled' : 'outlined'}
+                            color={selectedTags.includes(item.tag || item) ? 'primary' : 'default'}
+                            variant={selectedTags.includes(item.tag || item) ? 'filled' : 'outlined'}
                             size="small"
                             sx={{
                               borderRadius: '12px',
@@ -1452,7 +1524,7 @@ export default function Community() {
                               fontSize: 11,
                               height: 24,
                               '&:hover': {
-                                bgcolor: selectedTags.includes(item.tag) ? undefined : alpha(theme.palette.primary.main, 0.1),
+                                bgcolor: selectedTags.includes(item.tag || item) ? undefined : alpha(theme.palette.primary.main, 0.1),
                               },
                               fontFamily: theme.typography.fontFamily,
                             }}

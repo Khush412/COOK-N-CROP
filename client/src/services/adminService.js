@@ -159,6 +159,16 @@ const importProductsFromCsv = async (formData) => {
   return response.data;
 };
 
+const clearPostReports = async (postId) => {
+  const response = await api.put(`/posts/${postId}/clear-reports`);
+  return response.data;
+};
+
+const clearCommentReports = async (commentId) => {
+  const response = await api.put(`/comments/${commentId}/clear-reports`);
+  return response.data;
+};
+
 // Auto-join groups methods
 const getAutoJoinGroupsConfig = async () => {
   const response = await api.get('/auto-join-groups');
@@ -182,6 +192,8 @@ const adminService = {
   getReportedComments,
   deletePost,
   deleteComment,
+  clearPostReports,
+  clearCommentReports,
   updateUserRole,
   toggleUserStatus,
   updateMultipleUserStatuses,
