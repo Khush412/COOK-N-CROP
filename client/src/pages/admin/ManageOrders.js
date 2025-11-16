@@ -91,56 +91,58 @@ const ManageOrders = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
           Manage Orders
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           View, update, and manage all customer orders.
         </Typography>
       </Paper>
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, width: { xs: '100%', sm: 'auto' } }}>
             <TextField
               label="Search by ID, User, or Email"
               variant="outlined"
               size="small"
+              fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-              inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
+              inputProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
               InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />,
+                startAdornment: <SearchIcon sx={{ mr: 1, fontSize: { xs: 16, sm: 20 }, color: 'text.secondary' }} />,
               }}
             />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Status</InputLabel>
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Status</InputLabel>
               <Select
                 value={statusFilter}
                 label="Status"
                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
                 IconComponent={FilterListIcon}
                 MenuProps={{
                   PaperProps: {
                     sx: {
                       '& .MuiMenuItem-root': {
                         fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.75rem', sm: '1rem' }
                       },
                     },
                   },
                 }}
               >
-                <MenuItem value="All">All Statuses</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Processing">Processing</MenuItem>
-                <MenuItem value="Shipped">Shipped</MenuItem>
-                <MenuItem value="Delivered">Delivered</MenuItem>
-                <MenuItem value="Canceled">Canceled</MenuItem>
+                <MenuItem value="All" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>All Statuses</MenuItem>
+                <MenuItem value="Pending" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Pending</MenuItem>
+                <MenuItem value="Processing" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Processing</MenuItem>
+                <MenuItem value="Shipped" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Shipped</MenuItem>
+                <MenuItem value="Delivered" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Delivered</MenuItem>
+                <MenuItem value="Canceled" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Canceled</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -148,8 +150,16 @@ const ManageOrders = () => {
             component={RouterLink}
             to="/admin/orders/create"
             variant="contained"
-            startIcon={<AddShoppingCartIcon />}
-            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+            startIcon={<AddShoppingCartIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
+            sx={{ 
+              fontFamily: theme.typography.fontFamily, 
+              borderRadius: 2,
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              py: { xs: 0.5, sm: 1 },
+              px: { xs: 1, sm: 2 },
+              width: { xs: '100%', sm: 'auto' },
+              mt: { xs: 1, sm: 0 }
+            }}
           >
             Create Order
           </Button>
@@ -157,20 +167,21 @@ const ManageOrders = () => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table sx={{ minWidth: { xs: 600, sm: 800, md: 1000 } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order ID</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Total</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Payment</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Order ID</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Total</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Payment</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Actions</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Details</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -180,7 +191,7 @@ const ManageOrders = () => {
                         key={order._id} 
                         hover 
                         sx={{ 
-                          '& td': { py: 1.5 },
+                          '& td': { py: { xs: 1, sm: 1.5 } },
                           '&:hover': {
                             backgroundColor: alpha(theme.palette.primary.main, 0.02)
                           }
@@ -188,17 +199,17 @@ const ManageOrders = () => {
                       >
                         <TableCell>
                           <Tooltip title={order._id}>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 120, fontFamily: theme.typography.fontFamily, fontWeight: 500 }}>
+                            <Typography variant="body2" noWrap sx={{ maxWidth: { xs: 80, sm: 120 }, fontFamily: theme.typography.fontFamily, fontWeight: 500, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                               {order._id.substring(0, 8)}...
                             </Typography>
                           </Tooltip>
                         </TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box 
                               sx={{ 
-                                width: 32, 
-                                height: 32, 
+                                width: { xs: 24, sm: 32 }, 
+                                height: { xs: 24, sm: 32 }, 
                                 borderRadius: '50%', 
                                 bgcolor: alpha(theme.palette.primary.main, 0.1),
                                 display: 'flex', 
@@ -206,33 +217,33 @@ const ManageOrders = () => {
                                 justifyContent: 'center',
                                 fontWeight: 'bold',
                                 color: 'primary.main',
-                                fontSize: '0.75rem'
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
                               }}
                             >
                               {order.user?.username?.charAt(0).toUpperCase() || 'U'}
                             </Box>
                             <Box>
-                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 500 }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 500, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                 {order.user?.username || 'N/A'}
                               </Typography>
                               {order.user?.email && (
-                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                                   {order.user.email}
                                 </Typography>
                               )}
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             {new Date(order.createdAt).toLocaleDateString()}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                             {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
-                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
+                        <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                          <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             ₹{order.totalPrice.toFixed(2)}
                           </Typography>
                         </TableCell>
@@ -241,7 +252,11 @@ const ManageOrders = () => {
                             label={order.paymentMethod} 
                             size="small" 
                             variant="outlined"
-                            sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                            sx={{ 
+                              borderRadius: 1, 
+                              fontFamily: theme.typography.fontFamily,
+                              fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                            }}
                           />
                         </TableCell>
                         <TableCell>
@@ -249,12 +264,16 @@ const ManageOrders = () => {
                             label={order.status} 
                             color={statusColors[order.status] || 'default'} 
                             size="small" 
-                            sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                            sx={{ 
+                              borderRadius: 1, 
+                              fontFamily: theme.typography.fontFamily,
+                              fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                            }}
                           />
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <FormControl size="small" sx={{ minWidth: 140 }}>
+                            <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 140 } }}>
                               <Select 
                                 value={order.status} 
                                 onChange={(e) => handleStatusChange(order._id, e.target.value)} 
@@ -264,16 +283,17 @@ const ManageOrders = () => {
                                   borderRadius: 2, 
                                   fontFamily: theme.typography.fontFamily,
                                   '& .MuiSelect-select': { 
-                                    py: 1, 
-                                    px: 1.5 
+                                    py: { xs: 0.5, sm: 1 }, 
+                                    px: { xs: 1, sm: 1.5 },
+                                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                                   } 
                                 }}
                               >
-                                <MenuItem value="Pending">Pending</MenuItem>
-                                <MenuItem value="Processing">Processing</MenuItem>
-                                <MenuItem value="Shipped">Shipped</MenuItem>
-                                <MenuItem value="Delivered">Delivered</MenuItem>
-                                <MenuItem value="Canceled">Canceled</MenuItem>
+                                <MenuItem value="Pending" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Pending</MenuItem>
+                                <MenuItem value="Processing" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Processing</MenuItem>
+                                <MenuItem value="Shipped" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Shipped</MenuItem>
+                                <MenuItem value="Delivered" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Delivered</MenuItem>
+                                <MenuItem value="Canceled" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Canceled</MenuItem>
                               </Select>
                             </FormControl>
                             {updatingStatus === order._id && <Loader size="small" />}
@@ -283,22 +303,27 @@ const ManageOrders = () => {
                           <IconButton
                             size="small"
                             onClick={(event) => handleActionsClick(event, order)}
-                            sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                            sx={{ 
+                              border: `1px solid ${theme.palette.divider}`, 
+                              borderRadius: 2,
+                              width: { xs: 32, sm: 40 },
+                              height: { xs: 32, sm: 40 }
+                            }}
                           >
-                            <MoreVertIcon fontSize="small" />
+                            <MoreVertIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
                           </IconButton>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
-                        <Box sx={{ p: 6, textAlign: 'center' }}>
-                          <ReceiptLongIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                      <TableCell colSpan={8} align="center">
+                        <Box sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center' }}>
+                          <ReceiptLongIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                             No orders found
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             Try adjusting your search criteria
                           </Typography>
                         </Box>
@@ -307,7 +332,7 @@ const ManageOrders = () => {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </Box>
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <Pagination
@@ -320,7 +345,8 @@ const ManageOrders = () => {
                   sx={{ 
                     '& .MuiPaginationItem-root': { 
                       borderRadius: 2,
-                      fontFamily: theme.typography.fontFamily
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }
                   }}
                 />
@@ -333,7 +359,7 @@ const ManageOrders = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleActionsClose}
-        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } } }}
       >
         <MenuItem 
           component={RouterLink} 
@@ -341,7 +367,7 @@ const ManageOrders = () => {
           onClick={handleActionsClose}
         >
           <ListItemIcon>
-            <VisibilityIcon fontSize="small" />
+            <VisibilityIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
         </MenuItem>
@@ -351,7 +377,7 @@ const ManageOrders = () => {
           onClick={handleActionsClose}
         >
           <ListItemIcon>
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
           </ListItemIcon>
           <ListItemText>Edit Order</ListItemText>
         </MenuItem>

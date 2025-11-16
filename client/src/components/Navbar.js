@@ -1,63 +1,69 @@
-import React, { useState, useEffect, forwardRef, useCallback, useRef } from "react";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Box,
-  IconButton,
-  MenuItem,
-  Menu,
-  Button,
-  Tooltip,
+import React, { useState, useEffect, useRef, forwardRef, useCallback } from 'react';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  IconButton, 
+  Badge, 
+  Menu, 
+  MenuItem, 
+  Avatar, 
+  Divider, 
+  ListItemIcon, 
+  ListItemText, 
+  Tooltip, 
+  useTheme, 
+  useMediaQuery, 
+  Box, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  CssBaseline,
   Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  Switch,
+  Chip,
+  alpha,
+  styled,
   Snackbar,
   Alert,
-  Badge,
-  Switch,
-  Avatar,
-  ListItemIcon,
-  Divider,
-  styled,
-  alpha,
-  Fade,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  InputBase,
-} from "@mui/material";
-import {
-  Palette as PaletteIcon,
-  Person as PersonIcon,
-  Logout as LogoutIcon,
-  Settings as SettingsIcon,
-  ArrowDropDown as ArrowDropDownIcon,
-  ShoppingCart as ShoppingCartIcon,
-  Home as HomeIcon,
+  Fade
+} from '@mui/material';
+import { 
+  Menu as MenuIcon, 
+  Person as PersonIcon, 
+  ShoppingCart as ShoppingCartIcon, 
   ReceiptLong as ReceiptLongIcon,
-  Notifications as NotificationsIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
-  Bookmark as BookmarkIcon,
+  Home as HomeIcon,
+  Mail as MailIcon,
   Favorite as FavoriteIcon,
   CollectionsBookmark as CollectionsBookmarkIcon,
+  Bookmark as BookmarkIcon,
   History as HistoryIcon,
-  Mail as MailIcon,
   Block as BlockIcon,
-  DynamicFeed as DynamicFeedIcon,
-  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Palette as PaletteIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  Settings as SettingsIcon,
+  Apps as AppsIcon,
   Close as CloseIcon,
-  Search as SearchIcon,
   SupportAgent as SupportAgentIcon,
-  SmartToy as SmartToyIcon,
-} from "@mui/icons-material";
+  ArrowDropDown as ArrowDropDownIcon,
+  Notifications as NotificationsIcon,
+  SmartToy as SmartToyIcon
+} from '@mui/icons-material';
 import ThemeCustomizer from "./ThemeCustomizer";
 import NotificationsMenu from "./NotificationsMenu";
 import notificationService from "../services/notificationService";
 import { useSocket } from "../contexts/SocketContext";
-import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
 import { useCart } from "../contexts/CartContext";
 import EnhancedGlobalSearch from './EnhancedGlobalSearch';
@@ -221,12 +227,24 @@ const Navbar = () => {
   const searchRef = useRef(null);
 
   const [showChatbot, setShowChatbot] = useState(() => localStorage.getItem('showChatbot') !== 'false');
+  const [showMobileDock, setShowMobileDock] = useState(() => {
+    const saved = localStorage.getItem('showMobileDock');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   const handleToggleChatbot = () => {
     const newValue = !showChatbot;
     setShowChatbot(newValue);
     localStorage.setItem('showChatbot', String(newValue));
     window.dispatchEvent(new CustomEvent('chatbot-toggle', { detail: { visible: newValue } }));
+  };
+
+  const handleToggleMobileDock = () => {
+    const newValue = !showMobileDock;
+    setShowMobileDock(newValue);
+    localStorage.setItem('showMobileDock', String(newValue));
+    // Dispatch a custom event to notify other components of the change
+    window.dispatchEvent(new CustomEvent('mobiledock-toggle', { detail: { visible: newValue } }));
   };
 
   useEffect(() => {
@@ -383,6 +401,7 @@ const Navbar = () => {
     { label: 'My Wishlist', path: '/profile/wishlist', icon: <FavoriteIcon /> },
     { label: 'My Collections', path: '/profile/collections', icon: <CollectionsBookmarkIcon /> },
     { label: 'Saved Posts', path: '/profile/saved-posts', icon: <BookmarkIcon /> },
+    { label: 'My Support Tickets', path: '/profile/support-tickets', icon: <SupportAgentIcon /> },
     { label: 'My Activity', path: '/profile/my-activity', icon: <HistoryIcon /> },
     { label: 'Blocked Users', path: '/profile/blocked-users', icon: <BlockIcon /> },
   ];
@@ -439,12 +458,6 @@ const Navbar = () => {
                   </ListItemButton>
                 </ListItem>
               )}
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => { handleDrawerToggle(); setThemeDialogOpen(true); }}>
-                  <ListItemIcon sx={{ color: theme.palette.text.secondary }}><SettingsIcon /></ListItemIcon>
-                  <ListItemText primary="Settings" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
-                </ListItemButton>
-              </ListItem>
             </List>
           </>
         ) : null}
@@ -970,6 +983,18 @@ const Navbar = () => {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
+                      navigate("/messages");
+                    }}
+                    sx={{ borderRadius: 1, px: 2 }}
+                  >
+                    <ListItemIcon>
+                      <MailIcon fontSize="small" />
+                    </ListItemIcon>
+                    Messages
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
                       navigate("/profile/orders");
                     }}
                     sx={{ borderRadius: 1, px: 2 }}
@@ -990,6 +1015,35 @@ const Navbar = () => {
                       <CollectionsBookmarkIcon fontSize="small" />
                     </ListItemIcon>
                     My Collections
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      handleToggleMobileDock();
+                    }}
+                    sx={{ 
+                      borderRadius: 1, 
+                      px: 2,
+                      minHeight: '36px'
+                    }}
+                  >
+                    <ListItemIcon>
+                      <AppsIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Mobile Dock"
+                      primaryTypographyProps={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                    <Switch
+                      checked={showMobileDock}
+                      edge="end"
+                      readOnly
+                      size="small"
+                      inputProps={{ 'aria-label': 'toggle mobile dock visibility' }}
+                    />
                   </MenuItem>
                   <Divider sx={{ my: 0.5 }} />
                   <MenuItem

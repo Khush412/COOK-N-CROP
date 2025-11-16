@@ -28,18 +28,18 @@ const ProminentCTA = () => {
 
   return (
     <Box sx={{ 
-      py: 8, 
+      py: { xs: 2, md: 8 }, 
       bgcolor: alpha(theme.palette.primary.main, 0.05),
       borderRadius: 4,
-      mb: 6
+      mb: 3
     }}>
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Typography 
             variant="h3" 
             sx={{ 
               fontWeight: 800, 
-              mb: 2, 
+              mb: 1, 
               fontFamily: theme.typography.fontFamily,
               color: theme.palette.primary.main
             }}
@@ -50,7 +50,7 @@ const ProminentCTA = () => {
             variant="h6" 
             color="text.secondary" 
             sx={{ 
-              mb: 4, 
+              mb: 2, 
               fontFamily: theme.typography.fontFamily, 
               maxWidth: '600px', 
               mx: 'auto' 
@@ -124,9 +124,9 @@ const ProminentCTA = () => {
               fontFamily: theme.typography.fontFamily, 
               fontWeight: 'bold', 
               borderRadius: '50px', 
-              px: 6, 
-              py: 2,
-              fontSize: '1.1rem',
+              px: { xs: 3, sm: 6 }, 
+              py: { xs: 1, sm: 2 },
+              fontSize: { xs: '0.9rem', sm: '1.1rem' },
               boxShadow: `0 0 20px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 30px ${alpha(theme.palette.secondary.main, 0.4)}`,
               transition: 'box-shadow 0.3s ease',
               '&:hover': { 

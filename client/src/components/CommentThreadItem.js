@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, useMediaQuery } from '@mui/material';
 import {
   Box,
   ListItem,
@@ -45,6 +45,7 @@ const CommentThreadItem = ({
 }) => {
   const { user, isAuthenticated } = useAuth();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -91,28 +92,32 @@ const CommentThreadItem = ({
       sx={{
         display: 'block',
         position: 'relative',
-        p: 2,
-        mb: 2,
-        borderRadius: 2,
+        p: isMobile ? 1.5 : 2,
+        mb: isMobile ? 1.5 : 2,
+        borderRadius: isMobile ? 1.5 : 2,
         bgcolor: 'background.paper',
         boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
       }}
     >
-      <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={isMobile ? 1.5 : 2}>
         <ListItemAvatar sx={{ minWidth: 'auto', mt: 1 }}>
-          <Avatar src={comment.user?.profilePic && comment.user.profilePic.startsWith('http') ? comment.user.profilePic : comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} alt={comment.user?.username}>
+          <Avatar 
+            src={comment.user?.profilePic && comment.user.profilePic.startsWith('http') ? comment.user.profilePic : comment.user?.profilePic ? `${process.env.REACT_APP_API_URL}${comment.user.profilePic}` : undefined} 
+            alt={comment.user?.username}
+            sx={{ width: isMobile ? 32 : 40, height: isMobile ? 32 : 40, fontSize: isMobile ? 14 : 16 }}
+          >
             {!comment.user?.profilePic && comment.user?.username?.charAt(0).toUpperCase()}
-          </Avatar> {/* Added profilePic check */}
+          </Avatar>
         </ListItemAvatar>
         <Box sx={{ flexGrow: 1, position: 'relative' }}>
           {isAuthenticated && (user.id === comment.user?._id || user.role === 'admin') && !isEditing && (
-            <Box sx={{ position: 'absolute', top: -8, right: -8 }}>
+            <Box sx={{ position: 'absolute', top: isMobile ? -6 : -8, right: isMobile ? -6 : -8 }}>
               <IconButton
                 aria-label="comment actions"
-                size="small"
+                size={isMobile ? "small" : "medium"}
                 onClick={handleMenuOpen}
               >
-                <MoreVertIcon fontSize="small" />
+                <MoreVertIcon fontSize={isMobile ? "small" : "medium"} />
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
@@ -122,30 +127,40 @@ const CommentThreadItem = ({
                 {isCommentAuthor && ( // Only author can edit
                   <MenuItem onClick={handleEdit}>
                     <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                    <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Edit</MuiListItemText>
+                    <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.875rem' : '1rem' }}>Edit</MuiListItemText>
                   </MenuItem>
                 )}
                 <MenuItem onClick={handleDelete}>
                   <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                  <MuiListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily }}>Delete</MuiListItemText>
+                  <MuiListItemText primaryTypographyProps={{ color: 'error.main', fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.875rem' : '1rem' }}>Delete</MuiListItemText>
                 </MenuItem>
                 <MenuItem onClick={handleReport}>
                   <ListItemIcon><ReportIcon fontSize="small" /></ListItemIcon>
-                  <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</MuiListItemText>
+                  <MuiListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.875rem' : '1rem' }}>Report</MuiListItemText>
                 </MenuItem>
               </Menu>
             </Box>
           )}
 
           {isEditing ? (
-            <Box sx={{ pr: 4, mt: 1 }}>
+            <Box sx={{ pr: isMobile ? 3 : 4, mt: 1 }}>
               <CommentForm
                 onSubmit={handleUpdateSubmit}
                 loading={isSubmitting}
                 initialContent={comment.content}
                 submitLabel="Save"
               />
-              <Button size="small" onClick={() => setIsEditing(false)} disabled={isSubmitting} sx={{ fontFamily: theme.typography.fontFamily }}>Cancel</Button>
+              <Button 
+                size="small" 
+                onClick={() => setIsEditing(false)} 
+                disabled={isSubmitting} 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
+                }}
+              >
+                Cancel
+              </Button>
             </Box>
           ) : (
             <ListItemText
@@ -154,7 +169,14 @@ const CommentThreadItem = ({
                   component={RouterLink}
                   to={`/user/${comment.user?.username}`}
                   variant="subtitle2"
-                  sx={{ fontWeight: 600, textDecoration: 'none', color: 'inherit', '&:hover': { textDecoration: 'underline' }, fontFamily: theme.typography.fontFamily }}
+                  sx={{ 
+                    fontWeight: 600, 
+                    textDecoration: 'none', 
+                    color: 'inherit', 
+                    '&:hover': { textDecoration: 'underline' }, 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: isMobile ? '0.875rem' : '1rem'
+                  }}
                 >
                   {comment.user?.username}
                 </Typography>
@@ -168,6 +190,7 @@ const CommentThreadItem = ({
                       display: 'block', 
                       whiteSpace: 'pre-wrap', 
                       fontFamily: theme.typography.fontFamily,
+                      fontSize: isMobile ? '0.875rem' : '1rem',
                       position: 'relative',
                       '& a': {
                         pointerEvents: 'auto !important',
@@ -179,8 +202,15 @@ const CommentThreadItem = ({
                   >
                     <RichTextDisplay text={comment.content} />
                   </Box>
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Stack direction="row" spacing={isMobile ? 1 : 2} alignItems="center" sx={{ mt: 0.5 }}>
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: isMobile ? '0.65rem' : '0.75rem'
+                      }}
+                    >
                       {comment.createdAt ? formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true }) : 'just now'}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -189,15 +219,36 @@ const CommentThreadItem = ({
                         onClick={handleUpvote}
                         disabled={upvotingComments.includes(comment._id)}
                         aria-label="upvote comment"
+                        sx={{ p: isMobile ? 0.5 : 1 }}
                       >
                         <ThumbUpIcon
-                          sx={{ fontSize: '1rem' }}
+                          sx={{ fontSize: isMobile ? '0.875rem' : '1rem' }}
                           color={(comment.upvotes || []).includes(user?.id) ? 'primary' : 'action'}
                         />
                       </IconButton>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: '12px', fontFamily: theme.typography.fontFamily }}>{comment.upvoteCount > 0 ? comment.upvoteCount : ''}</Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'text.secondary', 
+                          minWidth: '12px', 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: isMobile ? '0.65rem' : '0.75rem'
+                        }}
+                      >
+                        {comment.upvoteCount > 0 ? comment.upvoteCount : ''}
+                      </Typography>
                     </Box>
-                    <Button size="small" onClick={() => onReply(comment._id)} sx={{ fontSize: '0.75rem', textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
+                    <Button 
+                      size="small" 
+                      onClick={() => onReply(comment._id)} 
+                      sx={{ 
+                        fontSize: isMobile ? '0.75rem' : '0.875rem', 
+                        textTransform: 'none', 
+                        fontFamily: theme.typography.fontFamily,
+                        minWidth: 'auto',
+                        p: isMobile ? '4px 8px' : '6px 12px'
+                      }}
+                    >
                       Reply
                     </Button>
                   </Stack>
@@ -205,14 +256,15 @@ const CommentThreadItem = ({
                     <Button
                       size="small"
                       onClick={() => setRepliesExpanded(!repliesExpanded)}
-                      startIcon={repliesExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                      startIcon={repliesExpanded ? <KeyboardArrowUpIcon sx={{ fontSize: isMobile ? '1rem' : '1.25rem' }} /> : <KeyboardArrowDownIcon sx={{ fontSize: isMobile ? '1rem' : '1.25rem' }} />}
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: isMobile ? '0.75rem' : '0.875rem',
                         textTransform: 'none',
                         fontFamily: theme.typography.fontFamily,
                         color: 'text.secondary',
                         mt: 1,
                         ml: -1,
+                        p: isMobile ? 0.5 : 1
                       }}
                     >
                       {repliesExpanded ? 'Hide' : 'View'} {comment.replies.length} {comment.replies.length > 1 ? 'replies' : 'reply'}
@@ -223,9 +275,19 @@ const CommentThreadItem = ({
             />
           )}
           {isReplying && (
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: isMobile ? 1 : 2 }}>
               <CommentForm onSubmit={onCommentSubmit} loading={isSubmitting} />
-              <Button size="small" onClick={onCancelReply} sx={{ mt: -3, ml: 7, textTransform: 'none', fontFamily: theme.typography.fontFamily }}>
+              <Button 
+                size="small" 
+                onClick={onCancelReply} 
+                sx={{ 
+                  mt: isMobile ? -2 : -3, 
+                  ml: isMobile ? 5 : 7, 
+                  textTransform: 'none', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem'
+                }}
+              >
                 Cancel
               </Button>
             </Box>
@@ -236,7 +298,7 @@ const CommentThreadItem = ({
       {/* Render Replies */}
       {comment.replies && comment.replies.length > 0 && (
         <Collapse in={repliesExpanded} timeout="auto" unmountOnExit>
-          <List sx={{ pt: 2, pl: { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: 2.5, mt: 2 }}>
+          <List sx={{ pt: isMobile ? 1 : 2, pl: isMobile ? 1 : { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: isMobile ? 1 : 2.5, mt: isMobile ? 1 : 2 }}>
             {comment.replies.map((reply) => ( // Pass postGroup to nested comments
               <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} postGroup={postGroup} />
             ))}

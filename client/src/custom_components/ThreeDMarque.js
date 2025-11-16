@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export const ThreeDMarquee = ({
   images,
@@ -7,14 +7,38 @@ export const ThreeDMarquee = ({
   cols = 6,
   onImageClick,
 }) => {
+  const [columns, setColumns] = useState(cols);
+  const [sectionHeight, setSectionHeight] = useState(600); // Base height for desktop
+  
+  // Adjust columns and height based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 480) {
+        setColumns(3); // Strictly 3 columns on mobile
+        setSectionHeight(300); // Reduced height for mobile
+      } else if (window.innerWidth <= 768) {
+        setColumns(4); // 4 columns on tablet
+        setSectionHeight(400); // Medium height for tablet
+      } else {
+        setColumns(cols); // Original number of columns on desktop
+        setSectionHeight(600); // Original height on desktop
+      }
+    };
+
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [cols]);
+
   // Duplicate images to ensure smooth animation
-  const duplicatedImages = [...images, ...images, ...images,];
+  const duplicatedImages = [...images, ...images, ...images];
   
   // Calculate how many images per column
-  const groupSize = Math.ceil(duplicatedImages.length / cols);
+  const groupSize = Math.ceil(duplicatedImages.length / columns);
   
   // Split images into columns
-  const imageGroups = Array.from({ length: cols }, (_, index) =>
+  const imageGroups = Array.from({ length: columns }, (_, index) =>
     duplicatedImages.slice(index * groupSize, (index + 1) * groupSize)
   );
 
@@ -31,7 +55,7 @@ export const ThreeDMarquee = ({
       style={{
         margin: '0 auto',
         display: 'block',
-        height: '600px', // Increased height from 500px to 600px
+        height: `${sectionHeight}px`, // Dynamic height based on screen size
         overflow: 'hidden',
         borderRadius: '16px',
         backgroundColor: "transparent",
@@ -57,7 +81,7 @@ export const ThreeDMarquee = ({
               width: '100%',
               transformOrigin: 'center',
               gap: '16px',
-              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gridTemplateColumns: `repeat(${columns}, 1fr)`,
             }}
           >
             {imageGroups.map((imagesInGroup, idx) => (
@@ -124,6 +148,79 @@ export const ThreeDMarquee = ({
           </div>
         </div>
       </div>
+      
+      {/* Mobile responsive styles */}
+      <style jsx>{`
+        @media (max-width: 1024px) {
+          section {
+            height: 500px !important;
+          }
+          
+          div[style*="rotateX"] {
+            transform: rotateX(50deg) rotateZ(40deg) scale(0.9);
+          }
+          
+          div[style*="gridTemplateColumns"] {
+            gap: 12px;
+          }
+          
+          div[style*="flexDirection"] {
+            gap: 20px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          section {
+            height: 400px !important;
+          }
+          
+          div[style*="rotateX"] {
+            transform: rotateX(45deg) rotateZ(35deg) scale(0.8);
+          }
+          
+          div[style*="gridTemplateColumns"] {
+            gap: 8px;
+          }
+          
+          div[style*="flexDirection"] {
+            gap: 16px;
+          }
+          
+          img[style*="maxWidth"] {
+            maxWidth: 180px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          section {
+            height: 300px !important;
+          }
+          
+          div[style*="rotateX"] {
+            transform: rotateX(35deg) rotateZ(25deg) scale(0.6);
+          }
+          
+          div[style*="gridTemplateColumns"] {
+            gap: 4px;
+          }
+          
+          div[style*="flexDirection"] {
+            gap: 10px;
+          }
+          
+          img[style*="maxWidth"] {
+            maxWidth: 80px;
+          }
+          
+          div[style*="borderRadius"] {
+            borderRadius: 6px;
+          }
+          
+          div[style*="boxShadow"] {
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+          }
+        }
+      `}</style>
     </section>
   );
 };

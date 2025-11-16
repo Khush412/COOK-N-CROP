@@ -189,24 +189,24 @@ const ManageUsers = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' } }}>
           Manage Users
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Oversee and manage all registered users on the platform.
         </Typography>
       </Paper>
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2, width: { xs: '100%', sm: 'auto' } }}>
             <TextField
               label="Search by Username or Email"
               variant="outlined"
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              sx={{ minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
             />
@@ -217,7 +217,7 @@ const ManageUsers = () => {
                   color="error"
                   startIcon={<BlockIcon />}
                   onClick={() => handleBulkStatusUpdate(false)}
-                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
                 >
                   Deactivate Selected ({numSelected})
                 </Button>
@@ -225,20 +225,20 @@ const ManageUsers = () => {
                   variant="outlined"
                   startIcon={<CheckCircleOutlineIcon />}
                   onClick={() => handleBulkStatusUpdate(true)}
-                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                  sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
                 >
                   Activate Selected
                 </Button>
               </>
             )}
           </Stack>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
               variant="outlined"
               startIcon={exporting ? <Loader size="small" /> : <DownloadIcon />}
               onClick={handleExport}
               disabled={exporting}
-              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
             >
               Export
             </Button>
@@ -250,8 +250,8 @@ const ManageUsers = () => {
           <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table sx={{ minWidth: { xs: 600, sm: 800, md: '100%' } }}>
                 <TableHead>
                   <TableRow>
                     <TableCell padding="checkbox">
@@ -262,12 +262,12 @@ const ManageUsers = () => {
                         inputProps={{ 'aria-label': 'select all users' }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Role</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Joined</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Role</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Joined</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -284,7 +284,7 @@ const ManageUsers = () => {
                           tabIndex={-1} 
                           selected={isItemSelected} 
                           sx={{
-                            '& td': { py: 1.5 },
+                            '& td': { py: { xs: 1, sm: 1.5 } },
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.primary.main, 0.02)
                             }
@@ -297,28 +297,29 @@ const ManageUsers = () => {
                             />
                           </TableCell>
                           <TableCell id={`user-checkbox-${user._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                               <Box 
                                 sx={{ 
-                                  width: 40, 
-                                  height: 40, 
+                                  width: { xs: 32, sm: 40 }, 
+                                  height: { xs: 32, sm: 40 }, 
                                   borderRadius: '50%', 
                                   bgcolor: alpha(theme.palette.primary.main, 0.1),
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center',
                                   fontWeight: 'bold',
-                                  color: 'primary.main'
+                                  color: 'primary.main',
+                                  fontSize: { xs: '0.875rem', sm: '1rem' }
                                 }}
                               >
                                 {user.username.charAt(0).toUpperCase()}
                               </Box>
                               <Box>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                                   {user.username}
                                 </Typography>
                                 {user.name && (
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                     {user.name}
                                   </Typography>
                                 )}
@@ -326,35 +327,35 @@ const ManageUsers = () => {
                             </Box>
                           </TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                               {user.email}
                             </Typography>
                           </TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
                             {editingUserId === user._id ? (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 120 } }}>
                                   <Select
                                     value={selectedRole}
                                     onChange={(e) => setSelectedRole(e.target.value)}
-                                    sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                                    sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                                   >
-                                    <MenuItem value="user">User</MenuItem>
-                                    <MenuItem value="admin">Admin</MenuItem>
-                                    <MenuItem value="moderator">Moderator</MenuItem>
+                                    <MenuItem value="user" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>User</MenuItem>
+                                    <MenuItem value="admin" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Admin</MenuItem>
+                                    <MenuItem value="moderator" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Moderator</MenuItem>
                                   </Select>
                                 </FormControl>
                                 <IconButton 
                                   size="small" 
                                   onClick={() => handleSaveClick(user._id)}
-                                  sx={{ bgcolor: 'success.main', color: 'white', '&:hover': { bgcolor: 'success.dark' } }}
+                                  sx={{ bgcolor: 'success.main', color: 'white', '&:hover': { bgcolor: 'success.dark' }, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                                 >
                                   <SaveIcon fontSize="small" />
                                 </IconButton>
                                 <IconButton 
                                   size="small" 
                                   onClick={handleCancelClick}
-                                  sx={{ bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
+                                  sx={{ bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' }, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                                 >
                                   <CancelIcon fontSize="small" />
                                 </IconButton>
@@ -365,7 +366,7 @@ const ManageUsers = () => {
                                 size="small" 
                                 color={user.role === 'admin' ? 'primary' : user.role === 'moderator' ? 'secondary' : 'default'} 
                                 onClick={() => handleEditClick(user)}
-                                sx={{ cursor: 'pointer', borderRadius: 1 }}
+                                sx={{ cursor: 'pointer', borderRadius: 1, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
                               />
                             )}
                           </TableCell>
@@ -374,12 +375,12 @@ const ManageUsers = () => {
                               label={user.isActive ? 'Active' : 'Inactive'} 
                               size="small" 
                               color={user.isActive ? 'success' : 'error'} 
-                              icon={user.isActive ? <CheckCircleOutlineIcon /> : <BlockIcon />}
-                              sx={{ borderRadius: 1 }}
+                              icon={user.isActive ? <CheckCircleOutlineIcon sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }} /> : <BlockIcon sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }} />}
+                              sx={{ borderRadius: 1, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
                             />
                           </TableCell>
                           <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                               {new Date(user.createdAt).toLocaleDateString()}
                             </Typography>
                           </TableCell>
@@ -387,7 +388,7 @@ const ManageUsers = () => {
                             <IconButton
                               size="small"
                               onClick={(event) => handleActionsClick(event, user)}
-                              sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                              sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                             >
                               <MoreVertIcon fontSize="small" />
                             </IconButton>
@@ -398,12 +399,12 @@ const ManageUsers = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} align="center">
-                        <Box sx={{ p: 6, textAlign: 'center' }}>
-                          <PeopleOutlineIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                        <Box sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center' }}>
+                          <PeopleOutlineIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                             No users found
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             Try adjusting your search criteria
                           </Typography>
                         </Box>
@@ -412,9 +413,9 @@ const ManageUsers = () => {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </Box>
             {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, sm: 4 } }}>
                 <Pagination
                   count={totalPages}
                   page={page}
@@ -425,7 +426,10 @@ const ManageUsers = () => {
                   sx={{ 
                     '& .MuiPaginationItem-root': { 
                       borderRadius: 2,
-                      fontFamily: theme.typography.fontFamily
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      minWidth: { xs: 32, sm: 36 },
+                      height: { xs: 32, sm: 36 }
                     }
                   }}
                 />
@@ -438,7 +442,7 @@ const ManageUsers = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleActionsClose}
-        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } } }}
       >
         <MenuItem 
           component={RouterLink} 
@@ -448,7 +452,7 @@ const ManageUsers = () => {
           <ListItemIcon>
             <PeopleOutlineIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>View Profile</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>View Profile</ListItemText>
         </MenuItem>
         <MenuItem 
           component={RouterLink} 
@@ -458,7 +462,7 @@ const ManageUsers = () => {
           <ListItemIcon>
             <LocationOnIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>View Addresses</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>View Addresses</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => {
           handleToggleStatus(selectedUser?._id, selectedUser?.isActive);
@@ -467,7 +471,7 @@ const ManageUsers = () => {
           <ListItemIcon>
             {selectedUser?.isActive ? <BlockIcon fontSize="small" /> : <CheckCircleOutlineIcon fontSize="small" />}
           </ListItemIcon>
-          <ListItemText>{selectedUser?.isActive ? "Deactivate User" : "Activate User"}</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{selectedUser?.isActive ? "Deactivate User" : "Activate User"}</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => {
           handleDeleteUser(selectedUser?._id);
@@ -476,7 +480,7 @@ const ManageUsers = () => {
           <ListItemIcon>
             <DeleteIcon fontSize="small" color="error" />
           </ListItemIcon>
-          <ListItemText>Delete User</ListItemText>
+          <ListItemText primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Delete User</ListItemText>
         </MenuItem>
       </Menu>
       <Dialog
@@ -484,19 +488,21 @@ const ManageUsers = () => {
         onClose={() => setConfirmDialogOpen(false)}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        maxWidth="xs"
+        fullWidth
       >
-        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
           {confirmAction?.title}
         </DialogTitle>
         <DialogContent sx={{ fontFamily: theme.typography.fontFamily }}>
-          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             {confirmAction?.message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions sx={{ p: 2, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
           <Button 
             onClick={() => setConfirmDialogOpen(false)} 
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
           >
             Cancel
           </Button>
@@ -504,7 +510,7 @@ const ManageUsers = () => {
             onClick={executeConfirmAction} 
             variant="contained" 
             autoFocus
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
           >
             Confirm
           </Button>

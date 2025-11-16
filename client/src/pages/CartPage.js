@@ -420,7 +420,7 @@ const CartPage = () => {
   // Professional cart design with intuitive layout
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
-      <Box sx={{ p: { xs: 0, sm: 2, md: 3 } }}>
+      <Box sx={{ p: { xs: 0, sm: 1, md: 2 } }}>
         <Typography 
           variant="h4" 
           component="h1" 
@@ -442,15 +442,15 @@ const CartPage = () => {
         ) : error ? (
           <Typography color="error" sx={{ my: 4, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>{error}</Typography>
         ) : isEmpty ? (
-          <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 3, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
-            <ShoppingCartOutlinedIcon sx={{ fontSize: 80, color: theme.palette.grey[400] }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, mt: 2 }}>
+          <Paper sx={{ textAlign: 'center', my: 4, p: { xs: 2, sm: 6 }, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+            <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 60, sm: 80 }, color: theme.palette.grey[400] }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, mt: 2, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               Your cart is empty
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 3 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 3, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               Looks like you haven't added anything to your cart yet
             </Typography>
-            <Button component={RouterLink} to="/CropCorner" variant="contained" size="large" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: 4, py: 1.5 }}>
+            <Button component={RouterLink} to="/CropCorner" variant="contained" size="large" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', px: { xs: 3, sm: 4 }, py: { xs: 1, sm: 1.5 }, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               Start Shopping
             </Button>
           </Paper>
@@ -473,8 +473,8 @@ const CartPage = () => {
                     borderBottom: `1px solid ${theme.palette.divider}`
                   }}
                 >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={{ xs: 1, sm: 0 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                       Cart ({validItems.length} items)
                     </Typography>
                     <Button
@@ -486,7 +486,10 @@ const CartPage = () => {
                       sx={{ 
                         fontFamily: theme.typography.fontFamily, 
                         borderRadius: '50px',
-                        textTransform: 'none'
+                        textTransform: 'none',
+                        px: { xs: 1.5, sm: 2 },
+                        py: { xs: 0.5, sm: 0.75 },
+                        minWidth: { xs: 'auto', sm: 'auto' }
                       }}
                     >
                       Clear All
@@ -515,7 +518,7 @@ const CartPage = () => {
                             component="img" 
                             sx={{ 
                               width: { xs: '100%', md: 120 }, 
-                              height: { xs: 160, md: 120 }, 
+                              height: { xs: 140, md: 120 }, 
                               objectFit: 'cover', 
                               borderRadius: 1.5,
                               border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
@@ -539,7 +542,8 @@ const CartPage = () => {
                                     textDecoration: 'none', 
                                     color: 'text.primary', 
                                     '&:hover': { color: 'primary.main' },
-                                    mb: 0.5
+                                    mb: 0.5,
+                                    fontSize: { xs: '0.95rem', sm: '1rem' }
                                   }}
                                 >
                                   {item.product.name}
@@ -550,7 +554,8 @@ const CartPage = () => {
                                   color="text.secondary" 
                                   sx={{ 
                                     fontFamily: theme.typography.fontFamily,
-                                    mb: 1
+                                    mb: 1,
+                                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
                                   }}
                                 >
                                   {item.product.category}
@@ -574,7 +579,8 @@ const CartPage = () => {
                                     color={hasDiscount ? 'error' : 'text.primary'} 
                                     sx={{ 
                                       fontFamily: theme.typography.fontFamily, 
-                                      fontWeight: hasDiscount ? 700 : 600
+                                      fontWeight: hasDiscount ? 700 : 600,
+                                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
                                     }}
                                   >
                                     ₹{effectivePrice.toFixed(2)}
@@ -599,7 +605,8 @@ const CartPage = () => {
                                   fontFamily: theme.typography.fontFamily,
                                   fontWeight: 700,
                                   alignSelf: { xs: 'flex-start', sm: 'flex-end' },
-                                  mb: { xs: 1.5, sm: 0 }
+                                  mb: { xs: 1.5, sm: 0 },
+                                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
                                 }}
                               >
                                 ₹{(effectivePrice * item.quantity).toFixed(2)}
@@ -614,8 +621,8 @@ const CartPage = () => {
                                     onClick={() => handleUpdateQuantity(item.product._id, item.quantity - 1)} 
                                     disabled={item.quantity === 1}
                                     sx={{ 
-                                      width: 36, 
-                                      height: 36,
+                                      width: { xs: 40, sm: 36 }, 
+                                      height: { xs: 40, sm: 36 },
                                       '&:disabled': {
                                         color: alpha(theme.palette.text.disabled, 0.5)
                                       }
@@ -630,7 +637,7 @@ const CartPage = () => {
                                       textAlign: 'center', 
                                       fontFamily: theme.typography.fontFamily,
                                       fontWeight: 600,
-                                      fontSize: '1.1rem'
+                                      fontSize: { xs: '1.2rem', sm: '1.1rem' }
                                     }}
                                   >
                                     {item.quantity}
@@ -640,8 +647,8 @@ const CartPage = () => {
                                     onClick={() => handleUpdateQuantity(item.product._id, item.quantity + 1)} 
                                     disabled={item.quantity >= item.product.countInStock}
                                     sx={{ 
-                                      width: 36, 
-                                      height: 36,
+                                      width: { xs: 40, sm: 36 }, 
+                                      height: { xs: 40, sm: 36 },
                                       '&:disabled': {
                                         color: alpha(theme.palette.text.disabled, 0.5)
                                       }
@@ -677,10 +684,10 @@ const CartPage = () => {
                                     color: 'text.secondary',
                                     borderRadius: '50px',
                                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                                    px: 2,
-                                    py: 0.7,
-                                    minHeight: 36,
-                                    fontSize: '0.85rem'
+                                    px: { xs: 1.5, sm: 2 },
+                                    py: { xs: 1, sm: 0.7 },
+                                    minHeight: { xs: 40, sm: 36 },
+                                    fontSize: { xs: '0.9rem', sm: '0.85rem' }
                                   }}
                                 >
                                   Save for later
@@ -692,8 +699,8 @@ const CartPage = () => {
                                     color: 'text.secondary',
                                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                                     borderRadius: '50px',
-                                    width: 36,
-                                    height: 36,
+                                    width: { xs: 40, sm: 36 },
+                                    height: { xs: 40, sm: 36 },
                                     '&:hover': {
                                       color: 'error.main',
                                       bgcolor: alpha(theme.palette.error.main, 0.1)
@@ -728,7 +735,7 @@ const CartPage = () => {
                       borderBottom: `1px solid ${theme.palette.divider}`
                     }}
                   >
-                    <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                       Saved for Later ({savedForLaterItems.length})
                     </Typography>
                   </Box>
@@ -751,7 +758,7 @@ const CartPage = () => {
                             component="img" 
                             sx={{ 
                               width: { xs: '100%', md: 100 }, 
-                              height: { xs: 140, md: 100 }, 
+                              height: { xs: 120, md: 100 }, 
                               objectFit: 'cover', 
                               borderRadius: 1.5,
                               border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
@@ -813,15 +820,15 @@ const CartPage = () => {
                                   sx={{ 
                                     textTransform: 'none', 
                                     borderRadius: '50px',
-                                    px: 1.5,
-                                    py: 0.5,
-                                    height: 30,
-                                    minHeight: 30,
+                                    px: { xs: 2, sm: 1.5 },
+                                    py: { xs: 1, sm: 0.5 },
+                                    height: { xs: 36, sm: 30 },
+                                    minHeight: { xs: 36, sm: 30 },
                                     boxShadow: 'none',
                                     '&:hover': {
                                       boxShadow: 'none'
                                     },
-                                    fontSize: '0.75rem'
+                                    fontSize: { xs: '0.8rem', sm: '0.75rem' }
                                   }}
                                 >
                                   Move to Cart
@@ -834,11 +841,11 @@ const CartPage = () => {
                                     color: 'text.secondary',
                                     borderRadius: '50px',
                                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                                    px: 1.5,
-                                    py: 0.5,
-                                    height: 30,
-                                    minHeight: 30,
-                                    fontSize: '0.75rem'
+                                    px: { xs: 2, sm: 1.5 },
+                                    py: { xs: 1, sm: 0.5 },
+                                    height: { xs: 36, sm: 30 },
+                                    minHeight: { xs: 36, sm: 30 },
+                                    fontSize: { xs: '0.8rem', sm: '0.75rem' }
                                   }}
                                 >
                                   Remove
@@ -856,12 +863,98 @@ const CartPage = () => {
             
             {/* Right Column - Order Summary */}
             <Grid size={{ xs: 12, lg: 4 }}>
+              {/* Coupon Section */}
               <Paper 
                 elevation={0} 
                 sx={{ 
                   borderRadius: 2, 
                   border: `1px solid ${theme.palette.divider}`, 
-                  overflow: 'hidden'
+                  p: 2.5,
+                  mt: 2
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 2 }}>
+                  Apply Coupon
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    error={!!couponError}
+                    helperText={couponError}
+                    disabled={isApplyingCoupon}
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 1
+                      },
+                      mb: { xs: 1, sm: 0 }
+                    }}
+                  />
+                  <Button 
+                    variant="contained" 
+                    onClick={handleApplyCoupon} 
+                    disabled={isApplyingCoupon} 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      borderRadius: 1,
+                      boxShadow: 'none',
+                      '&:hover': {
+                        boxShadow: 'none'
+                      },
+                      px: 2,
+                      minWidth: { xs: '100%', sm: 'auto' },
+                      py: { xs: 1.2, sm: 0.75 }
+                    }}
+                  >
+                    {isApplyingCoupon ? <Loader size="small" /> : 'Apply'}
+                  </Button>
+                </Box>
+                <Button 
+                  component={RouterLink} 
+                  to="/offers"
+                  size="small"
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    textTransform: 'none',
+                    p: 0,
+                    minWidth: 0,
+                    color: 'primary.main',
+                    fontWeight: 500
+                  }}
+                >
+                  View Special Offers
+                </Button>
+              </Paper>
+              
+              {/* Harvest Coins Section */}
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  borderRadius: 2, 
+                  border: `1px solid ${theme.palette.divider}`, 
+                  p: 2.5,
+                  mt: 2
+                }}
+              >
+                <HarvestCoinsRedeem 
+                  cartTotal={calculateSubtotal()} 
+                  onDiscountApply={handleHarvestCoinsApply} 
+                  reservedCoins={reservedHarvestCoins}
+                  reservedDiscount={reservedHarvestCoinsDiscount}
+                />
+              </Paper>
+              
+              {/* Order Summary */}
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  borderRadius: 2, 
+                  border: `1px solid ${theme.palette.divider}`, 
+                  overflow: 'hidden',
+                  mt: 2
                 }}
               >
                 <Box 
@@ -972,7 +1065,8 @@ const CartPage = () => {
                       variant="h5" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
-                        fontWeight: 700
+                        fontWeight: 700,
+                        fontSize: { xs: '1.2rem', sm: '1.5rem' }
                       }}
                     >
                       Total
@@ -982,7 +1076,8 @@ const CartPage = () => {
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
                         fontWeight: 700,
-                        color: theme.palette.primary.main
+                        color: theme.palette.primary.main,
+                        fontSize: { xs: '1.2rem', sm: '1.5rem' }
                       }}
                     >
                       ₹{calculateTotal()}
@@ -997,14 +1092,15 @@ const CartPage = () => {
                     disabled={validItems.length === 0}
                     sx={{ 
                       fontFamily: theme.typography.fontFamily, 
-                      py: 1.5, 
+                      py: { xs: 1.2, sm: 1.5 }, 
                       borderRadius: 1,
                       fontWeight: 600,
                       boxShadow: 3,
                       '&:hover': {
                         boxShadow: 5
                       },
-                      mb: 2
+                      mb: 2,
+                      fontSize: { xs: '1rem', sm: '1.1rem' }
                     }}
                   >
                     Proceed to Checkout
@@ -1022,87 +1118,6 @@ const CartPage = () => {
                     By placing your order, you agree to our Terms and Conditions
                   </Typography>
                 </Box>
-              </Paper>
-              
-              {/* Coupon Section */}
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  borderRadius: 2, 
-                  border: `1px solid ${theme.palette.divider}`, 
-                  p: 2.5,
-                  mt: 2
-                }}
-              >
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 2 }}>
-                  Apply Coupon
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    placeholder="Enter coupon code"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    error={!!couponError}
-                    helperText={couponError}
-                    disabled={isApplyingCoupon}
-                    sx={{ 
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 1
-                      }
-                    }}
-                  />
-                  <Button 
-                    variant="contained" 
-                    onClick={handleApplyCoupon} 
-                    disabled={isApplyingCoupon} 
-                    sx={{ 
-                      fontFamily: theme.typography.fontFamily,
-                      borderRadius: 1,
-                      boxShadow: 'none',
-                      '&:hover': {
-                        boxShadow: 'none'
-                      },
-                      px: 2
-                    }}
-                  >
-                    {isApplyingCoupon ? <Loader size="small" /> : 'Apply'}
-                  </Button>
-                </Box>
-                <Button 
-                  component={RouterLink} 
-                  to="/offers"
-                  size="small"
-                  sx={{ 
-                    fontFamily: theme.typography.fontFamily,
-                    textTransform: 'none',
-                    p: 0,
-                    minWidth: 0,
-                    color: 'primary.main',
-                    fontWeight: 500
-                  }}
-                >
-                  View Special Offers
-                </Button>
-              </Paper>
-              
-              {/* Harvest Coins Section */}
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  borderRadius: 2, 
-                  border: `1px solid ${theme.palette.divider}`, 
-                  p: 2.5,
-                  mt: 2
-                }}
-              >
-                <HarvestCoinsRedeem 
-                  cartTotal={calculateSubtotal()} 
-                  onDiscountApply={handleHarvestCoinsApply} 
-                  reservedCoins={reservedHarvestCoins}
-                  reservedDiscount={reservedHarvestCoinsDiscount}
-                />
               </Paper>
             </Grid>
           </Grid>

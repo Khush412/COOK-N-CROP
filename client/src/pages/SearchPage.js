@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
-  Box, Container, Typography, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination, Chip, Stack, useTheme, alpha
+  Box, Container, Typography, Alert, Grid, Paper, Tabs, Tab, Avatar, Button, Divider, Pagination, Chip, Stack, useTheme, alpha, useMediaQuery
 } from '@mui/material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import searchService from '../services/searchService';
@@ -13,17 +13,19 @@ import Loader from '../custom_components/Loader';
 
 const UserCard = ({ user }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   return (
     <Paper
       variant="outlined"
       sx={{
-        p: 2,
+        p: isMobile ? 1.5 : 2,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: 1,
         height: '100%',
-        borderRadius: 3,
+        borderRadius: isMobile ? 2 : 3,
         textAlign: 'center',
         transition: 'box-shadow .2s, border-color .2s',
         '&:hover': {
@@ -34,12 +36,12 @@ const UserCard = ({ user }) => {
     >
       <Avatar 
         src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined} 
-        sx={{ width: 80, height: 80, mb: 1 }}
+        sx={{ width: isMobile ? 60 : 80, height: isMobile ? 60 : 80, mb: 1 }}
         alt={user.username}
       />
       <Box sx={{ flexGrow: 1 }}>
         <Typography 
-          variant="h6" 
+          variant={isMobile ? "body1" : "h6"} 
           component={RouterLink} 
           to={`/user/${user.username}`} 
           sx={{ 
@@ -47,12 +49,13 @@ const UserCard = ({ user }) => {
             color: 'text.primary', 
             fontWeight: 'bold', 
             fontFamily: theme.typography.fontFamily, 
-            '&:hover': { color: 'primary.main' } 
+            '&:hover': { color: 'primary.main' },
+            fontSize: { xs: '0.9rem', sm: '1.25rem' }
           }}
         >
           {user.username}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
           {user.followers?.length || 0} Followers
         </Typography>
       </Box>
@@ -60,10 +63,17 @@ const UserCard = ({ user }) => {
         component={RouterLink} 
         to={`/user/${user.username}`} 
         variant="outlined" 
-        size="small" 
-        sx={{ mt: 'auto', borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+        size={isMobile ? "small" : "medium"} 
+        sx={{ 
+          mt: 'auto', 
+          borderRadius: '50px', 
+          fontFamily: theme.typography.fontFamily,
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+          px: isMobile ? 1.5 : 2,
+          py: isMobile ? 0.5 : 0.75
+        }}
       >
-        View Profile
+        {isMobile ? 'View' : 'View Profile'}
       </Button>
     </Paper>
   );
@@ -84,6 +94,7 @@ const SearchPage = () => {
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('all');
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const query = useMemo(() => searchParams.get('q') || '', [searchParams]);
 
@@ -172,19 +183,19 @@ const SearchPage = () => {
     const noResults = globalResults.posts.length === 0 && globalResults.products.length === 0 && globalResults.users.length === 0;
 
     if (loading) {
-      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><Loader size="large" /></Box>;
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: isMobile ? 3 : 5 }}><Loader size="large" /></Box>;
     }
     if (error) {
       return <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>;
     }
     if (noResults) {
       return (
-        <Paper variant="outlined" sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 2, borderRadius: 2 }}>
-          <SearchOffIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3, md: 6 }, textAlign: 'center', mt: 2, borderRadius: isMobile ? 2 : 3 }}>
+          <SearchOffIcon sx={{ fontSize: isMobile ? 48 : 64, color: 'grey.400', mb: 2 }} />
+          <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
             No results found for "{query}"
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } }}>
             Try searching for something else.
           </Typography>
         </Paper>
@@ -192,19 +203,21 @@ const SearchPage = () => {
     }
 
     if (tabLoading) {
-      return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><Loader size="medium" /></Box>;
+      return <Box sx={{ display: 'flex', justifyContent: 'center', p: isMobile ? 3 : 5 }}><Loader size="medium" /></Box>;
     }
 
     if (tab === 'all') {
       return (
         <Box>
           {globalResults.posts.length > 0 && (
-            <Box mb={4}>
+            <Box mb={isMobile ? 3 : 4}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Posts</Typography>
-                <Chip label={`${globalResults.posts.length} results`} size="small" color="secondary" />
+                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                  Posts
+                </Typography>
+                <Chip label={`${globalResults.posts.length} results`} size="small" color="secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }} />
               </Stack>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 1.5 : 3}>
                 {globalResults.posts.map(post => (
                   <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
                     <PostCard 
@@ -219,32 +232,36 @@ const SearchPage = () => {
                   </Grid>
                 ))}
               </Grid>
-              <Divider sx={{ my: 4 }} />
+              <Divider sx={{ my: isMobile ? 3 : 4 }} />
             </Box>
           )}
           {globalResults.products.length > 0 && (
-            <Box mb={4}>
+            <Box mb={isMobile ? 3 : 4}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Products</Typography>
-                <Chip label={`${globalResults.products.length} results`} size="small" color="primary" />
+                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                  Products
+                </Typography>
+                <Chip label={`${globalResults.products.length} results`} size="small" color="primary" sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }} />
               </Stack>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 1.5 : 3}>
                 {globalResults.products.map(product => (
                   <Grid key={`product-${product._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <ProductCard product={product} showSnackbar={() => {}} />
                   </Grid>
                 ))}
               </Grid>
-              <Divider sx={{ my: 4 }} />
+              <Divider sx={{ my: isMobile ? 3 : 4 }} />
             </Box>
           )}
           {globalResults.users.length > 0 && (
             <Box>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Users</Typography>
-                <Chip label={`${globalResults.users.length} results`} size="small" color="info" />
+                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.5rem' } }}>
+                  Users
+                </Typography>
+                <Chip label={`${globalResults.users.length} results`} size="small" color="info" sx={{ fontSize: { xs: '0.6rem', sm: '0.75rem' } }} />
               </Stack>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 1.5 : 3}>
                 {globalResults.users.map(userResult => (
                   <Grid key={`user-${userResult._id}`} size={{ xs: 12, sm: 6, md: 4 }}>
                     <UserCard user={userResult} />
@@ -259,7 +276,7 @@ const SearchPage = () => {
 
     return (
       <Box>
-        <Grid container spacing={3}>
+        <Grid container spacing={isMobile ? 1.5 : 3}>
           {tab === 'posts' && paginatedResults.posts.map(post => (
             <Grid key={`post-${post._id}`} size={{ xs: 12, sm: 6 }}>
               <PostCard 
@@ -285,17 +302,21 @@ const SearchPage = () => {
           ))}
         </Grid>
         {pagination[tab]?.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: isMobile ? 3 : 4 }}>
             <Pagination
               count={pagination[tab].totalPages}
               page={pagination[tab].page}
               onChange={(e, value) => handlePageChange(tab, value)}
               color="primary"
+              size={isMobile ? "small" : "medium"}
               sx={{
                 '& .MuiPaginationItem-root': {
                   borderRadius: '50%',
                   fontWeight: 600,
                   fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  minWidth: isMobile ? 28 : 32,
+                  height: isMobile ? 28 : 32,
                 }
               }}
             />
@@ -306,25 +327,25 @@ const SearchPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: isMobile ? 2 : 4 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: isMobile ? 3 : 4, borderRadius: isMobile ? 2 : 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant={isMobile ? "h4" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
           Search Results
         </Typography>
         {query ? (
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
             Showing results for: <strong>"{query}"</strong>
           </Typography>
         ) : (
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
             Please enter a search term in the navigation bar.
           </Typography>
         )}
       </Paper>
 
       {query && (
-        <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: isMobile ? 2 : 4 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: isMobile ? 2 : 3 }}>
             <Tabs 
               value={tab} 
               onChange={handleTabChange} 
@@ -336,21 +357,24 @@ const SearchPage = () => {
                   fontFamily: theme.typography.fontFamily,
                   fontWeight: 600,
                   textTransform: 'none',
-                  minWidth: 100,
+                  minWidth: isMobile ? 70 : 100,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  px: isMobile ? 1 : 2,
+                  py: isMobile ? 0.5 : 1,
                 }
               }}
             >
               <Tab 
                 label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <span>All</span>
                     <Chip 
                       label={globalResults.posts.length + globalResults.products.length + globalResults.users.length} 
                       size="small" 
                       sx={{ 
-                        height: 18, 
-                        minWidth: 18, 
-                        fontSize: '0.65rem',
+                        height: isMobile ? 14 : 18, 
+                        minWidth: isMobile ? 14 : 18, 
+                        fontSize: isMobile ? '0.5rem' : '0.65rem',
                         fontWeight: 'bold',
                         color: theme.palette.primary.contrastText,
                         backgroundColor: theme.palette.primary.main
@@ -362,15 +386,15 @@ const SearchPage = () => {
               />
               <Tab 
                 label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <span>Posts</span>
                     <Chip 
                       label={globalResults.posts.length} 
                       size="small" 
                       sx={{ 
-                        height: 18, 
-                        minWidth: 18, 
-                        fontSize: '0.65rem',
+                        height: isMobile ? 14 : 18, 
+                        minWidth: isMobile ? 14 : 18, 
+                        fontSize: isMobile ? '0.5rem' : '0.65rem',
                         fontWeight: 'bold',
                         color: theme.palette.secondary.contrastText,
                         backgroundColor: theme.palette.secondary.main
@@ -383,15 +407,15 @@ const SearchPage = () => {
               />
               <Tab 
                 label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <span>Products</span>
                     <Chip 
                       label={globalResults.products.length} 
                       size="small" 
                       sx={{ 
-                        height: 18, 
-                        minWidth: 18, 
-                        fontSize: '0.65rem',
+                        height: isMobile ? 14 : 18, 
+                        minWidth: isMobile ? 14 : 18, 
+                        fontSize: isMobile ? '0.5rem' : '0.65rem',
                         fontWeight: 'bold',
                         color: theme.palette.primary.contrastText,
                         backgroundColor: theme.palette.primary.main
@@ -404,15 +428,15 @@ const SearchPage = () => {
               />
               <Tab 
                 label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <span>Users</span>
                     <Chip 
                       label={globalResults.users.length} 
                       size="small" 
                       sx={{ 
-                        height: 18, 
-                        minWidth: 18, 
-                        fontSize: '0.65rem',
+                        height: isMobile ? 14 : 18, 
+                        minWidth: isMobile ? 14 : 18, 
+                        fontSize: isMobile ? '0.5rem' : '0.65rem',
                         fontWeight: 'bold',
                         color: theme.palette.info.contrastText,
                         backgroundColor: theme.palette.info.main

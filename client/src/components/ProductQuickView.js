@@ -178,6 +178,22 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
     accessibility: true,
     lazyLoad: false,
     afterChange: (current) => setCurrentSlide(current),
+    appendDots: dots => (
+      <div>
+        <ul style={{ margin: '0px', padding: '0px' }}> {dots} </ul>
+      </div>
+    ),
+    customPaging: i => (
+      <div style={{
+        width: '10px',
+        height: '10px',
+        borderRadius: '50%',
+        background: theme.palette.grey[400],
+        display: 'inline-block',
+        margin: '0 2px'
+      }} />
+    ),
+    dotsClass: 'slick-dots slick-thumb',
     responsive: [
       {
         breakpoint: 768,
@@ -200,31 +216,55 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: { xs: 0, sm: 3 },
           maxHeight: '90vh',
+          m: { xs: 0, sm: 'auto' },
+          width: { xs: '100%', sm: 'auto' },
+          height: { xs: '100%', sm: 'auto' }
         }
       }}
+      fullScreen={{ xs: true, sm: false }}
     >
       <IconButton
         onClick={onClose}
         sx={{
           position: 'absolute',
-          right: 8,
-          top: 8,
+          right: { xs: 4, sm: 8 },
+          top: { xs: 4, sm: 8 },
           zIndex: 1,
           bgcolor: alpha(theme.palette.background.paper, 0.8),
+          width: { xs: 36, sm: 40 },
+          height: { xs: 36, sm: 40 },
           '&:hover': { bgcolor: alpha(theme.palette.background.paper, 1) }
         }}
       >
         <CloseIcon />
       </IconButton>
 
-      <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Grid container spacing={4}>
+      <DialogContent sx={{ p: { xs: 1, sm: 2, md: 4 }, height: { xs: '100%', sm: 'auto' }, overflowX: 'hidden' }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ width: '100%', margin: 0 }}>
           {/* Product Images Carousel */}
           <Grid size={{ xs: 12, md: 5 }}>
-            <Box sx={{ position: 'relative' }}>
-              <Slider {...sliderSettings} ref={sliderRef}>
+            <Box sx={{ position: 'relative', pb: 3 }}>
+              <Slider {...sliderSettings} ref={sliderRef} sx={{
+                '& .slick-dots': {
+                  zIndex: 10,
+                  position: 'relative',
+                  bottom: '10px',
+                },
+                '& .slick-dots li.slick-active button:before': {
+                  color: theme.palette.primary.main,
+                  opacity: 1,
+                },
+                '& .slick-dots li button:before': {
+                  color: theme.palette.grey[400],
+                  fontSize: '10px',
+                  opacity: 1,
+                },
+                '& .slick-list': {
+                  overflowX: 'hidden',
+                }
+              }}>
                 {getProductImages().map((image, index) => (
                   <Box key={index} sx={{ position: 'relative', pt: '100%' }}>
                     <Box
@@ -266,9 +306,11 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
             {getProductImages().length > 1 && (
               <ImageList 
                 sx={{ 
-                  mt: 2, 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr)) !important',
-                  gap: '8px !important'
+                  mt: { xs: 1, sm: 2 }, 
+                  gridTemplateColumns: { xs: 'repeat(auto-fill, minmax(40px, 1fr))', sm: 'repeat(auto-fill, minmax(60px, 1fr))' }  + ' !important',
+                  gap: '8px !important',
+                  width: '100%',
+                  overflowX: 'hidden'
                 }} 
                 cols={5} 
                 gap={8}
@@ -293,7 +335,7 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                       alt={`Thumbnail ${index + 1}`}
                       sx={{
                         width: '100%',
-                        height: 60,
+                        height: { xs: 40, sm: 60 },
                         objectFit: 'cover',
                         display: 'block'
                       }}
@@ -313,7 +355,14 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
               </Typography>
 
               {/* Product Name */}
-              <Typography variant="h4" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+                }}
+              >
                 {product.name}
               </Typography>
 
@@ -357,10 +406,26 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                     ₹{product.price.toFixed(2)}
                   </Typography>
                 )}
-                <Typography variant="h3" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h3" 
+                  color={hasDiscount ? 'error' : 'primary'} 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
+                  }}
+                >
                   ₹{effectivePrice.toFixed(2)}
                   {product.unit && (
-                    <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 1 }}>
+                    <Typography 
+                      component="span" 
+                      variant="h6" 
+                      color="text.secondary" 
+                      sx={{ 
+                        ml: 1,
+                        fontSize: { xs: '1rem', sm: '1.25rem' }
+                      }}
+                    >
                       / {product.unit}
                     </Typography>
                   )}
@@ -390,12 +455,28 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                 {!isOutOfStock && (
                   <>
                     {quantityInCart > 0 ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `2px solid ${theme.palette.primary.main}`, borderRadius: '50px', px: 1 }}>
-                        <IconButton size="small" onClick={() => handleUpdateQuantity(quantityInCart - 1)} disabled={isCartLoading}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, border: `2px solid ${theme.palette.primary.main}`, borderRadius: '50px', px: { xs: 0.5, sm: 1 } }}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleUpdateQuantity(quantityInCart - 1)} 
+                          disabled={isCartLoading}
+                          sx={{ 
+                            width: { xs: 32, sm: 40 }, 
+                            height: { xs: 32, sm: 40 } 
+                          }}
+                        >
                           <RemoveIcon />
                         </IconButton>
-                        <Typography sx={{ mx: 2, fontWeight: 'bold', fontSize: '1.2rem' }}>{quantityInCart}</Typography>
-                        <IconButton size="small" onClick={() => handleUpdateQuantity(quantityInCart + 1)} disabled={isCartLoading || quantityInCart >= product.countInStock}>
+                        <Typography sx={{ mx: { xs: 1, sm: 2 }, fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>{quantityInCart}</Typography>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleUpdateQuantity(quantityInCart + 1)} 
+                          disabled={isCartLoading || quantityInCart >= product.countInStock}
+                          sx={{ 
+                            width: { xs: 32, sm: 40 }, 
+                            height: { xs: 32, sm: 40 } 
+                          }}
+                        >
                           <AddIcon />
                         </IconButton>
                       </Box>
@@ -406,7 +487,13 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                         startIcon={<AddShoppingCartIcon />}
                         onClick={handleAddToCart}
                         disabled={isCartLoading}
-                        sx={{ borderRadius: '50px', px: 4, fontWeight: 'bold' }}
+                        sx={{ 
+                          borderRadius: '50px', 
+                          px: { xs: 2, sm: 4 }, 
+                          py: { xs: 1, sm: 1.5 },
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
                       >
                         Add to Cart
                       </Button>
@@ -420,6 +507,8 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
                     disabled={isFavoriting}
                     sx={{ 
                       border: `2px solid ${theme.palette.divider}`,
+                      width: { xs: 40, sm: 48 },
+                      height: { xs: 40, sm: 48 },
                       '&:hover': { 
                         borderColor: theme.palette.error.main,
                         bgcolor: alpha(theme.palette.error.main, 0.1),
@@ -435,8 +524,18 @@ const ProductQuickView = ({ product, open, onClose, showSnackbar }) => {
         </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ px: 4, pb: 3 }}>
-        <Button onClick={handleViewFullDetails} variant="outlined" size="large" sx={{ borderRadius: '50px', px: 3 }}>
+      <DialogActions sx={{ px: { xs: 2, sm: 4 }, pb: { xs: 2, sm: 3 } }}>
+        <Button 
+          onClick={handleViewFullDetails} 
+          variant="outlined" 
+          size="large" 
+          sx={{ 
+            borderRadius: '50px', 
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
+        >
           View Full Details
         </Button>
       </DialogActions>

@@ -34,6 +34,7 @@ import {
   Select,
   MenuItem,
   Pagination,
+  useMediaQuery, // Add this import for mobile detection
 } from "@mui/material";
 import {
   Forum as ForumIcon,
@@ -144,6 +145,7 @@ const GroupCard = ({ group }) => {
 
 export default function Community() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Add mobile detection
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -176,8 +178,8 @@ export default function Community() {
   const [supportOpen, setSupportOpen] = useState(true);
   const [myGroupsOpen, setMyGroupsOpen] = useState(true); // New state for My Groups section
   
-  // State for left sidebar visibility
-  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
+  // State for left sidebar visibility - closed by default on mobile
+  const [leftSidebarVisible, setLeftSidebarVisible] = useState(!isMobile);
   
   // Create refs for infinite scroll
   const observer = useRef();
@@ -298,6 +300,11 @@ export default function Community() {
       }
     };
   }, [loading, isLoadingMore, hasMore, page, fetchPosts, viewMode, posts]);
+
+  // Handle mobile detection and update sidebar visibility
+  useEffect(() => {
+    setLeftSidebarVisible(!isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
@@ -1049,7 +1056,7 @@ export default function Community() {
         sx={
           {
             position: 'fixed',
-            left: leftSidebarVisible ? 270 : 0,
+            left: leftSidebarVisible ? { xs: 270, md: 270 } : { xs: 0, md: 0 },
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 1200,
@@ -1067,6 +1074,8 @@ export default function Community() {
               boxShadow: 4,
             },
             transition: 'left 0.3s ease, box-shadow 0.2s',
+            // Show on mobile as well
+            display: 'flex',
           }
         }
       >
@@ -1078,6 +1087,7 @@ export default function Community() {
       </IconButton>
 
       {/* Left Navigation Sidebar - Blended with content area */}
+      {/* Show on mobile when leftSidebarVisible is true */}
       {leftSidebarVisible && (
         <Box
           sx={{
@@ -1106,6 +1116,8 @@ export default function Community() {
               backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
               borderRadius: '10px',
             },
+            // Show on mobile when visible
+            display: { xs: leftSidebarVisible ? 'block' : 'none', md: 'block' },
           }}
         >
           {NavigationSidebar}
@@ -1118,8 +1130,8 @@ export default function Community() {
         sx={{
           flexGrow: 1,
           width: '100%',
-          ml: leftSidebarVisible ? '280px' : 0,
-          pl: leftSidebarVisible ? 0 : 2,
+          ml: { xs: 0, md: leftSidebarVisible ? '280px' : 0 },
+          pl: { xs: 0, md: leftSidebarVisible ? 0 : 2 },
           pt: { xs: 8, md: 12 },
           pb: 4,
           transition: 'margin 0.3s ease',
@@ -1130,10 +1142,18 @@ export default function Community() {
           {/* Three Column Layout */}
           <Grid container spacing={3}>
             {/* Middle Content - Posts Feed */}
-            <Grid size={{ xs: 12 }} sx={{ overflowX: 'hidden', pr: '320px', pl: leftSidebarVisible ? 0 : 3 }}>
+            <Grid 
+              size={{ xs: 12, md: 8.5 }} 
+              sx={{ 
+                overflowX: 'hidden', 
+                pr: { xs: 0, md: '320px' }, 
+                pl: { xs: 0, md: leftSidebarVisible ? 0 : 3 },
+                width: { xs: '100%', md: 'auto' }
+              }}
+            >
               <Stack spacing={2.5}>
                 {/* Search Bar and Create Post Button */}
-                <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                   <TextField
                     fullWidth
                     variant="outlined"
@@ -1157,12 +1177,14 @@ export default function Community() {
                       '& .MuiInputBase-input': {
                         fontFamily: theme.typography.fontFamily,
                         fontSize: '0.875rem',
+                        py: 0.5,
                       }
                     }}
                   />
                   <Button
                     variant="contained"
-                    startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+                    // Show just "Create" text on mobile, "Create" with icon on desktop
+                    startIcon={<AddIcon sx={{ fontSize: 18, display: { xs: 'none', md: 'inline' } }} />}
                     onClick={handleCreateClick}
                     sx={{ 
                       borderRadius: 2,
@@ -1170,7 +1192,7 @@ export default function Community() {
                       whiteSpace: 'nowrap',
                       height: 40,
                       fontSize: '0.875rem',
-                      px: 1.5,
+                      px: 1,
                     }}
                   >
                     Create
@@ -1179,9 +1201,9 @@ export default function Community() {
                 
                 {/* Filters and View Options */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', width: { xs: '100%', md: 'auto' } }}>
                     {/* Content Filter Dropdown */}
-                    <FormControl size="small" sx={{ minWidth: 100 }}>
+                    <FormControl size="small" sx={{ minWidth: 80, width: { xs: '40%', md: 'auto' } }}>
                       <Select
                         value={contentFilter}
                         onChange={(e) => {
@@ -1205,11 +1227,11 @@ export default function Community() {
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="recipes">Recipes</MenuItem>
                         <MenuItem value="discussions">Discussions</MenuItem>
-                      </Select>
+                        </Select>
                     </FormControl>
                     
                     {/* Sort Options Dropdown */}
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <FormControl size="small" sx={{ minWidth: 80, width: { xs: '40%', md: 'auto' } }}>
                       <Select
                         value={sort}
                         onChange={(e) => setSort(e.target.value)}
@@ -1235,22 +1257,26 @@ export default function Community() {
                     </FormControl>
                   </Box>
                   
-                  {/* View Mode Toggle */}
+                  {/* View Mode Toggle - Show on mobile with a more compact design */}
                   <ToggleButtonGroup
                     value={viewMode}
                     exclusive
                     onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
                     size="small"
-                    sx={{ height: 36 }}
+                    sx={{ 
+                      height: 36,
+                      // Show on mobile with a more compact design
+                      display: { xs: 'flex', md: 'flex' }
+                    }}
                   >
-                    <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                      <GridViewIcon sx={{ fontSize: 20 }} />
+                    <ToggleButton value="card" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <GridViewIcon sx={{ fontSize: 16 }} />
                     </ToggleButton>
-                    <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                      <ViewListIcon sx={{ fontSize: 20 }} />
+                    <ToggleButton value="compact" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <ViewListIcon sx={{ fontSize: 16 }} />
                     </ToggleButton>
-                    <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                      <AppsIcon sx={{ fontSize: 20 }} />
+                    <ToggleButton value="grid" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <AppsIcon sx={{ fontSize: 16 }} />
                     </ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
@@ -1455,199 +1481,205 @@ export default function Community() {
             </Grid>
 
             {/* Right Sidebar - Fixed positioning with line distinction */}
-            <Box
-              sx={{
-                width: 300,
-                flexShrink: 0,
-                position: 'fixed',
-                height: 'calc(100vh - 64px)',
-                top: 64,
-                right: 0,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                zIndex: 1100,
-                borderLeft: `1px solid ${theme.palette.divider}`,
-                bgcolor: theme.palette.background.default,
-                // Custom scrollbar styling - hidden but functional
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: 'transparent',
-                },
-                '&:hover::-webkit-scrollbar-thumb': {
-                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: '10px',
-                },
-              }}
-            >
-              <Box sx={{ p: 2, pt: 3 }}>
-                <Stack spacing={2.5}>
-                  {/* Trending Section */}
-                  <Paper 
-                    elevation={0}
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 2.5,
-                      border: `1px solid ${theme.palette.divider}`,
-                      bgcolor: theme.palette.background.paper,
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <WhatshotIcon sx={{ color: 'primary.main', fontSize: 20, mr: 1 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 15, fontFamily: theme.typography.fontFamily }}>
-                        Trending
-                      </Typography>
-                    </Box>
-                    
-                    {/* Trending Topics */}
-                    <Box sx={{ mb: 2.5 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                        Popular Topics
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                        {trendingTags && trendingTags.length > 0 ? trendingTags.slice(0, 8).map((item, index) => (
-                          <Chip
-                            key={item.tag || index}
-                            label={`#${item.tag || item}`}
-                            onClick={() => handleTagClick(item.tag || item)}
-                            clickable
-                            color={selectedTags.includes(item.tag || item) ? 'primary' : 'default'}
-                            variant={selectedTags.includes(item.tag || item) ? 'filled' : 'outlined'}
-                            size="small"
-                            sx={{
-                              borderRadius: '12px',
-                              fontWeight: 600,
-                              fontSize: 11,
-                              height: 24,
-                              '&:hover': {
-                                bgcolor: selectedTags.includes(item.tag || item) ? undefined : alpha(theme.palette.primary.main, 0.1),
-                              },
-                              fontFamily: theme.typography.fontFamily,
-                            }}
-                          />
-                        )) : (
-                          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                            No trending topics
-                          </Typography>
-                        )}
+            {/* Hide on mobile */}
+            {!isMobile && (
+              <Box
+                sx={{
+                  width: 300,
+                  flexShrink: 0,
+                  position: 'fixed',
+                  height: 'calc(100vh - 64px)',
+                  top: 64,
+                  right: 0,
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  zIndex: 1100,
+                  borderLeft: `1px solid ${theme.palette.divider}`,
+                  bgcolor: theme.palette.background.default,
+                  // Custom scrollbar styling - hidden but functional
+                  '&::-webkit-scrollbar': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: 'transparent',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: 'transparent',
+                  },
+                  '&:hover::-webkit-scrollbar-thumb': {
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: '10px',
+                  },
+                }}
+              >
+                <Box sx={{ p: 2, pt: 3 }}>
+                  <Stack spacing={2.5}>
+                    {/* Trending Section */}
+                    <Paper 
+                      elevation={0}
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2.5,
+                        border: `1px solid ${theme.palette.divider}`,
+                        bgcolor: theme.palette.background.paper,
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <WhatshotIcon sx={{ color: 'primary.main', fontSize: 20, mr: 1 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 15, fontFamily: theme.typography.fontFamily }}>
+                          Trending
+                        </Typography>
                       </Box>
-                    </Box>
-
-                    {/* Top Posts Today */}
-                    <Box>
-                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                        Top Posts
-                      </Typography>
-                      <Stack spacing={1.5}>
-                        {posts.slice(0, 3).map((post) => (
-                          <Box 
-                            key={post._id}
-                            onClick={() => navigate(`/post/${post._id}`)}
-                            sx={{ 
-                              cursor: 'pointer',
-                              p: 1.5,
-                              borderRadius: 2,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                              },
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            <Avatar 
-                              src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
-                              alt={post.user?.username || 'User'}
-                              sx={{ width: 32, height: 32, fontSize: 14 }}
-                            >
-                              {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                            </Avatar>
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  fontWeight: 600, 
-                                  fontSize: 13, 
-                                  lineHeight: 1.4,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  fontFamily: theme.typography.fontFamily,
-                                }}
-                              >
-                                {post.title}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Stack>
-                    </Box>
-                  </Paper>
-
-                  {/* Recommended Section */}
-                  <Paper 
-                    elevation={0}
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 2.5,
-                      border: `1px solid ${theme.palette.divider}`,
-                      bgcolor: theme.palette.background.paper,
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <TrendingUpIcon sx={{ color: 'secondary.main', fontSize: 20, mr: 1 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 15, fontFamily: theme.typography.fontFamily }}>
-                        Recommended
-                      </Typography>
-                    </Box>
                     
-                    {/* Recommended Groups */}
-                    {groups.length > 0 && (
+                      {/* Trending Topics */}
+                      <Box sx={{ mb: 2.5 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                          Popular Topics
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                          {trendingTags && trendingTags.length > 0 ? trendingTags.slice(0, 8).map((item, index) => (
+                            <Chip
+                              key={item.tag || index}
+                              label={`#${item.tag || item}`}
+                              onClick={() => handleTagClick(item.tag || item)}
+                              clickable
+                              color={selectedTags.includes(item.tag || item) ? 'primary' : 'default'}
+                              variant={selectedTags.includes(item.tag || item) ? 'filled' : 'outlined'}
+                              size="small"
+                              sx={{
+                                borderRadius: '12px',
+                                fontWeight: 600,
+                                fontSize: 11,
+                                height: 24,
+                                '&:hover': {
+                                  bgcolor: selectedTags.includes(item.tag || item) ? undefined : alpha(theme.palette.primary.main, 0.1),
+                                },
+                                fontFamily: theme.typography.fontFamily,
+                              }}
+                            />
+                          )) : (
+                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              No trending topics
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+
+                      {/* Top Posts Today */}
                       <Box>
                         <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
-                          Groups to Join
+                          Top Posts
                         </Typography>
-                        <Stack spacing={1.25}>
-                          {groups.slice(0, 2).map(group => (
-                            <GroupCard key={group._id} group={group} />
+                        <Stack spacing={1.5}>
+                          {posts.slice(0, 3).map((post) => (
+                            <Box 
+                              key={post._id}
+                              onClick={() => navigate(`/post/${post._id}`)}
+                              sx={{ 
+                                cursor: 'pointer',
+                                p: 1.5,
+                                borderRadius: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                '&:hover': {
+                                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                },
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              <Avatar 
+                                src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+                                alt={post.user?.username || 'User'}
+                                sx={{ width: 32, height: 32, fontSize: 14 }}
+                              >
+                                {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                              </Avatar>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography 
+                                  variant="body2" 
+                                  sx={{ 
+                                    fontWeight: 600, 
+                                    fontSize: 13, 
+                                    lineHeight: 1.4,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    fontFamily: theme.typography.fontFamily,
+                                  }}
+                                >
+                                  {post.title}
+                                </Typography>
+                              </Box>
+                            </Box>
                           ))}
                         </Stack>
                       </Box>
-                    )}
-                  </Paper>
-                </Stack>
+                    </Paper>
+
+                    {/* Recommended Section */}
+                    <Paper 
+                      elevation={0}
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2.5,
+                        border: `1px solid ${theme.palette.divider}`,
+                        bgcolor: theme.palette.background.paper,
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <TrendingUpIcon sx={{ color: 'secondary.main', fontSize: 20, mr: 1 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 15, fontFamily: theme.typography.fontFamily }}>
+                          Recommended
+                        </Typography>
+                      </Box>
+                    
+                      {/* Recommended Groups */}
+                      {groups.length > 0 && (
+                        <Box>
+                          <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                            Groups to Join
+                          </Typography>
+                          <Stack spacing={1.25}>
+                            {groups.slice(0, 2).map(group => (
+                              <GroupCard key={group._id} group={group} />
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+                    </Paper>
+                  </Stack>
+                </Box>
               </Box>
-            </Box>
+            )}
           </Grid>
 
           {/* Mobile Sidebar Drawer - Contains the filter options */}
-          <Drawer
-            anchor="right"
-            open={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            PaperProps={{ sx: { width: "90vw", maxWidth: 360 } }}
-          >
-            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-              <IconButton edge="end" onClick={() => setSidebarOpen(false)} aria-label="close sidebar">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Box sx={{ p: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
-                Filters & Options
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                Use the filter bar above to refine your search
-              </Typography>
-            </Box>
-          </Drawer>
+          {/* Show on mobile when sidebarOpen is true */}
+          {isMobile && (
+            <Drawer
+              anchor="right"
+              open={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+              PaperProps={{ sx: { width: "90vw", maxWidth: 360 } }}
+            >
+              <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+                <IconButton edge="end" onClick={() => setSidebarOpen(false)} aria-label="close sidebar">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <Box sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+                  Filters & Options
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  Use the filter bar above to refine your search
+                </Typography>
+              </Box>
+            </Drawer>
+          )}
 
           {/* Snackbar */}
           <Snackbar

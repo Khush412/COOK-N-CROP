@@ -149,7 +149,7 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      borderRadius: 4,
+      borderRadius: { xs: 2, sm: 4 },
       transition: 'transform 0.3s ease, box-shadow 0.3s ease',
       '&:hover': {
         boxShadow: theme.shadows[6],
@@ -164,8 +164,8 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
           spacing={0.5} 
           sx={{ 
             position: 'absolute', 
-            top: 8, 
-            left: 8, 
+            top: { xs: 4, sm: 8 }, 
+            left: { xs: 4, sm: 8 }, 
             zIndex: 2,
             maxWidth: '60%',
           }}
@@ -179,9 +179,12 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 bgcolor: theme.palette.info.main,
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: '22px',
-                '& .MuiChip-icon': { color: 'white' },
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '22px' },
+                '& .MuiChip-icon': { 
+                  color: 'white',
+                  fontSize: { xs: '0.7rem !important', sm: '0.9rem !important' }
+                },
               }} 
             />
           )}
@@ -194,9 +197,12 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 bgcolor: theme.palette.success.main,
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: '22px',
-                '& .MuiChip-icon': { color: 'white' },
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '22px' },
+                '& .MuiChip-icon': { 
+                  color: 'white',
+                  fontSize: { xs: '0.7rem !important', sm: '0.9rem !important' }
+                },
               }} 
             />
           )}
@@ -209,9 +215,12 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 bgcolor: theme.palette.warning.main,
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: '22px',
-                '& .MuiChip-icon': { color: 'white' },
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '22px' },
+                '& .MuiChip-icon': { 
+                  color: 'white',
+                  fontSize: { xs: '0.7rem !important', sm: '0.9rem !important' }
+                },
               }} 
             />
           )}
@@ -224,9 +233,12 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 bgcolor: theme.palette.error.main,
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: '22px',
-                '& .MuiChip-icon': { color: 'white' },
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '22px' },
+                '& .MuiChip-icon': { 
+                  color: 'white',
+                  fontSize: { xs: '0.7rem !important', sm: '0.9rem !important' }
+                },
               }} 
             />
           )}
@@ -239,9 +251,12 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                 bgcolor: theme.palette.secondary.main,
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: '0.7rem',
-                height: '22px',
-                '& .MuiChip-icon': { color: 'white' },
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '22px' },
+                '& .MuiChip-icon': { 
+                  color: 'white',
+                  fontSize: { xs: '0.7rem !important', sm: '0.9rem !important' }
+                },
               }} 
             />
           )}
@@ -252,8 +267,8 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
           image={getImageUrl()}
           title={product.name}
           sx={{
-            height: 180, // Fixed height instead of aspect ratio
-            objectFit: 'cover', // Cover the area without distortion
+            height: { xs: 140, sm: 180 }, // Responsive height for mobile
+            objectFit: 'cover',
             cursor: 'pointer',
             transition: 'transform 0.3s ease',
             '&:hover': {
@@ -290,8 +305,8 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
           spacing={0.5}
           sx={{ 
             position: 'absolute', 
-            top: 8, 
-            right: 8, 
+            top: { xs: 4, sm: 8 }, 
+            right: { xs: 4, sm: 8 }, 
             zIndex: 2,
           }}
         >
@@ -334,17 +349,17 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
             size="small"
             sx={{
               position: 'absolute',
-              bottom: 8,
-              right: 8,
+              bottom: { xs: 4, sm: 8 },
+              right: { xs: 4, sm: 8 },
               zIndex: 2,
               fontWeight: 'bold',
-              fontSize: '0.65rem',
-              height: '20px',
+              fontSize: { xs: '0.55rem', sm: '0.65rem' },
+              height: { xs: '16px', sm: '20px' },
             }}
           />
         )}
       </Box>
-      <CardContent sx={{ flexGrow: 1, p: 1.5, pb: 0.5 }}>
+      <CardContent sx={{ flexGrow: 1, p: { xs: 1, sm: 1.5 }, pb: { xs: 0.25, sm: 0.5 } }}>
         {/* Conditionally render category and rating based on hideCategoryAndUnit prop */}
         {!hideCategoryAndUnit && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
@@ -358,7 +373,18 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
             )}
           </Box>
         )}
-        <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, lineHeight: 1.3, minHeight: '2.6em', mb: 0.5 }}>
+        <Typography 
+          variant="subtitle1" 
+          component="div" 
+          sx={{ 
+            fontWeight: 'bold', 
+            fontFamily: theme.typography.fontFamily, 
+            lineHeight: 1.3, 
+            minHeight: { xs: '2em', sm: '2.6em' }, 
+            mb: 0.5,
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
+        >
           {product.name}
         </Typography>
         {/* Stock Status Indicator */}
@@ -393,7 +419,7 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
       </CardContent>
       {/* Conditionally render CardActions based on hidePriceAndCart prop */}
       {!hidePriceAndCart && (
-        <CardActions sx={{ p: 1.5, pt: 0.5, mt: 'auto' }}>
+        <CardActions sx={{ p: { xs: 1, sm: 1.5 }, pt: { xs: 0.25, sm: 0.5 }, mt: 'auto' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%' }}>
             <Box>
               {hasDiscount && (
@@ -410,7 +436,15 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                   ₹{product.price.toFixed(2)}
                 </Typography>
               )}
-              <Typography variant="h6" color={hasDiscount ? 'error' : 'primary'} sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+              <Typography 
+                variant="h6" 
+                color={hasDiscount ? 'error' : 'primary'} 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
                 ₹{effectivePrice.toFixed(2)}
                 {/* Conditionally render unit based on hideCategoryAndUnit prop */}
                 {!hideCategoryAndUnit && product.unit && (
@@ -434,12 +468,28 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                   {isCartLoading ? <Loader size="small" color="inherit" /> : 'Add'}
                 </Button>
               ) : quantityInCart > 0 ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px' }}>
-                  <IconButton size="small" onClick={(e) => handleUpdateQuantity(e, quantityInCart - 1)} disabled={isCartLoading}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, sm: 0.5 }, border: `1px solid ${theme.palette.divider}`, borderRadius: '50px', height: { xs: 32, sm: 36 } }}>
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => handleUpdateQuantity(e, quantityInCart - 1)} 
+                    disabled={isCartLoading}
+                    sx={{ 
+                      width: { xs: 28, sm: 32 }, 
+                      height: { xs: 28, sm: 32 } 
+                    }}
+                  >
                     <RemoveIcon fontSize="small" />
                   </IconButton>
                   <Typography sx={{ mx: 1, fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{quantityInCart}</Typography>
-                  <IconButton size="small" onClick={(e) => handleUpdateQuantity(e, quantityInCart + 1)} disabled={isCartLoading || quantityInCart >= product.countInStock}>
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => handleUpdateQuantity(e, quantityInCart + 1)} 
+                    disabled={isCartLoading || quantityInCart >= product.countInStock}
+                    sx={{ 
+                      width: { xs: 28, sm: 32 }, 
+                      height: { xs: 28, sm: 32 } 
+                    }}
+                  >
                     <AddIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -450,7 +500,15 @@ const ProductCard = ({ product, showSnackbar, hidePriceAndCart = false, hideCate
                   startIcon={isCartLoading ? <Loader size="small" color="inherit" /> : <AddShoppingCartIcon fontSize="small" />}
                   onClick={handleAddToCart}
                   disabled={isCartLoading}
-                  sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontWeight: 'bold', textTransform: 'none', px: 2 }}
+                  sx={{ 
+                    borderRadius: '50px', 
+                    fontFamily: theme.typography.fontFamily, 
+                    fontWeight: 'bold', 
+                    textTransform: 'none', 
+                    px: { xs: 1.5, sm: 2 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    height: { xs: 32, sm: 36 }
+                  }}
                 >
                   {isCartLoading ? '...' : 'Add'}
                 </Button>

@@ -170,84 +170,87 @@ const LowStockPage = () => {
 
   return (
     <Container maxWidth="xl">
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.warning.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.warning.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main, fontSize: { xs: '1.75rem', sm: '2rem', md: '3rem' } }}>
           Inventory Management
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Monitor and manage products with low inventory levels.
         </Typography>
       </Paper>
 
       {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item size={{ xs: 12, md: 3 }}>
+      <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} sx={{ mb: 4 }}>
+        <Grid item size={{ xs: 6, sm: 6, md: 3 }}>
           <Card sx={{ height: '100%', border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <WarningAmberIcon sx={{ fontSize: 32, color: theme.palette.warning.main, mr: 2 }} />
-                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <WarningAmberIcon sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, color: theme.palette.warning.main, mr: 1 }} />
+                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}>
                   {products.length}
                 </Typography>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
+              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                 Low Stock Items
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item size={{ xs: 12, md: 3 }}>
+        <Grid item size={{ xs: 6, sm: 6, md: 3 }}>
           <Card sx={{ height: '100%', border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <BarChartIcon sx={{ fontSize: 32, color: theme.palette.info.main, mr: 2 }} />
-                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <BarChartIcon sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, color: theme.palette.info.main, mr: 1 }} />
+                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}>
                   {products.filter(p => p.countInStock < 5).length}
                 </Typography>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
+              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                 Critical Items
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item size={{ xs: 12, md: 3 }}>
+        <Grid item size={{ xs: 6, sm: 6, md: 3 }}>
           <Card sx={{ height: '100%', border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <FilterListIcon sx={{ fontSize: 32, color: theme.palette.success.main, mr: 2 }} />
-                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <FilterListIcon sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, color: theme.palette.success.main, mr: 1 }} />
+                <Typography variant="h4" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}>
                   {categories.length}
                 </Typography>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
+              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                 Categories
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         
-        <Grid item size={{ xs: 12, md: 3 }}>
+        <Grid item size={{ xs: 6, sm: 6, md: 3 }}>
           <Card sx={{ height: '100%', border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <DownloadIcon sx={{ fontSize: 32, color: theme.palette.primary.main, mr: 2 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <DownloadIcon sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, color: theme.palette.primary.main, mr: 1 }} />
                 <Button 
                   variant="contained" 
-                  startIcon={<DownloadIcon />}
+                  startIcon={<DownloadIcon sx={{ fontSize: { xs: 14, sm: 18, md: 20 } }} />}
                   onClick={exportToCSV}
                   sx={{ 
                     borderRadius: 2, 
                     fontFamily: theme.typography.fontFamily,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: { xs: '0.625rem', sm: '0.75rem', md: '0.875rem' },
+                    py: { xs: 0.5, sm: 1 },
+                    px: { xs: 1, sm: 2 }
                   }}
                 >
                   Export
                 </Button>
               </Box>
-              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
+              <Typography variant="subtitle1" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                 Download Report
               </Typography>
             </CardContent>
@@ -257,66 +260,72 @@ const LowStockPage = () => {
 
       <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
         {/* Controls */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item size={{ xs: 12, md: 3 }}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 3 }}>
+          <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
             <TextField
               fullWidth
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary', fontSize: { xs: 16, sm: 20 } }} />,
               }}
               sx={{ 
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: 2,
                   fontFamily: theme.typography.fontFamily
+                },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }
+              }}
+              inputProps={{
+                style: { fontSize: { xs: '0.875rem', sm: '1rem' } }
               }}
             />
           </Grid>
           
-          <Grid item size={{ xs: 6, md: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Sort By</InputLabel>
+          <Grid item size={{ xs: 6, sm: 3, md: 2 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Sort By</InputLabel>
               <Select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
                 IconComponent={SortIcon}
               >
-                <MenuItem value="stock" sx={{ fontFamily: theme.typography.fontFamily }}>Stock Level</MenuItem>
-                <MenuItem value="name" sx={{ fontFamily: theme.typography.fontFamily }}>Name</MenuItem>
-                <MenuItem value="price" sx={{ fontFamily: theme.typography.fontFamily }}>Price</MenuItem>
+                <MenuItem value="stock" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Stock Level</MenuItem>
+                <MenuItem value="name" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Name</MenuItem>
+                <MenuItem value="price" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Price</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           
-          <Grid item size={{ xs: 6, md: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Order</InputLabel>
+          <Grid item size={{ xs: 6, sm: 3, md: 2 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Order</InputLabel>
               <Select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
                 sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
               >
-                <MenuItem value="asc" sx={{ fontFamily: theme.typography.fontFamily }}>Ascending</MenuItem>
-                <MenuItem value="desc" sx={{ fontFamily: theme.typography.fontFamily }}>Descending</MenuItem>
+                <MenuItem value="asc" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Ascending</MenuItem>
+                <MenuItem value="desc" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Descending</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           
-          <Grid item size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Category</InputLabel>
+          <Grid item size={{ xs: 12, sm: 6, md: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Category</InputLabel>
               <Select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
               >
-                <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All Categories</MenuItem>
+                <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>All Categories</MenuItem>
                 {categories.map(category => (
-                  <MenuItem key={category} value={category} sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <MenuItem key={category} value={category} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                     {category}
                   </MenuItem>
                 ))}
@@ -324,7 +333,7 @@ const LowStockPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item size={{ xs: 12, md: 2 }}>
+          <Grid item size={{ xs: 12, sm: 6, md: 2 }}>
             <Button
               variant="contained"
               onClick={() => setDebouncedThreshold(threshold)}
@@ -334,20 +343,22 @@ const LowStockPage = () => {
                 fontWeight: 'bold',
                 height: 'fit-content',
                 alignSelf: 'flex-end',
-                minWidth: '100%'
+                minWidth: '100%',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 1, sm: 1.5 }
               }}
             >
               Refresh
             </Button>
           </Grid>
         </Grid>
-        
+
         {/* Threshold Input */}
         <Box sx={{ my: 3, p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2, background: alpha(theme.palette.background.default, 0.5) }}>
-          <Typography gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>
+          <Typography gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
             Set Stock Threshold
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: { sm: 'center' } }}>
             <TextField
               label="Threshold"
               type="number"
@@ -361,7 +372,11 @@ const LowStockPage = () => {
                   fontFamily: theme.typography.fontFamily
                 },
                 '& .MuiInputLabel-root': { 
-                  fontFamily: theme.typography.fontFamily
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }
               }}
             />
@@ -371,7 +386,10 @@ const LowStockPage = () => {
               sx={{ 
                 borderRadius: 2, 
                 fontFamily: theme.typography.fontFamily,
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 1, sm: 1.5 },
+                minWidth: { xs: '100%', sm: 'auto' }
               }}
             >
               Apply
@@ -382,28 +400,28 @@ const LowStockPage = () => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table sx={{ minWidth: { xs: 600, sm: 800, md: 1000 } }}>
                 <TableHead>
                   <TableRow>
                     <TableCell padding="checkbox">
                       <Button 
                         onClick={handleSelectAll}
                         size="small"
-                        sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}
+                        sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                       >
                         {selectedProducts.length === products.length ? 'Deselect All' : 'Select All'}
                       </Button>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Image</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Stock Left</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Image</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Stock Left</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -425,7 +443,8 @@ const LowStockPage = () => {
                               height: '32px', 
                               borderRadius: '50%',
                               fontFamily: theme.typography.fontFamily,
-                              p: 0
+                              p: 0,
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' }
                             }}
                           >
                             {selectedProducts.includes(product._id) ? '✓' : ''}
@@ -435,23 +454,24 @@ const LowStockPage = () => {
                           <Avatar 
                             src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
                             variant="rounded" 
-                            sx={{ width: 50, height: 50 }}
+                            sx={{ width: { xs: 40, sm: 50 }, height: { xs: 40, sm: 50 } }}
                           />
                         </TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{product.name}</TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>{product.name}</TableCell>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                           <Chip 
                             label={product.category} 
                             size="small" 
                             sx={{ 
                               fontFamily: theme.typography.fontFamily,
                               bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              color: theme.palette.primary.main
+                              color: theme.palette.primary.main,
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' }
                             }} 
                           />
                         </TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>₹{product.price.toFixed(2)}</TableCell>
-                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>₹{product.price.toFixed(2)}</TableCell>
+                        <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                           {product.countInStock}
                         </TableCell>
                         <TableCell>
@@ -462,7 +482,7 @@ const LowStockPage = () => {
                               fontFamily: theme.typography.fontFamily
                             }}
                           >
-                            <EditIcon />
+                            <EditIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -471,8 +491,8 @@ const LowStockPage = () => {
                     <TableRow>
                       <TableCell colSpan={8} align="center">
                         <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <WarningAmberIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <WarningAmberIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 1 }} />
+                          <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             No products are below the selected stock threshold.
                           </Typography>
                         </Box>
@@ -481,7 +501,7 @@ const LowStockPage = () => {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </Box>
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <Pagination
@@ -491,7 +511,8 @@ const LowStockPage = () => {
                   color="primary"
                   sx={{ 
                     '& .MuiPaginationItem-root': { 
-                      fontFamily: theme.typography.fontFamily 
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }
                   }}
                 />
@@ -503,7 +524,7 @@ const LowStockPage = () => {
       
       {/* Edit Stock Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
-        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
           Update Stock for {editProduct?.name}
         </DialogTitle>
         <DialogContent>
@@ -521,7 +542,11 @@ const LowStockPage = () => {
                   fontFamily: theme.typography.fontFamily
                 },
                 '& .MuiInputLabel-root': { 
-                  fontFamily: theme.typography.fontFamily
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }
               }}
             />
@@ -530,7 +555,7 @@ const LowStockPage = () => {
         <DialogActions>
           <Button 
             onClick={() => setEditDialogOpen(false)}
-            sx={{ fontFamily: theme.typography.fontFamily }}
+            sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}
           >
             Cancel
           </Button>
@@ -539,7 +564,8 @@ const LowStockPage = () => {
             variant="contained"
             sx={{ 
               fontFamily: theme.typography.fontFamily,
-              borderRadius: 2
+              borderRadius: 2,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }}
           >
             Save

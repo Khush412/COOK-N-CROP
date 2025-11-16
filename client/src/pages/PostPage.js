@@ -566,17 +566,15 @@ const PostPage = () => {
   return (
     <>
       <ScrollToTop />
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="md" sx={{ pt: 8, pb: 4 }}>
         <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
           {/* Back Button - uses navigate(-1) to go to the previous page */}
-          <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
-            Back
-          </Button>
-
-          {/* Post Header */}
-          <Box sx={{ position: 'relative', mb: 2 }}> 
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Button onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />} sx={{ fontFamily: theme.typography.fontFamily }}>
+              Back
+            </Button>
             {isAuthenticated && (user.id === post.user._id || user.role === 'admin' || isModerator) && (
-              <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+              <>
                 <IconButton
                   aria-label="settings"
                   id="post-actions-button"
@@ -631,8 +629,12 @@ const PostPage = () => {
                     <ListItemText primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }}>Report</ListItemText>
                   </MenuItem>
                 </Menu>
-              </Box>
+              </>
             )}
+          </Box>
+
+          {/* Post Header */}
+          <Box sx={{ position: 'relative', mb: 2 }}> 
           
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
@@ -854,7 +856,7 @@ const PostPage = () => {
           )}
 
           {/* Comments Section */}
-          <Paper sx={{ p: { xs: 2, sm: 4 }, mt: 4, borderRadius: 2 }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, mt: 4, borderRadius: 2, width: '100%', minHeight: { xs: 36, sm: 48 } }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
               Comments ({post.comments.length})
             </Typography>

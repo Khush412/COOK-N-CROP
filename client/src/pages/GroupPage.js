@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box, Container, Typography, Alert, Paper, Button, Stack, Grid, Avatar, Chip,
   ToggleButtonGroup, ToggleButton, Pagination, Divider, Tooltip, TextField, InputAdornment,
-  FormControl, Select, MenuItem, IconButton, Drawer
+  FormControl, Select, MenuItem, IconButton, Drawer, useMediaQuery
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { 
@@ -25,6 +25,7 @@ const GroupPage = () => {
   const { slug } = useParams();
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
 
   const [group, setGroup] = useState(null);
@@ -182,7 +183,7 @@ const GroupPage = () => {
       {/* Group Header - Mobile responsive */}
       <Paper
         sx={{
-          height: { xs: 200, sm: 250, md: 300 },
+          height: { xs: 180, sm: 200, md: 250 },
           position: 'relative',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -190,64 +191,69 @@ const GroupPage = () => {
           color: '#fff',
           display: 'flex',
           alignItems: 'flex-end',
-          p: { xs: 2, sm: 3, md: 4 },
+          p: { xs: 1.5, sm: 2, md: 3 },
         }}
       >
         <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ position: 'relative', zIndex: 2, width: '100%' }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2, md: 3 }} alignItems="center" sx={{ position: 'relative', zIndex: 2, width: '100%' }}>
           <Avatar 
             src={group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`} 
             sx={{ 
-              width: { xs: 80, sm: 100, md: 120 }, 
-              height: { xs: 80, sm: 100, md: 120 }, 
-              border: '4px solid white' 
+              width: { xs: 60, sm: 80, md: 100, lg: 120 }, 
+              height: { xs: 60, sm: 80, md: 100, lg: 120 }, 
+              border: '3px solid white' 
             }} 
           />
           <Box sx={{ textAlign: { xs: 'center', sm: 'left' }, width: '100%' }}>
             <Typography 
-              variant="h2" 
+              variant="h1" 
               component="h1" 
               sx={{ 
                 fontWeight: 800, 
                 fontFamily: theme.typography.fontFamily, 
-                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+                fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2rem', lg: '2.5rem' }
               }}
             >
               {group.name}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: 'center', sm: 'flex-start' }}>
-              <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9 }}>g/{group.slug}</Typography>
+            <Stack direction="row" alignItems="center" spacing={0.5} justifyContent={{ xs: 'center', sm: 'flex-start' }}>
+              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, opacity: 0.9, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>g/{group.slug}</Typography>
               {group.isPrivate && (
                 <Tooltip title="Private Group">
-                  <LockIcon sx={{ color: 'white', fontSize: '1.2rem' }} />
+                  <LockIcon sx={{ color: 'white', fontSize: { xs: '1rem', sm: '1.2rem' } }} />
                 </Tooltip>
               )}
               {isMod && (
                 <Button
                   size="small"
-                  startIcon={<SettingsIcon />}
+                  startIcon={<SettingsIcon sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} />}
                   onClick={() => navigate(`/g/${slug}/edit`)}
                   sx={{ 
                     color: 'white', 
                     borderColor: 'rgba(255,255,255,0.5)', 
                     '&:hover': { borderColor: 'white' }, 
                     fontFamily: theme.typography.fontFamily,
-                    mt: { xs: 1, sm: 0 }
+                    mt: { xs: 0.5, sm: 0 },
+                    px: { xs: 0.5, sm: 1 },
+                    py: { xs: 0, sm: 0.5 },
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    minWidth: 'auto'
                   }}
                 >
-                  Edit Group
+                  Edit
                 </Button>
               )}
             </Stack>
             <Typography 
-              variant="body1" 
+              variant="body2" 
               sx={{ 
-                mt: 1, 
+                mt: 0.5, 
                 fontFamily: theme.typography.fontFamily,
                 display: '-webkit-box',
-                WebkitLineClamp: { xs: 2, sm: 3 },
+                WebkitLineClamp: { xs: 2, sm: 2, md: 3 },
                 WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' }
               }}
             >
               {group.description}
@@ -256,121 +262,147 @@ const GroupPage = () => {
         </Stack>
       </Paper>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Grid container spacing={4}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+        <Grid container spacing={{ xs: 2, md: 4 }}>
           {/* Main Feed */}
           <Grid size={{ xs: 12, md: 8 }}>
-            <Paper sx={{ p: 2, mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', borderRadius: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate('/create-post', { state: { groupId: group._id, groupName: group.name } })}
-                sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px', mb: { xs: 1, sm: 0 } }}
-              >
-                Create Post
-              </Button>
-              
-              {/* Mobile sidebar toggle button - placed next to Create Post button */}
-              <IconButton
-                onClick={() => setMobileSidebarOpen(true)}
-                sx={{ 
-                  display: { xs: 'flex', md: 'none' }, 
-                  bgcolor: theme.palette.primary.main,
-                  color: 'white',
-                  '&:hover': { bgcolor: theme.palette.primary.dark },
-                  borderRadius: '50%',
-                  width: 40,
-                  height: 40,
-                  mb: { xs: 1, sm: 0 }
-                }}
-              >
-                <MenuIcon />
-              </IconButton>
-              
-              <TextField
-                label="Search in this group"
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 200 }, '& .MuiOutlinedInput-root': { borderRadius: '20px' } }}
-                InputProps={{
-                  startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>),
-                }}
-              />
-              {/* Filters and View Options - Responsive for mobile */}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', width: '100%', mt: { xs: 2, sm: 0 } }}>
-                {/* Content Filter Dropdown */}
-                <FormControl size="small" sx={{ minWidth: { xs: '45%', sm: 100 } }}>
-                  <Select
-                    value={contentFilter}
-                    onChange={(e) => {
-                      setContentFilter(e.target.value);
-                      setPage(1);
-                    }}
-                    MenuProps={{
-                      disableScrollLock: true,
-                    }}
-                    sx={{ 
-                      borderRadius: 2,
-                      height: 36,
-                      fontSize: '0.875rem',
-                      '& .MuiSelect-select': {
-                        py: 1,
-                        pl: 1.5,
-                        pr: 3,
-                      }
-                    }}
-                  >
-                    <MenuItem value="all">All</MenuItem>
-                    <MenuItem value="recipes">Recipes</MenuItem>
-                    <MenuItem value="discussions">Discussions</MenuItem>
-                  </Select>
-                </FormControl>
-                
-                {/* Sort Options Dropdown */}
-                <FormControl size="small" sx={{ minWidth: { xs: '45%', sm: 120 } }}>
-                  <Select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
-                    MenuProps={{
-                      disableScrollLock: true,
-                    }}
-                    sx={{ 
-                      borderRadius: 2,
-                      height: 36,
-                      fontSize: '0.875rem',
-                      '& .MuiSelect-select': {
-                        py: 1,
-                        pl: 1.5,
-                        pr: 3,
-                      }
-                    }}
-                  >
-                    <MenuItem value="new">New</MenuItem>
-                    <MenuItem value="top">Top</MenuItem>
-                    <MenuItem value="hot">Hot</MenuItem>
-                    <MenuItem value="discussed">Most Discussed</MenuItem>
-                  </Select>
-                </FormControl>
-                
-                {/* View Mode Toggle */}
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
+            <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+              {/* First row: Search bar with mobile sidebar toggle */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, mb: { xs: 1, sm: 1.5 } }}>
+                <TextField
+                  label="Search in this group"
                   size="small"
-                  sx={{ height: 36, mt: { xs: 1, sm: 0 } }}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  sx={{ 
+                    flexGrow: 1, 
+                    minWidth: { xs: 100, sm: 150 }, 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '20px',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    },
+                  }}
+                  InputProps={{
+                    startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} /></InputAdornment>),
+                  }}
+                  InputLabelProps={{
+                    sx: { 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }
+                  }}
+                />
+                {/* Mobile sidebar toggle button - placed next to search bar */}
+                <IconButton
+                  onClick={() => setMobileSidebarOpen(true)}
+                  sx={{ 
+                    display: { xs: 'flex', md: 'none' }, 
+                    bgcolor: theme.palette.primary.main,
+                    color: 'white',
+                    '&:hover': { bgcolor: theme.palette.primary.dark },
+                    borderRadius: '50%',
+                    width: { xs: 32, sm: 40 },
+                    height: { xs: 32, sm: 40 },
+                  }}
                 >
-                  <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <GridViewIcon sx={{ fontSize: 20 }} />
-                  </ToggleButton>
-                  <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <ViewListIcon sx={{ fontSize: 20 }} />
-                  </ToggleButton>
-                  <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <AppsIcon sx={{ fontSize: 20 }} />
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                  <MenuIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
+                </IconButton>
+              </Box>
+              
+              {/* Second row: Create Post button and view mode toggle aligned on the same line */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.5, sm: 1 }, alignItems: 'center', width: '100%' }}>
+                  {/* Content Filter Dropdown */}
+                  <FormControl size="small" sx={{ width: { xs: '48%', sm: '48%' } }}>
+                    <Select
+                      value={contentFilter}
+                      onChange={(e) => {
+                        setContentFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      MenuProps={{
+                        disableScrollLock: true,
+                      }}
+                      sx={{ 
+                        borderRadius: 2,
+                        height: { xs: 36, sm: 42 },
+                        fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                        '& .MuiSelect-select': {
+                          py: { xs: 0.8, sm: 1.3 },
+                          pl: { xs: 1.3, sm: 1.8 },
+                          pr: { xs: 2.3, sm: 3.3 },
+                        }
+                      }}
+                    >
+                      <MenuItem value="all" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>All</MenuItem>
+                      <MenuItem value="recipes" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>Recipes</MenuItem>
+                      <MenuItem value="discussions" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>Discussions</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Sort Options Dropdown */}
+                  <FormControl size="small" sx={{ width: { xs: '48%', sm: '48%' } }}>
+                    <Select
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value)}
+                      MenuProps={{
+                        disableScrollLock: true,
+                      }}
+                      sx={{ 
+                        borderRadius: 2,
+                        height: { xs: 36, sm: 42 },
+                        fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                        '& .MuiSelect-select': {
+                          py: { xs: 0.8, sm: 1.3 },
+                          pl: { xs: 1.3, sm: 1.8 },
+                          pr: { xs: 2.3, sm: 3.3 },
+                        }
+                      }}
+                    >
+                      <MenuItem value="new" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>New</MenuItem>
+                      <MenuItem value="top" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>Top</MenuItem>
+                      <MenuItem value="hot" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>Hot</MenuItem>
+                      <MenuItem value="discussed" sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>Most Discussed</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* View Mode Toggle */}
+                  <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
+                    size="small"
+                    sx={{ height: { xs: 36, sm: 42 } }}
+                  >
+                    <ToggleButton value="card" sx={{ px: { xs: 1.2, sm: 1.9 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <GridViewIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.35rem' } }} />
+                    </ToggleButton>
+                    <ToggleButton value="compact" sx={{ px: { xs: 1.2, sm: 1.9 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <ViewListIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.35rem' } }} />
+                    </ToggleButton>
+                    <ToggleButton value="grid" sx={{ px: { xs: 1.2, sm: 1.9 }, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                      <AppsIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.35rem' } }} />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.35rem' } }} />}
+                    onClick={() => navigate('/create-post', { state: { groupId: group._id, groupName: group.name } })}
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      borderRadius: '50px', 
+                      px: { xs: 1.9, sm: 2.4 },
+                      py: { xs: 0.8, sm: 1.3 },
+                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                      minWidth: 'auto',
+                      ml: 1,
+                      height: { xs: 36, sm: 42 }
+                    }}
+                  >
+                    Create Post
+                  </Button>
+
+                </Box>
               </Box>
             </Paper>
 
@@ -380,7 +412,7 @@ const GroupPage = () => {
               </Box>
             ) : (
               viewMode !== 'grid' ? (
-                <Stack spacing={3}>
+                <Stack spacing={{ xs: 2, sm: 3 }}>
                   {posts.length > 0 ? posts.map(post => (
                     <PostCard
                       key={post._id}
@@ -394,19 +426,19 @@ const GroupPage = () => {
                       displayMode={viewMode} // Use the selected view mode
                     />
                   )) : (
-                    <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontFamily: theme.typography.fontFamily }}>No posts in this group yet. Be the first!</Typography>
+                    <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>No posts in this group yet. Be the first!</Typography>
                   )}
                 </Stack>
               ) : (
                 // Grid view - only show posts with images
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1, sm: 2 }}>
                   {posts.filter(post => post.media && post.media.length > 0).length > 0 ? (
                     posts.filter(post => post.media && post.media.length > 0).map((post) => (
-                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                      <Grid size={{ xs: 6, sm: 6, md: 4 }} key={post._id}>
                         <Box 
                           onClick={() => navigate(`/post/${post._id}`)}
                           sx={{
-                            borderRadius: 3,
+                            borderRadius: { xs: 2, sm: 3 },
                             overflow: 'hidden',
                             cursor: 'pointer',
                             boxShadow: 2,
@@ -427,17 +459,17 @@ const GroupPage = () => {
                             alt={post.title}
                             sx={{
                               width: '100%',
-                              height: { xs: 150, sm: 180, md: 200 },
+                              height: { xs: 100, sm: 150, md: 180 },
                               objectFit: 'cover',
                               borderBottom: `1px solid ${theme.palette.divider}`,
                             }}
                           />
-                          <Box sx={{ p: 2 }}>
+                          <Box sx={{ p: { xs: 1, sm: 2 } }}>
                             <Typography 
                               variant="h6" 
                               sx={{ 
                                 fontWeight: 700, 
-                                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                                 lineHeight: 1.4,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -445,16 +477,16 @@ const GroupPage = () => {
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical',
                                 fontFamily: theme.typography.fontFamily,
-                                mb: 1,
+                                mb: 0.5,
                               }}
                             >
                               {post.title}
                             </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
                               <Avatar 
                                 src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
                                 alt={post.user?.username || 'User'}
-                                sx={{ width: 24, height: 24, fontSize: 12 }}
+                                sx={{ width: { xs: 20, sm: 24 }, height: { xs: 20, sm: 24 }, fontSize: { xs: '0.6rem', sm: '0.75rem' } }}
                               >
                                 {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
                               </Avatar>
@@ -464,6 +496,7 @@ const GroupPage = () => {
                                   fontWeight: 500, 
                                   color: 'text.secondary',
                                   fontFamily: theme.typography.fontFamily,
+                                  fontSize: { xs: '0.6rem', sm: '0.75rem' }
                                 }}
                               >
                                 {post.user?.username || 'Unknown'}
@@ -478,23 +511,29 @@ const GroupPage = () => {
                       <Paper 
                         elevation={0}
                         sx={{ 
-                          p: { xs: 4, sm: 6, md: 8 }, 
+                          p: { xs: 2, sm: 4, md: 6 }, 
                           textAlign: 'center', 
-                          borderRadius: 3,
+                          borderRadius: { xs: 2, sm: 3 },
                           border: `1px solid ${theme.palette.divider}`,
                         }}
                       >
-                        <Typography variant="h5" sx={{ color: "text.secondary", fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.75rem' }, fontWeight: 700, mb: 2 }}>
+                        <Typography variant="h5" sx={{ color: "text.secondary", fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }, fontWeight: 700, mb: 1 }}>
                           No image posts yet
                         </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                           Be the first to share a post with images!
                         </Typography>
                         <Button 
                           variant="contained" 
                           onClick={() => navigate('/create-post', { state: { groupId: group._id, groupName: group.name } })}
-                          startIcon={<AddIcon />}
-                          sx={{ borderRadius: 3, px: { xs: 2, sm: 4 }, py: { xs: 1, sm: 1.5 }, fontWeight: 700 }}
+                          startIcon={<AddIcon sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }} />}
+                          sx={{ 
+                            borderRadius: { xs: 2, sm: 3 }, 
+                            px: { xs: 1.5, sm: 3 }, 
+                            py: { xs: 0.75, sm: 1 }, 
+                            fontWeight: 700,
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                          }}
                         >
                           Create Post
                         </Button>
@@ -506,8 +545,20 @@ const GroupPage = () => {
             )}
 
             {totalPages > 1 && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                <Pagination count={totalPages} page={page} onChange={(e, val) => setPage(val)} color="primary" sx={{ '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily } }} />
+              <Box sx={{ mt: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'center' }}>
+                <Pagination 
+                  count={totalPages} 
+                  page={page} 
+                  onChange={(e, val) => setPage(val)} 
+                  color="primary" 
+                  size={isMobile ? "small" : "medium"}
+                  sx={{ 
+                    '& .MuiPaginationItem-root': { 
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    } 
+                  }} 
+                />
               </Box>
             )}
           </Grid>
@@ -531,16 +582,16 @@ const GroupPage = () => {
                 </Box>
               )}
             
-            <Paper sx={{ p: 3, borderRadius: 3, mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: { xs: 2, sm: 3 }, mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>About Community</Typography>
               {group.isPrivate && !isMember && !hasRequestedToJoin ? (
                 <Button
                   fullWidth
                   variant="contained"
                   onClick={handleJoinLeave}
                   disabled={isJoining}
-                  startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon />}
-                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                  startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}
                 >
                   Request to Join
                 </Button>
@@ -550,36 +601,36 @@ const GroupPage = () => {
                   variant={isMember ? 'outlined' : 'contained'}
                   onClick={handleJoinLeave}
                   disabled={isJoining || hasRequestedToJoin}
-                  startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon />)}
-                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                  startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />)}
+                  sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}
                 >
                   {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
                 </Button>
               )}
-              <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{memberCount.toLocaleString()}</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+              <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{memberCount.toLocaleString()}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                 {group.isPrivate ? 'Members (Private Group)' : 'Members'}
               </Typography>
               <Divider sx={{ my: 2 }} />
-              {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Created by{' '}
-                <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit' }}>
+              {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Created by{' '}
+                <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit', fontSize: 'inherit' }}>
                   {group.creator.username}
                 </Typography> {/* Added profilePic check */}
               </Typography>}
               {group.moderators.length > 0 && (
                 <>
                   <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Moderators</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Moderators</Typography>
                   <Stack spacing={1}>
                     {group.moderators.map(mod => (
                       <Stack key={mod._id} direction="row" spacing={1.5} alignItems="center" component={RouterLink} to={`/user/${mod.username}`} sx={{ textDecoration: 'none', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}> {/* Added profilePic check */}
                         <Avatar
-                          sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
+                          sx={{ width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 }, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
                           src={mod.profilePic && mod.profilePic.startsWith('http') ? mod.profilePic : mod.profilePic ? `${process.env.REACT_APP_API_URL}${mod.profilePic}` : undefined}
                         >
                           {mod.username.charAt(0).toUpperCase()}
                         </Avatar>
-                        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{mod.username}</Typography>
+                        <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{mod.username}</Typography>
                       </Stack>
                     ))}
                   </Stack>
@@ -588,12 +639,12 @@ const GroupPage = () => {
               {group.rules && group.rules.length > 0 && (
                 <> {/* Added profilePic check */}
                   <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Group Rules</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Group Rules</Typography>
                   <Stack spacing={1.5}>
                     {group.rules.map((rule, index) => (
                       <Box key={index}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{index + 1}. {rule.title}</Typography>
-                        {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily }}>{rule.description}</Typography>}
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{index + 1}. {rule.title}</Typography>
+                        {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{rule.description}</Typography>}
                       </Box>
                     ))}
                   </Stack>
@@ -611,7 +662,7 @@ const GroupPage = () => {
         open={mobileSidebarOpen}
         onClose={() => setMobileSidebarOpen(false)}
         PaperProps={{
-          sx: { width: { xs: '100%', sm: 300 } }
+          sx: { width: { xs: '85%', sm: 300 } }
         }}
       >
         {/* Close button positioned outside the main content */}
@@ -619,21 +670,21 @@ const GroupPage = () => {
           onClick={() => setMobileSidebarOpen(false)} 
           sx={{ 
             position: 'absolute', 
-            top: 32, 
-            right: 16, 
+            top: { xs: 16, sm: 32 }, 
+            right: { xs: 8, sm: 16 }, 
             zIndex: 1000,
             bgcolor: 'background.paper',
             '&:hover': { bgcolor: 'action.hover' },
-            width: 40,
-            height: 40
+            width: { xs: 32, sm: 40 },
+            height: { xs: 32, sm: 40 }
           }}
         >
-          <CloseIcon />
+          <CloseIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
         </IconButton>
         
-        <Box sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', pt: 8 }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: 6, sm: 8 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               Group Info
             </Typography>
           </Box>
@@ -645,16 +696,16 @@ const GroupPage = () => {
             </Box>
           )}
         
-          <Paper sx={{ p: 2, borderRadius: 2, mb: 2, flexGrow: 1, overflow: 'auto' }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>About Community</Typography>
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: { xs: 1.5, sm: 2 }, mb: 2, flexGrow: 1, overflow: 'auto' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>About Community</Typography>
             {group.isPrivate && !isMember && !hasRequestedToJoin ? (
               <Button
                 fullWidth
                 variant="contained"
                 onClick={handleJoinLeave}
                 disabled={isJoining}
-                startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon />}
-                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                startIcon={isJoining ? <Loader size="small" /> : <PersonAddIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}
               >
                 Request to Join
               </Button>
@@ -664,36 +715,36 @@ const GroupPage = () => {
                 variant={isMember ? 'outlined' : 'contained'}
                 onClick={handleJoinLeave}
                 disabled={isJoining || hasRequestedToJoin}
-                startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon />)}
-                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily }}
+                startIcon={isJoining ? <Loader size="small" /> : (isMember && <CheckIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />)}
+                sx={{ mb: 2, borderRadius: '50px', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}
               >
                 {hasRequestedToJoin ? 'Requested' : (isMember ? 'Joined' : 'Join')}
               </Button>
             )}
-            <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{memberCount.toLocaleString()}</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{memberCount.toLocaleString()}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
               {group.isPrivate ? 'Members (Private Group)' : 'Members'}
             </Typography>
             <Divider sx={{ my: 2 }} />
-            {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Created by{' '}
-              <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit' }}>
+            {group.creator && <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Created by{' '}
+              <Typography component={RouterLink} to={`/user/${group.creator.username}`} sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'text.primary', '&:hover': { textDecoration: 'underline' }, fontFamily: 'inherit', fontSize: 'inherit' }}>
                 {group.creator.username}
               </Typography> {/* Added profilePic check */}
             </Typography>}
             {group.moderators.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Moderators</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Moderators</Typography>
                 <Stack spacing={1}>
                   {group.moderators.map(mod => (
                     <Stack key={mod._id} direction="row" spacing={1.5} alignItems="center" component={RouterLink} to={`/user/${mod.username}`} sx={{ textDecoration: 'none', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}> {/* Added profilePic check */}
                       <Avatar
-                        sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
+                        sx={{ width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 }, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
                         src={mod.profilePic && mod.profilePic.startsWith('http') ? mod.profilePic : mod.profilePic ? `${process.env.REACT_APP_API_URL}${mod.profilePic}` : undefined}
                       >
                         {mod.username.charAt(0).toUpperCase()}
                       </Avatar>
-                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{mod.username}</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{mod.username}</Typography>
                     </Stack>
                   ))}
                 </Stack>
@@ -702,12 +753,12 @@ const GroupPage = () => {
             {group.rules && group.rules.length > 0 && (
               <> {/* Added profilePic check */}
                 <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>Group Rules</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Group Rules</Typography>
                 <Stack spacing={1.5}>
                   {group.rules.map((rule, index) => (
                     <Box key={index}>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>{index + 1}. {rule.title}</Typography>
-                      {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily }}>{rule.description}</Typography>}
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{index + 1}. {rule.title}</Typography>
+                      {rule.description && <Typography variant="caption" color="text.secondary" sx={{ pl: 2, display: 'block', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>{rule.description}</Typography>}
                     </Box>
                   ))}
                 </Stack>

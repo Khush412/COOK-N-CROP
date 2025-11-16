@@ -32,6 +32,7 @@ import {
   Collapse,
   useTheme,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import { useTheme as useMuiTheme } from "@mui/material/styles";
 import {
@@ -61,6 +62,7 @@ import Loader from '../custom_components/Loader';
 
 const FeedPage = () => {
   const theme = useMuiTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
   const navigate = useNavigate();
 
@@ -318,11 +320,11 @@ const FeedPage = () => {
   };
 
   const FilterDropdown = () => (
-    <Box sx={{ p: 2, minWidth: 300 }}>
-      <Stack spacing={3}>
+    <Box sx={{ p: 1.5, minWidth: 300 }}>
+      <Stack spacing={2}>
         {/* Content Filter */}
-        <Paper sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>
             Content Type
           </Typography>
           <FormControl fullWidth size="small">
@@ -336,7 +338,7 @@ const FeedPage = () => {
               sx={{ 
                 fontFamily: theme.typography.fontFamily, 
                 borderRadius: 2,
-                height: 40,
+                height: 36,
               }}
               MenuProps={{
                 PaperProps: {
@@ -355,8 +357,8 @@ const FeedPage = () => {
         </Paper>
         
         {/* Sort Options */}
-        <Paper sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>
             Sort By
           </Typography>
           <FormControl fullWidth size="small">
@@ -370,7 +372,7 @@ const FeedPage = () => {
               sx={{ 
                 fontFamily: theme.typography.fontFamily, 
                 borderRadius: 2,
-                height: 40,
+                height: 36,
               }}
               MenuProps={{
                 PaperProps: {
@@ -390,8 +392,8 @@ const FeedPage = () => {
         </Paper>
         
         {/* Quick Cook Filter */}
-        <Paper sx={{ p: 2, borderRadius: 2, background: `linear-gradient(145deg, ${alpha(theme.palette.success.main, 0.08)}, ${alpha(theme.palette.warning.main, 0.08)})` }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2, background: `linear-gradient(145deg, ${alpha(theme.palette.success.main, 0.08)}, ${alpha(theme.palette.warning.main, 0.08)})` }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', fontFamily: theme.typography.fontFamily }}>
             <TimerIcon sx={{ mr: 1, color: theme.palette.success.main }} />
             Quick Cook Options
           </Typography>
@@ -404,14 +406,14 @@ const FeedPage = () => {
             }}
             color={quickCook ? 'success' : 'default'}
             variant={quickCook ? 'filled' : 'outlined'}
-            sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: '0.95rem', width: '100%', py: 2 }}
+            sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: '0.9rem', width: '100%', py: 1.5 }}
             clickable
           />
         </Paper>
         
         {/* Prep Time Filter */}
-        <Paper sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>
             Max Prep Time
           </Typography>
           <FormControl fullWidth size="small">
@@ -425,7 +427,7 @@ const FeedPage = () => {
               sx={{ 
                 fontFamily: theme.typography.fontFamily, 
                 borderRadius: 2,
-                height: 40,
+                height: 36,
               }}
               MenuProps={{
                 PaperProps: {
@@ -447,8 +449,8 @@ const FeedPage = () => {
         </Paper>
         
         {/* Servings Filter */}
-        <Paper sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: 1.5, borderRadius: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, fontFamily: theme.typography.fontFamily }}>
             Minimum Servings
           </Typography>
           <FormControl fullWidth size="small">
@@ -462,7 +464,7 @@ const FeedPage = () => {
               sx={{ 
                 fontFamily: theme.typography.fontFamily, 
                 borderRadius: 2,
-                height: 40,
+                height: 36,
               }}
               MenuProps={{
                 PaperProps: {
@@ -496,7 +498,7 @@ const FeedPage = () => {
               setSelectedTags([]);
               setPage(1);
             }}
-            sx={{ borderRadius: 2, py: 1 }}
+            sx={{ borderRadius: 2, py: 0.75, fontSize: '0.875rem' }}
           >
             Reset All
           </Button>
@@ -504,7 +506,7 @@ const FeedPage = () => {
             fullWidth 
             variant="contained" 
             onClick={() => setMobileFiltersOpen(false)}
-            sx={{ borderRadius: 2, py: 1 }}
+            sx={{ borderRadius: 2, py: 0.75, fontSize: '0.875rem' }}
           >
             Apply Filters
           </Button>
@@ -677,7 +679,7 @@ const FeedPage = () => {
     return (
       <>
         {viewMode !== 'grid' ? (
-          <Grid container spacing={2} sx={{ alignContent: 'flex-start' }}>
+          <Grid container spacing={{ xs: 1, md: 2 }} sx={{ alignContent: 'flex-start' }}>
             {posts.map((post, index) => (
               <Grid 
                 size={{ xs: 12, md: viewMode === 'compact' ? 12 : 6 }} 
@@ -719,7 +721,7 @@ const FeedPage = () => {
           </Grid>
         ) : (
           // Grid view - only show posts with images
-          <Grid container spacing={2}>
+          <Grid container spacing={{ xs: 1, md: 2 }}>
             {(() => {
               const imagePosts = posts.filter(post => post.media && post.media.length > 0);
               return imagePosts.map((post, index) => (
@@ -823,21 +825,21 @@ const FeedPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 8, py: 2 }}>
-      <Paper sx={{ p: { xs: 1.5, md: 3 }, mb: 3, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 0.5, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 8, sm: 9 }, py: { xs: 1, md: 1.5 } }}>
+      <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: { xs: 1.5, sm: 2, md: 2.5 }, borderRadius: { xs: 1, sm: 1.5, md: 2 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant={isMobile ? "h5" : "h4"} component="h1" sx={{ fontWeight: 800, mb: 0.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' } }}>
           My Feed
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' } }}>
           Posts from the creators you follow.
         </Typography>
       </Paper>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, md: 4 }}>
         {/* Main Content */}
-        <Grid size={{ xs: 12, md: 9 }} sx={{ pr: { md: 2 } }}>
+        <Grid size={{ xs: 12, md: 9 }} sx={{ pr: { md: 2 }, px: { xs: 0.5, md: 0 } }}>
           {/* Search Bar and Create Post Button */}
-          <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+          <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 }, mb: { xs: 1.5, md: 2 } }}>
             <TextField
               fullWidth
               variant="outlined"
@@ -847,34 +849,36 @@ const FeedPage = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ fontSize: 20 }} />
+                    <SearchIcon sx={{ fontSize: { xs: 16, md: 20 } }} />
                   </InputAdornment>
                 ),
               }}
               sx={{ 
-                borderRadius: 2,
+                borderRadius: { xs: 2, md: 3 },
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
+                  borderRadius: { xs: 2, md: 3 },
                   fontFamily: theme.typography.fontFamily,
-                  height: 40,
+                  height: { xs: 32, md: 44 },
                 },
                 '& .MuiInputBase-input': {
                   fontFamily: theme.typography.fontFamily,
-                  fontSize: '0.875rem',
+                  fontSize: { xs: '0.8rem', md: '1rem' },
+                  py: { xs: 0.25, md: 1 },
                 }
               }}
             />
             <Button
               variant="contained"
-              startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+              startIcon={<AddIcon sx={{ fontSize: { xs: 14, md: 16 } }} />}
               onClick={handleCreatePost}
               sx={{ 
-                borderRadius: 3,
+                borderRadius: { xs: 3, md: 4 },
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
-                height: 40,
-                fontSize: '0.875rem',
-                px: 2,
+                height: { xs: 32, md: 44 },
+                fontSize: { xs: '0.8rem', md: '1rem' },
+                px: { xs: 0.75, md: 3 },
+                minWidth: { xs: 'auto', md: 120 },
                 boxShadow: 3,
                 '&:hover': {
                   boxShadow: 5,
@@ -883,25 +887,25 @@ const FeedPage = () => {
                 transition: 'all 0.2s ease',
               }}
             >
-              Create Post
+              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Create Post</Box>
+              <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Create</Box>
             </Button>
-
           </Box>
           
           {/* Filters and View Options */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: { xs: 1, md: 2 }, alignItems: 'center', gap: { xs: 0.5, md: 1 }, flexWrap: 'nowrap', width: '100%' }}>
+            <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 }, alignItems: 'center', flexWrap: 'nowrap' }}>
               {/* Filter Dropdown Button - Hidden on mobile */}
               <Button
                 variant="contained"
-                startIcon={<FilterListIcon />}
+                startIcon={<FilterListIcon sx={{ fontSize: { xs: 14, md: 16 } }} />}
                 onClick={() => setMobileFiltersOpen(true)}
                 sx={{ 
-                  borderRadius: 2,
+                  borderRadius: { xs: 2, md: 3 },
                   fontWeight: 600,
-                  height: 36,
-                  fontSize: '0.875rem',
-                  px: 2,
+                  height: { xs: 32, md: 44 },
+                  fontSize: { xs: '0.7rem', md: '1rem' },
+                  px: { xs: 1, md: 2 },
                   boxShadow: 2,
                   '&:hover': {
                     boxShadow: 3,
@@ -913,7 +917,7 @@ const FeedPage = () => {
               </Button>
               
               {/* Sort Options Dropdown */}
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: 80, md: 120 } }}>
                 <Select
                   value={sort}
                   onChange={(e) => { setSort(e.target.value); setPage(1); }}
@@ -921,25 +925,25 @@ const FeedPage = () => {
                     disableScrollLock: true,
                   }}
                   sx={{ 
-                    borderRadius: 2,
-                    height: 36,
-                    fontSize: '0.875rem',
+                    borderRadius: { xs: 2, md: 3 },
+                    height: { xs: 32, md: 44 },
+                    fontSize: { xs: '0.7rem', md: '1rem' },
                     '& .MuiSelect-select': {
-                      py: 1,
-                      pl: 1.5,
-                      pr: 3,
+                      py: { xs: 0.25, md: 1 },
+                      pl: { xs: 0.75, md: 1.5 },
+                      pr: { xs: 2, md: 3 },
                     }
                   }}
                 >
-                  <MenuItem value="new">Newest First</MenuItem>
-                  <MenuItem value="top">Top Rated</MenuItem>
-                  <MenuItem value="hot">Hot Posts</MenuItem>
-                  <MenuItem value="discussed">Most Discussed</MenuItem>
+                  <MenuItem value="new">New</MenuItem>
+                  <MenuItem value="top">Top</MenuItem>
+                  <MenuItem value="hot">Hot</MenuItem>
+                  <MenuItem value="discussed">Discuss</MenuItem>
                 </Select>
               </FormControl>
               
               {/* Content Filter Dropdown */}
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+              <FormControl size="small" sx={{ minWidth: { xs: 80, md: 120 } }}>
                 <Select
                   value={contentFilter}
                   onChange={(e) => {
@@ -950,19 +954,19 @@ const FeedPage = () => {
                     disableScrollLock: true,
                   }}
                   sx={{ 
-                    borderRadius: 2,
-                    height: 36,
-                    fontSize: '0.875rem',
+                    borderRadius: { xs: 2, md: 3 },
+                    height: { xs: 32, md: 44 },
+                    fontSize: { xs: '0.7rem', md: '1rem' },
                     '& .MuiSelect-select': {
-                      py: 1,
-                      pl: 1.5,
-                      pr: 3,
+                      py: { xs: 0.25, md: 1 },
+                      pl: { xs: 0.75, md: 1.5 },
+                      pr: { xs: 2, md: 3 },
                     }
                   }}
                 >
-                  <MenuItem value="all">All Posts</MenuItem>
-                  <MenuItem value="recipes">Recipes Only</MenuItem>
-                  <MenuItem value="discussions">Discussions Only</MenuItem>
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="recipes">Food</MenuItem>
+                  <MenuItem value="discussions">Posts</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -973,16 +977,24 @@ const FeedPage = () => {
               exclusive
               onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
               size="small"
-              sx={{ height: 36, flexShrink: 0 }}
+              sx={{ 
+                height: { xs: 32, md: 44 }, 
+                flexShrink: 0,
+                display: { xs: 'flex', md: 'flex' },
+                '& .MuiToggleButton-root': {
+                  px: { xs: 0.5, md: 1.5 },
+                  minWidth: { xs: 32, md: 44 },
+                }
+              }}
             >
-              <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                <GridViewIcon sx={{ fontSize: 20 }} />
+              <ToggleButton value="card" sx={{ px: { xs: 0.5, md: 1.5 }, borderRadius: { xs: 2, md: 3 }, border: `1px solid ${theme.palette.divider}`, minWidth: { xs: 32, md: 44 } }}>
+                <GridViewIcon sx={{ fontSize: { xs: 14, md: 20 } }} />
               </ToggleButton>
-              <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                <ViewListIcon sx={{ fontSize: 20 }} />
+              <ToggleButton value="compact" sx={{ px: { xs: 0.5, md: 1.5 }, borderRadius: { xs: 2, md: 3 }, border: `1px solid ${theme.palette.divider}`, minWidth: { xs: 32, md: 44 } }}>
+                <ViewListIcon sx={{ fontSize: { xs: 14, md: 20 } }} />
               </ToggleButton>
-              <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                <AppsIcon sx={{ fontSize: 20 }} />
+              <ToggleButton value="grid" sx={{ px: { xs: 0.5, md: 1.5 }, borderRadius: { xs: 2, md: 3 }, border: `1px solid ${theme.palette.divider}`, minWidth: { xs: 32, md: 44 } }}>
+                <AppsIcon sx={{ fontSize: { xs: 14, md: 20 } }} />
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>

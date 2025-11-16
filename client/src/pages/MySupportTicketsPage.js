@@ -29,6 +29,7 @@ import {
   Slide,
   Collapse,
   Avatar,
+  useMediaQuery,
 } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
 import supportService from '../services/supportService';
@@ -281,13 +282,19 @@ const TicketCard = ({ ticket, variant = 'card' }) => {
 
 const MySupportTicketsPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Add mobile detection
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list'); // Default to list view on mobile
   const [page, setPage] = useState(1);
   const ticketsPerPage = 6;
+
+  // Set view mode based on device size
+  useEffect(() => {
+    setViewMode(isMobile ? 'list' : 'grid');
+  }, [isMobile]);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -327,31 +334,31 @@ const MySupportTicketsPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
         <Slide direction="down" in={true} timeout={600}>
-          <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+            <Typography variant={isMobile ? "h5" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
               My Support Tickets
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
               Track the status of your inquiries.
             </Typography>
           </Paper>
         </Slide>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><Loader size="medium" /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}><Loader size="medium" /></Box>
       </Container>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
         <Slide direction="down" in={true} timeout={600}>
-          <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+          <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+            <Typography variant={isMobile ? "h5" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
               My Support Tickets
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
               Track the status of your inquiries.
             </Typography>
           </Paper>
@@ -362,13 +369,13 @@ const MySupportTicketsPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
       <Slide direction="down" in={true} timeout={600}>
-        <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-          <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+          <Typography variant={isMobile ? "h5" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
             My Support Tickets
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
             Track the status of your inquiries.
           </Typography>
         </Paper>
@@ -445,44 +452,47 @@ const MySupportTicketsPage = () => {
                   InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
                 />
                 
-                <FormControl>
-                  <ToggleButtonGroup
-                    value={viewMode}
-                    exclusive
-                    onChange={(e, newValue) => newValue && setViewMode(newValue)}
-                    size="medium"
-                    sx={{ height: 48, borderRadius: '24px', overflow: 'hidden' }}
-                  >
-                    <ToggleButton 
-                      value="grid" 
-                      sx={{ 
-                        fontFamily: theme.typography.fontFamily, 
-                        px: 3,
-                        transition: 'all 0.2s ease',
-                        '&.Mui-selected': {
-                          backgroundColor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
-                        }
-                      }}
+                {/* Hide view mode toggle on mobile */}
+                {!isMobile && (
+                  <FormControl>
+                    <ToggleButtonGroup
+                      value={viewMode}
+                      exclusive
+                      onChange={(e, newValue) => newValue && setViewMode(newValue)}
+                      size="medium"
+                      sx={{ height: 48, borderRadius: '24px', overflow: 'hidden' }}
                     >
-                      <ViewModuleIcon sx={{ mr: 1 }} /> Grid
-                    </ToggleButton>
-                    <ToggleButton 
-                      value="list" 
-                      sx={{ 
-                        fontFamily: theme.typography.fontFamily, 
-                        px: 3,
-                        transition: 'all 0.2s ease',
-                        '&.Mui-selected': {
-                          backgroundColor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
-                        }
-                      }}
-                    >
-                      <ViewListIcon sx={{ mr: 1 }} /> List
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </FormControl>
+                      <ToggleButton 
+                        value="grid" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          px: 3,
+                          transition: 'all 0.2s ease',
+                          '&.Mui-selected': {
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                          }
+                        }}
+                      >
+                        <ViewModuleIcon sx={{ mr: 1 }} /> Grid
+                      </ToggleButton>
+                      <ToggleButton 
+                        value="list" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          px: 3,
+                          transition: 'all 0.2s ease',
+                          '&.Mui-selected': {
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                          }
+                        }}
+                      >
+                        <ViewListIcon sx={{ mr: 1 }} /> List
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </FormControl>
+                )}
                 
                 <Chip 
                   label={`${filteredTickets.length} ticket${filteredTickets.length !== 1 ? 's' : ''}`} 
@@ -513,7 +523,17 @@ const MySupportTicketsPage = () => {
             </Slide>
           ) : (
             <>
-              {viewMode === 'grid' ? (
+              {isMobile ? (
+                // Always show list view on mobile
+                <Stack spacing={2}>
+                  {paginatedTickets.map((ticket, index) => (
+                    <Collapse key={ticket._id} in={true} timeout={500 + (index * 100)}>
+                      <TicketCard key={ticket._id} ticket={ticket} variant="list" />
+                    </Collapse>
+                  ))}
+                </Stack>
+              ) : viewMode === 'grid' ? (
+                // Grid view for desktop
                 <Grid container spacing={3}>
                   {paginatedTickets.map((ticket, index) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={ticket._id}>
@@ -524,6 +544,7 @@ const MySupportTicketsPage = () => {
                   ))}
                 </Grid>
               ) : (
+                // List view for desktop
                 <Stack spacing={2}>
                   {paginatedTickets.map((ticket, index) => (
                     <Collapse key={ticket._id} in={true} timeout={500 + (index * 100)}>
@@ -532,7 +553,7 @@ const MySupportTicketsPage = () => {
                   ))}
                 </Stack>
               )}
-              
+
               {totalPages > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                   <Slide direction="up" in={true} timeout={1200}>

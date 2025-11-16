@@ -321,7 +321,7 @@ export default function CropCorner() {
         </AccordionSummary>
         <AccordionDetails>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {uniqueTags.map((tag) => (
+            {uniqueTags.filter(tag => tag && tag.trim() !== '').map((tag) => (
               <Chip
                 key={tag}
                 label={tag}
@@ -407,8 +407,8 @@ export default function CropCorner() {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 12, py: 4 }}>
-      <Grid container spacing={4}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 8, sm: 6, md: 12 }, py: { xs: 2, sm: 3, md: 4 } }}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {/* Desktop Filter Sidebar */}
         <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Paper elevation={2} sx={{ p: 2, borderRadius: 3, position: 'sticky', top: 100 }}>
@@ -464,7 +464,7 @@ export default function CropCorner() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={4}>
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                 {products.map((product) => (
                   product && product._id ? ( // Add null check for products
                     <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -503,7 +503,19 @@ export default function CropCorner() {
                 </Typography>
               </Stack>
               
-              <Grid container spacing={4}>
+              {/* Horizontal scrollable container for mobile */}
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, overflowX: 'auto', gap: 2, pb: 2, '&::-webkit-scrollbar': { height: 6 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 3 } }}>
+                {recentlyViewed.slice(0, 4).map((product) => (
+                  product && product._id ? ( // Add null check for recently viewed products
+                    <Box key={`recent-${product._id}`} sx={{ minWidth: '70vw', flexShrink: 0 }}>
+                      <ProductCard product={product} showSnackbar={showSnackbar} hideCategoryAndUnit={true} />
+                    </Box>
+                  ) : null
+                ))}
+              </Box>
+              
+              {/* Grid layout for desktop */}
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
                 {recentlyViewed.slice(0, 4).map((product) => (
                   product && product._id ? ( // Add null check for recently viewed products
                     <Grid key={`recent-${product._id}`} size={{ xs: 12, sm: 6, md: 3 }}>

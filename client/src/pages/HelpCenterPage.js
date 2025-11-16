@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Container, Typography, Paper, Box, List, ListItem, ListItemIcon, ListItemText, Divider, alpha, TextField, InputAdornment
+  Container, Typography, Paper, Box, List, ListItem, ListItemIcon, ListItemText, Divider, alpha, TextField, InputAdornment, useMediaQuery, useTheme
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
 import { 
   Help as HelpIcon, 
   Search as SearchIcon, 
@@ -17,44 +17,46 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const HelpCenterPage = () => {
-  const theme = useTheme();
+  const theme = useMuiTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const helpCategories = [
     {
       title: "Account Management",
-      icon: <AccountIcon sx={{ color: theme.palette.primary.main }} />,
+      icon: <AccountIcon sx={{ color: theme.palette.primary.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Learn how to create, manage, and secure your account",
       path: "/support#account"
     },
     {
       title: "Shopping & Orders",
-      icon: <ShoppingIcon sx={{ color: theme.palette.secondary.main }} />,
+      icon: <ShoppingIcon sx={{ color: theme.palette.secondary.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Ordering, payment methods, and delivery information",
       path: "/support#shopping"
     },
     {
       title: "Community Guidelines",
-      icon: <CommunityIcon sx={{ color: theme.palette.info.main }} />,
+      icon: <CommunityIcon sx={{ color: theme.palette.info.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Rules and best practices for community participation",
       path: "/community/guidelines"
     },
     {
       title: "Shipping & Delivery",
-      icon: <ShippingIcon sx={{ color: theme.palette.success.main }} />,
+      icon: <ShippingIcon sx={{ color: theme.palette.success.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Delivery times, tracking, and shipping policies",
       path: "/support#shipping"
     },
     {
       title: "Payment Methods",
-      icon: <PaymentIcon sx={{ color: theme.palette.warning.main }} />,
+      icon: <PaymentIcon sx={{ color: theme.palette.warning.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Accepted payment options and security information",
       path: "/support#payment"
     },
     {
       title: "Privacy & Security",
-      icon: <SecurityIcon sx={{ color: theme.palette.error.main }} />,
+      icon: <SecurityIcon sx={{ color: theme.palette.error.main, fontSize: isMobile ? 20 : 24 }} />,
       description: "Data protection and account security measures",
       path: "/privacy"
     }
@@ -90,15 +92,15 @@ const HelpCenterPage = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <HelpIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mr: 2 }} />
+    <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: { xs: 2, sm: 3, md: 4 } }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: { xs: 3, sm: 4 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
+          <HelpIcon sx={{ fontSize: isMobile ? 32 : 40, color: theme.palette.primary.main, mr: isMobile ? 1 : 2 }} />
           <Box>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+            <Typography variant={isMobile ? "h5" : "h3"} component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
               Help Center
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' } }}>
               Find answers to common questions and get support
             </Typography>
           </Box>
@@ -111,47 +113,48 @@ const HelpCenterPage = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ 
-            mb: 4, 
+            mb: { xs: 3, sm: 4 }, 
             '& .MuiOutlinedInput-root': { 
               borderRadius: '50px',
-              height: 50
+              height: isMobile ? 40 : 50
             }, 
             '& .MuiInputBase-input': { 
               fontFamily: theme.typography.fontFamily,
-              fontSize: '1.1rem'
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
             } 
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon sx={{ fontSize: isMobile ? 20 : 24 }} />
               </InputAdornment>
             ),
           }}
           InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+          size={isMobile ? "small" : "medium"}
         />
       </Paper>
 
       {searchTerm ? (
         // Search results view
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
+          <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 700, mb: { xs: 2, sm: 3 }, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' } }}>
             Search Results
           </Typography>
           
           {filteredCategories.length > 0 && (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+            <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+              <Typography variant={isMobile ? "body1" : "h6"} sx={{ fontWeight: 600, mb: { xs: 1, sm: 2 }, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main, fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>
                 Categories
               </Typography>
-              <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
+              <List sx={{ bgcolor: 'background.paper', borderRadius: isMobile ? 1 : 2, overflow: 'hidden' }}>
                 {filteredCategories.map((category, index) => (
                   <ListItem 
                     key={index} 
                     button 
                     onClick={() => navigate(category.path)}
                     sx={{ 
-                      py: 2,
+                      py: isMobile ? 1 : 2,
                       '&:hover': {
                         backgroundColor: alpha(theme.palette.primary.main, 0.05)
                       },
@@ -160,7 +163,7 @@ const HelpCenterPage = () => {
                       }
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
+                    <ListItemIcon sx={{ minWidth: isMobile ? 30 : 40 }}>
                       {category.icon}
                     </ListItemIcon>
                     <ListItemText 
@@ -168,13 +171,15 @@ const HelpCenterPage = () => {
                       secondary={category.description}
                       primaryTypographyProps={{ 
                         fontWeight: 600, 
-                        fontFamily: theme.typography.fontFamily 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
                       }}
                       secondaryTypographyProps={{ 
-                        fontFamily: theme.typography.fontFamily 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' }
                       }}
                     />
-                    <ArrowForwardIcon sx={{ color: theme.palette.grey[500] }} />
+                    <ArrowForwardIcon sx={{ color: theme.palette.grey[500], fontSize: isMobile ? 20 : 24 }} />
                   </ListItem>
                 ))}
               </List>
@@ -183,15 +188,15 @@ const HelpCenterPage = () => {
           
           {filteredFaqs.length > 0 && (
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+              <Typography variant={isMobile ? "body1" : "h6"} sx={{ fontWeight: 600, mb: { xs: 1, sm: 2 }, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main, fontSize: { xs: '0.95rem', sm: '1.25rem' } }}>
                 Frequently Asked Questions
               </Typography>
-              <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
+              <List sx={{ bgcolor: 'background.paper', borderRadius: isMobile ? 1 : 2, overflow: 'hidden' }}>
                 {filteredFaqs.map((faq, index) => (
                   <ListItem 
                     key={index} 
                     sx={{ 
-                      py: 2,
+                      py: isMobile ? 1 : 2.5,
                       flexDirection: 'column',
                       alignItems: 'flex-start',
                       '&:not(:last-child)': {
@@ -199,10 +204,10 @@ const HelpCenterPage = () => {
                       }
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                    <Typography variant={isMobile ? "body1" : "subtitle1"} sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: isMobile ? 0.5 : 1, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } }}>
                       {faq.question}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Typography variant={isMobile ? "body2" : "body1"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, lineHeight: 1.6, fontSize: { xs: '0.8rem', sm: '0.875rem', md: '0.95rem' } }}>
                       {faq.answer}
                     </Typography>
                   </ListItem>
@@ -212,12 +217,12 @@ const HelpCenterPage = () => {
           )}
           
           {filteredCategories.length === 0 && filteredFaqs.length === 0 && (
-            <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-              <SearchIcon sx={{ fontSize: 60, color: 'grey.400', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Paper sx={{ p: isMobile ? 3 : 4, textAlign: 'center', borderRadius: isMobile ? 2 : 3 }}>
+              <SearchIcon sx={{ fontSize: isMobile ? 40 : 60, color: 'grey.400', mb: 2 }} />
+              <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
                 No results found for "{searchTerm}"
               </Typography>
-              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mt: 1 }}>
+              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mt: 1, fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                 Try different keywords or browse our help categories below.
               </Typography>
             </Paper>
@@ -226,15 +231,15 @@ const HelpCenterPage = () => {
       ) : (
         // Default view
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
+          <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 700, mb: { xs: 2, sm: 3 }, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' } }}>
             Browse Help Topics
           </Typography>
           
           <List sx={{ 
             bgcolor: 'background.paper', 
-            borderRadius: 2, 
+            borderRadius: isMobile ? 1 : 2, 
             overflow: 'hidden',
-            mb: 6
+            mb: { xs: 4, sm: 6 }
           }}>
             {helpCategories.map((category, index) => (
               <ListItem 
@@ -242,7 +247,7 @@ const HelpCenterPage = () => {
                 button 
                 onClick={() => navigate(category.path)}
                 sx={{ 
-                  py: 2.5,
+                  py: isMobile ? 1.5 : 2.5,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.primary.main, 0.05)
                   },
@@ -251,7 +256,7 @@ const HelpCenterPage = () => {
                   }
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 50 }}>
+                <ListItemIcon sx={{ minWidth: isMobile ? 35 : 50 }}>
                   {category.icon}
                 </ListItemIcon>
                 <ListItemText 
@@ -260,28 +265,29 @@ const HelpCenterPage = () => {
                   primaryTypographyProps={{ 
                     fontWeight: 600, 
                     fontFamily: theme.typography.fontFamily,
-                    fontSize: '1.1rem'
+                    fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' }
                   }}
                   secondaryTypographyProps={{ 
                     fontFamily: theme.typography.fontFamily,
-                    mt: 0.5
+                    mt: isMobile ? 0.25 : 0.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem', md: '0.95rem' }
                   }}
                 />
-                <ArrowForwardIcon sx={{ color: theme.palette.grey[500] }} />
+                <ArrowForwardIcon sx={{ color: theme.palette.grey[500], fontSize: isMobile ? 20 : 24 }} />
               </ListItem>
             ))}
           </List>
           
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, fontFamily: theme.typography.fontFamily }}>
+          <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 700, mb: { xs: 2, sm: 3 }, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' } }}>
             Frequently Asked Questions
           </Typography>
           
-          <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
+          <List sx={{ bgcolor: 'background.paper', borderRadius: isMobile ? 1 : 2, overflow: 'hidden' }}>
             {faqs.map((faq, index) => (
               <ListItem 
                 key={index} 
                 sx={{ 
-                  py: 2.5,
+                  py: isMobile ? 1.5 : 2.5,
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   '&:not(:last-child)': {
@@ -289,10 +295,10 @@ const HelpCenterPage = () => {
                   }
                 }}
               >
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 1, fontSize: '1.1rem' }}>
+                <Typography variant={isMobile ? "body1" : "subtitle1"} sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: isMobile ? 0.5 : 1, fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' } }}>
                   {faq.question}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, lineHeight: 1.6 }}>
+                <Typography variant={isMobile ? "body2" : "body1"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, lineHeight: 1.6, fontSize: { xs: '0.8rem', sm: '0.875rem', md: '0.95rem' } }}>
                   {faq.answer}
                 </Typography>
               </ListItem>

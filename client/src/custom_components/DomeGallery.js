@@ -156,20 +156,52 @@ export default function DomeGallery({
     minRadius: minRadius,
     imageBorderRadius: imageBorderRadius,
     openedImageBorderRadius: openedImageBorderRadius,
-    segments: segments
+    segments: segments,
+    padFactor: padFactor,
+    maxVerticalRotationDeg: maxVerticalRotationDeg
   });
 
   // Update parameters based on screen size
   useEffect(() => {
-    // Set fixed parameters for all screen sizes
-    setResponsiveParams({
-      fit: fit,
-      minRadius: minRadius,
-      imageBorderRadius: imageBorderRadius,
-      openedImageBorderRadius: openedImageBorderRadius,
-      segments: segments
-    });
-  }, [fit, minRadius, imageBorderRadius, openedImageBorderRadius, segments]);
+    const updateParams = () => {
+      const isMobile = window.innerWidth <= 600;
+      
+      if (isMobile) {
+        // Mobile-specific parameters
+        setResponsiveParams({
+          fit: fit * 0.5, // Further reduce fit for mobile
+          minRadius: minRadius * 0.4, // Further reduce radius for mobile
+          imageBorderRadius: '10px', // Smaller border radius for mobile
+          openedImageBorderRadius: '10px', // Smaller border radius for mobile
+          segments: Math.max(12, Math.floor(segments * 0.5)), // Reduce segments for mobile
+          padFactor: padFactor * 0.3, // Reduce padding for mobile
+          maxVerticalRotationDeg: maxVerticalRotationDeg * 0.5 // Reduce vertical rotation for mobile
+        });
+      } else {
+        // Desktop parameters
+        setResponsiveParams({
+          fit: fit,
+          minRadius: minRadius,
+          imageBorderRadius: imageBorderRadius,
+          openedImageBorderRadius: openedImageBorderRadius,
+          segments: segments,
+          padFactor: padFactor,
+          maxVerticalRotationDeg: maxVerticalRotationDeg
+        });
+      }
+    };
+
+    // Set initial parameters
+    updateParams();
+
+    // Add resize listener
+    window.addEventListener('resize', updateParams);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', updateParams);
+    };
+  }, [fit, minRadius, imageBorderRadius, openedImageBorderRadius, segments, padFactor, maxVerticalRotationDeg]);
 
   const scrollLockedRef = useRef(false);
   const lockScroll = useCallback(() => {
@@ -259,7 +291,7 @@ export default function DomeGallery({
       radius = clamp(radius, responsiveParams.minRadius, maxRadius); // Use responsive minRadius
       lockedRadiusRef.current = Math.round(radius);
 
-      const viewerPad = Math.max(8, Math.round(minDim * padFactor));
+      const viewerPad = Math.max(8, Math.round(minDim * responsiveParams.padFactor)); // Use responsive padFactor
       root.style.setProperty('--radius', `${lockedRadiusRef.current}px`);
       root.style.setProperty('--viewer-pad', `${viewerPad}px`);
       root.style.setProperty('--overlay-blur-color', overlayBlurColor);
@@ -299,7 +331,6 @@ export default function DomeGallery({
   }, [
     fitBasis,
     maxRadius,
-    padFactor,
     overlayBlurColor,
     grayscale,
     openedImageWidth,
@@ -307,7 +338,8 @@ export default function DomeGallery({
     responsiveParams.fit,
     responsiveParams.minRadius,
     responsiveParams.imageBorderRadius,
-    responsiveParams.openedImageBorderRadius
+    responsiveParams.openedImageBorderRadius,
+    responsiveParams.padFactor
   ]);
 
   useEffect(() => {
@@ -353,7 +385,7 @@ export default function DomeGallery({
           // Don't restart auto-rotation after inertia stops
           return;
         }
-        const nextX = clamp(rotationRef.current.x - vY / 200, -maxVerticalRotationDeg, maxVerticalRotationDeg);
+        const nextX = clamp(rotationRef.current.x - vY / 200, -responsiveParams.maxVerticalRotationDeg, responsiveParams.maxVerticalRotationDeg); // Use responsive maxVerticalRotationDeg
         const nextY = wrapAngleSigned(rotationRef.current.y + vX / 200);
         rotationRef.current = { x: nextX, y: nextY };
         applyTransform(nextX, nextY);
@@ -362,7 +394,7 @@ export default function DomeGallery({
       stopInertia();
       inertiaRAF.current = requestAnimationFrame(step);
     },
-    [dragDampening, maxVerticalRotationDeg, stopInertia]
+    [dragDampening, responsiveParams.maxVerticalRotationDeg, stopInertia] // Use responsive maxVerticalRotationDeg
   );
 
   useGesture(
@@ -388,9 +420,9 @@ export default function DomeGallery({
         }
         const nextX = clamp(
           startRotRef.current.x - dyTotal / dragSensitivity,
-          -maxVerticalRotationDeg,
-          maxVerticalRotationDeg
-        );
+          -responsiveParams.maxVerticalRotationDeg,
+          responsiveParams.maxVerticalRotationDeg
+        ); // Use responsive maxVerticalRotationDeg
         const nextY = wrapAngleSigned(startRotRef.current.y + dxTotal / dragSensitivity);
         if (rotationRef.current.x !== nextX || rotationRef.current.y !== nextY) {
           rotationRef.current = { x: nextX, y: nextY };
@@ -533,7 +565,7 @@ export default function DomeGallery({
       const offsetY = getDataNumber(parent, 'offsetY', 0);
       const sizeX = getDataNumber(parent, 'sizeX', 2);
       const sizeY = getDataNumber(parent, 'sizeY', 2);
-      const parentRot = computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, segments);
+      const parentRot = computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, responsiveParams.segments); // Use responsive segments
       const parentY = normalizeAngle(parentRot.rotateY);
       const globalY = normalizeAngle(rotationRef.current.y);
       let rotY = -(parentY + globalY) % 360;
@@ -631,7 +663,7 @@ export default function DomeGallery({
         overlay.addEventListener('transitionend', onFirstEnd);
       }
     },
-    [enlargeTransitionMs, lockScroll, openedImageHeight, openedImageWidth, segments, unlockScroll]
+    [enlargeTransitionMs, lockScroll, openedImageHeight, openedImageWidth, responsiveParams.segments, unlockScroll] // Use responsive segments
   );
 
   const onTileClick = useCallback(
@@ -688,11 +720,11 @@ export default function DomeGallery({
       ref={rootRef}
       className="sphere-root"
       style={{
-        ['--segments-x']: segments,
-        ['--segments-y']: segments,
+        ['--segments-x']: responsiveParams.segments,
+        ['--segments-y']: responsiveParams.segments,
         ['--overlay-blur-color']: overlayBlurColor,
-        ['--tile-radius']: imageBorderRadius,
-        ['--enlarge-radius']: openedImageBorderRadius,
+        ['--tile-radius']: responsiveParams.imageBorderRadius,
+        ['--enlarge-radius']: responsiveParams.openedImageBorderRadius,
         ['--image-filter']: grayscale ? 'grayscale(1)' : 'none'
       }}
     >

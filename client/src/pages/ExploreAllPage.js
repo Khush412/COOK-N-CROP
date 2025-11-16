@@ -26,6 +26,7 @@ import {
   Pagination,
   TextField,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Explore as ExploreIcon,
@@ -59,6 +60,7 @@ import Loader from "../custom_components/Loader";
 
 export default function ExploreAllPage() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, isAuthenticated, updateUserSavedPosts } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -239,13 +241,13 @@ export default function ExploreAllPage() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pt: { xs: 8, md: 12 }, pb: 4 }}>
-      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
-        <Paper sx={{ p: { xs: 1.5, md: 3 }, mb: 3, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 0.5, fontFamily: theme.typography.fontFamily }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pt: { xs: 8, sm: 9, md: 10 }, pb: 1.5 }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 1.5 } }}>
+        <Paper sx={{ p: { xs: 1.5, md: 2 }, mb: { xs: 1.5, sm: 2, md: 2.5 }, borderRadius: { xs: 1, sm: 1.5, md: 2 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+          <Typography variant={isMobile ? "h5" : "h4"} component="h1" sx={{ fontWeight: 800, mb: 0.5, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' } }}>
             Explore All Posts
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' } }}>
             Discover new content from across our community.
           </Typography>
         </Paper>
@@ -256,7 +258,7 @@ export default function ExploreAllPage() {
           <Grid size={{ xs: 12 }}>
             <Stack spacing={2.5}>
               {/* Search Bar and Create Post Button */}
-              <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -280,12 +282,14 @@ export default function ExploreAllPage() {
                     '& .MuiInputBase-input': {
                       fontFamily: theme.typography.fontFamily,
                       fontSize: '0.875rem',
+                      py: 0.5,
                     }
                   }}
                 />
                 <Button
                   variant="contained"
-                  startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+                  // Show just "Create" text on mobile, "Create" with icon on desktop
+                  startIcon={<AddIcon sx={{ fontSize: 18, display: { xs: 'none', md: 'inline' } }} />}
                   onClick={handleCreateClick}
                   sx={{ 
                     borderRadius: 2,
@@ -293,7 +297,7 @@ export default function ExploreAllPage() {
                     whiteSpace: 'nowrap',
                     height: 40,
                     fontSize: '0.875rem',
-                    px: 1.5,
+                    px: 1,
                   }}
                 >
                   Create
@@ -302,9 +306,9 @@ export default function ExploreAllPage() {
               
               {/* Filters and View Options */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: { xs: '100%', md: 'auto' } }}>
                   {/* Content Filter Dropdown */}
-                  <FormControl size="small" sx={{ minWidth: 100 }}>
+                  <FormControl size="small" sx={{ minWidth: 80, width: { xs: '40%', md: 'auto' } }}>
                     <Select
                       value={contentFilter}
                       onChange={(e) => {
@@ -329,7 +333,7 @@ export default function ExploreAllPage() {
                   </FormControl>
                   
                   {/* Sort Options Dropdown */}
-                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <FormControl size="small" sx={{ minWidth: 80, width: { xs: '40%', md: 'auto' } }}>
                     <Select
                       value={sort}
                       onChange={(e) => setSort(e.target.value)}
@@ -352,22 +356,26 @@ export default function ExploreAllPage() {
                   </FormControl>
                 </Box>
                 
-                {/* View Mode Toggle */}
+                {/* View Mode Toggle - Show on mobile with a more compact design */}
                 <ToggleButtonGroup
                   value={viewMode}
                   exclusive
                   onChange={(e, newViewMode) => newViewMode && setViewMode(newViewMode)}
                   size="small"
-                  sx={{ height: 36 }}
+                  sx={{ 
+                    height: 36,
+                    // Show on mobile with a more compact design
+                    display: { xs: 'flex', md: 'flex' }
+                  }}
                 >
-                  <ToggleButton value="card" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <GridViewIcon sx={{ fontSize: 20 }} />
+                  <ToggleButton value="card" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <GridViewIcon sx={{ fontSize: 16 }} />
                   </ToggleButton>
-                  <ToggleButton value="compact" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <ViewListIcon sx={{ fontSize: 20 }} />
+                  <ToggleButton value="compact" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <ViewListIcon sx={{ fontSize: 16 }} />
                   </ToggleButton>
-                  <ToggleButton value="grid" sx={{ px: 1.5, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                    <AppsIcon sx={{ fontSize: 20 }} />
+                  <ToggleButton value="grid" sx={{ px: 1, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
+                    <AppsIcon sx={{ fontSize: 16 }} />
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>

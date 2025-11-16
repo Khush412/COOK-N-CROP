@@ -19,6 +19,7 @@ import {
   Chip,
   ToggleButtonGroup,
   ToggleButton,
+  useMediaQuery,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { 
@@ -33,6 +34,7 @@ import Loader from '../custom_components/Loader';
 
 const GroupCard = ({ group }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   return (
     <Card
@@ -40,7 +42,7 @@ const GroupCard = ({ group }) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 4,
+        borderRadius: isMobile ? 2 : 4,
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
           transform: 'translateY(-5px)',
@@ -52,28 +54,49 @@ const GroupCard = ({ group }) => {
     >
       <CardMedia
         component="img"
-        height="140"
+        height={isMobile ? "120" : "140"}
         image={group.coverImage ? (group.coverImage.startsWith('http') ? group.coverImage : `${process.env.REACT_APP_API_URL}${group.coverImage}`) : '/images/default-group-cover.png'}
         alt={`${group.name} cover image`}
       />
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+      <CardContent sx={{ flexGrow: 1, p: isMobile ? 1.5 : 2 }}>
+        <Typography 
+          gutterBottom 
+          variant={isMobile ? "h6" : "h5"} 
+          component="div" 
+          sx={{ 
+            fontWeight: 'bold', 
+            fontFamily: theme.typography.fontFamily,
+            fontSize: isMobile ? '1.1rem' : '1.5rem'
+          }}
+        >
           {group.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          fontFamily: theme.typography.fontFamily
-        }}>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: isMobile ? 2 : 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            fontFamily: theme.typography.fontFamily,
+            fontSize: isMobile ? '0.8rem' : '0.875rem'
+          }}
+        >
           {group.description}
         </Typography>
       </CardContent>
-      <CardActions sx={{ px: 2, pb: 2, mt: 'auto' }}>
+      <CardActions sx={{ px: isMobile ? 1.5 : 2, pb: isMobile ? 1.5 : 2, mt: 'auto' }}>
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <PeopleIcon fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <PeopleIcon fontSize={isMobile ? "small" : "medium"} color="action" />
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: isMobile ? '0.75rem' : '0.875rem'
+            }}
+          >
             {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
           </Typography>
         </Stack>
@@ -84,6 +107,7 @@ const GroupCard = ({ group }) => {
 
 const ExploreGroupsPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [groups, setGroups] = useState([]);
@@ -150,14 +174,41 @@ const ExploreGroupsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
+      <Paper sx={{ 
+        p: { xs: 4, md: 6 }, 
+        mb: { xs: 4, sm: 5, md: 6 }, 
+        borderRadius: { xs: 2, sm: 3, md: 4 }, 
+        background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` 
+      }}>
+        <Stack 
+          direction={isMobile ? "column" : "row"} 
+          justifyContent="space-between" 
+          alignItems={isMobile ? "flex-start" : "center"} 
+          sx={{ mb: { xs: 3.5, sm: 4 } }}
+          spacing={isMobile ? 3.5 : 0}
+        >
           <Box>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+            <Typography 
+              variant={isMobile ? "h5" : "h3"} 
+              component="h1" 
+              sx={{ 
+                fontWeight: 800, 
+                mb: 2.5, 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+              }}
+            >
               Explore Groups
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography 
+              variant={isMobile ? "body1" : "h6"} 
+              color="text.secondary" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+              }}
+            >
               Discover communities around your favorite food topics.
             </Typography>
           </Box>
@@ -165,15 +216,27 @@ const ExploreGroupsPage = () => {
             variant="contained"
             onClick={handleCreateGroupClick}
             startIcon={<AddIcon />}
-            sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}
+            sx={{ 
+              fontFamily: theme.typography.fontFamily, 
+              borderRadius: '50px',
+              fontSize: { xs: '0.95rem', sm: '1rem', md: '1rem' },
+              px: { xs: 4, sm: 5, md: 6 },
+              py: { xs: 3, sm: 3.5, md: 3.5 },
+              minWidth: { xs: 'auto', sm: '145px', md: '175px' }
+            }}
+            fullWidth={isMobile}
           >
             Create Group
           </Button>
         </Stack>
         
         {/* Search and Filter Section */}
-        <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-          <Stack spacing={2}>
+        <Paper sx={{ 
+          p: { xs: 3.5, sm: 4, md: 4.5 }, 
+          mb: { xs: 3.5, sm: 4, md: 4.5 }, 
+          borderRadius: { xs: 2, sm: 2.5, md: 3 } 
+        }}>
+          <Stack spacing={isMobile ? 1.5 : 2}>
             {/* Search Bar */}
             <TextField
               fullWidth
@@ -183,33 +246,56 @@ const ExploreGroupsPage = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon fontSize={isMobile ? "small" : "medium"} />
                   </InputAdornment>
                 ),
               }}
               sx={{ 
-                '& .MuiOutlinedInput-root': { borderRadius: '20px' },
+                '& .MuiOutlinedInput-root': { 
+                  borderRadius: isMobile ? '15px' : '20px',
+                  fontSize: isMobile ? '0.9rem' : '1rem'
+                },
                 fontFamily: theme.typography.fontFamily
               }}
-              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              InputLabelProps={{ 
+                sx: { 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: isMobile ? '0.9rem' : '1rem'
+                } 
+              }}
+              size={isMobile ? "small" : "medium"}
             />
             
             {/* Sort Options */}
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
+            <Stack 
+              direction={isMobile ? "column" : "row"} 
+              spacing={isMobile ? 1 : 2} 
+              alignItems={isMobile ? "flex-start" : "center"}
+            >
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  fontWeight: 600,
+                  fontSize: isMobile ? '0.9rem' : '1rem'
+                }}
+              >
                 Sort by:
               </Typography>
               <ToggleButtonGroup
                 value={sortOption}
                 exclusive
                 onChange={(e, newValue) => newValue && setSortOption(newValue)}
-                size="small"
+                size={isMobile ? "small" : "medium"}
                 sx={{
                   '& .MuiToggleButton-root': {
                     fontFamily: theme.typography.fontFamily,
                     textTransform: 'none',
-                    borderRadius: '20px',
+                    borderRadius: isMobile ? '15px' : '20px',
                     border: 'none',
+                    fontSize: isMobile ? '0.75rem' : '0.875rem',
+                    px: isMobile ? 1 : 2,
+                    py: isMobile ? 0.5 : 1,
                     '&.Mui-selected': {
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.primary.contrastText,
@@ -219,6 +305,8 @@ const ExploreGroupsPage = () => {
                     }
                   }
                 }}
+                orientation={isMobile ? "vertical" : "horizontal"}
+                fullWidth={isMobile}
               >
                 <ToggleButton value="newest">Newest</ToggleButton>
                 <ToggleButton value="oldest">Oldest</ToggleButton>
@@ -234,17 +322,45 @@ const ExploreGroupsPage = () => {
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : filteredGroups.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
-          <PeopleIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Paper sx={{ 
+          p: isMobile ? 3 : 6, 
+          textAlign: 'center', 
+          borderRadius: isMobile ? 2 : 3 
+        }}>
+          <PeopleIcon sx={{ 
+            fontSize: isMobile ? 50 : 80, 
+            color: 'grey.400', 
+            mb: isMobile ? 1 : 2 
+          }} />
+          <Typography 
+            variant={isMobile ? "body1" : "h6"} 
+            color="text.secondary" 
+            sx={{ 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: isMobile ? '0.9rem' : '1.25rem'
+            }}
+          >
             {searchTerm ? 'No groups match your search.' : 'No groups have been created yet. Be the first!'}
           </Typography>
-          <Button component={RouterLink} to="/community/create" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
-            Create Your First Group
+          <Button 
+            component={RouterLink} 
+            to="/community/create" 
+            variant="contained" 
+            sx={{ 
+              mt: isMobile ? 2 : 3, 
+              borderRadius: '50px', 
+              px: isMobile ? 2 : 4, 
+              py: isMobile ? 1 : 2,
+              fontFamily: theme.typography.fontFamily,
+              fontSize: isMobile ? '0.9rem' : '0.875rem'
+            }}
+            fullWidth={isMobile}
+          >
+            {isMobile ? "Create Group" : "Create Your First Group"}
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={isMobile ? 1.5 : 3}>
           {filteredGroups.map((group) => ( 
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={group._id}>
               <GroupCard group={group} />

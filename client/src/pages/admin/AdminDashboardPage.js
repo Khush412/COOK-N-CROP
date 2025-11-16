@@ -39,6 +39,8 @@ const AdminDashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [managementOpen, setManagementOpen] = useState(false);
@@ -77,11 +79,11 @@ const AdminDashboardPage = () => {
         display: 'flex',
         flexDirection: 'column',
         bgcolor: theme.palette.background.paper,
-        p: 2,
+        p: { xs: 1, sm: 2 },
         borderRight: `1px solid ${theme.palette.divider}`,
         boxShadow: sidebarOpen ? theme.shadows[2] : 'none',
         transition: 'box-shadow 0.3s ease',
-        overflow: 'hidden', // Prevent visual glitches from overflow
+        overflow: 'hidden',
       }}
     >
       {/* Header */}
@@ -89,15 +91,16 @@ const AdminDashboardPage = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        mb: 3,
-        pb: 2,
+        mb: { xs: 2, sm: 3 },
+        pb: { xs: 1, sm: 2 },
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`
       }}>
         <Typography variant="h6" sx={{ 
           fontWeight: 'bold', 
           fontFamily: theme.typography.fontFamily,
           color: theme.palette.primary.main,
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          fontSize: { xs: '1rem', sm: '1.25rem' }
         }}>
           Admin Panel
         </Typography>
@@ -145,9 +148,9 @@ const AdminDashboardPage = () => {
             end
             onClick={isMobile ? handleDrawerToggle : undefined}
             sx={{
-              borderRadius: 2,
-              mx: 1,
-              my: 0.5,
+              borderRadius: { xs: 1, sm: 2 },
+              mx: { xs: 0.5, sm: 1 },
+              my: { xs: 0.25, sm: 0.5 },
               '&.active': {
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
                 color: theme.palette.primary.main,
@@ -161,21 +164,28 @@ const AdminDashboardPage = () => {
               }
             }}
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: { xs: 36, sm: 40 } }}>
               <DashboardIcon />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }} />
+            <ListItemText 
+              primary="Dashboard" 
+              primaryTypographyProps={{ 
+                fontFamily: theme.typography.fontFamily, 
+                fontWeight: 'bold',
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }} 
+            />
           </ListItemButton>
         </ListItem>
         
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: { xs: 1, sm: 2 } }} />
         
         {/* Management Section */}
         <ListItemButton 
           onClick={() => setManagementOpen(!managementOpen)}
           sx={{ 
-            borderRadius: 3, 
-            mb: 1,
+            borderRadius: { xs: 2, sm: 3 }, 
+            mb: { xs: 0.5, sm: 1 },
             backgroundColor: managementOpen ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
             '&:hover': {
               backgroundColor: alpha(theme.palette.primary.main, 0.15),
@@ -183,20 +193,22 @@ const AdminDashboardPage = () => {
             },
             transition: 'all 0.3s ease',
             transform: managementOpen ? 'translateX(2px)' : 'none',
+            px: { xs: 1, sm: 2 }
           }}
         >
           <ListItemIcon>
-            <InventoryIcon sx={{ color: theme.palette.primary.main, transition: 'all 0.3s ease' }} />
+            <InventoryIcon sx={{ color: theme.palette.primary.main, transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />
           </ListItemIcon>
           <ListItemText 
             primary="Management" 
             primaryTypographyProps={{ 
               fontWeight: 700, 
               color: 'primary.main',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }} 
           />
-          {managementOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
+          {managementOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />}
         </ListItemButton>
         <Collapse in={managementOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
@@ -208,11 +220,11 @@ const AdminDashboardPage = () => {
                   end={item.path === '/admin'}
                   onClick={isMobile ? handleDrawerToggle : undefined}
                   sx={{
-                    borderRadius: 2,
-                    mx: 1,
-                    my: 0.5,
-                    pl: 4,
-                    py: 1,
+                    borderRadius: { xs: 1, sm: 2 },
+                    mx: { xs: 0.5, sm: 1 },
+                    my: { xs: 0.25, sm: 0.5 },
+                    pl: { xs: 3, sm: 4 },
+                    py: { xs: 0.75, sm: 1 },
                     '&.active': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       color: theme.palette.primary.main,
@@ -226,8 +238,16 @@ const AdminDashboardPage = () => {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 32 }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit', variant: 'body2' }} />
+                  <ListItemIcon sx={{ minWidth: { xs: 28, sm: 32 } }}>{item.icon}</ListItemIcon>
+                  <ListItemText 
+                    primary={item.text} 
+                    primaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      fontWeight: 'inherit', 
+                      variant: 'body2',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }} 
+                  />
                 </ListItemButton>
               </ListItem>
             ))}
@@ -238,8 +258,8 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setActionsOpen(!actionsOpen)}
           sx={{ 
-            borderRadius: 3, 
-            mb: 1,
+            borderRadius: { xs: 2, sm: 3 }, 
+            mb: { xs: 0.5, sm: 1 },
             backgroundColor: actionsOpen ? alpha(theme.palette.info.main, 0.1) : 'transparent',
             '&:hover': {
               backgroundColor: alpha(theme.palette.info.main, 0.15),
@@ -247,20 +267,22 @@ const AdminDashboardPage = () => {
             },
             transition: 'all 0.3s ease',
             transform: actionsOpen ? 'translateX(2px)' : 'none',
+            px: { xs: 1, sm: 2 }
           }}
         >
           <ListItemIcon>
-            <AddShoppingCartIcon sx={{ color: theme.palette.info.main, transition: 'all 0.3s ease' }} />
+            <AddShoppingCartIcon sx={{ color: theme.palette.info.main, transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />
           </ListItemIcon>
           <ListItemText 
             primary="Actions" 
             primaryTypographyProps={{ 
               fontWeight: 700, 
               color: 'info.main',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }} 
           />
-          {actionsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
+          {actionsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />}
         </ListItemButton>
         <Collapse in={actionsOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
@@ -272,11 +294,11 @@ const AdminDashboardPage = () => {
                   end={item.path === '/admin'}
                   onClick={isMobile ? handleDrawerToggle : undefined}
                   sx={{
-                    borderRadius: 2,
-                    mx: 1,
-                    my: 0.5,
-                    pl: 4,
-                    py: 1,
+                    borderRadius: { xs: 1, sm: 2 },
+                    mx: { xs: 0.5, sm: 1 },
+                    my: { xs: 0.25, sm: 0.5 },
+                    pl: { xs: 3, sm: 4 },
+                    py: { xs: 0.75, sm: 1 },
                     '&.active': {
                       backgroundColor: alpha(theme.palette.info.main, 0.1),
                       color: theme.palette.info.main,
@@ -290,8 +312,16 @@ const AdminDashboardPage = () => {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 32 }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit', variant: 'body2' }} />
+                  <ListItemIcon sx={{ minWidth: { xs: 28, sm: 32 } }}>{item.icon}</ListItemIcon>
+                  <ListItemText 
+                    primary={item.text} 
+                    primaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      fontWeight: 'inherit', 
+                      variant: 'body2',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }} 
+                  />
                 </ListItemButton>
               </ListItem>
             ))}
@@ -302,8 +332,8 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setAnalyticsOpen(!analyticsOpen)}
           sx={{ 
-            borderRadius: 3, 
-            mb: 1,
+            borderRadius: { xs: 2, sm: 3 }, 
+            mb: { xs: 0.5, sm: 1 },
             backgroundColor: analyticsOpen ? alpha(theme.palette.success.main, 0.1) : 'transparent',
             '&:hover': {
               backgroundColor: alpha(theme.palette.success.main, 0.15),
@@ -311,20 +341,22 @@ const AdminDashboardPage = () => {
             },
             transition: 'all 0.3s ease',
             transform: analyticsOpen ? 'translateX(2px)' : 'none',
+            px: { xs: 1, sm: 2 }
           }}
         >
           <ListItemIcon>
-            <ReportIcon sx={{ color: theme.palette.success.main, transition: 'all 0.3s ease' }} />
+            <ReportIcon sx={{ color: theme.palette.success.main, transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />
           </ListItemIcon>
           <ListItemText 
             primary="Analytics" 
             primaryTypographyProps={{ 
               fontWeight: 700, 
               color: 'success.main',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }} 
           />
-          {analyticsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
+          {analyticsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />}
         </ListItemButton>
         <Collapse in={analyticsOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
@@ -336,11 +368,11 @@ const AdminDashboardPage = () => {
                   end={item.path === '/admin'}
                   onClick={isMobile ? handleDrawerToggle : undefined}
                   sx={{
-                    borderRadius: 2,
-                    mx: 1,
-                    my: 0.5,
-                    pl: 4,
-                    py: 1,
+                    borderRadius: { xs: 1, sm: 2 },
+                    mx: { xs: 0.5, sm: 1 },
+                    my: { xs: 0.25, sm: 0.5 },
+                    pl: { xs: 3, sm: 4 },
+                    py: { xs: 0.75, sm: 1 },
                     '&.active': {
                       backgroundColor: alpha(theme.palette.success.main, 0.1),
                       color: theme.palette.success.main,
@@ -354,8 +386,16 @@ const AdminDashboardPage = () => {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 32 }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit', variant: 'body2' }} />
+                  <ListItemIcon sx={{ minWidth: { xs: 28, sm: 32 } }}>{item.icon}</ListItemIcon>
+                  <ListItemText 
+                    primary={item.text} 
+                    primaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      fontWeight: 'inherit', 
+                      variant: 'body2',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }} 
+                  />
                 </ListItemButton>
               </ListItem>
             ))}
@@ -366,8 +406,8 @@ const AdminDashboardPage = () => {
         <ListItemButton 
           onClick={() => setCommunicationsOpen(!communicationsOpen)}
           sx={{ 
-            borderRadius: 3, 
-            mb: 1,
+            borderRadius: { xs: 2, sm: 3 }, 
+            mb: { xs: 0.5, sm: 1 },
             backgroundColor: communicationsOpen ? alpha(theme.palette.warning.main, 0.1) : 'transparent',
             '&:hover': {
               backgroundColor: alpha(theme.palette.warning.main, 0.15),
@@ -375,20 +415,22 @@ const AdminDashboardPage = () => {
             },
             transition: 'all 0.3s ease',
             transform: communicationsOpen ? 'translateX(2px)' : 'none',
+            px: { xs: 1, sm: 2 }
           }}
         >
           <ListItemIcon>
-            <CampaignIcon sx={{ color: theme.palette.warning.main, transition: 'all 0.3s ease' }} />
+            <CampaignIcon sx={{ color: theme.palette.warning.main, transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />
           </ListItemIcon>
           <ListItemText 
             primary="Communications" 
             primaryTypographyProps={{ 
               fontWeight: 700, 
               color: 'warning.main',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }} 
           />
-          {communicationsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease' }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease' }} />}
+          {communicationsOpen ? <ExpandLess sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} /> : <ExpandMore sx={{ transition: 'all 0.3s ease', fontSize: { xs: 20, sm: 24 } }} />}
         </ListItemButton>
         <Collapse in={communicationsOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding sx={{ position: 'relative', zIndex: 1 }}>
@@ -400,11 +442,11 @@ const AdminDashboardPage = () => {
                   end={item.path === '/admin'}
                   onClick={isMobile ? handleDrawerToggle : undefined}
                   sx={{
-                    borderRadius: 2,
-                    mx: 1,
-                    my: 0.5,
-                    pl: 4,
-                    py: 1,
+                    borderRadius: { xs: 1, sm: 2 },
+                    mx: { xs: 0.5, sm: 1 },
+                    my: { xs: 0.25, sm: 0.5 },
+                    pl: { xs: 3, sm: 4 },
+                    py: { xs: 0.75, sm: 1 },
                     '&.active': {
                       backgroundColor: alpha(theme.palette.warning.main, 0.1),
                       color: theme.palette.warning.main,
@@ -418,8 +460,16 @@ const AdminDashboardPage = () => {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 32 }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontWeight: 'inherit', variant: 'body2' }} />
+                  <ListItemIcon sx={{ minWidth: { xs: 28, sm: 32 } }}>{item.icon}</ListItemIcon>
+                  <ListItemText 
+                    primary={item.text} 
+                    primaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      fontWeight: 'inherit', 
+                      variant: 'body2',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }} 
+                  />
                 </ListItemButton>
               </ListItem>
             ))}
@@ -434,7 +484,7 @@ const AdminDashboardPage = () => {
       display: 'flex', 
       minHeight: '100vh',
       bgcolor: theme.palette.background.default,
-      pt: 8,
+      pt: { xs: 7, sm: 8 },
       overflowX: 'hidden',
     }}>
       {/* Left sidebar toggle button - Visible only when sidebar is closed */}
@@ -442,11 +492,11 @@ const AdminDashboardPage = () => {
         onClick={isMobile ? handleDrawerToggle : toggleSidebar}
         sx={{
           position: 'fixed',
-          left: 16,
-          top: 80,
+          left: { xs: 8, sm: 16 },
+          top: { xs: 72, sm: 80 },
           zIndex: 1200,
-          width: 40,
-          height: 40,
+          width: { xs: 32, sm: 40 },
+          height: { xs: 32, sm: 40 },
           minHeight: 0,
           minWidth: 0,
           p: 0,
@@ -459,8 +509,8 @@ const AdminDashboardPage = () => {
             boxShadow: 8,
             transform: 'scale(1.1)',
           },
-          display: sidebarOpen ? 'none' : 'flex', // Show only when sidebar is closed
-          transition: 'all 0.3s ease', // Smooth transition
+          display: { xs: 'flex', md: sidebarOpen ? 'none' : 'flex' },
+          transition: 'all 0.3s ease',
           cursor: 'pointer',
           transform: 'rotate(0deg)',
           '& .hamburger-line': {
@@ -468,13 +518,13 @@ const AdminDashboardPage = () => {
           }
         }}
       >
-        <MenuIcon sx={{ fontSize: 24 }} />
+        <MenuIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
       </IconButton>
 
       {/* Sidebar - Visible on all screens with mobile drawer for small screens */}
       <Box
         sx={{
-          width: 280,
+          width: { xs: 240, sm: 280 },
           flexShrink: 0,
           position: 'fixed',
           height: 'calc(100vh - 64px)',
@@ -485,27 +535,11 @@ const AdminDashboardPage = () => {
           zIndex: 1200,
           borderRight: `1px solid ${theme.palette.divider}`,
           bgcolor: theme.palette.background.paper,
-          display: { xs: 'none', md: sidebarOpen ? 'block' : 'none' }, // Control visibility based on state
-          // Custom scrollbar styling - invisible scrollbars
-          '&::-webkit-scrollbar': {
-            width: '0px',
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'transparent',
-            background: 'transparent',
-          },
-          // For Firefox
-          scrollbarWidth: 'none',
-          // For IE/Edge
-          '-ms-overflow-style': 'none',
-          transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)', // Smooth transition with custom easing
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)', // Slide effect
+          display: { xs: 'none', md: 'block' },
+          transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
           boxShadow: sidebarOpen ? theme.shadows[8] : 'none',
-          contain: 'layout style paint', // Improve rendering performance and prevent visual glitches
+          contain: 'layout style paint',
         }}
       >
         {drawerContent}
@@ -517,31 +551,15 @@ const AdminDashboardPage = () => {
         sx={{
           flexGrow: 1,
           width: '100%',
-          ml: { xs: 0, md: sidebarOpen ? '280px' : 0 },
-          pl: { xs: 0, md: sidebarOpen ? 0 : 2 },
-          pt: 2,
-          pb: 4,
+          ml: { xs: 0, md: sidebarOpen ? { xs: '240px', sm: '240px', md: '280px' } : 0 },
+          pl: { xs: 0, md: sidebarOpen ? 0 : { xs: 1, sm: 2 } },
+          pt: { xs: 1, sm: 2 },
+          pb: { xs: 2, sm: 4 },
           transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
           overflowX: 'hidden',
-          // Invisible scrollbars
-          '&::-webkit-scrollbar': {
-            width: '0px',
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'transparent',
-            background: 'transparent',
-          },
-          // For Firefox
-          scrollbarWidth: 'none',
-          // For IE/Edge
-          '-ms-overflow-style': 'none',
         }}
       >
-        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, overflowX: 'hidden' }}>
+        <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 }, overflowX: 'hidden' }}>
           {/* Mobile Drawer */}
           <Drawer
             variant="temporary"
@@ -549,29 +567,13 @@ const AdminDashboardPage = () => {
             onClose={handleDrawerToggle}
             ModalProps={{ keepMounted: true }}
             sx={{
-              display: { xs: 'block', md: 'none' }, // Show on mobile, hide on desktop
+              display: { xs: 'block', md: 'none' },
               '& .MuiDrawer-paper': { 
                 boxSizing: 'border-box', 
-                width: 280,
+                width: { xs: 240, sm: 280 },
                 borderRight: `1px solid ${theme.palette.divider}`,
                 bgcolor: theme.palette.background.paper,
                 boxShadow: theme.shadows[8],
-                // Invisible scrollbars
-                '&::-webkit-scrollbar': {
-                  width: '0px',
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: 'transparent',
-                  background: 'transparent',
-                },
-                // For Firefox
-                scrollbarWidth: 'none',
-                // For IE/Edge
-                '-ms-overflow-style': 'none',
               },
             }}
           >

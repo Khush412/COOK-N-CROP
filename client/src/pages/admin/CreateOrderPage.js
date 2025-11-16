@@ -246,40 +246,79 @@ const CreateOrderPage = () => {
   return (
     <Container maxWidth="xl">
       <Paper sx={{ 
-        p: { xs: 2, md: 4 }, 
+        p: { xs: 2, sm: 3, md: 4 }, 
         mb: 4, 
         borderRadius: 4, 
         background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
       }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: { xs: 2, sm: 3 } }}>
           <Box>
             <Button 
               onClick={() => navigate('/admin/orders')} 
-              startIcon={<ArrowBackIcon />} 
-              sx={{ mb: 1, fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+              startIcon={<ArrowBackIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />} 
+              sx={{ 
+                mb: 1, 
+                fontFamily: theme.typography.fontFamily, 
+                borderRadius: 2,
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Back to Manage Orders
             </Button>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              sx={{ 
+                fontWeight: 800, 
+                fontFamily: theme.typography.fontFamily, 
+                color: theme.palette.primary.main,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+              }}
+            >
               Create New Order
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mt: 1 }}>
+            <Typography 
+              variant="body1" 
+              color="text.secondary" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily, 
+                mt: 1,
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+              }}
+            >
               Follow the steps to create a new order for your customer
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 } }}>
             <Button 
               variant="outlined" 
               onClick={clearSelections}
-              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+              sx={{ 
+                fontFamily: theme.typography.fontFamily, 
+                borderRadius: 2,
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Reset Form
             </Button>
           </Box>
         </Box>
         
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel 
+          sx={{ 
+            mb: 2,
+            '& .MuiStepLabel-label': {
+              fontSize: { xs: '0.75rem', sm: '0.875rem' }
+            }
+          }}
+        >
           {steps.map((label, index) => (
             <Step key={label}>
               <StepLabel 
@@ -290,7 +329,8 @@ const CreateOrderPage = () => {
                   sx={{ 
                     fontFamily: theme.typography.fontFamily,
                     fontWeight: activeStep === index ? 'bold' : 'normal',
-                    color: activeStep === index ? theme.palette.primary.main : 'inherit'
+                    color: activeStep === index ? theme.palette.primary.main : 'inherit',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
                 >
                   {label}
@@ -301,18 +341,18 @@ const CreateOrderPage = () => {
         </Stepper>
       </Paper>
 
-      {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{success}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{success}</Alert>}
 
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, lg: 8 }}>
           {/* Step 0: Select User */}
           {activeStep === 0 && (
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
                 <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
+                  width: { xs: 40, sm: 48 }, 
+                  height: { xs: 40, sm: 48 }, 
                   borderRadius: 2, 
                   bgcolor: alpha(theme.palette.primary.main, 0.1), 
                   display: 'flex', 
@@ -320,9 +360,17 @@ const CreateOrderPage = () => {
                   justifyContent: 'center',
                   mr: 2
                 }}>
-                  <PersonIcon sx={{ color: theme.palette.primary.main }} />
+                  <PersonIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 24, sm: 32 } }} />
                 </Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h5" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   Select User
                 </Typography>
               </Box>
@@ -344,61 +392,92 @@ const CreateOrderPage = () => {
                       ...params.InputProps, 
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon />
+                          <SearchIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
                         </InputAdornment>
                       ),
                       endAdornment: (
                         <>{userLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>
                       ),
                     }}
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }}
                     sx={{ 
-                      '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
-                      borderRadius: 2
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      },
+                      borderRadius: 2,
+                      mb: 2
                     }}
                   />
                 )}
-                sx={{ mb: 2 }}
               />
               
               {user && (
                 <Card sx={{ mt: 2, border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`, bgcolor: alpha(theme.palette.success.main, 0.05) }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
                       <Avatar 
                         src={user.avatar ? `${process.env.REACT_APP_API_URL}${user.avatar}` : undefined}
-                        sx={{ width: 56, height: 56 }}
+                        sx={{ width: { xs: 48, sm: 56 }, height: { xs: 48, sm: 56 } }}
                       >
                         {user.username.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
-                        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily, 
+                            fontWeight: 'bold',
+                            fontSize: { xs: '1rem', sm: '1.25rem' }
+                          }}
+                        >
                           {user.username}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                          }}
+                        >
                           {user.email}
                         </Typography>
                         <Chip 
                           label={user.isActive ? 'Active' : 'Inactive'} 
                           color={user.isActive ? 'success' : 'error'} 
                           size="small" 
-                          sx={{ mt: 1 }}
+                          sx={{ 
+                            mt: 1,
+                            fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                          }}
                         />
                       </Box>
                       <Box sx={{ flexGrow: 1 }} />
-                      <CheckCircleIcon sx={{ color: theme.palette.success.main, fontSize: 32 }} />
+                      <CheckCircleIcon sx={{ color: theme.palette.success.main, fontSize: { xs: 24, sm: 32 } }} />
                     </Box>
                   </CardContent>
                 </Card>
               )}
               
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: { xs: 2, sm: 3 } }}>
                 <Button 
                   variant="contained" 
                   onClick={handleNextStep}
                   disabled={!user}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5, px: 4 }}
-                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 }, 
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)', fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Continue
                 </Button>
@@ -408,11 +487,11 @@ const CreateOrderPage = () => {
 
           {/* Step 1: Add Products */}
           {activeStep === 1 && (
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
                 <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
+                  width: { xs: 40, sm: 48 }, 
+                  height: { xs: 40, sm: 48 }, 
                   borderRadius: 2, 
                   bgcolor: alpha(theme.palette.primary.main, 0.1), 
                   display: 'flex', 
@@ -420,14 +499,22 @@ const CreateOrderPage = () => {
                   justifyContent: 'center',
                   mr: 2
                 }}>
-                  <AddShoppingCartIcon sx={{ color: theme.palette.primary.main }} />
+                  <AddShoppingCartIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 24, sm: 32 } }} />
                 </Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h5" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   Add Products
                 </Typography>
               </Box>
               
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3 }}>
+              <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
                 <Autocomplete 
                   sx={{ flexGrow: 1 }} 
                   options={productOptions} 
@@ -447,16 +534,24 @@ const CreateOrderPage = () => {
                         ...params.InputProps, 
                         startAdornment: (
                           <InputAdornment position="start">
-                            <SearchIcon />
+                            <SearchIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />
                           </InputAdornment>
                         ),
                         endAdornment: (
                           <>{productLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>
                         ),
                       }}
-                      InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                      InputLabelProps={{ 
+                        sx: { 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        } 
+                      }}
                       sx={{ 
-                        '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily },
+                        '& .MuiInputBase-input': { 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
                         borderRadius: 2
                       }}
                     />
@@ -466,23 +561,52 @@ const CreateOrderPage = () => {
                   variant="contained" 
                   onClick={handleAddProduct} 
                   disabled={!product}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5 }}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 1.5, sm: 2 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
                 >
                   Add
                 </Button>
               </Box>
               
-              <Typography variant="h6" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+              <Typography 
+                variant="h6" 
+                gutterBottom 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  mb: 2,
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
                 Order Items ({orderItems.length})
               </Typography>
               
               {orderItems.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
+                <Box sx={{ textAlign: 'center', py: { xs: 3, sm: 4 } }}>
+                  <ShoppingCartIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'text.secondary', mb: 2 }} />
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      color: 'text.secondary',
+                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                    }}
+                  >
                     No items added yet
                   </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', mt: 1 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily, 
+                      color: 'text.secondary', 
+                      mt: 1,
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }}
+                  >
                     Search and add products to the order
                   </Typography>
                 </Box>
@@ -495,7 +619,7 @@ const CreateOrderPage = () => {
                         bgcolor: 'background.paper', 
                         borderRadius: 2, 
                         mb: 1, 
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
                       }}
                     >
@@ -503,33 +627,62 @@ const CreateOrderPage = () => {
                         <Avatar 
                           src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} 
                           variant="rounded" 
-                          sx={{ width: 64, height: 64, mr: 2 }}
+                          sx={{ 
+                            width: { xs: 56, sm: 64 }, 
+                            height: { xs: 56, sm: 64 }, 
+                            mr: { xs: 1, sm: 2 } 
+                          }}
                         />
                       </ListItemAvatar>
                       <ListItemText 
                         primary={
-                          <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontFamily: theme.typography.fontFamily, 
+                              fontWeight: 'bold',
+                              fontSize: { xs: '1rem', sm: '1.25rem' }
+                            }}
+                          >
                             {item.name}
                           </Typography>
                         }
                         secondary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, mt: 1, flexWrap: 'wrap' }}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                              }}
+                            >
                               ₹{item.price.toFixed(2)} each
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <IconButton 
                                 size="small" 
                                 onClick={() => handleDecreaseQuantity(item.product)}
-                                sx={{ minWidth: 32 }}
+                                sx={{ 
+                                  minWidth: { xs: 28, sm: 32 },
+                                  width: { xs: 28, sm: 32 },
+                                  height: { xs: 28, sm: 32 }
+                                }}
                               >
-                                -
+                                <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>-</Typography>
                               </IconButton>
                               <TextField 
                                 value={item.qty}
                                 onChange={(e) => handleUpdateQuantity(item.product, parseInt(e.target.value) || 1)}
                                 size="small"
-                                sx={{ width: 60, textAlign: 'center' }}
+                                sx={{ 
+                                  width: { xs: 50, sm: 60 }, 
+                                  textAlign: 'center',
+                                  '& .MuiInputBase-input': {
+                                    textAlign: 'center',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    py: { xs: 0.5, sm: 1 }
+                                  }
+                                }}
                                 inputProps={{ 
                                   style: { textAlign: 'center' },
                                   min: 1
@@ -538,12 +691,23 @@ const CreateOrderPage = () => {
                               <IconButton 
                                 size="small" 
                                 onClick={() => handleIncreaseQuantity(item.product)}
-                                sx={{ minWidth: 32 }}
+                                sx={{ 
+                                  minWidth: { xs: 28, sm: 32 },
+                                  width: { xs: 28, sm: 32 },
+                                  height: { xs: 28, sm: 32 }
+                                }}
                               >
-                                +
+                                <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>+</Typography>
                               </IconButton>
                             </Box>
-                            <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                            <Typography 
+                              variant="body1" 
+                              sx={{ 
+                                fontFamily: theme.typography.fontFamily, 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '0.875rem', sm: '1rem' }
+                              }}
+                            >
                               ₹{(item.price * item.qty).toFixed(2)}
                             </Typography>
                           </Box>
@@ -555,21 +719,31 @@ const CreateOrderPage = () => {
                         edge="end" 
                         aria-label="delete" 
                         onClick={() => handleRemoveItem(item.product)}
-                        sx={{ color: theme.palette.error.main }}
+                        sx={{ 
+                          color: theme.palette.error.main,
+                          width: { xs: 36, sm: 40 },
+                          height: { xs: 36, sm: 40 }
+                        }}
                       >
-                        <DeleteIcon />
+                        <DeleteIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
                       </IconButton>
                     </ListItem>
                   ))}
                 </List>
               )}
               
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: { xs: 2, sm: 3 } }}>
                 <Button 
                   variant="outlined" 
                   onClick={handlePrevStep}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5 }}
-                  startIcon={<ArrowBackIcon />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Back
                 </Button>
@@ -577,8 +751,14 @@ const CreateOrderPage = () => {
                   variant="contained" 
                   onClick={handleNextStep}
                   disabled={orderItems.length === 0}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5, px: 4 }}
-                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 }, 
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)', fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Continue
                 </Button>
@@ -588,11 +768,11 @@ const CreateOrderPage = () => {
 
           {/* Step 2: Shipping Address */}
           {activeStep === 2 && (
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
                 <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
+                  width: { xs: 40, sm: 48 }, 
+                  height: { xs: 40, sm: 48 }, 
                   borderRadius: 2, 
                   bgcolor: alpha(theme.palette.primary.main, 0.1), 
                   display: 'flex', 
@@ -600,14 +780,22 @@ const CreateOrderPage = () => {
                   justifyContent: 'center',
                   mr: 2
                 }}>
-                  <LocationOnIcon sx={{ color: theme.palette.primary.main }} />
+                  <LocationOnIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 24, sm: 32 } }} />
                 </Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h5" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   Shipping Address
                 </Typography>
               </Box>
               
-              <Grid container spacing={2}>
+              <Grid container spacing={{ xs: 1, sm: 2 }}>
                 <Grid size={{ xs: 12 }}>
                   <TextField 
                     label="Full Name" 
@@ -616,8 +804,20 @@ const CreateOrderPage = () => {
                     onChange={handleAddressChange} 
                     fullWidth 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                     required
                   />
                 </Grid>
@@ -630,8 +830,20 @@ const CreateOrderPage = () => {
                     fullWidth 
                     required 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -643,8 +855,20 @@ const CreateOrderPage = () => {
                     fullWidth 
                     required 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -656,8 +880,20 @@ const CreateOrderPage = () => {
                     fullWidth 
                     required 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -669,8 +905,20 @@ const CreateOrderPage = () => {
                     fullWidth 
                     required 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -682,8 +930,20 @@ const CreateOrderPage = () => {
                     fullWidth 
                     required 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
@@ -694,26 +954,50 @@ const CreateOrderPage = () => {
                     onChange={handleAddressChange} 
                     fullWidth 
                     margin="normal" 
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }, borderRadius: 2 }}
+                    InputLabelProps={{ 
+                      sx: { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      } 
+                    }} 
+                    sx={{ 
+                      '& .MuiInputBase-input': { 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }, 
+                      borderRadius: 2,
+                      mb: { xs: 1, sm: 1.5 }
+                    }}
                   />
                 </Grid>
               </Grid>
               
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: { xs: 2, sm: 3 } }}>
                 <Button 
                   variant="outlined" 
                   onClick={handlePrevStep}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5 }}
-                  startIcon={<ArrowBackIcon />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Back
                 </Button>
                 <Button 
                   variant="contained" 
                   onClick={handleNextStep}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5, px: 4 }}
-                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 }, 
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  endIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)', fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Continue
                 </Button>
@@ -723,11 +1007,11 @@ const CreateOrderPage = () => {
 
           {/* Step 3: Review & Place Order */}
           {activeStep === 3 && (
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
                 <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
+                  width: { xs: 40, sm: 48 }, 
+                  height: { xs: 40, sm: 48 }, 
                   borderRadius: 2, 
                   bgcolor: alpha(theme.palette.primary.main, 0.1), 
                   display: 'flex', 
@@ -735,33 +1019,63 @@ const CreateOrderPage = () => {
                   justifyContent: 'center',
                   mr: 2
                 }}>
-                  <CheckCircleIcon sx={{ color: theme.palette.primary.main }} />
+                  <CheckCircleIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 24, sm: 32 } }} />
                 </Box>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography 
+                  variant="h5" 
+                  gutterBottom 
+                  sx={{ 
+                    fontWeight: 'bold', 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   Review & Place Order
                 </Typography>
               </Box>
               
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {/* User Info */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Card sx={{ mb: 2, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-                    <CardContent>
-                      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', mb: 2 }}>
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          fontWeight: 'bold', 
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' }
+                        }}
+                      >
                         Customer
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
                         <Avatar 
                           src={user.avatar ? `${process.env.REACT_APP_API_URL}${user.avatar}` : undefined}
-                          sx={{ width: 48, height: 48 }}
+                          sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 } }}
                         >
                           {user.username.charAt(0).toUpperCase()}
                         </Avatar>
                         <Box>
-                          <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                          <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              fontFamily: theme.typography.fontFamily, 
+                              fontWeight: 'bold',
+                              fontSize: { xs: '0.875rem', sm: '1rem' }
+                            }}
+                          >
                             {user.username}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary" 
+                            sx={{ 
+                              fontFamily: theme.typography.fontFamily,
+                              fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                            }}
+                          >
                             {user.email}
                           </Typography>
                         </Box>
@@ -773,11 +1087,25 @@ const CreateOrderPage = () => {
                 {/* Shipping Address */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Card sx={{ mb: 2, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-                    <CardContent>
-                      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', mb: 2 }}>
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          fontWeight: 'bold', 
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' }
+                        }}
+                      >
                         Shipping Address
                       </Typography>
-                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily,
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                        }}
+                      >
                         <strong>{shippingAddress.fullName}</strong><br />
                         {shippingAddress.street}<br />
                         {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}<br />
@@ -791,28 +1119,53 @@ const CreateOrderPage = () => {
                 {/* Order Items */}
                 <Grid size={{ xs: 12 }}>
                   <Card sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-                    <CardContent>
-                      <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', mb: 2 }}>
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          fontWeight: 'bold', 
+                          mb: 2,
+                          fontSize: { xs: '1rem', sm: '1.25rem' }
+                        }}
+                      >
                         Order Items ({orderItems.length})
                       </Typography>
                       <List>
                         {orderItems.map(item => (
-                          <ListItem key={item.product} sx={{ py: 1, px: 0 }}>
+                          <ListItem key={item.product} sx={{ py: { xs: 0.5, sm: 1 }, px: 0 }}>
                             <ListItemAvatar>
                               <Avatar 
                                 src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} 
                                 variant="rounded" 
-                                sx={{ width: 48, height: 48, mr: 2 }}
+                                sx={{ 
+                                  width: { xs: 40, sm: 48 }, 
+                                  height: { xs: 40, sm: 48 }, 
+                                  mr: { xs: 1, sm: 2 } 
+                                }}
                               />
                             </ListItemAvatar>
                             <ListItemText 
                               primary={
-                                <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                                <Typography 
+                                  variant="body1" 
+                                  sx={{ 
+                                    fontFamily: theme.typography.fontFamily, 
+                                    fontWeight: 'bold',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                                  }}
+                                >
                                   {item.name}
                                 </Typography>
                               }
                               secondary={
-                                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                <Typography 
+                                  variant="body2" 
+                                  sx={{ 
+                                    fontFamily: theme.typography.fontFamily,
+                                    fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                                  }}
+                                >
                                   Qty: {item.qty} × ₹{item.price.toFixed(2)} = ₹{(item.price * item.qty).toFixed(2)}
                                 </Typography>
                               }
@@ -824,18 +1177,63 @@ const CreateOrderPage = () => {
                       </List>
                       <Divider sx={{ my: 2 }} />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-                        <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
+                        <Typography 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
+                          Subtotal
+                        </Typography>
+                        <Typography 
+                          fontWeight="bold" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
+                          ₹{subtotal.toFixed(2)}
+                        </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Charge</Typography>
-                        <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
+                          Delivery Charge
+                        </Typography>
+                        <Typography 
+                          fontWeight="bold" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
                           {deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-                        <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Total</Typography>
-                        <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily, 
+                            fontWeight: 'bold',
+                            fontSize: { xs: '1rem', sm: '1.25rem' }
+                          }}
+                        >
+                          Total
+                        </Typography>
+                        <Typography 
+                          variant="h6" 
+                          fontWeight="bold" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily, 
+                            color: theme.palette.primary.main,
+                            fontSize: { xs: '1rem', sm: '1.25rem' }
+                          }}
+                        >
                           ₹{totalPrice.toFixed(2)}
                         </Typography>
                       </Box>
@@ -844,12 +1242,18 @@ const CreateOrderPage = () => {
                 </Grid>
               </Grid>
               
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: { xs: 2, sm: 3 } }}>
                 <Button 
                   variant="outlined" 
                   onClick={handlePrevStep}
-                  sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, py: 1.5 }}
-                  startIcon={<ArrowBackIcon />}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                  startIcon={<ArrowBackIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                 >
                   Back
                 </Button>
@@ -858,7 +1262,14 @@ const CreateOrderPage = () => {
                   color="primary" 
                   onClick={handlePlaceOrder} 
                   disabled={placingOrder}
-                  sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: 2, py: 1.5, px: 4 }}
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily, 
+                    fontWeight: 'bold', 
+                    borderRadius: 2, 
+                    py: { xs: 1, sm: 1.5 }, 
+                    px: { xs: 2, sm: 4 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
                 >
                   {placingOrder ? <Loader size="small" /> : 'Place Order'}
                 </Button>
@@ -868,34 +1279,105 @@ const CreateOrderPage = () => {
         </Grid>
 
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: 100, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, position: 'sticky', top: { xs: 80, sm: 100 }, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+            <Typography 
+              variant="h6" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 'bold', 
+                fontFamily: theme.typography.fontFamily, 
+                mb: 2,
+                fontSize: { xs: '1rem', sm: '1.25rem' }
+              }}
+            >
               Order Summary
             </Typography>
             
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
+              <Typography 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
+                Subtotal
+              </Typography>
+              <Typography 
+                fontWeight="bold" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
+                ₹{subtotal.toFixed(2)}
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Charge</Typography>
-              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+              <Typography 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
+                Delivery Charge
+              </Typography>
+              <Typography 
+                fontWeight="bold" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
                 {deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : 'FREE'}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>Total</Typography>
-              <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
+                Total
+              </Typography>
+              <Typography 
+                variant="h6" 
+                fontWeight="bold" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  color: theme.palette.primary.main,
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
                 ₹{totalPrice.toFixed(2)}
               </Typography>
             </Box>
             
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+            <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  mb: 1,
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                }}
+              >
                 <strong>Order Progress</strong>
               </Typography>
-              <Stepper activeStep={activeStep} orientation="vertical" sx={{ ml: -1 }}>
+              <Stepper 
+                activeStep={activeStep} 
+                orientation="vertical" 
+                sx={{ 
+                  ml: -1,
+                  '& .MuiStepLabel-label': {
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }
+                }}
+              >
                 {steps.map((label, index) => (
                   <Step key={label} active={index <= activeStep} completed={index < activeStep}>
                     <StepLabel>
@@ -903,7 +1385,8 @@ const CreateOrderPage = () => {
                         variant="body2" 
                         sx={{ 
                           fontFamily: theme.typography.fontFamily,
-                          color: index <= activeStep ? 'text.primary' : 'text.secondary'
+                          color: index <= activeStep ? 'text.primary' : 'text.secondary',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
                         }}
                       >
                         {label}
@@ -914,8 +1397,14 @@ const CreateOrderPage = () => {
               </Stepper>
             </Box>
             
-            <Box sx={{ mt: 3, p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Box sx={{ mt: { xs: 2, sm: 3 }, p: { xs: 1.5, sm: 2 }, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                }}
+              >
                 <strong>Tip:</strong> Make sure all details are correct before placing the order.
               </Typography>
             </Box>

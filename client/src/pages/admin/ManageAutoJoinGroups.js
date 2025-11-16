@@ -188,12 +188,12 @@ const ManageAutoJoinGroups = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main, fontSize: { xs: '1.75rem', sm: '2rem', md: '3rem' } }}>
           Auto-Join Groups Management
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Configure which groups new users should automatically join upon registration
         </Typography>
       </Paper>
@@ -201,7 +201,7 @@ const ManageAutoJoinGroups = () => {
       {error && (
         <Alert 
           severity="error" 
-          sx={{ mb: 3, borderRadius: 3 }}
+          sx={{ mb: 3, borderRadius: 3, fontSize: { xs: '0.875rem', sm: '1rem' } }}
           onClose={() => setError(null)}
         >
           {error}
@@ -211,7 +211,7 @@ const ManageAutoJoinGroups = () => {
       {success && (
         <Alert 
           severity="success" 
-          sx={{ mb: 3, borderRadius: 3 }}
+          sx={{ mb: 3, borderRadius: 3, fontSize: { xs: '0.875rem', sm: '1rem' } }}
           onClose={() => setSuccess(null)}
         >
           {success}
@@ -225,10 +225,12 @@ const ManageAutoJoinGroups = () => {
           sx={{ 
             '& .MuiCardHeader-title': { 
               fontWeight: 700, 
-              fontFamily: theme.typography.fontFamily 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '1.125rem', sm: '1.25rem' }
             },
             '& .MuiCardHeader-subheader': { 
-              fontFamily: theme.typography.fontFamily 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             },
             background: alpha(theme.palette.background.default, 0.5)
           }}
@@ -252,7 +254,7 @@ const ManageAutoJoinGroups = () => {
                 />
               }
               label={
-                <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                   Enable Auto-Join Groups
                 </Typography>
               }
@@ -260,19 +262,19 @@ const ManageAutoJoinGroups = () => {
             <Typography 
               variant="body2" 
               color="text.secondary" 
-              sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}
+              sx={{ mt: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
             >
               When enabled, new users will automatically join all selected groups upon registration.
             </Typography>
           </FormGroup>
 
           {/* Stats Overview */}
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            <Grid item size={{ xs: 6, md: 3 }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 4 }}>
+            <Grid item size={{ xs: 6, sm: 3 }}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1, sm: 2 }, 
                   borderRadius: 3, 
                   border: `1px solid ${theme.palette.divider}`,
                   textAlign: 'center',
@@ -280,22 +282,22 @@ const ManageAutoJoinGroups = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                  <GroupIcon sx={{ color: theme.palette.primary.main }} />
+                  <GroupIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 20, sm: 24 } }} />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
                   {config.groups.length}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Groups
                 </Typography>
               </Paper>
             </Grid>
             
-            <Grid item size={{ xs: 6, md: 3 }}>
+            <Grid item size={{ xs: 6, sm: 3 }}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1, sm: 2 }, 
                   borderRadius: 3, 
                   border: `1px solid ${theme.palette.divider}`,
                   textAlign: 'center',
@@ -303,22 +305,22 @@ const ManageAutoJoinGroups = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                  <PeopleIcon sx={{ color: theme.palette.secondary.main }} />
+                  <PeopleIcon sx={{ color: theme.palette.secondary.main, fontSize: { xs: 20, sm: 24 } }} />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
                   {config.groups.reduce((total, group) => total + (group.memberCount || 0), 0)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Total Members
                 </Typography>
               </Paper>
             </Grid>
             
-            <Grid item size={{ xs: 6, md: 3 }}>
+            <Grid item size={{ xs: 6, sm: 3 }}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1, sm: 2 }, 
                   borderRadius: 3, 
                   border: `1px solid ${theme.palette.divider}`,
                   textAlign: 'center',
@@ -328,24 +330,25 @@ const ManageAutoJoinGroups = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
                   <CheckCircleIcon 
                     sx={{ 
-                      color: config.isActive ? theme.palette.success.main : theme.palette.warning.main 
+                      color: config.isActive ? theme.palette.success.main : theme.palette.warning.main,
+                      fontSize: { xs: 20, sm: 24 }
                     }} 
                   />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
                   {config.isActive ? 'Active' : 'Inactive'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Status
                 </Typography>
               </Paper>
             </Grid>
             
-            <Grid item size={{ xs: 6, md: 3 }}>
+            <Grid item size={{ xs: 6, sm: 3 }}>
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  p: 2, 
+                  p: { xs: 1, sm: 2 }, 
                   borderRadius: 3, 
                   border: `1px solid ${theme.palette.divider}`,
                   textAlign: 'center',
@@ -353,12 +356,12 @@ const ManageAutoJoinGroups = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-                  <GroupIcon sx={{ color: theme.palette.info.main }} />
+                  <GroupIcon sx={{ color: theme.palette.info.main, fontSize: { xs: 20, sm: 24 } }} />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
                   {allGroups.length}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Public Groups
                 </Typography>
               </Paper>
@@ -370,7 +373,8 @@ const ManageAutoJoinGroups = () => {
             sx={{ 
               fontWeight: 700, 
               mb: 2, 
-              fontFamily: theme.typography.fontFamily 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '1rem', sm: '1.125rem' }
             }}
           >
             Selected Groups ({config.groups.length})
@@ -378,12 +382,13 @@ const ManageAutoJoinGroups = () => {
 
           {config.groups.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <GroupIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+              <GroupIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
               <Typography 
                 color="text.secondary" 
                 sx={{ 
                   fontStyle: 'italic', 
-                  fontFamily: theme.typography.fontFamily 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }}
               >
                 No groups selected for auto-join. Search and add groups below.
@@ -400,29 +405,30 @@ const ManageAutoJoinGroups = () => {
                   <ListItem 
                     sx={{ 
                       '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.03) },
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      py: { xs: 1, sm: 1.5 }
                     }}
                     component={RouterLink}
                     to={`/g/${group.slug || group._id}`}
                   >
                     <ListItemText
                       primary={
-                        <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                        <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                           {group.name || 'Unknown Group'}
                         </Typography>
                       }
                       secondary={
                         <Box component="div" sx={{ mt: 1 }}>
-                          <Stack direction="row" spacing={1}>
+                          <Stack direction="row" spacing={1} flexWrap="wrap">
                             <Chip 
-                              icon={<PeopleIcon />} 
+                              icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 16 } }} />} 
                               label={`${group.memberCount || 0} members`} 
                               size="small" 
                               variant="outlined"
                               sx={{ 
-                                height: 24, 
+                                height: { xs: 20, sm: 24 }, 
                                 fontFamily: theme.typography.fontFamily,
-                                fontSize: '0.75rem'
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
                               }} 
                             />
                             <Chip 
@@ -430,9 +436,9 @@ const ManageAutoJoinGroups = () => {
                               size="small" 
                               variant="outlined"
                               sx={{ 
-                                height: 24, 
+                                height: { xs: 20, sm: 24 }, 
                                 fontFamily: theme.typography.fontFamily,
-                                fontSize: '0.75rem'
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
                               }} 
                             />
                           </Stack>
@@ -453,10 +459,12 @@ const ManageAutoJoinGroups = () => {
                           sx={{ 
                             '&:hover': { 
                               bgcolor: alpha(theme.palette.error.main, 0.1) 
-                            } 
+                            },
+                            width: { xs: 32, sm: 40 },
+                            height: { xs: 32, sm: 40 }
                           }}
                         >
-                          <DeleteIcon />
+                          <DeleteIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                         </IconButton>
                       </Tooltip>
                     </ListItemSecondaryAction>
@@ -477,7 +485,8 @@ const ManageAutoJoinGroups = () => {
               sx={{ 
                 fontWeight: 700, 
                 mb: 2, 
-                fontFamily: theme.typography.fontFamily 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '1rem', sm: '1.125rem' }
               }}
             >
               Search & Add Groups
@@ -491,7 +500,7 @@ const ManageAutoJoinGroups = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                   </InputAdornment>
                 ),
               }}
@@ -500,6 +509,9 @@ const ManageAutoJoinGroups = () => {
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: 2,
                   fontFamily: theme.typography.fontFamily
+                },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }
               }}
             />
@@ -509,7 +521,8 @@ const ManageAutoJoinGroups = () => {
               sx={{ 
                 fontWeight: 600, 
                 mb: 2, 
-                fontFamily: theme.typography.fontFamily 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             >
               Search Results ({searchResults.length})
@@ -517,12 +530,13 @@ const ManageAutoJoinGroups = () => {
             
             {searchResults.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <GroupIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                <GroupIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
                 <Typography 
                   color="text.secondary" 
                   sx={{ 
                     fontStyle: 'italic', 
-                    fontFamily: theme.typography.fontFamily 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
                   }}
                 >
                   {searchTerm ? 'No groups found matching your search.' : 'Start typing to search for groups.'}
@@ -539,7 +553,8 @@ const ManageAutoJoinGroups = () => {
                     <ListItem 
                       sx={{ 
                         '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.03) },
-                        alignItems: 'flex-start'
+                        alignItems: 'flex-start',
+                        py: { xs: 1, sm: 1.5 }
                       }}
                     >
                       <Avatar 
@@ -547,14 +562,16 @@ const ManageAutoJoinGroups = () => {
                           bgcolor: alpha(theme.palette.primary.main, 0.1), 
                           color: theme.palette.primary.main,
                           mr: 2,
-                          mt: 0.5
+                          mt: 0.5,
+                          width: { xs: 32, sm: 40 },
+                          height: { xs: 32, sm: 40 }
                         }}
                       >
-                        <GroupIcon />
+                        <GroupIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                       </Avatar>
                       <ListItemText
                         primary={
-                          <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                          <Typography sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             {group.name}
                           </Typography>
                         }
@@ -570,20 +587,21 @@ const ManageAutoJoinGroups = () => {
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' }
                               }}
                             >
                               {group.description || 'No description available'}
                             </Typography>
                             <Chip 
-                              icon={<PeopleIcon />} 
+                              icon={<PeopleIcon sx={{ fontSize: { xs: 12, sm: 16 } }} />} 
                               label={`${group.memberCount || 0} members`} 
                               size="small" 
                               variant="outlined"
                               sx={{ 
-                                height: 24, 
+                                height: { xs: 20, sm: 24 }, 
                                 fontFamily: theme.typography.fontFamily,
-                                fontSize: '0.75rem'
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
                               }} 
                             />
                           </Box>
@@ -596,9 +614,9 @@ const ManageAutoJoinGroups = () => {
                             size="small" 
                             color="success" 
                             sx={{ 
-                              height: 24, 
+                              height: { xs: 20, sm: 24 }, 
                               fontFamily: theme.typography.fontFamily,
-                              fontSize: '0.75rem'
+                              fontSize: { xs: '0.625rem', sm: '0.75rem' }
                             }} 
                           />
                         ) : (
@@ -611,10 +629,12 @@ const ManageAutoJoinGroups = () => {
                               sx={{ 
                                 '&:hover': { 
                                   bgcolor: alpha(theme.palette.success.main, 0.1) 
-                                } 
+                                },
+                                width: { xs: 32, sm: 40 },
+                                height: { xs: 32, sm: 40 }
                               }}
                             >
-                              <AddIcon />
+                              <AddIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -630,14 +650,16 @@ const ManageAutoJoinGroups = () => {
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
-              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
               onClick={handleSaveConfig}
               disabled={saving}
               sx={{ 
                 borderRadius: '50px',
                 fontFamily: theme.typography.fontFamily,
                 fontWeight: 600,
-                px: 4
+                px: { xs: 2, sm: 4 },
+                py: { xs: 1, sm: 1.5 },
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             >
               {saving ? 'Saving...' : 'Save Configuration'}

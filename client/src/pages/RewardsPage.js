@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Container, useTheme, alpha, Grid, Card, CardContent, List, ListItem, ListItemIcon, ListItemText, Divider, Stack, Paper, Chip, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, Container, useTheme, alpha, Grid, Card, CardContent, List, ListItem, ListItemIcon, ListItemText, Divider, Stack, Paper, Chip, LinearProgress, useMediaQuery } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
@@ -17,6 +17,8 @@ import Loader from '../custom_components/Loader';
 
 const RewardsPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
   const [harvestCoins, setHarvestCoins] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ const RewardsPage = () => {
         "Free delivery on orders ₹750+"
       ],
       color: "#CD7F32",
-      icon: <StarIcon sx={{ fontSize: 36 }} />
+      icon: <StarIcon sx={{ fontSize: isMobile ? 24 : 36 }} />
     },
     { 
       name: "Silver", 
@@ -77,7 +79,7 @@ const RewardsPage = () => {
         "Free delivery on orders ₹500+"
       ],
       color: "#C0C0C0",
-      icon: <StarIcon sx={{ fontSize: 36 }} />
+      icon: <StarIcon sx={{ fontSize: isMobile ? 24 : 36 }} />
     },
     { 
       name: "Gold", 
@@ -92,7 +94,7 @@ const RewardsPage = () => {
         "Free delivery on all orders"
       ],
       color: "#FFD700",
-      icon: <StarIcon sx={{ fontSize: 36 }} />
+      icon: <StarIcon sx={{ fontSize: isMobile ? 24 : 36 }} />
     }
   ];
 
@@ -196,22 +198,22 @@ const RewardsPage = () => {
     {
       title: "Earn Coins",
       description: "Get Harvest Coins on every purchase based on your membership tier",
-      icon: <CurrencyRupeeIcon sx={{ fontSize: 36, color: theme.palette.secondary.main }} />
+      icon: <CurrencyRupeeIcon sx={{ fontSize: isMobile ? 24 : 36, color: theme.palette.secondary.main }} />
     },
     {
       title: "Collect & Grow",
       description: "Build your coin balance and unlock higher membership tiers",
-      icon: <EmojiEventsIcon sx={{ fontSize: 36, color: theme.palette.secondary.main }} />
+      icon: <EmojiEventsIcon sx={{ fontSize: isMobile ? 24 : 36, color: theme.palette.secondary.main }} />
     },
     {
       title: "Redeem for Savings",
       description: "Use coins for instant discounts at checkout (max 5% off)",
-      icon: <RedeemIcon sx={{ fontSize: 36, color: theme.palette.secondary.main }} />
+      icon: <RedeemIcon sx={{ fontSize: isMobile ? 24 : 36, color: theme.palette.secondary.main }} />
     },
     {
       title: "Enjoy Benefits",
       description: "Unlock exclusive perks as you progress through membership tiers",
-      icon: <StarIcon sx={{ fontSize: 36, color: theme.palette.secondary.main }} />
+      icon: <StarIcon sx={{ fontSize: isMobile ? 24 : 36, color: theme.palette.secondary.main }} />
     }
   ];
 
@@ -232,15 +234,16 @@ const RewardsPage = () => {
     <Box sx={{ 
       width: '100%',
       bgcolor: 'background.default',
-      py: { xs: 4, sm: 6, md: 8 }
+      py: { xs: 4, sm: 4, md: 6, lg: 8 },
+      mt: { xs: 2, sm: 4, md: 6 }
     }}>
       <Container maxWidth="lg">
         {/* Hero Section */}
         <Box sx={{ 
           textAlign: 'center', 
-          mb: { xs: 6, md: 8 },
-          py: { xs: 4, sm: 6, md: 8 },
-          borderRadius: { xs: 2, md: 4 },
+          mb: { xs: 4, sm: 5, md: 6, lg: 8 },
+          py: { xs: 3, sm: 4, md: 6, lg: 8 },
+          borderRadius: { xs: 2, sm: 3, md: 4 },
           background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
           position: 'relative',
           overflow: 'hidden',
@@ -249,46 +252,46 @@ const RewardsPage = () => {
         }}>
           <Box sx={{ 
             position: 'absolute', 
-            top: -30, 
-            left: -30, 
-            width: 100, 
-            height: 100, 
+            top: -20, 
+            left: -20, 
+            width: isMobile ? 60 : 100, 
+            height: isMobile ? 60 : 100, 
             borderRadius: '50%', 
             bgcolor: alpha(theme.palette.secondary.main, 0.1)
           }} />
           <Box sx={{ 
             position: 'absolute', 
-            bottom: -50, 
-            right: -50, 
-            width: 200, 
-            height: 200, 
+            bottom: isMobile ? -30 : -50, 
+            right: isMobile ? -30 : -50, 
+            width: isMobile ? 120 : 200, 
+            height: isMobile ? 120 : 200, 
             borderRadius: '50%', 
             bgcolor: alpha(theme.palette.primary.main, 0.1)
           }} />
           
           <Box sx={{ position: 'relative', zIndex: 2 }}>
-            <EmojiEventsIcon sx={{ fontSize: { xs: 60, sm: 80, md: 100 }, color: 'secondary.main', mb: { xs: 2, md: 3 } }} />
+            <EmojiEventsIcon sx={{ fontSize: { xs: 40, sm: 60, md: 80, lg: 100 }, color: 'secondary.main', mb: { xs: 1, sm: 2, md: 3 } }} />
             <Typography 
-              variant="h1" 
+              variant={isMobile ? "h4" : isTablet ? "h3" : "h1"} 
               sx={{ 
                 fontWeight: 800, 
-                mb: { xs: 2, md: 3 }, 
+                mb: { xs: 1, sm: 2, md: 3 }, 
                 fontFamily: theme.typography.fontFamily,
                 color: theme.palette.primary.main,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' }
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3.5rem' }
               }}
             >
               Harvest Coins Loyalty Program
             </Typography>
             <Typography 
-              variant="h5" 
+              variant={isMobile ? "body1" : "h5"} 
               color="text.secondary" 
               sx={{ 
-                mb: { xs: 3, md: 4 }, 
+                mb: { xs: 2, sm: 3, md: 4 }, 
                 fontFamily: theme.typography.fontFamily, 
                 maxWidth: '700px', 
                 mx: 'auto',
-                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem', lg: '1.25rem' }
               }}
             >
               Earn Harvest Coins with every purchase and unlock exclusive benefits
@@ -296,114 +299,118 @@ const RewardsPage = () => {
             
             {!user ? (
               <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={{ xs: 2, sm: 3 }} 
+                direction={{ xs: 'row', sm: 'row' }} 
+                spacing={{ xs: 1, sm: 2, md: 3 }} 
                 justifyContent="center" 
                 alignItems="center"
-                sx={{ mb: 4 }}
+                sx={{ mb: { xs: 2, sm: 3, md: 4 } }}
               >
                 <Button
                   component={RouterLink}
                   to="/login"
                   variant="contained"
-                  size="large"
+                  size={isMobile ? "small" : "medium"}
                   endIcon={<ShoppingCartIcon />}
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     fontWeight: 'bold', 
                     borderRadius: '50px', 
-                    px: { xs: 4, sm: 6, md: 7 },
-                    py: { xs: 1.5, sm: 2, md: 2.5 },
-                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                    py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                     boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
                     transition: 'all 0.3s ease',
                     '&:hover': { 
                       boxShadow: `0 8px 30px ${alpha(theme.palette.secondary.main, 0.6)}`,
                       transform: 'scale(1.05)',
                       backgroundColor: theme.palette.secondary.dark
-                    }
+                    },
+                    width: { xs: '48%', sm: 'auto' }
                   }}
                 >
-                  Sign Up & Start Earning
+                  {isMobile ? 'Sign Up' : 'Sign Up & Start Earning'}
                 </Button>
                 
                 <Button
                   component={RouterLink}
                   to="/register"
                   variant="outlined"
-                  size="large"
+                  size={isMobile ? "small" : "medium"}
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     fontWeight: 'bold', 
                     borderRadius: '50px', 
-                    px: { xs: 4, sm: 6, md: 7 },
-                    py: { xs: 1.5, sm: 2, md: 2.5 },
-                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                    py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                     borderColor: theme.palette.secondary.main,
                     color: theme.palette.secondary.main,
                     '&:hover': { 
                       backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                       borderColor: theme.palette.secondary.dark
-                    }
+                    },
+                    width: { xs: '48%', sm: 'auto' }
                   }}
                 >
-                  Create Account
+                  {isMobile ? 'Create' : 'Create Account'}
                 </Button>
               </Stack>
             ) : (
               <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={{ xs: 2, sm: 3 }} 
+                direction={{ xs: 'row', sm: 'row' }} 
+                spacing={{ xs: 1, sm: 2, md: 3 }} 
                 justifyContent="center" 
                 alignItems="center"
-                sx={{ mb: 4 }}
+                sx={{ mb: { xs: 2, sm: 3, md: 4 } }}
               >
                 <Button
                   component={RouterLink}
                   to="/CropCorner"
                   variant="contained"
-                  size="large"
+                  size={isMobile ? "small" : "medium"}
                   endIcon={<ShoppingCartIcon />}
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     fontWeight: 'bold', 
                     borderRadius: '50px', 
-                    px: { xs: 4, sm: 6, md: 7 },
-                    py: { xs: 1.5, sm: 2, md: 2.5 },
-                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                    py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                     boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
                     transition: 'all 0.3s ease',
                     '&:hover': { 
                       boxShadow: `0 8px 30px ${alpha(theme.palette.secondary.main, 0.6)}`,
                       transform: 'scale(1.05)',
                       backgroundColor: theme.palette.secondary.dark
-                    }
+                    },
+                    width: { xs: '48%', sm: 'auto' }
                   }}
                 >
-                  Start Shopping
+                  {isMobile ? 'Shop' : 'Start Shopping'}
                 </Button>
                 
                 <Button
                   component={RouterLink}
                   to="/profile"
                   variant="outlined"
-                  size="large"
+                  size={isMobile ? "small" : "medium"}
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     fontWeight: 'bold', 
                     borderRadius: '50px', 
-                    px: { xs: 4, sm: 6, md: 7 },
-                    py: { xs: 1.5, sm: 2, md: 2.5 },
-                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                    px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                    py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                     borderColor: theme.palette.secondary.main,
                     color: theme.palette.secondary.main,
                     '&:hover': { 
                       backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                       borderColor: theme.palette.secondary.dark
-                    }
+                    },
+                    width: { xs: '48%', sm: 'auto' }
                   }}
                 >
-                  View My Profile
+                  {isMobile ? 'Profile' : 'View My Profile'}
                 </Button>
               </Stack>
             )}
@@ -411,21 +418,21 @@ const RewardsPage = () => {
             <Paper 
               elevation={0} 
               sx={{ 
-                p: { xs: 2, sm: 3 }, 
+                p: { xs: 1.5, sm: 2, md: 3 }, 
                 bgcolor: alpha(theme.palette.secondary.main, 0.15), 
-                borderRadius: { xs: 2, md: 3 }, 
+                borderRadius: { xs: 1, sm: 2, md: 3 }, 
                 maxWidth: { xs: '100%', sm: 600, md: 700 }, 
                 mx: 'auto',
                 border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
               }}
             >
               <Typography 
-                variant="body1" 
+                variant="body2" 
                 sx={{ 
                   fontFamily: theme.typography.fontFamily,
                   fontWeight: 'bold',
                   color: theme.palette.secondary.main,
-                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem', lg: '1rem' }
                 }}
               >
                 {user 
@@ -438,17 +445,17 @@ const RewardsPage = () => {
 
         {/* User Stats Section */}
         {user && harvestCoins && (
-          <Box sx={{ mb: { xs: 6, md: 8 } }}>
+          <Box sx={{ mb: { xs: 4, sm: 5, md: 6, lg: 8 } }}>
             <Card sx={{ 
-              borderRadius: 3, 
+              borderRadius: { xs: 2, sm: 3 }, 
               boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`,
               border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
               overflow: 'hidden'
             }}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'secondary.main' }} />
-                  <Typography variant="h4" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 }, flexWrap: 'wrap', gap: 1 }}>
+                  <EmojiEventsIcon sx={{ fontSize: isMobile ? 24 : 40, color: 'secondary.main' }} />
+                  <Typography variant={isMobile ? "h6" : "h4"} sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' } }}>
                     Your Harvest Coins Dashboard
                   </Typography>
                   <Chip
@@ -459,55 +466,55 @@ const RewardsPage = () => {
                       color: currentTier.name === 'Gold' ? 'black' : 'white',
                       fontWeight: 'bold',
                       ml: 'auto',
-                      height: 32,
-                      fontSize: '1rem'
+                      height: isMobile ? 24 : 32,
+                      fontSize: isMobile ? '0.7rem' : '1rem'
                     }}
                   />
                 </Box>
                 
-                <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
-                      <Typography variant="h3" fontWeight="bold" color="secondary.main" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                <Grid container spacing={isMobile ? 1 : 2}>
+                  <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+                    <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2, height: '100%' }}>
+                      <Typography variant={isMobile ? "h5" : "h3"} fontWeight="bold" color="secondary.main" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '1rem', sm: '1.5rem', md: '2rem' } }}>
                         {harvestCoins.balance}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.875rem' } }}>
                         Harvest Coins Balance
                       </Typography>
                     </Paper>
                   </Grid>
                   
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                        <CurrencyRupeeIcon sx={{ fontSize: 24 }} />
-                        <Typography variant="h3" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+                    <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2, height: '100%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+                        <CurrencyRupeeIcon sx={{ fontSize: isMobile ? 16 : 24 }} />
+                        <Typography variant={isMobile ? "h5" : "h3"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.5rem', md: '2rem' } }}>
                           {harvestCoins.totalSpent.toFixed(0)}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.875rem' } }}>
                         Total Spent (₹)
                       </Typography>
                     </Paper>
                   </Grid>
                   
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
-                      <Typography variant="h3" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                  <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+                    <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2, height: '100%' }}>
+                      <Typography variant={isMobile ? "h5" : "h3"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '1rem', sm: '1.5rem', md: '2rem' } }}>
                         {harvestCoins.totalOrders}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.875rem' } }}>
                         Total Orders
                       </Typography>
                     </Paper>
                   </Grid>
                   
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, height: '100%' }}>
-                      <Typography variant="h3" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, color: 'secondary.main' }}>
+                  <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+                    <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2, height: '100%' }}>
+                      <Typography variant={isMobile ? "h5" : "h3"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '1rem', sm: '1.5rem', md: '2rem' }, color: 'secondary.main' }}>
                         {harvestCoins.harvestCoinsPercentage}%
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.875rem' } }}>
                         Earning Rate
                       </Typography>
                     </Paper>
@@ -516,12 +523,12 @@ const RewardsPage = () => {
                 
                 {/* Progress to Next Tier */}
                 {nextTier && (
-                  <Box sx={{ mt: 4 }}>
+                  <Box sx={{ mt: { xs: 2, sm: 3, md: 4 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Progress to {nextTier.name} Tier
                       </Typography>
-                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         {progressToNextTier.toFixed(0)}% Complete
                       </Typography>
                     </Box>
@@ -529,31 +536,31 @@ const RewardsPage = () => {
                       variant="determinate" 
                       value={progressToNextTier} 
                       sx={{ 
-                        height: 12, 
-                        borderRadius: 6,
+                        height: isMobile ? 8 : 12, 
+                        borderRadius: isMobile ? 4 : 6,
                         bgcolor: alpha(theme.palette.divider, 0.3),
                         '& .MuiLinearProgress-bar': {
                           bgcolor: theme.palette.secondary.main
                         }
                       }} 
                     />
-                    <Box sx={{ mt: 2 }}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2 }}>
-                            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main' }}>
+                    <Box sx={{ mt: { xs: 1, sm: 2 } }}>
+                      <Grid container spacing={isMobile ? 1 : 2}>
+                        <Grid size={{ xs: 6 }}>
+                          <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2 }}>
+                            <Typography variant={isMobile ? "body1" : "h6"} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main', fontSize: { xs: '0.8rem', sm: '1rem', md: '1.25rem' } }}>
                               ₹{harvestCoins.totalSpent.toFixed(0)}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem' } }}>
                               Spent of ₹{nextTier.minSpent.toLocaleString()}
                             </Typography>
                             <LinearProgress 
                               variant="determinate" 
                               value={Math.min(100, (harvestCoins.totalSpent / nextTier.minSpent) * 100)} 
                               sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                mt: 1,
+                                height: isMobile ? 4 : 6, 
+                                borderRadius: isMobile ? 2 : 3,
+                                mt: 0.5,
                                 bgcolor: alpha(theme.palette.divider, 0.3),
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor: theme.palette.primary.main
@@ -562,21 +569,21 @@ const RewardsPage = () => {
                             />
                           </Paper>
                         </Grid>
-                        <Grid item xs={6}>
-                          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2 }}>
-                            <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main' }}>
+                        <Grid size={{ xs: 6 }}>
+                          <Paper sx={{ p: isMobile ? 1 : 2, textAlign: 'center', borderRadius: isMobile ? 1 : 2 }}>
+                            <Typography variant={isMobile ? "body1" : "h6"} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 600, color: 'secondary.main', fontSize: { xs: '0.8rem', sm: '1rem', md: '1.25rem' } }}>
                               {harvestCoins.totalOrders}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.6rem', sm: '0.75rem' } }}>
                               Orders of {nextTier.minOrders}
                             </Typography>
                             <LinearProgress 
                               variant="determinate" 
                               value={Math.min(100, (harvestCoins.totalOrders / nextTier.minOrders) * 100)} 
                               sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                mt: 1,
+                                height: isMobile ? 4 : 6, 
+                                borderRadius: isMobile ? 2 : 3,
+                                mt: 0.5,
                                 bgcolor: alpha(theme.palette.divider, 0.3),
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor: theme.palette.primary.main
@@ -587,14 +594,15 @@ const RewardsPage = () => {
                         </Grid>
                       </Grid>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: { xs: 1, sm: 2 } }}>
                       <Chip 
                         label={currentTier.name} 
                         sx={{ 
                           bgcolor: currentTier.color, 
                           color: currentTier.name === 'Gold' ? 'black' : 'white',
                           fontWeight: 'bold',
-                          height: 24
+                          height: isMobile ? 20 : 24,
+                          fontSize: isMobile ? '0.6rem' : '0.75rem'
                         }} 
                       />
                       <Chip 
@@ -603,7 +611,8 @@ const RewardsPage = () => {
                           bgcolor: nextTier.color, 
                           color: nextTier.name === 'Gold' ? 'black' : 'white',
                           fontWeight: 'bold',
-                          height: 24
+                          height: isMobile ? 20 : 24,
+                          fontSize: isMobile ? '0.6rem' : '0.75rem'
                         }} 
                       />
                     </Box>
@@ -614,25 +623,25 @@ const RewardsPage = () => {
           </Box>
         )}
 
-        <Divider sx={{ my: { xs: 4, md: 6 } }} />
+        <Divider sx={{ my: { xs: 2, sm: 3, md: 4, lg: 6 } }} />
 
         {/* How It Works */}
-        <Box sx={{ mb: { xs: 6, md: 8 } }}>
+        <Box sx={{ mb: { xs: 4, sm: 5, md: 6, lg: 8 } }}>
           <Typography 
-            variant="h2" 
+            variant={isMobile ? "h5" : isTablet ? "h4" : "h2"} 
             sx={{ 
               fontWeight: 800, 
-              mb: { xs: 4, md: 6 }, 
+              mb: { xs: 2, sm: 3, md: 4, lg: 6 }, 
               fontFamily: theme.typography.fontFamily,
               textAlign: 'center',
               color: theme.palette.text.primary,
-              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
+              fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.25rem', lg: '2.75rem' }
             }}
           >
             How Harvest Coins Work
           </Typography>
           
-          <Grid container spacing={{ xs: 3, md: 4 }}>
+          <Grid container spacing={{ xs: 1, sm: 2, md: 3, lg: 4 }}>
             {howItWorksSteps.map((step, index) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
                 <Card sx={{ 
@@ -640,48 +649,48 @@ const RewardsPage = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   textAlign: 'center',
-                  borderRadius: { xs: 2, md: 3 },
+                  borderRadius: { xs: 1, sm: 2, md: 3 },
                   boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.08)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     transform: 'translateY(-5px)',
                     boxShadow: `0 6px 20px ${alpha(theme.palette.common.black, 0.15)}`
                   },
-                  p: { xs: 2, sm: 3 },
+                  p: { xs: 1, sm: 2, md: 3 },
                   border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
                 }}>
                   <Box sx={{ 
-                    width: { xs: 60, sm: 70 }, 
-                    height: { xs: 60, sm: 70 }, 
+                    width: { xs: 40, sm: 50, md: 60, lg: 70 }, 
+                    height: { xs: 40, sm: 50, md: 60, lg: 70 }, 
                     borderRadius: '50%', 
                     bgcolor: alpha(theme.palette.secondary.main, 0.1),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mx: 'auto',
-                    mb: { xs: 2, sm: 3 }
+                    mb: { xs: 1, sm: 2, md: 3 }
                   }}>
                     {step.icon}
                   </Box>
                   <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 0, '&:last-child': { pb: 0 } }}>
                     <Typography 
-                      variant="h5" 
+                      variant={isMobile ? "body1" : "h5"} 
                       sx={{ 
                         fontWeight: 'bold', 
-                        mb: 2, 
+                        mb: { xs: 1, sm: 2 }, 
                         fontFamily: theme.typography.fontFamily,
                         color: 'secondary.main',
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem', lg: '1.25rem' }
                       }}
                     >
                       {step.title}
                     </Typography>
                     <Typography 
-                      variant="body1" 
+                      variant="body2" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily, 
                         color: 'text.secondary',
-                        fontSize: { xs: '0.85rem', sm: '0.95rem' }
+                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.85rem', lg: '0.95rem' }
                       }}
                     >
                       {step.description}
@@ -693,48 +702,48 @@ const RewardsPage = () => {
           </Grid>
         </Box>
 
-        <Divider sx={{ my: { xs: 4, md: 6 } }} />
+        <Divider sx={{ my: { xs: 2, sm: 3, md: 4, lg: 6 } }} />
 
         {/* Membership Tiers */}
-        <Box sx={{ mb: { xs: 6, md: 8 } }}>
+        <Box sx={{ mb: { xs: 4, sm: 5, md: 6, lg: 8 } }}>
           <Typography 
-            variant="h2" 
+            variant={isMobile ? "h5" : isTablet ? "h4" : "h2"} 
             sx={{ 
               fontWeight: 800, 
-              mb: { xs: 3, sm: 4 }, 
+              mb: { xs: 2, sm: 3, md: 4 }, 
               fontFamily: theme.typography.fontFamily,
               textAlign: 'center',
               color: theme.palette.text.primary,
-              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
+              fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.25rem', lg: '2.75rem' }
             }}
           >
             Membership Tiers
           </Typography>
           <Typography 
-            variant="h6" 
+            variant={isMobile ? "body2" : "h6"} 
             color="text.secondary" 
             sx={{ 
-              mb: { xs: 4, md: 6 }, 
+              mb: { xs: 2, sm: 3, md: 4, lg: 6 }, 
               fontFamily: theme.typography.fontFamily, 
               textAlign: 'center',
               maxWidth: '600px', 
               mx: 'auto',
-              fontSize: { xs: '0.95rem', sm: '1.1rem' }
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem', lg: '1.1rem' }
             }}
           >
             Unlock more benefits as you earn more Harvest Coins
           </Typography>
           
-          <Grid container spacing={{ xs: 2, md: 3 }} justifyContent="center">
+          <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} justifyContent="center">
             {tiers.map((tier, index) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                 <Card 
                   sx={{ 
                     height: '100%', 
                     textAlign: 'center',
-                    borderRadius: { xs: 2, md: 3 },
+                    borderRadius: { xs: 1, sm: 2, md: 3 },
                     boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.1)}`,
-                    p: { xs: 2, sm: 3 },
+                    p: { xs: 1, sm: 2, md: 3 },
                     border: `2px solid ${tier.color}`,
                     position: 'relative',
                     overflow: 'hidden',
@@ -752,64 +761,66 @@ const RewardsPage = () => {
                   {currentTier.name === tier.name && (
                     <Box sx={{ 
                       position: 'absolute', 
-                      top: 8, 
-                      right: 8, 
+                      top: 4, 
+                      right: 4, 
                       bgcolor: theme.palette.secondary.main, 
                       color: 'white',
-                      px: 1, 
-                      py: 0.5, 
-                      fontSize: '0.7rem', 
+                      px: 0.5, 
+                      py: 0.25, 
+                      fontSize: isMobile ? '0.5rem' : '0.7rem', 
                       fontWeight: 'bold',
-                      borderRadius: 1
+                      borderRadius: 0.5
                     }}>
                       YOUR TIER
                     </Box>
                   )}
                   
                   <Box sx={{ 
-                    width: { xs: 50, sm: 60 }, 
-                    height: { xs: 50, sm: 60 }, 
+                    width: { xs: 30, sm: 40, md: 50, lg: 60 }, 
+                    height: { xs: 30, sm: 40, md: 50, lg: 60 }, 
                     borderRadius: '50%', 
                     bgcolor: alpha(tier.color, 0.2),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mx: 'auto',
-                    mb: 2,
+                    mb: 1,
                     color: tier.color
                   }}>
                     {tier.icon}
                   </Box>
                   
                   <Typography 
-                    variant="h4" 
+                    variant={isMobile ? "h6" : "h4"} 
                     sx={{ 
                       fontWeight: 'bold', 
                       mb: 1, 
                       fontFamily: theme.typography.fontFamily,
-                      color: tier.color
+                      color: tier.color,
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem', lg: '2rem' }
                     }}
                   >
                     {tier.name}
                   </Typography>
                   
                   <Typography 
-                    variant="h6" 
+                    variant={isMobile ? "body2" : "h6"} 
                     sx={{ 
                       fontWeight: 'bold', 
-                      mb: 2, 
+                      mb: { xs: 1, sm: 2 }, 
                       fontFamily: theme.typography.fontFamily,
-                      color: 'text.primary'
+                      color: 'text.primary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.25rem' }
                     }}
                   >
                     Requirements
                   </Typography>
                   
-                  <List sx={{ textAlign: 'left', mb: 2, px: 1 }}>
-                    <ListItem sx={{ py: 0.5, px: 0 }}>
-                      <ListItemIcon sx={{ minWidth: 28 }}>
+                  <List sx={{ textAlign: 'left', mb: 1, px: 0.5 }}>
+                    <ListItem sx={{ py: 0.25, px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: isMobile ? 16 : 28 }}>
                         <CheckCircleIcon sx={{ 
-                          fontSize: 16, 
+                          fontSize: isMobile ? 12 : 16, 
                           color: tier.color 
                         }} />
                       </ListItemIcon>
@@ -817,15 +828,15 @@ const RewardsPage = () => {
                         primary={`₹${tier.minSpent.toLocaleString()}+ spent`}
                         primaryTypographyProps={{ 
                           fontFamily: theme.typography.fontFamily,
-                          fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                          fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.75rem', lg: '0.85rem' },
                           color: 'text.secondary'
                         }}
                       />
                     </ListItem>
-                    <ListItem sx={{ py: 0.5, px: 0 }}>
-                      <ListItemIcon sx={{ minWidth: 28 }}>
+                    <ListItem sx={{ py: 0.25, px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: isMobile ? 16 : 28 }}>
                         <CheckCircleIcon sx={{ 
-                          fontSize: 16, 
+                          fontSize: isMobile ? 12 : 16, 
                           color: tier.color 
                         }} />
                       </ListItemIcon>
@@ -833,7 +844,7 @@ const RewardsPage = () => {
                         primary={`${tier.minOrders}+ orders`}
                         primaryTypographyProps={{ 
                           fontFamily: theme.typography.fontFamily,
-                          fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                          fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.75rem', lg: '0.85rem' },
                           color: 'text.secondary'
                         }}
                       />
@@ -841,23 +852,24 @@ const RewardsPage = () => {
                   </List>
                   
                   <Typography 
-                    variant="h6" 
+                    variant={isMobile ? "body2" : "h6"} 
                     sx={{ 
                       fontWeight: 'bold', 
-                      mb: 2, 
+                      mb: { xs: 1, sm: 2 }, 
                       fontFamily: theme.typography.fontFamily,
-                      color: 'text.primary'
+                      color: 'text.primary',
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.25rem' }
                     }}
                   >
                     Benefits
                   </Typography>
                   
-                  <List sx={{ textAlign: 'left', mb: 2, px: 1 }}>
+                  <List sx={{ textAlign: 'left', mb: 1, px: 0.5 }}>
                     {tier.benefits.map((benefit, idx) => (
-                      <ListItem key={idx} sx={{ py: 0.5, px: 0 }}>
-                        <ListItemIcon sx={{ minWidth: 28 }}>
+                      <ListItem key={idx} sx={{ py: 0.25, px: 0 }}>
+                        <ListItemIcon sx={{ minWidth: isMobile ? 16 : 28 }}>
                           <CheckCircleIcon sx={{ 
-                            fontSize: 16, 
+                            fontSize: isMobile ? 12 : 16, 
                             color: tier.color 
                           }} />
                         </ListItemIcon>
@@ -865,7 +877,7 @@ const RewardsPage = () => {
                           primary={benefit}
                           primaryTypographyProps={{ 
                             fontFamily: theme.typography.fontFamily,
-                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.75rem', lg: '0.85rem' },
                             color: 'text.secondary'
                           }}
                         />
@@ -881,8 +893,8 @@ const RewardsPage = () => {
         {/* CTA Section */}
         <Box sx={{ 
           textAlign: 'center', 
-          py: { xs: 6, md: 10 },
-          borderRadius: { xs: 2, md: 4 },
+          py: { xs: 3, sm: 4, md: 6, lg: 10 },
+          borderRadius: { xs: 2, sm: 3, md: 4 },
           background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
           position: 'relative',
           overflow: 'hidden',
@@ -891,56 +903,56 @@ const RewardsPage = () => {
         }}>
           <Box sx={{ 
             position: 'absolute', 
-            top: -30, 
-            left: -30, 
-            width: 100, 
-            height: 100, 
+            top: -20, 
+            left: -20, 
+            width: isMobile ? 60 : 100, 
+            height: isMobile ? 60 : 100, 
             borderRadius: '50%', 
             bgcolor: alpha(theme.palette.secondary.main, 0.1),
             opacity: 0.5
           }} />
           <Box sx={{ 
             position: 'absolute', 
-            bottom: -50, 
-            right: -50, 
-            width: 200, 
-            height: 200, 
+            bottom: isMobile ? -30 : -50, 
+            right: isMobile ? -30 : -50, 
+            width: isMobile ? 120 : 200, 
+            height: isMobile ? 120 : 200, 
             borderRadius: '50%', 
             bgcolor: alpha(theme.palette.primary.main, 0.1),
             opacity: 0.5
           }} />
           
-          <Box sx={{ position: 'relative', zIndex: 2, px: { xs: 2, sm: 4 } }}>
-            <StarIcon sx={{ fontSize: { xs: 60, sm: 80 }, color: 'secondary.main', mb: { xs: 3, sm: 4 } }} />
+          <Box sx={{ position: 'relative', zIndex: 2, px: { xs: 1, sm: 2, md: 4 } }}>
+            <StarIcon sx={{ fontSize: { xs: 40, sm: 60, md: 80 }, color: 'secondary.main', mb: { xs: 2, sm: 3, md: 4 } }} />
             <Typography 
-              variant="h2" 
+              variant={isMobile ? "h5" : isTablet ? "h4" : "h2"} 
               sx={{ 
                 fontWeight: 800, 
-                mb: { xs: 3, sm: 4 }, 
+                mb: { xs: 2, sm: 3, md: 4 }, 
                 fontFamily: theme.typography.fontFamily,
                 color: theme.palette.text.primary,
-                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
+                fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.25rem', lg: '2.75rem' }
               }}
             >
               Ready to Start Earning?
             </Typography>
             <Typography 
-              variant="h5" 
+              variant={isMobile ? "body1" : "h5"} 
               color="text.secondary" 
               sx={{ 
-                mb: { xs: 4, sm: 5 }, 
+                mb: { xs: 2, sm: 3, md: 4, lg: 5 }, 
                 fontFamily: theme.typography.fontFamily, 
                 maxWidth: '700px', 
                 mx: 'auto',
-                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem', lg: '1.25rem' }
               }}
             >
               Join thousands of satisfied customers who are already enjoying the benefits of Harvest Coins
             </Typography>
             
             <Stack 
-              direction={{ xs: 'column', sm: 'row' }} 
-              spacing={{ xs: 2, sm: 3 }} 
+              direction={{ xs: 'row', sm: 'row' }} 
+              spacing={{ xs: 1, sm: 2, md: 3 }} 
               justifyContent="center" 
               alignItems="center"
             >
@@ -948,49 +960,51 @@ const RewardsPage = () => {
                 component={RouterLink}
                 to="/CropCorner"
                 variant="contained"
-                size="large"
+                size={isMobile ? "small" : "medium"}
                 endIcon={<ShoppingCartIcon />}
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   fontWeight: 'bold', 
                   borderRadius: '50px', 
-                  px: { xs: 4, sm: 6, md: 7 },
-                  py: { xs: 1.5, sm: 2, md: 2.5 },
-                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                  px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                  py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                  fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                   boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': { 
                     boxShadow: `0 8px 30px ${alpha(theme.palette.secondary.main, 0.6)}`,
                     transform: 'scale(1.05)',
                     backgroundColor: theme.palette.secondary.dark
-                  }
+                  },
+                  width: { xs: '48%', sm: 'auto' }
                 }}
               >
-                Shop Now & Earn Coins
+                {isMobile ? 'Shop & Earn' : 'Shop Now & Earn Coins'}
               </Button>
               
               <Button
                 component={RouterLink}
                 to="/faq"
                 variant="outlined"
-                size="large"
+                size={isMobile ? "small" : "medium"}
                 startIcon={<AccessTimeIcon />}
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   fontWeight: 'bold', 
                   borderRadius: '50px', 
-                  px: { xs: 4, sm: 6, md: 7 },
-                  py: { xs: 1.5, sm: 2, md: 2.5 },
-                  fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                  px: { xs: 1.5, sm: 4, md: 6, lg: 7 },
+                  py: { xs: 0.8, sm: 1.5, md: 2, lg: 2.5 },
+                  fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem', lg: '1.2rem' },
                   borderColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.main,
                   '&:hover': { 
                     backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                     borderColor: theme.palette.secondary.dark
-                  }
+                  },
+                  width: { xs: '48%', sm: 'auto' }
                 }}
               >
-                Learn More
+                {isMobile ? 'Learn' : 'Learn More'}
               </Button>
             </Stack>
           </Box>

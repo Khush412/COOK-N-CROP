@@ -12,6 +12,7 @@ import {
   Tooltip,
   Stack,
   alpha,
+  useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Link as RouterLink, useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ const PostCard = ({
   variant = "card", // New prop for layout variant ('card' or 'list')
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const [isFeatured, setIsFeatured] = useState(post.isFeatured);
   const [isPinned, setIsPinned] = useState(post.isPinned);
@@ -234,19 +236,19 @@ const PostCard = ({
         {/* Main Content Area */}
         <Box sx={{ 
           flex: '1 1 auto',
-          p: displayMode === 'compact' ? 1.5 : 2.5, 
-          pb: displayMode === 'compact' ? 1.5 : 1.5,
+          p: displayMode === 'compact' ? (isMobile ? 1 : 1.5) : (isMobile ? 2 : 2.5), 
+          pb: displayMode === 'compact' ? (isMobile ? 1 : 1.5) : (isMobile ? 1.5 : 1.5),
           display: 'flex',
           flexDirection: 'column',
           minWidth: 0,
           justifyContent: 'flex-start',
         }}>
           {/* Header with author info */}
-          <Box sx={{ mb: displayMode === 'compact' ? 1 : 1.5 }}>
+          <Box sx={{ mb: displayMode === 'compact' ? (isMobile ? 0.5 : 1) : (isMobile ? 1 : 1.5) }}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
               <Avatar 
                 src={post.user.profilePic ? (post.user.profilePic.startsWith('http') ? post.user.profilePic : `${process.env.REACT_APP_API_URL}${post.user.profilePic}`) : '/images/default-profile.png'}
-                sx={{ width: 24, height: 24, fontSize: 12, boxShadow: 1 }}
+                sx={{ width: isMobile ? 20 : 24, height: isMobile ? 20 : 24, fontSize: isMobile ? 10 : 12, boxShadow: 1 }}
                 component={RouterLink}
                 to={`/user/${post.user.username}`}
               >
@@ -264,7 +266,7 @@ const PostCard = ({
                       textDecoration: "none",
                       "&:hover": { textDecoration: "underline" },
                       fontFamily: theme.typography.fontFamily,
-                      fontSize: '0.875rem',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -287,13 +289,14 @@ const PostCard = ({
                           textDecoration: 'none',
                           '&:hover': { textDecoration: 'underline' },
                           fontFamily: theme.typography.fontFamily,
+                          fontSize: isMobile ? '0.65rem' : '0.75rem',
                         }}
                       >
                         g/{post.group.name}
                       </Typography>
                     </>
                   )}
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}>
                     • {formatDate(post.createdAt)}
                   </Typography>
                 </Stack>
@@ -302,7 +305,7 @@ const PostCard = ({
           </Box>
 
           {/* Title */}
-          <Box sx={{ mb: displayMode === 'compact' ? 1 : 1.5 }}>
+          <Box sx={{ mb: displayMode === 'compact' ? (isMobile ? 0.5 : 1) : (isMobile ? 1 : 1.5) }}>
             <Stack
               direction="row"
               spacing={1}
@@ -312,7 +315,7 @@ const PostCard = ({
               {post.isRecipe && (
                 <MenuBookIcon
                   color="action"
-                  sx={{ fontSize: displayMode === 'compact' ? 16 : 20, verticalAlign: "middle" }}
+                  sx={{ fontSize: displayMode === 'compact' ? (isMobile ? 14 : 16) : (isMobile ? 18 : 20), verticalAlign: "middle" }}
                 />
               )}
               <Typography
@@ -320,7 +323,7 @@ const PostCard = ({
                 sx={{
                   fontWeight: 800,
                   color: theme.palette.text.primary,
-                  fontSize: displayMode === 'compact' ? { xs: '1rem', sm: '1.1rem' } : { xs: '1.25rem', sm: '1.4rem' },
+                  fontSize: displayMode === 'compact' ? { xs: isMobile ? '0.9rem' : '1rem', sm: '1.1rem' } : { xs: isMobile ? '1.1rem' : '1.25rem', sm: '1.4rem' },
                   flexGrow: 1,
                   minWidth: 0,
                   fontFamily: theme.typography.fontFamily,
@@ -337,9 +340,9 @@ const PostCard = ({
                       borderRadius: 1,
                       fontFamily: theme.typography.fontFamily,
                       bgcolor: alpha(theme.palette.secondary.main, 0.15),
-                      height: displayMode === 'compact' ? 20 : 24,
+                      height: displayMode === 'compact' ? (isMobile ? 18 : 20) : (isMobile ? 22 : 24),
                       '& .MuiChip-label': {
-                        fontSize: displayMode === 'compact' ? '0.65rem' : '0.75rem',
+                        fontSize: displayMode === 'compact' ? (isMobile ? '0.55rem' : '0.65rem') : (isMobile ? '0.65rem' : '0.75rem'),
                         fontWeight: 700,
                         px: 0.5,
                       }
@@ -353,8 +356,8 @@ const PostCard = ({
 
           {/* Actions for compact view - moved all features from three-dot button */}
           {displayMode === 'compact' && (
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-              <Stack direction="row" spacing={0.5} alignItems="center">
+            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+              <Stack direction="row" spacing={0.25} alignItems="center">
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -371,19 +374,20 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     },
-                    width: 32,
-                    height: 32,
-                    p: 0.5,
+                    // Smaller buttons on mobile
+                    width: isMobile ? 24 : { xs: 28, sm: 32 },
+                    height: isMobile ? 24 : { xs: 28, sm: 32 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <ThumbUpIcon sx={{ fontSize: 16 }} />
+                  <ThumbUpIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />
                 </IconButton>
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: isMobile ? '0.6rem' : { xs: '0.7rem', sm: '0.8rem' }, fontFamily: theme.typography.fontFamily }}>
                   {post.upvoteCount}
                 </Typography>
               </Stack>
               
-              <Stack direction="row" spacing={0.5} alignItems="center">
+              <Stack direction="row" spacing={0.25} alignItems="center">
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -397,14 +401,15 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     },
-                    width: 32,
-                    height: 32,
-                    p: 0.5,
+                    // Smaller buttons on mobile
+                    width: isMobile ? 24 : { xs: 28, sm: 32 },
+                    height: isMobile ? 24 : { xs: 28, sm: 32 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                  <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />
                 </IconButton>
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.8rem', fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: isMobile ? '0.6rem' : { xs: '0.7rem', sm: '0.8rem' }, fontFamily: theme.typography.fontFamily }}>
                   {post.commentCount}
                 </Typography>
               </Stack>
@@ -424,12 +429,13 @@ const PostCard = ({
                   "&:hover": {
                     bgcolor: alpha(theme.palette.secondary.main, 0.1),
                   },
-                  width: 32,
-                  height: 32,
-                  p: 0.5,
+                  // Smaller buttons on mobile
+                  width: isMobile ? 24 : { xs: 28, sm: 32 },
+                  height: isMobile ? 24 : { xs: 28, sm: 32 },
+                  p: isMobile ? 0.25 : 0.5,
                 }}
               >
-                {isSaved ? <BookmarkIcon color="secondary" sx={{ fontSize: 16 }} /> : <BookmarkBorderIcon sx={{ fontSize: 16 }} />}
+                {isSaved ? <BookmarkIcon color="secondary" sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} /> : <BookmarkBorderIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />}
               </IconButton>
               
               {/* Share button for compact view */}
@@ -446,12 +452,13 @@ const PostCard = ({
                   "&:hover": {
                     bgcolor: alpha(theme.palette.primary.main, 0.1),
                   },
-                  width: 32,
-                  height: 32,
-                  p: 0.5,
+                  // Smaller buttons on mobile
+                  width: isMobile ? 24 : { xs: 28, sm: 32 },
+                  height: isMobile ? 24 : { xs: 28, sm: 32 },
+                  p: isMobile ? 0.25 : 0.5,
                 }}
               >
-                <ShareIcon sx={{ fontSize: 16 }} />
+                <ShareIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />
               </IconButton>
               
               {/* View button */}
@@ -464,11 +471,11 @@ const PostCard = ({
                   window.location.href = `/post/${post._id}`;
                 }}
                 sx={{
-                  height: 24,
+                  height: isMobile ? 18 : { xs: 20, sm: 24 },
                   minWidth: 'auto',
-                  fontSize: '0.7rem',
-                  px: 1,
-                  py: 0.2,
+                  fontSize: isMobile ? '0.55rem' : { xs: '0.65rem', sm: '0.7rem' },
+                  px: isMobile ? 0.5 : 1,
+                  py: isMobile ? 0.1 : 0.2,
                   borderRadius: 1,
                   textTransform: 'none',
                   fontWeight: 600,
@@ -496,12 +503,13 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.secondary.main, 0.1),
                     },
-                    width: 32,
-                    height: 32,
-                    p: 0.5,
+                    // Smaller buttons on mobile
+                    width: isMobile ? 24 : { xs: 28, sm: 32 },
+                    height: isMobile ? 24 : { xs: 28, sm: 32 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  {isFeatured ? <StarIcon sx={{ fontSize: 16 }} /> : <StarBorderIcon sx={{ fontSize: 16 }} />}
+                  {isFeatured ? <StarIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} /> : <StarBorderIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />}
                 </IconButton>
               )}
               
@@ -520,12 +528,13 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     },
-                    width: 32,
-                    height: 32,
-                    p: 0.5,
+                    // Smaller buttons on mobile
+                    width: isMobile ? 24 : { xs: 28, sm: 32 },
+                    height: isMobile ? 24 : { xs: 28, sm: 32 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <PushPinIcon sx={{ fontSize: 16 }} />
+                  <PushPinIcon sx={{ fontSize: isMobile ? 12 : { xs: 14, sm: 16 } }} />
                 </IconButton>
               )}
             </Stack>
@@ -536,7 +545,7 @@ const PostCard = ({
         {displayMode === 'compact' && (
           <Box
             sx={{
-              width: 130,
+              width: isMobile ? 100 : 130,
               minHeight: '100%',
               maxHeight: '100%',
               borderRadius: 1,
@@ -569,7 +578,7 @@ const PostCard = ({
                   justifyContent: 'center',
                   bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.02)',
                 }}>
-                  <PlayArrowIcon sx={{ fontSize: 24, color: 'text.secondary' }} />
+                  <PlayArrowIcon sx={{ fontSize: isMobile ? 20 : 24, color: 'text.secondary' }} />
                 </Box>
               )
             ) : (
@@ -581,7 +590,7 @@ const PostCard = ({
                 justifyContent: 'center',
                 bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.02)',
               }}>
-                <ImageIcon sx={{ fontSize: 24, color: 'text.disabled' }} />
+                <ImageIcon sx={{ fontSize: isMobile ? 20 : 24, color: 'text.disabled' }} />
               </Box>
             )}
           </Box>
@@ -594,13 +603,13 @@ const PostCard = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              maxHeight: { xs: 200, sm: 250 },
-              minHeight: { xs: 200, sm: 250 },
+              maxHeight: isMobile ? 150 : { xs: 200, sm: 250 },
+              minHeight: isMobile ? 150 : { xs: 200, sm: 250 },
               overflow: 'hidden',
               bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.02)',
-              mx: 2.5,
-              mb: 2,
-              borderRadius: 3,
+              mx: isMobile ? 2 : 2.5,
+              mb: isMobile ? 1.5 : 2,
+              borderRadius: isMobile ? 2 : 3,
               boxShadow: 1
             }}
           >
@@ -609,12 +618,12 @@ const PostCard = ({
                 <img 
                   src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
                   alt={post.title} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: 250, maxWidth: '100%' }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: isMobile ? 150 : 250, maxWidth: '100%' }} 
                 />
               ) : (
                 <video 
                   src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: 250, maxWidth: '100%' }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: isMobile ? 150 : 250, maxWidth: '100%' }} 
                   controls 
                 />
               )
@@ -623,7 +632,7 @@ const PostCard = ({
               <Box sx={{ 
                 width: '100%', 
                 height: '100%', 
-                p: 2,
+                p: isMobile ? 1 : 2,
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -640,11 +649,12 @@ const PostCard = ({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     display: '-webkit-box',
-                    WebkitLineClamp: 8,
+                    WebkitLineClamp: isMobile ? 4 : 8,
                     WebkitBoxOrient: 'vertical',
+                    fontSize: isMobile ? '0.75rem' : '0.875rem',
                   }}
                 >
-                  {post.content.replace(/<[^>]*>/g, '').substring(0, 400)}...
+                  {post.content.replace(/<[^>]*>/g, '').substring(0, isMobile ? 200 : 400)}...
                 </Typography>
               </Box>
             )}
@@ -655,7 +665,7 @@ const PostCard = ({
         {displayMode === 'compact' && !post.media && (
           <Box
             sx={{
-              width: 130,
+              width: isMobile ? 100 : 130,
               minHeight: '100%',
               maxHeight: '100%',
               borderRadius: 1,
@@ -671,20 +681,20 @@ const PostCard = ({
               justifyContent: 'center',
             }}
           >
-            <ImageIcon sx={{ fontSize: 24, color: 'text.disabled' }} />
+            <ImageIcon sx={{ fontSize: isMobile ? 20 : 24, color: 'text.disabled' }} />
           </Box>
         )}
 
         {/* Recipe info and tags */}
         {displayMode !== 'compact' && (
-          <Box sx={{ px: 2.5, pb: 1.5 }}>
+          <Box sx={{ px: isMobile ? 2 : 2.5, pb: isMobile ? 1 : 1.5 }}>
             {/* Recipe info */}
             {post.isRecipe && post.recipeDetails && (
-              <Stack direction="row" spacing={3} sx={{ mb: 2 }}>
+              <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? 1 : 3} sx={{ mb: isMobile ? 1 : 2 }}>
                 {(post.recipeDetails.prepTime || post.recipeDetails.cookTime) && (
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <AccessTimeIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                    <AccessTimeIcon sx={{ fontSize: isMobile ? 16 : 20, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
                       {post.recipeDetails.prepTime ? `${post.recipeDetails.prepTime}m prep` : ''}
                       {post.recipeDetails.prepTime && post.recipeDetails.cookTime ? ', ' : ''}
                       {post.recipeDetails.cookTime ? `${post.recipeDetails.cookTime}m cook` : ''}
@@ -693,8 +703,8 @@ const PostCard = ({
                 )}
                 {post.recipeDetails.servings && (
                   <Stack direction="row" alignItems="center" spacing={1}>
-                    <PeopleIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                    <PeopleIcon sx={{ fontSize: isMobile ? 16 : 20, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
                       {post.recipeDetails.servings} servings
                     </Typography>
                   </Stack>
@@ -704,16 +714,16 @@ const PostCard = ({
             
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
-              <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
-                {post.tags.slice(0, 5).map((tag, index) => (
+              <Stack direction="row" spacing={1} sx={{ mb: isMobile ? 1 : 2, flexWrap: 'wrap' }}>
+                {post.tags.slice(0, isMobile ? 3 : 5).map((tag, index) => (
                   <Chip 
                     key={index} 
                     label={tag} 
                     size="small" 
                     variant="outlined" 
                     sx={{ 
-                      height: 28, 
-                      fontSize: 12,
+                      height: isMobile ? 24 : 28, 
+                      fontSize: isMobile ? 10 : 12,
                       borderRadius: '14px',
                       borderColor: alpha(theme.palette.primary.main, 0.4),
                       color: theme.palette.primary.main,
@@ -736,13 +746,13 @@ const PostCard = ({
               flexWrap: "wrap", 
               gap: 1, 
               fontFamily: theme.typography.fontFamily, 
-              p: 2, 
-              pt: 1.5, 
+              p: isMobile ? 1.5 : 2, 
+              pt: isMobile ? 1 : 1.5, 
               borderTop: `1px solid ${theme.palette.divider}`,
               width: '100%'
             }}
           >
-            <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Stack direction="row" alignItems="center" spacing={isMobile ? 1 : 1.5}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <IconButton
                   size="small"
@@ -760,19 +770,21 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     },
-                    width: 36,
-                    height: 36
+                    // Smaller buttons on mobile
+                    width: isMobile ? 30 : { xs: 32, sm: 36 },
+                    height: isMobile ? 30 : { xs: 32, sm: 36 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <ThumbUpIcon sx={{ fontSize: 18 }} />
+                  <ThumbUpIcon sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />
                 </IconButton>
-                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.75rem' : { xs: '0.875rem', sm: '1rem' } }}>
                   {post.upvoteCount}
                 </Typography>
               </Stack>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily }}>
+                <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: isMobile ? '0.75rem' : { xs: '0.875rem', sm: '1rem' }, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontFamily: theme.typography.fontFamily, fontSize: isMobile ? '0.75rem' : { xs: '0.875rem', sm: '1rem' } }}>
                   {post.commentCount}
                 </Typography>
               </Stack>
@@ -793,11 +805,13 @@ const PostCard = ({
                   "&:hover": {
                     bgcolor: alpha(theme.palette.secondary.main, 0.1),
                   },
-                  width: 36,
-                  height: 36
+                  // Smaller buttons on mobile
+                  width: isMobile ? 30 : { xs: 32, sm: 36 },
+                  height: isMobile ? 30 : { xs: 32, sm: 36 },
+                  p: isMobile ? 0.25 : 0.5,
                 }}
               >
-                {isSaved ? <BookmarkIcon color="secondary" sx={{ fontSize: 18 }} /> : <BookmarkBorderIcon sx={{ fontSize: 18 }} />}
+                {isSaved ? <BookmarkIcon color="secondary" sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} /> : <BookmarkBorderIcon sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />}
               </IconButton>
               {isAuthenticated && post.isRecipe && (
                 <IconButton
@@ -810,11 +824,13 @@ const PostCard = ({
                   aria-label="add to collection"
                   sx={{ 
                     "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.1) },
-                    width: 36,
-                    height: 36
+                    // Smaller buttons on mobile
+                    width: isMobile ? 30 : { xs: 32, sm: 36 },
+                    height: isMobile ? 30 : { xs: 32, sm: 36 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <CollectionsBookmarkIcon sx={{ fontSize: 18 }} />
+                  <CollectionsBookmarkIcon sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />
                 </IconButton>
               )}
               
@@ -833,11 +849,13 @@ const PostCard = ({
                     "&:hover": {
                       bgcolor: alpha(theme.palette.primary.main, 0.1),
                     },
-                    width: 36,
-                    height: 36
+                    // Smaller buttons on mobile
+                    width: isMobile ? 30 : { xs: 32, sm: 36 },
+                    height: isMobile ? 30 : { xs: 32, sm: 36 },
+                    p: isMobile ? 0.25 : 0.5,
                   }}
                 >
-                  <ShareIcon sx={{ fontSize: 18 }} />
+                  <ShareIcon sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />
                 </IconButton>
               </Tooltip>
               
@@ -849,16 +867,16 @@ const PostCard = ({
                 sx={{
                   fontWeight: 600,
                   textTransform: "none",
-                  fontSize: 13,
+                  fontSize: isMobile ? 11 : { xs: 12, sm: 13 },
                   borderRadius: 2,
-                  px: 1.5,
-                  py: 0.5,
+                  px: isMobile ? 1 : 1.5,
+                  py: isMobile ? 0.25 : 0.5,
                   minWidth: 'auto',
                   boxShadow: 2,
                   "&:hover": {
                     boxShadow: 3,
                   },
-                  height: 32,
+                  height: isMobile ? 24 : { xs: 28, sm: 32 },
                 }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -871,7 +889,7 @@ const PostCard = ({
                 <Tooltip title={isFeatured ? "Unfeature Post" : "Feature Post"}>
                   <IconButton
                     size="small"
-                    sx={{ ml: 0.5, width: 36, height: 36 }}
+                    sx={{ ml: 0.5, width: isMobile ? 30 : { xs: 32, sm: 36 }, height: isMobile ? 30 : { xs: 32, sm: 36 }, p: isMobile ? 0.25 : 0.5 }}
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -879,7 +897,7 @@ const PostCard = ({
                       if (res.success) setIsFeatured(res.isFeatured);
                     }}
                   >
-                    {isFeatured ? <StarIcon color="secondary" sx={{ fontSize: 18 }} /> : <StarBorderIcon sx={{ fontSize: 18 }} />}
+                    {isFeatured ? <StarIcon color="secondary" sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} /> : <StarBorderIcon sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />}
                   </IconButton>
                 </Tooltip>
               )}
@@ -887,7 +905,7 @@ const PostCard = ({
                 <Tooltip title={isPinned ? "Unpin Post" : "Pin Post"}>
                   <IconButton
                     size="small"
-                    sx={{ ml: 0.5, width: 36, height: 36 }}
+                    sx={{ ml: 0.5, width: isMobile ? 30 : { xs: 32, sm: 36 }, height: isMobile ? 30 : { xs: 32, sm: 36 }, p: isMobile ? 0.25 : 0.5 }}
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -895,7 +913,7 @@ const PostCard = ({
                       if (res.success) setIsPinned(res.isPinned);
                     }}
                   >
-                    <PushPinIcon color={isPinned ? "primary" : "action"} sx={{ fontSize: 18 }} />
+                    <PushPinIcon color={isPinned ? "primary" : "action"} sx={{ fontSize: isMobile ? 14 : { xs: 16, sm: 18 } }} />
                   </IconButton>
                 </Tooltip>
               )}

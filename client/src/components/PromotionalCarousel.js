@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const PromotionalCarousel = () => {
   const theme = useTheme();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef();
 
   const slides = [
     {
@@ -42,146 +43,158 @@ const PromotionalCarousel = () => {
     }
   ];
 
+  // Handle auto-rotation with progress bar
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000); // Change slide every 5 seconds
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Simple counter to track progress updates
+    let progressCounter = 0;
+    const totalUpdates = 100; // We want 100 updates to reach 100%
+    const updateInterval = 50; // Update every 50ms
+    
+    intervalRef.current = setInterval(() => {
+      progressCounter += 1;
+      setProgress((progressCounter / totalUpdates) * 100);
+      
+      if (progressCounter >= totalUpdates) {
+        // Move to next slide
+        setCurrentSlide(prevSlide => {
+          const nextSlide = (prevSlide + 1) % slides.length;
+          return nextSlide;
+        });
+        // Reset counter for next cycle
+        progressCounter = 0;
+      }
+    }, updateInterval);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [slides.length]);
 
   const handleDotClick = (index) => {
     setCurrentSlide(index);
+    setProgress(0);
   };
 
   return (
     <Box sx={{ 
       position: 'relative', 
-      height: '100%', // Changed to 100% to fill container
-      width: '100%', // Ensure full width
+      height: '100%',
+      width: '100%',
       overflow: 'hidden',
       borderRadius: 4,
-      mb: 0, // Removed margin bottom
-      boxShadow: 5, // Enhanced shadow for more depth
-      border: `2px solid ${theme.palette.secondary.main}` // Added border for more professional look
+      mb: 0,
+      boxShadow: 5,
+      border: `2px solid ${theme.palette.secondary.main}`
     }}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          {/* Background with enhanced gradient overlay for better text readability */}
-          <Box 
+      {/* Background with enhanced gradient overlay for better text readability */}
+      <Box 
+        sx={{ 
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 35%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0) 100%), url(${slides[currentSlide].image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }} 
+      />
+      
+      {/* Content with improved positioning and styling */}
+      <Box 
+        sx={{ 
+          position: 'relative',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          p: { xs: 4, md: 8 }
+        }}
+      >
+        <Box sx={{ 
+          maxWidth: { xs: '100%', md: '55%' },
+          color: 'white'
+        }}>
+          <Typography 
+            variant="h1"
+            component="h2"
             sx={{ 
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 35%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0) 100%), url(${slides[currentSlide].image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }} 
-          />
-          
-          {/* Content with improved positioning and styling */}
-          <Box 
-            sx={{ 
-              position: 'relative',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              p: { xs: 4, md: 8 } // Increased padding for better spacing
+              fontWeight: 800, 
+              mb: 1.5, 
+              fontFamily: theme.typography.fontFamily,
+              textShadow: '2px 2px 6px rgba(0,0,0,0.9)',
+              fontSize: { xs: '1.25rem', sm: '2rem', md: '3.5rem' }
             }}
           >
-            <Box sx={{ 
-              maxWidth: { xs: '100%', md: '55%' }, // Slightly increased content width
-              color: 'white'
-            }}>
-              <Typography 
-                variant="h1" // Increased heading size for more impact
-                component="h2"
-                sx={{ 
-                  fontWeight: 800, 
-                  mb: 1.5, 
-                  fontFamily: theme.typography.fontFamily,
-                  textShadow: '2px 2px 6px rgba(0,0,0,0.9)', // Enhanced text shadow
-                  fontSize: { xs: '1.25rem', sm: '2rem', md: '3.5rem' } // Further reduced font size for mobile
-                }}
-              >
-                {slides[currentSlide].title}
-              </Typography>
-              
-              <Typography 
-                variant="h4" // Increased subtitle size
-                sx={{ 
-                  fontWeight: 600, 
-                  mb: 1.5, // Further reduced margin for better spacing on mobile
-                  fontFamily: theme.typography.fontFamily,
-                  textShadow: '1px 1px 4px rgba(0,0,0,0.9)',
-                  color: theme.palette.secondary.main, // Added accent color
-                  fontSize: { xs: '1rem', sm: '1.25rem', md: '2rem' } // Further reduced font size for mobile
-                }}
-              >
-                {slides[currentSlide].subtitle}
-              </Typography>
-              
-              <Typography 
-                variant="h6" // Increased description size
-                sx={{ 
-                  mb: 2, // Further reduced margin for better spacing on mobile
-                  fontFamily: theme.typography.fontFamily,
-                  maxWidth: '650px', // Slightly increased max width
-                  textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
-                  lineHeight: 1.5, // Improved line height for readability
-                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.25rem' } // Further reduced font size for mobile
-                }}
-              >
-                {slides[currentSlide].description}
-              </Typography>
-              
-              <Button
-                component={RouterLink}
-                to={slides[currentSlide].ctaLink}
-                variant="contained"
-                size="medium" // Changed from large to medium
-                sx={{ 
-                  fontFamily: theme.typography.fontFamily, 
-                  fontWeight: 'bold', 
-                  borderRadius: '50px', 
-                  px: { xs: 2.5, sm: 3.5, md: 5 }, // Further reduced padding for mobile
-                  py: { xs: 1, sm: 1.5, md: 2 }, // Further reduced padding for mobile
-                  fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1.1rem' }, // Further reduced font size for mobile
-                  boxShadow: '0 6px 25px rgba(0,0,0,0.4)', // Enhanced shadow
-                  transition: 'all 0.3s ease',
-                  '&:hover': { 
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)', // Enhanced hover shadow
-                    transform: 'scale(1.05)',
-                    backgroundColor: theme.palette.secondary.dark // Darker hover effect
-                  }
-                }}
-              >
-                {slides[currentSlide].ctaText}
-              </Button>
-            </Box>
-          </Box>
-        </motion.div>
-      </AnimatePresence>
+            {slides[currentSlide].title}
+          </Typography>
+          
+          <Typography 
+            variant="h4"
+            sx={{ 
+              fontWeight: 600, 
+              mb: 1.5,
+              fontFamily: theme.typography.fontFamily,
+              textShadow: '1px 1px 4px rgba(0,0,0,0.9)',
+              color: theme.palette.secondary.main,
+              fontSize: { xs: '1rem', sm: '1.25rem', md: '2rem' }
+            }}
+          >
+            {slides[currentSlide].subtitle}
+          </Typography>
+          
+          <Typography 
+            variant="h6"
+            sx={{ 
+              mb: 2,
+              fontFamily: theme.typography.fontFamily,
+              maxWidth: '650px',
+              textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
+              lineHeight: 1.5,
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.25rem' }
+            }}
+          >
+            {slides[currentSlide].description}
+          </Typography>
+          
+          <Button
+            component={RouterLink}
+            to={slides[currentSlide].ctaLink}
+            variant="contained"
+            size="medium"
+            sx={{ 
+              fontFamily: theme.typography.fontFamily, 
+              fontWeight: 'bold', 
+              borderRadius: '50px', 
+              px: { xs: 2.5, sm: 3.5, md: 5 },
+              py: { xs: 1, sm: 1.5, md: 2 },
+              fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1.1rem' },
+              boxShadow: '0 6px 25px rgba(0,0,0,0.4)',
+              transition: 'all 0.3s ease',
+              '&:hover': { 
+                boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+                transform: 'scale(1.05)',
+                backgroundColor: theme.palette.secondary.dark
+              }
+            }}
+          >
+            {slides[currentSlide].ctaText}
+          </Button>
+        </Box>
+      </Box>
       
-      {/* Navigation dots with improved styling */}
+      {/* Animated line indicators like Flipkart */}
       <Box sx={{ 
         position: 'absolute', 
-        bottom: 30, // Moved dots higher for better positioning
+        bottom: 30, 
         left: '50%', 
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: 2, // Increased gap between dots
+        gap: 1,
         zIndex: 10
       }}>
         {slides.map((_, index) => (
@@ -189,20 +202,100 @@ const PromotionalCarousel = () => {
             key={index}
             onClick={() => handleDotClick(index)}
             sx={{
-              width: 16, // Larger dots
-              height: 16, // Larger dots
-              borderRadius: '50%',
-              bgcolor: index === currentSlide ? theme.palette.secondary.main : 'rgba(255,255,255,0.5)',
+              width: 24,
+              height: 3,
+              borderRadius: 1,
+              bgcolor: index === currentSlide ? 'white' : 'rgba(255,255,255,0.4)',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              border: index === currentSlide ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent', // Added border for active dot
+              position: 'relative',
+              overflow: 'hidden',
               '&:hover': {
-                bgcolor: index === currentSlide ? theme.palette.secondary.main : 'rgba(255,255,255,0.8)',
-                transform: 'scale(1.3)' // Larger hover effect
+                bgcolor: 'rgba(255,255,255,0.6)'
               }
             }}
-          />
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                height: '100%',
+                width: index === currentSlide ? `${progress}%` : '0%',
+                bgcolor: theme.palette.secondary.main,
+                left: 0,
+                top: 0,
+                transition: index === currentSlide ? 'width 0.05s linear' : 'none'
+              }}
+            />
+          </Box>
         ))}
+      </Box>
+      
+      {/* Navigation arrows */}
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: '50%', 
+          left: 20, 
+          transform: 'translateY(-50%)',
+          zIndex: 10,
+          display: { xs: 'none', sm: 'block' }
+        }}
+      >
+        <Box
+          onClick={() => handleDotClick((currentSlide - 1 + slides.length) % slides.length)}
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            bgcolor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              bgcolor: 'rgba(255,255,255,0.3)',
+              transform: 'scale(1.1)'
+            }
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Box>
+      </Box>
+      
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: '50%', 
+          right: 20, 
+          transform: 'translateY(-50%)',
+          zIndex: 10,
+          display: { xs: 'none', sm: 'block' }
+        }}
+      >
+        <Box
+          onClick={() => handleDotClick((currentSlide + 1) % slides.length)}
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            bgcolor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              bgcolor: 'rgba(255,255,255,0.3)',
+              transform: 'scale(1.1)'
+            }
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Box>
       </Box>
     </Box>
   );

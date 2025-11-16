@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box, Container, Typography, Alert, Paper, Grid, Button, IconButton, Tooltip,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Switch, FormControlLabel, alpha,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, alpha,
   Card, CardContent, CardActions, Chip, Avatar, Divider, Pagination, ToggleButtonGroup, ToggleButton,
-  InputAdornment, InputBase, useTheme, FormControl
+  InputAdornment, InputBase, useTheme, FormControl, useMediaQuery
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import api from '../config/axios';
@@ -13,8 +13,6 @@ import {
   Delete as DeleteIcon,
   Bookmarks as BookmarksIcon,
   Search as SearchIcon,
-  Lock as LockIcon,
-  Public as PublicIcon,
   Sort as SortIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
@@ -48,22 +46,9 @@ const CollectionCard = ({ collection, onEdit, onDelete, viewMode }) => {
               <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
                 {collection.name}
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                <Chip 
-                  icon={collection.isPublic ? <PublicIcon /> : <LockIcon />} 
-                  label={collection.isPublic ? 'Public' : 'Private'} 
-                  size="small" 
-                  variant="outlined"
-                  sx={{ 
-                    fontFamily: theme.typography.fontFamily,
-                    height: 24,
-                    '& .MuiChip-icon': { fontSize: '16px' }
-                  }}
-                />
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-                  {collection.postCount || collection.posts.length} {collection.postCount === 1 ? 'item' : 'items'}
-                </Typography>
-              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                {collection.postCount || collection.posts.length} {collection.postCount === 1 ? 'item' : 'items'}
+              </Typography>
               <Typography variant="body2" color="text.secondary" sx={{
                 display: '-webkit-box', 
                 WebkitLineClamp: 2, 
@@ -112,17 +97,20 @@ const CollectionCard = ({ collection, onEdit, onDelete, viewMode }) => {
     >
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
-          <Chip 
-            icon={collection.isPublic ? <PublicIcon /> : <LockIcon />} 
-            label={collection.isPublic ? 'Public' : 'Private'} 
-            size="small" 
-            variant="outlined"
+          <Typography 
+            variant="h6" 
+            fontWeight="bold" 
             sx={{ 
               fontFamily: theme.typography.fontFamily,
-              height: 24,
-              '& .MuiChip-icon': { fontSize: '16px' }
+              flex: 1,
+              mr: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}
-          />
+          >
+            {collection.name}
+          </Typography>
           <Stack direction="row" spacing={0.5}>
             <IconButton size="small" onClick={(e) => { e.preventDefault(); onEdit(collection); }}>
               <EditIcon />
@@ -133,9 +121,6 @@ const CollectionCard = ({ collection, onEdit, onDelete, viewMode }) => {
           </Stack>
         </Stack>
         
-        <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
-          {collection.name}
-        </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
           {collection.postCount || collection.posts.length} {collection.postCount === 1 ? 'item' : 'items'}
         </Typography>
@@ -154,28 +139,29 @@ const CollectionCard = ({ collection, onEdit, onDelete, viewMode }) => {
 };
 
 const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
-  const [formData, setFormData] = useState({ name: '', description: '', isPublic: true });
+  const [formData, setFormData] = useState({ name: '', description: '' });
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (collection) {
-      setFormData({ name: collection.name, description: collection.description || '', isPublic: collection.isPublic });
+      setFormData({ name: collection.name, description: collection.description || '' });
     } else {
-      setFormData({ name: '', description: '', isPublic: true });
+      setFormData({ name: '', description: '' });
     }
   }, [collection, open]);
 
   const handleChange = (e) => {
-    const { name, value, checked, type } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
     setLoading(true);
-    await onSave(formData);
+    // Always set isPublic to false since we're removing this feature
+    await onSave({ ...formData, isPublic: false });
     setLoading(false);
   };
 
@@ -210,19 +196,8 @@ const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
             sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
             helperText="Add a brief description of what this collection is for"
           />
-          <FormControlLabel
-            control={<Switch checked={formData.isPublic} onChange={handleChange} name="isPublic" />}
-            label={
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Public Collection</Typography>
-                {formData.isPublic ? <PublicIcon fontSize="small" /> : <LockIcon fontSize="small" />}
-              </Stack>
-            }
-          />
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
-            {formData.isPublic 
-              ? "This collection will be visible to other users" 
-              : "This collection will only be visible to you"}
+            Collections are private by default and only visible to you.
           </Typography>
         </Stack>
       </DialogContent>
@@ -245,6 +220,7 @@ const CollectionFormDialog = ({ open, onClose, onSave, collection }) => {
 
 const MyCollectionsPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -351,26 +327,26 @@ const MyCollectionsPage = () => {
   };
 
   if (loading) return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4, display: 'flex', justifyContent: 'center' }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 }, display: 'flex', justifyContent: 'center' }}>
       <Loader size="large" />
     </Container>
   );
   
   if (error) return (
-    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
       <Alert severity="error">{error}</Alert>
     </Container>
   );
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
+      <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={4}>
           <Box>
-            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' } }}>
               My Collections
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
               Organize your favorite posts and recipes.
             </Typography>
           </Box>
@@ -378,7 +354,15 @@ const MyCollectionsPage = () => {
             variant="contained" 
             startIcon={<AddIcon />} 
             onClick={() => openForm()} 
-            sx={{ borderRadius: '50px', fontFamily: theme.typography.fontFamily, px: 3 }}
+            sx={{ 
+              borderRadius: '50px', 
+              fontFamily: theme.typography.fontFamily, 
+              px: { xs: 2, sm: 5.5 }, 
+              py: { xs: 1, sm: 3.5 }, 
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              minWidth: { xs: '100%', sm: 'auto' }
+            }}
+            fullWidth={isMobile}
           >
             Create Collection
           </Button>
@@ -447,7 +431,7 @@ const MyCollectionsPage = () => {
                 </ToggleButtonGroup>
               </FormControl>
               
-              <FormControl sx={{ minWidth: 120 }}>
+              <FormControl sx={{ minWidth: 120, display: { xs: 'none', sm: 'block' } }}>
                 <ToggleButtonGroup
                   value={viewMode}
                   exclusive

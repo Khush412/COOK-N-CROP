@@ -33,6 +33,7 @@ import {
   MenuItem,
   InputLabel,
   Autocomplete,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -249,6 +250,7 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault, viewMode }) => {
 
 const AddressManagementPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -422,46 +424,50 @@ const AddressManagementPage = () => {
             InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
           />
           
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Filter</InputLabel>
-            <Select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                sx={{ 
+                  borderRadius: '20px',
+                  fontFamily: theme.typography.fontFamily,
+                  width: { xs: '100%', sm: 'auto' }
+                }}
+                IconComponent={FilterListIcon}
+                displayEmpty
+              >
+                <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All</MenuItem>
+                <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default</MenuItem>
+                <MenuItem value="home" sx={{ fontFamily: theme.typography.fontFamily }}>Home</MenuItem>
+                <MenuItem value="work" sx={{ fontFamily: theme.typography.fontFamily }}>Work</MenuItem>
+                <MenuItem value="other" sx={{ fontFamily: theme.typography.fontFamily }}>Other</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(e, newMode) => newMode && setViewMode(newMode)}
+              size="small"
               sx={{ 
-                borderRadius: '20px',
-                fontFamily: theme.typography.fontFamily
+                height: 40,
+                '& .MuiToggleButton-root': { 
+                  borderRadius: '50px',
+                  border: `1px solid ${theme.palette.divider}`,
+                  fontFamily: theme.typography.fontFamily
+                },
+                display: { xs: 'none', sm: 'flex' }
               }}
-              IconComponent={FilterListIcon}
             >
-              <MenuItem value="all" sx={{ fontFamily: theme.typography.fontFamily }}>All Types</MenuItem>
-              <MenuItem value="default" sx={{ fontFamily: theme.typography.fontFamily }}>Default Only</MenuItem>
-              <MenuItem value="home" sx={{ fontFamily: theme.typography.fontFamily }}>Home</MenuItem>
-              <MenuItem value="work" sx={{ fontFamily: theme.typography.fontFamily }}>Work</MenuItem>
-              <MenuItem value="other" sx={{ fontFamily: theme.typography.fontFamily }}>Other</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(e, newMode) => newMode && setViewMode(newMode)}
-            size="small"
-            sx={{ 
-              height: 40,
-              '& .MuiToggleButton-root': { 
-                borderRadius: '50px',
-                border: `1px solid ${theme.palette.divider}`,
-                fontFamily: theme.typography.fontFamily
-              }
-            }}
-          >
-            <ToggleButton value="grid" aria-label="grid view">
-              <ViewModuleIcon />
-            </ToggleButton>
-            <ToggleButton value="list" aria-label="list view">
-              <ViewListIcon />
-            </ToggleButton>
-          </ToggleButtonGroup>
+              <ToggleButton value="grid" aria-label="grid view">
+                <ViewModuleIcon />
+              </ToggleButton>
+              <ToggleButton value="list" aria-label="list view">
+                <ViewListIcon />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
           
           <Button
             variant="contained"
@@ -472,7 +478,7 @@ const AddressManagementPage = () => {
               borderRadius: '50px', 
               px: 3,
               py: 1,
-              minWidth: 180,
+              minWidth: { xs: '100%', sm: 180 },
               boxShadow: 3,
               '&:hover': {
                 boxShadow: 4,
@@ -536,7 +542,7 @@ const AddressManagementPage = () => {
                 gap: 1
               }}
             >
-              <MapIcon /> Your Saved Addresses ({filteredAddresses.length})
+              <MapIcon /> Your Saved Addresses
             </Typography>
             
             {viewMode === 'grid' ? (

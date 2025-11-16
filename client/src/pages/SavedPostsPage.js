@@ -146,7 +146,7 @@ const SavedPostsPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', mt: { xs: 8, sm: 12 } }}>
         <Loader size="large" />
       </Box>
     );
@@ -154,41 +154,41 @@ const SavedPostsPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, mt: 12 }}>
-        <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
+      <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, mt: { xs: 8, sm: 12 } }}>
+        <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 12 }, py: { xs: 2, sm: 4 } }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: { xs: 2, sm: 4 }, borderRadius: { xs: 2, sm: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.75rem', sm: '2.5rem' } }}>
           My Saved Posts
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1.25rem' } }}>
           Your collection of favorite posts and recipes.
         </Typography>
       </Paper>
       
       {savedPosts.length === 0 ? (
-        <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
-          <BookmarksIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3, md: 6 }, textAlign: 'center', mt: { xs: 2, sm: 4 }, borderRadius: { xs: 2, sm: 3 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+          <BookmarksIcon sx={{ fontSize: { xs: 40, sm: 80 }, color: 'grey.400', mb: { xs: 1, sm: 2 } }} />
+          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: { xs: 1, sm: 2 }, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             You haven't saved any posts yet.
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
+          <Typography color="text.secondary" sx={{ mt: { xs: 1, sm: 1 }, fontFamily: theme.typography.fontFamily, mb: { xs: 2, sm: 3 }, maxWidth: { xs: '100%', sm: 500 }, mx: 'auto', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Click the bookmark icon on a post to save it for later.
           </Typography>
-          <Button component={RouterLink} to="/community" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
+          <Button component={RouterLink} to="/community" variant="contained" sx={{ mt: { xs: 2, sm: 3 }, borderRadius: '50px', px: { xs: 2, sm: 4 }, fontFamily: theme.typography.fontFamily, py: { xs: 1, sm: 1.5 }, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Explore Community
           </Button>
         </Paper>
       ) : (
         <>
           {/* Filters and Search */}
-          <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: { xs: 2, sm: 3 } }}>
+            <Stack direction="column" spacing={{ xs: 1, sm: 2 }} sx={{ width: '100%' }}>
               <TextField
                 placeholder="Search saved posts..."
                 value={searchTerm}
@@ -197,64 +197,67 @@ const SavedPostsPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon />
+                      <SearchIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{ 
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': { borderRadius: '20px' },
-                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                  '& .MuiOutlinedInput-root': { borderRadius: '20px', height: { xs: 36, sm: 40 } },
+                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }
                 }}
                 InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
               
-              <FormControl>
-                <ToggleButtonGroup
-                  value={sortOption}
-                  exclusive
-                  onChange={(e, newValue) => newValue && setSortOption(newValue)}
-                  size="small"
-                  sx={{ height: 40 }}
-                >
-                  <ToggleButton value="newest" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    Newest
-                  </ToggleButton>
-                  <ToggleButton value="popular" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    Popular
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </FormControl>
-              
-              <FormControl>
-                <ToggleButtonGroup
-                  value={viewMode}
-                  exclusive
-                  onChange={(e, newValue) => newValue && setViewMode(newValue)}
-                  size="small"
-                  sx={{ height: 40 }}
-                >
-                  <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewModuleIcon />
-                  </ToggleButton>
-                  <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: 2 }}>
-                    <ViewListIcon />
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </FormControl>
+              <Stack direction="row" spacing={8} sx={{ width: '100%' }}>
+                <FormControl sx={{ width: { xs: '50%', sm: 'auto' } }}>
+                  <ToggleButtonGroup
+                    value={sortOption}
+                    exclusive
+                    onChange={(e, newValue) => newValue && setSortOption(newValue)}
+                    size="small"
+                    sx={{ height: { xs: 36, sm: 40 }, width: { xs: '100%', sm: 'auto' } }}
+                  >
+                    <ToggleButton value="newest" sx={{ fontFamily: theme.typography.fontFamily, px: { xs: 1, sm: 2 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                      Newest
+                    </ToggleButton>
+                    <ToggleButton value="popular" sx={{ fontFamily: theme.typography.fontFamily, px: { xs: 1, sm: 2 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                      Popular
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </FormControl>
+                
+                <Box sx={{ flexGrow: 1 }} />
+                
+                <FormControl sx={{ width: { xs: '50%', sm: 'auto' } }}>
+                  <ToggleButtonGroup
+                    value={viewMode}
+                    exclusive
+                    onChange={(e, newValue) => newValue && setViewMode(newValue)}
+                    size="small"
+                    sx={{ height: { xs: 36, sm: 40 }, width: { xs: '100%', sm: 'auto' } }}
+                  >
+                    <ToggleButton value="grid" sx={{ fontFamily: theme.typography.fontFamily, px: { xs: 1, sm: 2 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                      <ViewModuleIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                    </ToggleButton>
+                    <ToggleButton value="list" sx={{ fontFamily: theme.typography.fontFamily, px: { xs: 1, sm: 2 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                      <ViewListIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </FormControl>
+              </Stack>
             </Stack>
           </Paper>
           
           {paginatedPosts.length === 0 ? (
-            <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3 }}>
-              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Paper sx={{ p: { xs: 2, sm: 3, md: 6 }, textAlign: 'center', mt: { xs: 2, sm: 4 }, borderRadius: { xs: 2, sm: 3 } }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 No saved posts found matching your search.
               </Typography>
             </Paper>
           ) : (
             <>
               {viewMode === 'grid' ? (
-                <Grid container spacing={3}>
+                <Grid container spacing={{ xs: 1, sm: 3 }}>
                   {paginatedPosts.filter(p => p).map((post) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
                       <PostCard
@@ -270,7 +273,7 @@ const SavedPostsPage = () => {
                   ))}
                 </Grid>
               ) : (
-                <Stack spacing={2}>
+                <Stack spacing={{ xs: 1, sm: 2 }}>
                   {paginatedPosts.filter(p => p).map((post) => (
                     <PostCard
                       key={post._id}
@@ -288,7 +291,7 @@ const SavedPostsPage = () => {
               )}
               
               {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 2, sm: 4 } }}>
                   <Pagination
                     count={totalPages}
                     page={page}

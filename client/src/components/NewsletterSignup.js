@@ -23,10 +23,10 @@ const NewsletterSignup = () => {
 
   return (
     <Box sx={{ 
-      py: 8, 
+      py: { xs: 4, md: 8 }, 
       bgcolor: alpha(theme.palette.primary.main, 0.05),
       borderRadius: 4,
-      mb: 6
+      mb: { xs: 3, md: 6 }
     }}>
       <Container maxWidth="lg">
         <Grid container spacing={4} alignItems="center" justifyContent="center">
@@ -164,11 +164,19 @@ const NewsletterSignup = () => {
                         fontWeight: 'bold', 
                         borderRadius: '50px', 
                         py: 1.5,
+                        px: 6,
                         boxShadow: `0 0 15px ${alpha(theme.palette.secondary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
                         transition: 'box-shadow 0.3s ease',
                         '&:hover': { 
                           boxShadow: `0 0 25px ${alpha(theme.palette.secondary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.secondary.main, 0.6)}`,
                           transform: 'scale(1.02)'
+                        },
+                        '@media (max-width: 600px)': {
+                          py: 0.25,
+                          px: 2,
+                          fontSize: '0.8rem',
+                          width: '100%',
+                          minWidth: 'auto'
                         }
                       }}
                     >

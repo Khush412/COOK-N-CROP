@@ -82,7 +82,24 @@ const PersonalizedRecommendations = ({ showSnackbar }) => {
         </Typography>
       </Stack>
       
-      <Grid container spacing={3}>
+      {/* Horizontal scrollable container for mobile */}
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, overflowX: 'auto', gap: 2, pb: 2, '&::-webkit-scrollbar': { height: 6 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 3 } }}>
+        {recommendations.map((product) => (
+          product && product._id ? (
+            <Box key={product._id} sx={{ minWidth: '70vw', flexShrink: 0 }}>
+              <ProductCard 
+                product={product} 
+                showSnackbar={showSnackbar} 
+                hideCategoryAndUnit={true} // Hide category and unit like recently viewed
+                hideQuantitySelector={true} // Hide just the quantity selector
+              />
+            </Box>
+          ) : null
+        ))}
+      </Box>
+      
+      {/* Grid layout for desktop */}
+      <Grid container spacing={3} sx={{ display: { xs: 'none', md: 'flex' } }}>
         {recommendations.map((product) => (
           product && product._id ? (
             <Grid key={product._id} size={{ xs: 12, sm: 6, md: 3 }}>

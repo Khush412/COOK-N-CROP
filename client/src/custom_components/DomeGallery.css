@@ -63,6 +63,37 @@ main.sphere-main {
   display: none;
 }
 
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+  .sphere-main::before {
+    top: -10px; /* Move even higher */
+    font-size: 6px; /* Make text smaller */
+    padding: 0 1px; /* Reduce padding */
+    border-radius: 2px; /* Reduce border radius */
+    margin-bottom: -10px; /* Reduce space after the "Drag to explore" text */
+  }
+  
+  .overlay,
+  .overlay--blur {
+    inset: -1px; /* Reduce the overlay size on mobile */
+  }
+  
+  .edge-fade {
+    height: 2px; /* Further reduce edge fade height on mobile */
+  }
+  
+  /* Reduce the overall height padding */
+  .stage {
+    padding-top: 0; /* Remove top padding */
+    padding-bottom: 0; /* Remove bottom padding */
+  }
+  
+  /* Reduce perspective to make dome smaller */
+  .stage {
+    perspective: calc(var(--radius) * 0.8);
+  }
+}
+
 .stage {
   width: 100%;
   height: 100%;
@@ -221,7 +252,7 @@ main.sphere-main {
   position: absolute;
   left: 0;
   right: 0;
-  height: 120px;
+  height: 80px; /* Reduce edge fade height on desktop */
   z-index: 5;
   pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--overlay-blur-color, #060010));

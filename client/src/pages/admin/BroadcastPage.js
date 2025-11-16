@@ -158,33 +158,42 @@ const BroadcastPage = () => {
       <Grid container spacing={4}>
         {/* Broadcast Form */}
         <Grid item size={{ xs: 12, lg: 8 }}>
-          <Paper elevation={3} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
             <Box component="form" onSubmit={handleSubmit} noValidate>
-              <Stack spacing={3}>
+              <Stack spacing={{ xs: 2, sm: 3 }}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      fontFamily: theme.typography.fontFamily, 
+                      mb: 2,
+                      fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                    }}
+                  >
                     Create New Broadcast
                   </Typography>
                   
                   <TextField
                     label="Broadcast Message"
                     multiline
-                    rows={4}
+                    rows={{ xs: 3, sm: 4 }}
                     fullWidth
                     required
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     helperText={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                        <span>HTML tags like &lt;strong&gt; are supported.</span>
-                        <span>{message.length}/500</span>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 1 }}>
+                        <span style={{ fontSize: '0.75rem' }}>HTML tags like &lt;strong&gt; are supported.</span>
+                        <span style={{ fontSize: '0.75rem' }}>{message.length}/500</span>
                       </Box>
                     }
                     inputProps={{ maxLength: 500 }}
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } } }}
                     sx={{ 
                       '& .MuiOutlinedInput-root': { borderRadius: 2 },
-                      mb: 1
+                      mb: 1,
+                      '& .MuiInputBase-input': { fontSize: { xs: '0.875rem', sm: '1rem' } }
                     }}
                   />
                   
@@ -192,7 +201,7 @@ const BroadcastPage = () => {
                     variant="determinate" 
                     value={(message.length / 500) * 100} 
                     sx={{ 
-                      height: 6,
+                      height: { xs: 4, sm: 6 },
                       borderRadius: 3,
                       bgcolor: alpha(theme.palette.divider, 0.3),
                       '& .MuiLinearProgress-bar': {
@@ -209,30 +218,36 @@ const BroadcastPage = () => {
                   onChange={(e) => setLink(e.target.value)}
                   helperText="An optional URL to include (e.g., /recipes/some-recipe-id or https://externalsite.com)."
                   InputProps={{
-                    startAdornment: <LinkIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                    startAdornment: <LinkIcon sx={{ mr: 1, color: 'text.secondary', fontSize: { xs: '1rem', sm: '1.25rem' } }} />,
                   }}
-                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } } }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                    '& .MuiInputBase-input': { fontSize: { xs: '0.875rem', sm: '1rem' } }
+                  }}
                 />
                 
                 <Box>
                   <Button
-                    startIcon={<TemplateIcon />}
+                    startIcon={<TemplateIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
                     onClick={() => setShowTemplates(!showTemplates)}
                     variant="outlined"
+                    fullWidth={{ xs: true, sm: false }}
                     sx={{ 
                       borderRadius: 2, 
                       fontFamily: theme.typography.fontFamily,
-                      mb: 2
+                      mb: 2,
+                      py: { xs: 1, sm: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                   >
                     {showTemplates ? 'Hide Templates' : 'Show Templates'}
                   </Button>
                   
                   {showTemplates && (
-                    <Grid container spacing={2}>
+                    <Grid container spacing={{ xs: 1, sm: 2 }}>
                       {templates.map((template) => (
-                        <Grid item size={{ xs: 12, md: 6 }} key={template.id}>
+                        <Grid item size={{ xs: 12, sm: 6 }} key={template.id}>
                           <Card 
                             variant="outlined" 
                             sx={{ 
@@ -241,15 +256,31 @@ const BroadcastPage = () => {
                               borderColor: activeTemplate === template.id ? theme.palette.primary.main : 'divider',
                               '&:hover': {
                                 boxShadow: 2
-                              }
+                              },
+                              minHeight: { xs: 120, sm: 140 }
                             }}
                             onClick={() => applyTemplate(template)}
                           >
-                            <CardContent>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                              <Typography 
+                                variant="subtitle1" 
+                                sx={{ 
+                                  fontWeight: 'bold', 
+                                  fontFamily: theme.typography.fontFamily, 
+                                  mb: 1,
+                                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                                }}
+                              >
                                 {template.title}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography 
+                                variant="body2" 
+                                color="text.secondary" 
+                                sx={{ 
+                                  fontFamily: theme.typography.fontFamily,
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                                }}
+                              >
                                 {template.message}
                               </Typography>
                             </CardContent>
@@ -260,8 +291,8 @@ const BroadcastPage = () => {
                   )}
                 </Box>
                 
-                {error && <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>}
-                {success && <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{success}</Alert>}
+                {error && <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>}
+                {success && <Alert severity="success" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{success}</Alert>}
                 
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   <Button
@@ -269,29 +300,44 @@ const BroadcastPage = () => {
                     variant="contained"
                     size="large"
                     disabled={loading}
-                    startIcon={loading ? <Loader size="small" color="inherit" /> : <CampaignIcon />}
+                    startIcon={loading ? <Loader size="small" color="inherit" /> : <CampaignIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                    fullWidth={{ xs: true, sm: false }}
                     sx={{ 
                       fontFamily: theme.typography.fontFamily, 
                       fontWeight: 'bold', 
                       borderRadius: '50px', 
-                      px: 4,
-                      flex: { xs: 1, sm: 'auto' }
+                      px: { xs: 2, sm: 4 },
+                      py: { xs: 0.75, sm: 1.5 },
+                      flex: { xs: 1, sm: 'auto' },
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      minHeight: { xs: 36, sm: 48 }
                     }}
                   >
-                    {loading ? 'Sending...' : 'Send Broadcast'}
+                    {loading ? 'Sending...' : (
+                      <>
+                        Send
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                          &nbsp;Broadcast
+                        </Box>
+                      </>
+                    )}
                   </Button>
                   
                   <Button
                     variant="outlined"
                     size="large"
                     onClick={() => setPreviewOpen(true)}
-                    startIcon={<PreviewIcon />}
+                    startIcon={<PreviewIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                    fullWidth={{ xs: true, sm: false }}
                     sx={{ 
                       fontFamily: theme.typography.fontFamily, 
                       fontWeight: 'bold', 
                       borderRadius: '50px', 
-                      px: 4,
-                      flex: { xs: 1, sm: 'auto' }
+                      px: { xs: 2, sm: 4 },
+                      py: { xs: 0.75, sm: 1.5 },
+                      flex: { xs: 1, sm: 'auto' },
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      minHeight: { xs: 36, sm: 48 }
                     }}
                   >
                     Preview
@@ -304,33 +350,58 @@ const BroadcastPage = () => {
         
         {/* Recent Broadcasts */}
         <Grid item size={{ xs: 12, lg: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <HistoryIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-              <Typography variant="h5" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 3 } }}>
+              <HistoryIcon sx={{ mr: 1, color: theme.palette.primary.main, fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                }}
+              >
                 Recent Broadcasts
               </Typography>
             </Box>
             
             {recentBroadcasts.length > 0 ? (
-              <Stack spacing={2}>
+              <Stack spacing={{ xs: 1.5, sm: 2 }}>
                 {recentBroadcasts.map((broadcast) => (
                   <Card key={broadcast.id} variant="outlined" sx={{ borderRadius: 2 }}>
-                    <CardContent>
-                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                    <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          mb: 1,
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                        }}
+                      >
                         {broadcast.message}
                       </Typography>
                       {broadcast.link && (
                         <Chip 
-                          icon={<LinkIcon />} 
+                          icon={<LinkIcon sx={{ fontSize: { xs: '0.75rem', sm: '1rem' } }} />} 
                           label={broadcast.link} 
                           size="small" 
                           variant="outlined" 
-                          sx={{ mb: 1, fontFamily: theme.typography.fontFamily }}
+                          sx={{ 
+                            mb: 1, 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                          }}
                         />
                       )}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                          }}
+                        >
                           {formatTimeAgo(broadcast.timestamp)}
                         </Typography>
                         <Chip 
@@ -339,7 +410,8 @@ const BroadcastPage = () => {
                           sx={{ 
                             bgcolor: alpha(theme.palette.success.main, 0.1),
                             color: theme.palette.success.main,
-                            fontFamily: theme.typography.fontFamily
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.625rem', sm: '0.75rem' }
                           }} 
                         />
                       </Box>
@@ -348,9 +420,15 @@ const BroadcastPage = () => {
                 ))}
               </Stack>
             ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <InfoIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-                <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              <Box sx={{ textAlign: 'center', py: { xs: 3, sm: 4 } }}>
+                <InfoIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 1 }} />
+                <Typography 
+                  color="text.secondary" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                >
                   No broadcast history yet.
                 </Typography>
               </Box>
@@ -358,39 +436,70 @@ const BroadcastPage = () => {
           </Paper>
           
           {/* Broadcast Tips */}
-          <Paper elevation={3} sx={{ p: 3, mt: 4, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <InfoIcon sx={{ mr: 1, color: theme.palette.info.main }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mt: { xs: 2, sm: 4 }, borderRadius: 4, border: `1px solid ${alpha(theme.palette.divider, 0.5)}` }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, sm: 2 } }}>
+              <InfoIcon sx={{ mr: 1, color: theme.palette.info.main, fontSize: { xs: '1rem', sm: '1.25rem' } }} />
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
                 Broadcast Tips
               </Typography>
             </Box>
             
-            <Stack spacing={2}>
+            <Stack spacing={{ xs: 1.5, sm: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                  }}
+                >
                   Keep messages concise and clear
                 </Typography>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                  }}
+                >
                   Personalize with user's name when possible
                 </Typography>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <CheckCircleIcon sx={{ color: theme.palette.success.main, mt: 0.5, mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                  }}
+                >
                   Include a clear call-to-action
                 </Typography>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <ErrorIcon sx={{ color: theme.palette.warning.main, mt: 0.5, mr: 1, fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <ErrorIcon sx={{ color: theme.palette.warning.main, mt: 0.5, mr: 1, fontSize: { xs: 16, sm: 20 } }} />
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' }
+                  }}
+                >
                   Avoid sending too many broadcasts in a short period
                 </Typography>
               </Box>

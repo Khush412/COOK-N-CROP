@@ -115,7 +115,7 @@ const MessengerPage = () => {
   const [currentMessageId, setCurrentMessageId] = useState(null);
   const [processingReactions, setProcessingReactions] = useState({});
   const [messagesOpen, setMessagesOpen] = useState(true);
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
   const [attachmentPreviews, setAttachmentPreviews] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -169,6 +169,13 @@ const MessengerPage = () => {
       };
     }
   }, [socket]);
+
+  // Ensure mobile drawer is open by default on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setMobileDrawerOpen(true);
+    }
+  }, [isMobile]);
 
   // Periodically refresh conversations to ensure they stay in sync
   useEffect(() => {

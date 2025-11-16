@@ -49,7 +49,7 @@ const ActivityCard = ({ item, type }) => {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
           textDecoration: 'none',
           color: 'inherit',
           transition: '0.3s',
@@ -61,7 +61,7 @@ const ActivityCard = ({ item, type }) => {
           },
         }}
       >
-        <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+        <CardContent sx={{ flexGrow: 1, pb: { xs: 1, sm: 2 } }}>
           <Typography 
             variant="h6" 
             fontWeight="bold" 
@@ -72,6 +72,7 @@ const ActivityCard = ({ item, type }) => {
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
+              fontSize: { xs: '1rem', sm: '1.25rem' }
             }}
           >
             {item.title}
@@ -88,21 +89,22 @@ const ActivityCard = ({ item, type }) => {
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             >
               {item.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
             </Typography>
           )}
           
-          <Stack direction="row" spacing={1.5} sx={{ mb: 1 }}>
-            <Chip icon={<ThumbUpIcon />} label={item.upvoteCount || 0} size="small" variant="outlined" />
-            <Chip icon={<ChatBubbleOutlineIcon />} label={item.commentCount || 0} size="small" variant="outlined" />
-            <Chip icon={<VisibilityIcon />} label={item.views || 0} size="small" variant="outlined" />
+          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} sx={{ mb: 1 }}>
+            <Chip icon={<ThumbUpIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />} label={item.upvoteCount || 0} size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 24, sm: 32 } }} />
+            <Chip icon={<ChatBubbleOutlineIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />} label={item.commentCount || 0} size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 24, sm: 32 } }} />
+            <Chip icon={<VisibilityIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />} label={item.views || 0} size="small" variant="outlined" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: 24, sm: 32 } }} />
           </Stack>
         </CardContent>
         
-        <CardActions sx={{ pt: 0, px: 2, pb: 1.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <CardActions sx={{ pt: 0, px: { xs: 1.5, sm: 2 }, pb: { xs: 1, sm: 1.5 } }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
             Posted {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
@@ -111,8 +113,8 @@ const ActivityCard = ({ item, type }) => {
             size="small" 
             sx={{ 
               fontFamily: theme.typography.fontFamily,
-              height: 20,
-              '& .MuiChip-label': { fontSize: '0.7rem' }
+              height: { xs: 20, sm: 24 },
+              '& .MuiChip-label': { fontSize: { xs: '0.6rem', sm: '0.7rem' } }
             }} 
           />
         </CardActions>
@@ -122,7 +124,7 @@ const ActivityCard = ({ item, type }) => {
     return (
       <Card
         sx={{
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
           border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
           transition: '0.3s',
           '&:hover': {
@@ -131,7 +133,7 @@ const ActivityCard = ({ item, type }) => {
           },
         }}
       >
-        <CardContent>
+        <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
           <Typography
             variant="body2"
             sx={{
@@ -142,19 +144,20 @@ const ActivityCard = ({ item, type }) => {
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
             }}
           >
             "{item.content}"
           </Typography>
           
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
             Commented on{' '}
             {item.post ? (
-              <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' } }}>
+              <Link component={RouterLink} to={`/post/${item.post._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', '&:hover': { color: 'primary.dark' }, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 {item.post.title}
               </Link>
             ) : (
-              <Typography component="span" sx={{ fontStyle: 'italic', color: 'text.disabled', fontFamily: theme.typography.fontFamily }}>
+              <Typography component="span" sx={{ fontStyle: 'italic', color: 'text.disabled', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 a deleted post
               </Typography>
             )}
@@ -226,7 +229,7 @@ const MyActivityPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', mt: { xs: 6.5, sm: 8.5 } }}>
         <Loader size="large" />
       </Box>
     );
@@ -234,8 +237,8 @@ const MyActivityPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, mt: 12 }}>
-        <Alert severity="error">{error}</Alert>
+      <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 }, mt: { xs: 6.5, sm: 8.5 } }}>
+      <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
       </Container>
     );
   }
@@ -243,18 +246,18 @@ const MyActivityPage = () => {
   const { posts, comments } = activityData;
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
+      <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' } }}>
           My Activity
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
           A log of your posts and comments.
         </Typography>
       </Paper>
       
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4, mb: 3 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ mb: 2 }}>
+      <Paper elevation={3} sx={{ p: { xs: 3.5, sm: 4, md: 4.5 }, borderRadius: { xs: 2, sm: 3, md: 4 }, mb: { xs: 3.5, sm: 4, md: 4.5 } }}>
+        <Stack direction={{ xs: 'row', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} alignItems="center" sx={{ mb: { xs: 1, sm: 2 } }}>
           <TextField
             placeholder={`Search ${tabValue === 0 ? 'posts' : 'comments'}...`}
             value={searchTerm}
@@ -263,14 +266,14 @@ const MyActivityPage = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                 </InputAdornment>
               ),
             }}
             sx={{ 
               flex: 1,
-              '& .MuiOutlinedInput-root': { borderRadius: '20px' },
-              '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+              '& .MuiOutlinedInput-root': { borderRadius: '20px', height: { xs: 32, sm: 40 } },
+              '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }
             }}
             InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
           />
@@ -279,7 +282,9 @@ const MyActivityPage = () => {
             label={`${filteredItems.length} ${tabValue === 0 ? 'post' : 'comment'}${filteredItems.length !== 1 ? 's' : ''}`} 
             sx={{ 
               fontFamily: theme.typography.fontFamily,
-              height: 32,
+              height: { xs: 24, sm: 32 },
+              fontSize: { xs: '0.65rem', sm: '0.875rem' },
+              minWidth: { xs: 60, sm: 80 }
             }} 
           />
         </Stack>
@@ -290,17 +295,20 @@ const MyActivityPage = () => {
             onChange={handleTabChange} 
             aria-label="my activity tabs" 
             centered
+            variant="fullWidth"
             sx={{ 
               '& .MuiTab-root': { 
                 fontFamily: theme.typography.fontFamily, 
                 fontWeight: 600,
                 textTransform: 'none',
-                minWidth: 120,
+                minWidth: { xs: 60, sm: 120 },
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                p: { xs: 0.5, sm: 2 }
               }
             }}
           >
-            <Tab icon={<PostAddIcon />} iconPosition="start" label={`My Posts (${posts.length})`} />
-            <Tab icon={<CommentIcon />} iconPosition="start" label={`My Comments (${comments.length})`} />
+            <Tab icon={<PostAddIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} iconPosition="start" label={`My Posts (${posts.length})`} sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }} />
+            <Tab icon={<CommentIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} iconPosition="start" label={`My Comments (${comments.length})`} sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }} />
           </Tabs>
         </Box>
       </Paper>
@@ -310,7 +318,7 @@ const MyActivityPage = () => {
         <Box>
           {paginatedItems.length > 0 ? (
             <>
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 1, sm: 3 }}>
                 {paginatedItems.map((post) => (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
                     <ActivityCard item={post} type="post" />
@@ -319,7 +327,7 @@ const MyActivityPage = () => {
               </Grid>
               
               {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 2, sm: 4 } }}>
                   <Pagination
                     count={totalPages}
                     page={page}
@@ -336,13 +344,13 @@ const MyActivityPage = () => {
               )}
             </>
           ) : (
-            <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', mt: 2, borderRadius: 3 }}>
-              <HistoryIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+            <Paper variant="outlined" sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center', mt: { xs: 1, sm: 2 }, borderRadius: { xs: 2, sm: 3 } }}>
+              <HistoryIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'grey.400', mb: 1 }} />
+              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 {searchTerm ? 'No posts found matching your search.' : 'You haven\'t made any posts yet.'}
               </Typography>
               {!searchTerm && (
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Start sharing your thoughts with the community!
                 </Typography>
               )}
@@ -356,7 +364,7 @@ const MyActivityPage = () => {
         <Box>
           {paginatedItems.length > 0 ? (
             <>
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 1, sm: 3 }}>
                 {paginatedItems.map((comment) => (
                   <Grid size={{ xs: 12 }} key={comment._id}>
                     <ActivityCard item={comment} type="comment" />
@@ -365,7 +373,7 @@ const MyActivityPage = () => {
               </Grid>
               
               {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 2, sm: 4 } }}>
                   <Pagination
                     count={totalPages}
                     page={page}
@@ -382,13 +390,13 @@ const MyActivityPage = () => {
               )}
             </>
           ) : (
-            <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', mt: 2, borderRadius: 3 }}>
-              <HistoryIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+            <Paper variant="outlined" sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center', mt: { xs: 1, sm: 2 }, borderRadius: { xs: 2, sm: 3 } }}>
+              <HistoryIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'grey.400', mb: 1 }} />
+              <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 {searchTerm ? 'No comments found matching your search.' : 'You haven\'t made any comments yet.'}
               </Typography>
               {!searchTerm && (
-                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                   Join the conversation by commenting on posts!
                 </Typography>
               )}

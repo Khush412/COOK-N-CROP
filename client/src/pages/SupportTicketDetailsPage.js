@@ -21,7 +21,8 @@ import {
   CardContent,
   CardHeader,
   IconButton,
-  Tooltip
+  Tooltip,
+  useMediaQuery
 } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
 import supportService from '../services/supportService';
@@ -42,6 +43,7 @@ import {
 const SupportTicketDetailsPage = () => {
   const { id } = useParams();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ const SupportTicketDetailsPage = () => {
   };
 
   if (loading) return (
-    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Loader size="large" />
       </Box>
@@ -102,7 +104,7 @@ const SupportTicketDetailsPage = () => {
   );
   
   if (error) return (
-    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: 4 }}>
       <Fade in={true} timeout={500}>
         <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>
           {error}
@@ -112,7 +114,7 @@ const SupportTicketDetailsPage = () => {
   );
   
   if (!ticket) return (
-    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: 4 }}>
       <Fade in={true} timeout={500}>
         <Alert severity="info" sx={{ fontFamily: theme.typography.fontFamily }}>
           Ticket not found.
@@ -122,7 +124,7 @@ const SupportTicketDetailsPage = () => {
   );
 
   return (
-    <Container maxWidth="md" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="md" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: 4 }}>
       <Slide direction="right" in={true} timeout={600}>
         <Button 
           component={RouterLink} 
@@ -132,25 +134,26 @@ const SupportTicketDetailsPage = () => {
             mb: 2, 
             fontFamily: theme.typography.fontFamily,
             fontWeight: 600,
-            px: 2,
-            py: 1,
+            px: { xs: 1.5, sm: 2 },
+            py: { xs: 0.5, sm: 1 },
             borderRadius: '20px',
             transition: 'all 0.3s ease',
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
             '&:hover': {
               transform: 'translateX(-5px)',
               backgroundColor: alpha(theme.palette.primary.main, 0.1),
             }
           }}
         >
-          Back to My Tickets
+          {isMobile ? 'Back' : 'Back to My Tickets'}
         </Button>
       </Slide>
       
       <Zoom in={true} timeout={700}>
         <Paper 
           sx={{ 
-            p: { xs: 2, md: 4 }, 
-            borderRadius: 4,
+            p: { xs: 2, sm: 3, md: 4 }, 
+            borderRadius: { xs: 2, sm: 3, md: 4 },
             boxShadow: theme.shadows[8],
             border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
             background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})`
@@ -160,11 +163,11 @@ const SupportTicketDetailsPage = () => {
           <Slide direction="down" in={true} timeout={800}>
             <Box sx={{ mb: 3 }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'flex-start' }} spacing={2} mb={2}>
-                <Box>
-                  <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
+                  <Typography variant={isMobile ? "h5" : "h4"} component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, mb: 1 }}>
                     {ticket.subject}
                   </Typography>
-                  <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <Chip 
                       icon={<AssignmentIcon />} 
                       label={`Ticket #${ticket.ticketNumber}`} 
@@ -173,7 +176,8 @@ const SupportTicketDetailsPage = () => {
                         fontFamily: theme.typography.fontFamily,
                         fontWeight: 600,
                         backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main
+                        color: theme.palette.primary.main,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }} 
                     />
                     <Chip 
@@ -184,7 +188,8 @@ const SupportTicketDetailsPage = () => {
                         fontFamily: theme.typography.fontFamily,
                         fontWeight: 600,
                         backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                        color: theme.palette.secondary.main
+                        color: theme.palette.secondary.main,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }} 
                     />
                     <Chip 
@@ -194,11 +199,12 @@ const SupportTicketDetailsPage = () => {
                       size="small" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
-                        fontWeight: 600
+                        fontWeight: 600,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }} 
                     />
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <UpdateIcon sx={{ fontSize: 16 }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                      <UpdateIcon sx={{ fontSize: { xs: 12, sm: 16 } }} />
                       Created {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
                     </Typography>
                   </Stack>
@@ -209,16 +215,16 @@ const SupportTicketDetailsPage = () => {
                   sx={{ 
                     fontFamily: theme.typography.fontFamily,
                     fontWeight: 700,
-                    fontSize: '1rem',
-                    height: 36,
-                    minWidth: 120
+                    fontSize: { xs: '0.8rem', sm: '1rem' },
+                    height: { xs: 28, sm: 36 },
+                    minWidth: { xs: 80, sm: 120 }
                   }} 
                 />
               </Stack>
               
               <Divider sx={{ my: 2 }} />
               
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="flex-start">
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2, md: 3 }} alignItems="flex-start">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Avatar 
                     src={
@@ -226,16 +232,16 @@ const SupportTicketDetailsPage = () => {
                         ? (ticket.user?.profilePic || user?.profilePic)
                         : (ticket.user?.profilePic || user?.profilePic) ? `${process.env.REACT_APP_API_URL}${ticket.user?.profilePic || user.profilePic}` : undefined
                     }
-                    sx={{ width: 40, height: 40 }}
+                    sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                   >
                     {ticket.user?.username?.charAt(0) || user?.username.charAt(0)}
                   </Avatar>
                   <Box>
-                    <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <PersonIcon sx={{ fontSize: 18 }} />
-                      {ticket.user?.username || user?.username} <Typography component="span" color="text.secondary" sx={{ fontWeight: 'normal' }}>(You)</Typography>
+                    <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                      <PersonIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                      {ticket.user?.username || user?.username} <Typography component="span" color="text.secondary" sx={{ fontWeight: 'normal', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>(You)</Typography>
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                       {format(new Date(ticket.createdAt), 'PPp')}
                     </Typography>
                   </Box>
@@ -245,17 +251,17 @@ const SupportTicketDetailsPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar 
                       src={ticket.assignedTo.profilePic && ticket.assignedTo.profilePic.startsWith('http') ? ticket.assignedTo.profilePic : ticket.assignedTo.profilePic ? `${process.env.REACT_APP_API_URL}${ticket.assignedTo.profilePic}` : undefined}
-                      sx={{ width: 40, height: 40 }}
+                      sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                     >
                       {ticket.assignedTo.username.charAt(0)}
                     </Avatar>
                     <Box>
-                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <SupportAgentIcon sx={{ fontSize: 18 }} />
-                        {ticket.assignedTo.username} <Typography component="span" color="text.secondary" sx={{ fontWeight: 'normal' }}>(Support Agent)</Typography>
+                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
+                        <SupportAgentIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                        {ticket.assignedTo.username} <Typography component="span" color="text.secondary" sx={{ fontWeight: 'normal', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>(Support Agent)</Typography>
                       </Typography>
                       {ticket.updatedAt && (
-                        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                           Updated {formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true })}
                         </Typography>
                       )}
@@ -271,7 +277,7 @@ const SupportTicketDetailsPage = () => {
             <Slide direction="up" in={true} timeout={900}>
               <Card 
                 sx={{ 
-                  borderRadius: 3,
+                  borderRadius: { xs: 2, sm: 3 },
                   border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
                   boxShadow: theme.shadows[2],
                   transition: 'all 0.3s ease',
@@ -288,18 +294,18 @@ const SupportTicketDetailsPage = () => {
                           ? (ticket.user?.profilePic || user?.profilePic)
                           : (ticket.user?.profilePic || user?.profilePic) ? `${process.env.REACT_APP_API_URL}${ticket.user?.profilePic || user.profilePic}` : undefined
                       }
-                      sx={{ width: 36, height: 36 }}
+                      sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 } }}
                     >
                       {ticket.user?.username?.charAt(0) || user?.username.charAt(0)}
                     </Avatar>
                   }
                   title={
-                    <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                       {ticket.user?.username || user?.username} (You)
                     </Typography>
                   }
                   subheader={
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                       {format(new Date(ticket.createdAt), 'PPp')}
                     </Typography>
                   }
@@ -310,7 +316,8 @@ const SupportTicketDetailsPage = () => {
                     sx={{ 
                       whiteSpace: 'pre-wrap', 
                       fontFamily: theme.typography.fontFamily,
-                      lineHeight: 1.7
+                      lineHeight: 1.7,
+                      fontSize: { xs: '0.85rem', sm: '1rem' }
                     }}
                   >
                     {ticket.message}
@@ -324,7 +331,7 @@ const SupportTicketDetailsPage = () => {
               <Slide key={reply._id} direction="up" in={true} timeout={1000 + (index * 200)}>
                 <Card 
                   sx={{ 
-                    borderRadius: 3,
+                    borderRadius: { xs: 2, sm: 3 },
                     border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
                     boxShadow: theme.shadows[2],
                     transition: 'all 0.3s ease',
@@ -340,18 +347,18 @@ const SupportTicketDetailsPage = () => {
                     avatar={
                       <Avatar 
                         src={reply.user.profilePic && reply.user.profilePic.startsWith('http') ? reply.user.profilePic : reply.user.profilePic ? `${process.env.REACT_APP_API_URL}${reply.user.profilePic}` : undefined}
-                        sx={{ width: 36, height: 36 }}
+                        sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 } }}
                       >
                         {reply.user.username.charAt(0)}
                       </Avatar>
                     }
                     title={
-                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                         {reply.user.username} {reply.user._id === user.id ? '(You)' : '(Support Team)'}
                       </Typography>
                     }
                     subheader={
-                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                         {format(new Date(reply.createdAt), 'PPp')}
                       </Typography>
                     }
@@ -362,7 +369,8 @@ const SupportTicketDetailsPage = () => {
                       sx={{ 
                         whiteSpace: 'pre-wrap', 
                         fontFamily: theme.typography.fontFamily,
-                        lineHeight: 1.7
+                        lineHeight: 1.7,
+                        fontSize: { xs: '0.85rem', sm: '1rem' }
                       }}
                     >
                       {reply.content}
@@ -376,20 +384,20 @@ const SupportTicketDetailsPage = () => {
           {ticket.status !== 'Closed' && (
             <Slide direction="up" in={true} timeout={1200}>
               <Box component="form" onSubmit={handleReplySubmit} sx={{ mt: 5, pt: 4, borderTop: 1, borderColor: 'divider' }}>
-                <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SendIcon /> Add a Reply
+                <Typography variant={isMobile ? "h6" : "h5"} sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                  <SendIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> Add a Reply
                 </Typography> 
                 <TextField 
                   fullWidth 
                   multiline 
-                  rows={5} 
+                  rows={isMobile ? 4 : 5} 
                   value={replyContent} 
                   onChange={(e) => setReplyContent(e.target.value)} 
                   placeholder="Type your reply here..." 
                   disabled={isReplying} 
                   sx={{ 
                     '& .MuiOutlinedInput-root': { 
-                      borderRadius: 3,
+                      borderRadius: { xs: 2, sm: 3 },
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         boxShadow: theme.shadows[2],
@@ -397,7 +405,8 @@ const SupportTicketDetailsPage = () => {
                     }, 
                     '& .MuiInputBase-input': { 
                       fontFamily: theme.typography.fontFamily,
-                      py: 1.5
+                      py: { xs: 1, sm: 1.5 },
+                      fontSize: { xs: '0.85rem', sm: '1rem' }
                     } 
                   }} 
                 />
@@ -405,16 +414,17 @@ const SupportTicketDetailsPage = () => {
                   <Button 
                     type="submit" 
                     variant="contained" 
-                    size="large"
+                    size={isMobile ? "medium" : "large"}
                     sx={{ 
                       mt: 2, 
                       fontFamily: theme.typography.fontFamily, 
                       fontWeight: 600,
-                      px: 4,
-                      py: 1.5,
+                      px: { xs: 2, sm: 4 },
+                      py: { xs: 1, sm: 1.5 },
                       borderRadius: '50px',
                       boxShadow: 3,
                       transition: 'all 0.3s ease',
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
                       '&:hover': {
                         transform: 'scale(1.05)',
                         boxShadow: 6,
@@ -423,7 +433,7 @@ const SupportTicketDetailsPage = () => {
                     disabled={isReplying || !replyContent.trim()} 
                     startIcon={isReplying ? <Loader size="small" /> : <SendIcon />}
                   >
-                    {isReplying ? 'Sending...' : 'Send Reply'}
+                    {isReplying ? (isMobile ? 'Sending...' : 'Sending Reply...') : (isMobile ? 'Send' : 'Send Reply')}
                   </Button>
                 </Box>
               </Box>

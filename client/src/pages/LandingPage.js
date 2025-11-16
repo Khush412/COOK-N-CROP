@@ -195,7 +195,7 @@ const LandingPage = () => {
           </Box>
           
           {/* ThreeDMarque component - replacing CircularGallery */}
-          <Box sx={{ mb: 8, height: '650px' }}> {/* Increased container height from 450px to 650px */}
+          <Box sx={{ mb: { xs: 4, sm: 6, md: 8 }, height: { xs: '350px', sm: '500px', md: '650px' } }}> {/* Responsive container height and margin */}
             <FeaturedProductsMarquee />
           </Box>
           
@@ -206,7 +206,8 @@ const LandingPage = () => {
               variant="contained"
               size="large"
               endIcon={<ArrowForward />}
-              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 5, py: 1.5,
+              sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: { xs: 3, sm: 5 }, py: { xs: 1, sm: 1.5 },
+                fontSize: { xs: '0.9rem', sm: '1rem' },
                 boxShadow: `0 0 15px ${alpha(theme.palette.primary.main, 0.6)}, 0 0 25px ${alpha(theme.palette.primary.main, 0.4)}`,
                 transition: 'box-shadow 0.3s ease',
                 '&:hover': { boxShadow: `0 0 25px ${alpha(theme.palette.primary.main, 0.8)}, 0 0 40px ${alpha(theme.palette.primary.main, 0.6)}` }
@@ -219,7 +220,7 @@ const LandingPage = () => {
       </AnimatedSection>
 
       {/* 3D Carousel Section - Added below the hero section */}
-      <Box sx={{ py: 6, bgcolor: 'background.paper' }}>
+      <Box sx={{ py: 6, bgcolor: 'background.paper', display: { xs: 'none', lg: 'block' } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
@@ -287,13 +288,13 @@ const LandingPage = () => {
       </Box>
 
       {/* Explore Recipes Section - DomeGallery */}
-      <AnimatedSection id="explore-recipes" sx={{ bgcolor: 'background.default', py: { xs: 8, md: 12 } }}>
+      <AnimatedSection id="explore-recipes" sx={{ bgcolor: 'background.default', py: { xs: 2, md: 12 } }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, fontFamily: theme.typography.fontFamily }}>
+          <Box sx={{ textAlign: 'center', mb: { xs: 1, md: 4 } }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
               Explore Recipes from around the world
             </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, fontFamily: theme.typography.fontFamily, maxWidth: '600px', mx: 'auto' }}>
               Discover delicious recipes created by our community of food enthusiasts
             </Typography>
             <Divider sx={{ width: '80px', height: '4px', bgcolor: 'secondary.main', mx: 'auto' }} />
@@ -363,7 +364,15 @@ const LandingPage = () => {
                 variant="contained"
                 color="secondary"
                 size="large"
-                sx={{ py: 1.5, px: 6, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}
+                sx={{ 
+                  py: { xs: 1, sm: 1.5 }, 
+                  px: { xs: 3, sm: 6 }, 
+                  borderRadius: '50px', 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  width: { xs: 'auto', sm: 'auto' }
+                }}
               >
                 Join Now - Fresh Starts Here
               </Button>
@@ -374,7 +383,18 @@ const LandingPage = () => {
                 onClick={() => navigate('/CropCorner')}
                 variant="outlined"
                 size="large"
-                sx={{ py: 1.5, px: 6, borderRadius: '50px', fontWeight: 'bold', fontFamily: theme.typography.fontFamily, color: 'white', borderColor: 'white', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main } }}
+                sx={{ 
+                  py: { xs: 1, sm: 1.5 }, 
+                  px: { xs: 3, sm: 6 }, 
+                  borderRadius: '50px', 
+                  fontWeight: 'bold', 
+                  fontFamily: theme.typography.fontFamily, 
+                  color: 'white', 
+                  borderColor: 'white', 
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  width: { xs: 'auto', sm: 'auto' },
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main } 
+                }}
               >
                 Browse Products
               </Button>
@@ -576,6 +596,7 @@ const FeaturedRecipesGallery = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -720,21 +741,21 @@ const FeaturedRecipesGallery = () => {
   };
 
   if (loading) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+    return <div style={{ height: isMobile ? '300px' : '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
   }
 
   if (error) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
+    return <div style={{ height: isMobile ? '300px' : '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
   }
 
   // If no items, show a message
   if (items.length === 0) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No recipes available</div>;
+    return <div style={{ height: isMobile ? '300px' : '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No recipes available</div>;
   }
 
   // Use the DomeGallery component with recipes
   return (
-    <div style={{ height: '700px', position: 'relative' }}>
+    <div style={{ height: isMobile ? '350px' : '700px', position: 'relative' }}>
       <DomeGallery 
         images={items}
         fit={0.7} // Increased from 0.5 to 0.7 for a larger dome

@@ -46,53 +46,141 @@ const CouponOrdersPage = () => {
 
   return (
     <Container maxWidth="lg">
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Button component={RouterLink} to="/admin/coupons" startIcon={<ArrowBackIcon />} sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Button 
+          component={RouterLink} 
+          to="/admin/coupons" 
+          startIcon={<ArrowBackIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />} 
+          sx={{ 
+            mb: 2, 
+            fontFamily: theme.typography.fontFamily,
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            py: { xs: 0.5, sm: 1 },
+            px: { xs: 1, sm: 2 }
+          }}
+        >
           Back to Manage Coupons
         </Button>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
-          Orders Using Coupon: <Chip label={code} color="primary" sx={{ fontSize: '1.5rem', height: 'auto', p: 0.5 }} />
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          sx={{ 
+            fontWeight: 800, 
+            fontFamily: theme.typography.fontFamily,
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
+          Orders Using Coupon: 
+          <Chip 
+            label={code} 
+            color="primary" 
+            sx={{ 
+              fontSize: { xs: '1rem', sm: '1.5rem' }, 
+              height: 'auto', 
+              p: { xs: 0.25, sm: 0.5 },
+              mt: { xs: 0.5, sm: 0 }
+            }} 
+          />
         </Typography>
       </Paper>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><Loader size="medium" /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: { xs: 3, sm: 4 } }}><Loader size="medium" /></Box>
       ) : error ? (
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
       ) : (
-        <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 4 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1, sm: 2, md: 3 }, borderRadius: 4 }}>
           {orders.length === 0 ? (
-            <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center', fontFamily: theme.typography.fontFamily }}>No orders found using this coupon.</Typography>
+            <Typography 
+              color="text.secondary" 
+              sx={{ 
+                p: { xs: 2, sm: 3 }, 
+                textAlign: 'center', 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
+              No orders found using this coupon.
+            </Typography>
           ) : (
             <>
-          <TableContainer>
-            <Table>
+          <Box sx={{ overflowX: 'auto', width: '100%' }}>
+            <Table sx={{ minWidth: { xs: 600, sm: 800 } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order ID</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>User</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Total</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>Order ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>User</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>Total</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' }, py: { xs: 1, sm: 1.5 } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {orders.map((order) => (
-                  <TableRow key={order._id} hover>
+                  <TableRow key={order._id} hover sx={{ '& td': { py: { xs: 1, sm: 1.5 } } }}>
                     <TableCell>
                       <Tooltip title={order._id}>
-                        <Typography variant="body2" noWrap sx={{ maxWidth: 100, fontFamily: theme.typography.fontFamily }}>
+                        <Typography 
+                          variant="body2" 
+                          noWrap 
+                          sx={{ 
+                            maxWidth: { xs: 80, sm: 100 }, 
+                            fontFamily: theme.typography.fontFamily,
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                          }}
+                        >
                           {order._id}
                         </Typography>
                       </Tooltip>
                     </TableCell>
-                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{order.user?.username || 'N/A'}</TableCell>
-                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.totalPrice.toFixed(2)}</TableCell>
-                    <TableCell><Chip label={order.status} color={statusColors[order.status] || 'default'} size="small" /></TableCell>
+                    <TableCell 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      }}
+                    >
+                      {order.user?.username || 'N/A'}
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      }}
+                    >
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell 
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      }}
+                    >
+                      ₹{order.totalPrice.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={order.status} 
+                        color={statusColors[order.status] || 'default'} 
+                        size="small" 
+                        sx={{ 
+                          fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                        }}
+                      />
+                    </TableCell>
                     <TableCell align="right">
-                      <Button component={RouterLink} to={`/order/${order._id}`} size="small" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
+                      <Button 
+                        component={RouterLink} 
+                        to={`/order/${order._id}`} 
+                        size="small" 
+                        sx={{ 
+                          fontFamily: theme.typography.fontFamily, 
+                          borderRadius: '50px',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          py: { xs: 0.5, sm: 1 },
+                          px: { xs: 1, sm: 2 }
+                        }}
+                      >
                         Details
                       </Button>
                     </TableCell>
@@ -100,14 +188,21 @@ const CouponOrdersPage = () => {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>
+          </Box>
           {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, sm: 4 } }}>
               <Pagination
                 count={totalPages}
                 page={page}
                 onChange={(event, value) => setPage(value)}
                 color="primary"
+                sx={{ 
+                  '& .MuiPaginationItem-root': { 
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minWidth: { xs: 32, sm: 36 },
+                    height: { xs: 32, sm: 36 }
+                  }
+                }}
               />
             </Box>
           )}

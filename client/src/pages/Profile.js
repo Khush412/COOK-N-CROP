@@ -434,8 +434,6 @@ const Profile = () => {
       component="main"
       sx={{ 
         flexGrow: 1, 
-        py: { xs: 2, sm: 4 }, 
-        mt: { xs: 1, sm: 2 }, 
         bgcolor: 'background.default',
         minHeight: '100vh'
       }}
@@ -577,15 +575,15 @@ const Profile = () => {
                     <Stack direction="row" spacing={2}>
                       <Button
                         variant="outlined"
-                        size="large"
+                        size="medium"
                         startIcon={<ShareIcon />}
                         onClick={handleShareProfile}
                         sx={{ 
                           alignSelf: { xs: 'center', md: 'flex-start' }, 
                           fontFamily: theme.typography.fontFamily,
                           fontWeight: 600,
-                          px: { xs: 2, sm: 3 },
-                          py: { xs: 1, sm: 1.5 },
+                          px: { xs: 1.5, sm: 2.5 },
+                          py: { xs: 0.7, sm: 1.2 },
                           borderRadius: 2,
                           boxShadow: 3,
                           transition: 'all 0.3s ease',
@@ -593,21 +591,22 @@ const Profile = () => {
                             transform: 'scale(1.05)',
                             boxShadow: 6,
                           },
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
                         }}
                       >
                         Share Profile
                       </Button>
                       <Button
                         variant="contained"
-                        size="large"
+                        size="medium"
                         startIcon={<EditIcon />}
                         onClick={() => setEditModalOpen(true)}
                         sx={{ 
                           alignSelf: { xs: 'center', md: 'flex-start' }, 
                           fontFamily: theme.typography.fontFamily,
                           fontWeight: 600,
-                          px: { xs: 2, sm: 3 },
-                          py: { xs: 1, sm: 1.5 },
+                          px: { xs: 1.5, sm: 2.5 },
+                          py: { xs: 0.7, sm: 1.2 },
                           borderRadius: 2,
                           boxShadow: 3,
                           transition: 'all 0.3s ease',
@@ -615,6 +614,7 @@ const Profile = () => {
                             transform: 'scale(1.05)',
                             boxShadow: 6,
                           },
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
                         }}
                       >
                         Edit Profile
@@ -872,20 +872,25 @@ const Profile = () => {
                   </Stack>
                 ) : <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>No recent orders.</Typography>}
                 <Slide direction="up" in={true} timeout={1500}>
-                  <Button 
-                    component={RouterLink} 
-                    to="/profile/orders" 
-                    sx={{ 
-                      mt: 2, 
-                      fontFamily: theme.typography.fontFamily,
-                      transition: 'transform 0.2s ease',
-                      '&:hover': {
-                        transform: 'scale(1.05)',
-                      },
-                    }}
-                  >
-                    View All Orders
-                  </Button>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Button 
+                      component={RouterLink} 
+                      to="/profile/orders" 
+                      size="medium"
+                      sx={{ 
+                        fontFamily: theme.typography.fontFamily,
+                        transition: 'transform 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                        },
+                        fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                        px: { xs: 1.5, sm: 2.5, md: 3 },
+                        py: { xs: 0.7, sm: 0.9, md: 1 }
+                      }}
+                    >
+                      View All Orders
+                    </Button>
+                  </Box>
                 </Slide>
               </Paper>
             </Slide>
@@ -978,6 +983,7 @@ const Profile = () => {
                   <Button 
                     component={RouterLink} 
                     to="/profile/my-activity" 
+                    size="medium"
                     sx={{ 
                       mt: 2, 
                       fontFamily: theme.typography.fontFamily,
@@ -985,6 +991,9 @@ const Profile = () => {
                       '&:hover': {
                         transform: 'scale(1.05)',
                       },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                      px: { xs: 1.5, sm: 2.5, md: 3 },
+                      py: { xs: 0.7, sm: 0.9, md: 1 }
                     }}
                   >
                     View All Activity
@@ -1013,10 +1022,10 @@ const Profile = () => {
               <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Account Security</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h5" fontWeight={700} sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>Change Password</Typography>
+              <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: { xs: 2, sm: 2.5, md: 3 } }}>
+                <Typography variant="h5" fontWeight={700} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.25rem', sm: '1.35rem', md: '1.5rem' } }}>Change Password</Typography>
                 <Fade in={!!passwordFeedback.error} timeout={500}>
-                  <Alert variant="filled" severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+                  <Alert variant="filled" severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>
                     {passwordFeedback.error}
                   </Alert>
                 </Fade>
@@ -1024,14 +1033,14 @@ const Profile = () => {
                   <Alert 
                     variant="filled" 
                     severity="success" 
-                    sx={{ mb: 2, fontFamily: theme.typography.fontFamily }} 
+                    sx={{  fontFamily: theme.typography.fontFamily }} 
                     onClose={() => setPasswordFeedback({ ...passwordFeedback, success: '' })}
                   >
                     {passwordFeedback.success}
                   </Alert>
                 </Fade>
                 <Box component="form" onSubmit={savePassword}>
-                  <Stack spacing={2}>
+                  <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }}>
                     <TextField 
                       type="password" 
                       label="Current Password" 
@@ -1049,6 +1058,7 @@ const Profile = () => {
                         '&:hover': {
                           transform: 'translateX(5px)',
                         },
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1rem' }
                       }} 
                     />
                     <TextField 
@@ -1069,6 +1079,7 @@ const Profile = () => {
                         '&:hover': {
                           transform: 'translateX(5px)',
                         },
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1rem' }
                       }} 
                     />
                     <TextField 
@@ -1088,6 +1099,7 @@ const Profile = () => {
                         '&:hover': {
                           transform: 'translateX(5px)',
                         },
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1rem' }
                       }} 
                     />
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -1097,12 +1109,16 @@ const Profile = () => {
                           variant="contained" 
                           disabled={passwordLoading} 
                           startIcon={passwordLoading ? <Loader  /> : null} 
+                          size="medium"
                           sx={{ 
                             fontFamily: theme.typography.fontFamily,
                             transition: 'transform 0.2s ease',
                             '&:hover': {
                               transform: 'scale(1.05)',
                             },
+                            fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' },
+                            px: { xs: 2, sm: 3, md: 4 },
+                            py: { xs: 0.8, sm: 1, md: 1.2 }
                           }}
                         >
                           {passwordLoading ? 'Updating...' : 'Change Password'}
@@ -1140,14 +1156,14 @@ const Profile = () => {
                     const linked = !!user?.[key]?.id;
                     return (
                       <Zoom key={key} in={true} timeout={500}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2, transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-3px)', boxShadow: theme.shadows[2] } }}>
-                          <Icon sx={{ color, mr: 2, fontSize: 28 }} />
-                          <Typography variant="subtitle1" fontWeight="bold" flexGrow={1} sx={{ fontFamily: theme.typography.fontFamily }}>{name}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: { xs: 1, sm: 1.5, md: 2 }, border: 1, borderColor: 'divider', borderRadius: 2, transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-3px)', boxShadow: theme.shadows[2] } }}>
+                          <Icon sx={{ color, mr: { xs: 1, sm: 1.5, md: 2 }, fontSize: { xs: 24, sm: 28, md: 32 } }} />
+                          <Typography variant="subtitle1" fontWeight="bold" flexGrow={1} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' } }}>{name}</Typography>
                           {linked ? (
                             <Button 
                               variant="outlined" 
                               color="error" 
-                               
+                              size="small"
                               onClick={() => handleUnlinkSocial(key)} 
                               sx={{ 
                                 fontFamily: theme.typography.fontFamily,
@@ -1155,6 +1171,10 @@ const Profile = () => {
                                 '&:hover': {
                                   transform: 'scale(1.05)',
                                 },
+                                fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                                px: { xs: 1, sm: 1.5, md: 2.5 },
+                                py: { xs: 0.4, sm: 0.5, md: 0.8 },
+                                minWidth: { xs: '70px', sm: '80px', md: '90px' }
                               }}
                             >
                               Unlink
@@ -1162,7 +1182,7 @@ const Profile = () => {
                           ) : (
                             <Button 
                               variant="contained" 
-                               
+                              size="small"
                               onClick={() => linkSocial(key)} 
                               sx={{ 
                                 fontFamily: theme.typography.fontFamily,
@@ -1170,6 +1190,10 @@ const Profile = () => {
                                 '&:hover': {
                                   transform: 'scale(1.05)',
                                 },
+                                fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                                px: { xs: 1, sm: 1.5, md: 2.5 },
+                                py: { xs: 0.4, sm: 0.5, md: 0.8 },
+                                minWidth: { xs: '70px', sm: '80px', md: '90px' }
                               }}
                             >
                               Link Account

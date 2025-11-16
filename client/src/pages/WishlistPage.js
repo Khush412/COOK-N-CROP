@@ -15,6 +15,7 @@ import {
   Stack,
   Chip,
   FormControl,
+  useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
@@ -31,6 +32,7 @@ import {
 const WishlistPage = () => {
   const { user } = useAuth();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,46 +120,46 @@ const WishlistPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, mt: 12 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, mt: { xs: 8, sm: 12 } }}>
         <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily }}>{error}</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
+      <Paper sx={{ p: { xs: 4, md: 6 }, mb: { xs: 4, sm: 5, md: 6 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant={isMobile ? "h5" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 3, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
           My Wishlist
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}>
           Your favorite products, all in one place.
         </Typography>
       </Paper>
       
       {wishlist.length === 0 ? (
-        <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
-          <FavoriteBorderIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h5" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+        <Paper sx={{ p: { xs: 2, sm: 6 }, textAlign: 'center', mt: { xs: 2, sm: 4 }, borderRadius: { xs: 2, sm: 3 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})` }}>
+          <FavoriteBorderIcon sx={{ fontSize: { xs: 60, sm: 80 }, color: 'grey.400', mb: 2 }} />
+          <Typography variant={isMobile ? "h6" : "h5"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
             Your wishlist is empty.
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto' }}>
+          <Typography color="text.secondary" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, mb: 3, maxWidth: 500, mx: 'auto', fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Add products you love to your wishlist to save them for later.
           </Typography>
-          <Button component={RouterLink} to="/CropCorner" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: 4, fontFamily: theme.typography.fontFamily }}>
+          <Button component={RouterLink} to="/CropCorner" variant="contained" sx={{ mt: 3, borderRadius: '50px', px: { xs: 3, sm: 4 }, py: { xs: 1, sm: 1.5 }, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Explore Products
           </Button>
         </Paper>
       ) : (
         <>
           {/* Filters and Search */}
-          <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2, sm: 3 }, borderRadius: { xs: 2, sm: 3 } }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }} alignItems="center" sx={{ width: '100%' }}>
               <TextField
                 placeholder="Search wishlist..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                size="small"
+                size={isMobile ? "small" : "medium"}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -168,21 +170,22 @@ const WishlistPage = () => {
                 sx={{ 
                   flex: 1,
                   '& .MuiOutlinedInput-root': { borderRadius: '20px' },
-                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                  '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }
                 }}
                 InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
               />
               
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: 'center' }}>
                 <Button
                   variant={sortOption === 'newest' ? 'contained' : 'outlined'}
                   onClick={() => setSortOption('newest')}
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     borderRadius: 2,
-                    px: 2,
-                    py: 1,
-                    fontSize: '0.875rem'
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.7, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minWidth: { xs: 'auto', sm: 80 }
                   }}
                 >
                   Newest
@@ -193,9 +196,10 @@ const WishlistPage = () => {
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     borderRadius: 2,
-                    px: 2,
-                    py: 1,
-                    fontSize: '0.875rem'
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.7, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minWidth: { xs: 'auto', sm: 80 }
                   }}
                 >
                   Price ↑
@@ -206,9 +210,10 @@ const WishlistPage = () => {
                   sx={{ 
                     fontFamily: theme.typography.fontFamily, 
                     borderRadius: 2,
-                    px: 2,
-                    py: 1,
-                    fontSize: '0.875rem'
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.7, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minWidth: { xs: 'auto', sm: 80 }
                   }}
                 >
                   Price ↓
@@ -218,14 +223,14 @@ const WishlistPage = () => {
           </Paper>
           
           {paginatedProducts.length === 0 ? (
-            <Paper sx={{ p: { xs: 3, sm: 6 }, textAlign: 'center', mt: 4, borderRadius: 3 }}>
-              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+            <Paper sx={{ p: { xs: 2, sm: 6 }, textAlign: 'center', mt: { xs: 2, sm: 4 }, borderRadius: { xs: 2, sm: 3 } }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 No products found matching your search.
               </Typography>
             </Paper>
           ) : (
             <>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 2 : 3}>
                 {paginatedProducts.filter(p => p).map((product) => (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product._id}>
                     <ProductCard product={product} showSnackbar={(message, severity) => setSnackbar({ open: true, message, severity })} />
@@ -234,16 +239,16 @@ const WishlistPage = () => {
               </Grid>
               
               {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, sm: 4 } }}>
                   <Pagination
                     count={totalPages}
                     page={page}
                     onChange={handlePageChange}
                     color="primary"
-                    siblingCount={1}
-                    boundaryCount={1}
+                    siblingCount={isMobile ? 0 : 1}
+                    boundaryCount={isMobile ? 1 : 2}
                     sx={{ 
-                      '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily },
+                      '& .MuiPaginationItem-root': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } },
                       '& .Mui-selected': { fontWeight: 'bold' }
                     }}
                   />

@@ -753,33 +753,81 @@ const PaymentPage = () => {
       </Dialog>
 
       {/* Order Success Dialog */}
-      <Dialog open={orderSuccessDialogOpen} onClose={() => navigate('/')} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily, pt: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <CheckCircleOutlineIcon sx={{ fontSize: 80, color: 'success.main' }} />
+      <Dialog 
+        open={orderSuccessDialogOpen} 
+        onClose={() => navigate('/')} 
+        maxWidth="sm" 
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 4 },
+            width: 'auto',
+            maxWidth: 'lg'
+          }
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily, pt: { xs: 3, sm: 4 } }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 1, sm: 2 } }}>
+            <CheckCircleOutlineIcon sx={{ fontSize: { xs: 60, sm: 80 }, color: 'success.main' }} />
           </Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 'bold', 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '1.5rem', sm: '2.125rem' }
+            }}
+          >
             Order Placed Successfully!
           </Typography>
         </DialogTitle>
-        <DialogContent sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily, pb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+        <DialogContent sx={{ textAlign: 'center', fontFamily: theme.typography.fontFamily, pb: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              mb: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}
+          >
             Thank you for your order!
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 1, fontFamily: theme.typography.fontFamily }}>
+          <Typography 
+            color="text.secondary" 
+            sx={{ 
+              mb: 1, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.9rem', sm: '1rem' }
+            }}
+          >
             Your order #{placedOrderId?.toString().slice(-6)} has been placed successfully.
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 3, fontFamily: theme.typography.fontFamily }}>
+          <Typography 
+            color="text.secondary" 
+            sx={{ 
+              mb: 3, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.9rem', sm: '1rem' }
+            }}
+          >
             You will receive a confirmation email shortly.
           </Typography>
-          <Box sx={{ p: 2, bgcolor: alpha(theme.palette.success.main, 0.1), borderRadius: 2 }}>
-            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, color: 'success.main', fontWeight: 'bold' }}>
-              <EmojiEventsIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
+          <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: alpha(theme.palette.success.main, 0.1), borderRadius: 2 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily, 
+                color: 'success.main', 
+                fontWeight: 'bold',
+                fontSize: { xs: '0.85rem', sm: '0.875rem' }
+              }}
+            >
+              <EmojiEventsIcon sx={{ verticalAlign: 'middle', mr: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }} />
               You earned {Math.floor(total * 0.03)} Harvest Coins on this purchase!
             </Typography>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', p: 3, pt: 0 }}>
+        <DialogActions sx={{ justifyContent: 'center', p: { xs: 2, sm: 3 }, pt: 0, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
           <Button
             variant="contained"
             component={RouterLink}
@@ -787,9 +835,11 @@ const PaymentPage = () => {
             sx={{ 
               fontFamily: theme.typography.fontFamily, 
               borderRadius: '50px', 
-              px: 4,
-              py: 1.5,
-              fontWeight: 'bold'
+              px: { xs: 3, sm: 4 },
+              py: { xs: 1, sm: 1.5 },
+              fontWeight: 'bold',
+              width: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.9rem', sm: '1rem' }
             }}
           >
             View Order Details
@@ -801,9 +851,11 @@ const PaymentPage = () => {
             sx={{ 
               fontFamily: theme.typography.fontFamily, 
               borderRadius: '50px', 
-              px: 4,
-              py: 1.5,
-              fontWeight: 'bold'
+              px: { xs: 3, sm: 4 },
+              py: { xs: 1, sm: 1.5 },
+              fontWeight: 'bold',
+              width: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.9rem', sm: '1rem' }
             }}
           >
             Continue Shopping

@@ -17,6 +17,7 @@ import {
   Divider,
   LinearProgress,
   Skeleton,
+  useMediaQuery
 } from '@mui/material';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StarsIcon from '@mui/icons-material/Stars';
@@ -28,6 +29,8 @@ import Loader from '../custom_components/Loader';
 
 const OffersPage = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,8 +106,8 @@ const OffersPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: { xs: 4, sm: 6, md: 8 } }}>
           <Loader size="large" />
         </Box>
       </Container>
@@ -113,8 +116,8 @@ const OffersPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
-        <Alert severity="error" sx={{ my: 2 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: { xs: 2, sm: 3, md: 4 } }}>
+        <Alert severity="error" sx={{ my: 2, fontSize: { xs: '0.85rem', sm: '1rem' } }}>
           {error}
         </Alert>
       </Container>
@@ -122,13 +125,13 @@ const OffersPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 10, md: 12 }, py: { xs: 2, sm: 3, md: 4 } }}>
       {/* Header Section */}
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} sx={{ mb: 2 }}>
-          <LocalOfferIcon sx={{ fontSize: 48, color: theme.palette.primary.main }} />
+      <Box sx={{ mb: { xs: 3, sm: 4, md: 4 }, textAlign: 'center' }}>
+        <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: { xs: 1, sm: 2 } }}>
+          <LocalOfferIcon sx={{ fontSize: isMobile ? 32 : 48, color: theme.palette.primary.main }} />
           <Typography 
-            variant="h2" 
+            variant={isMobile ? "h4" : "h2"} 
             component="h1" 
             fontWeight="800" 
             sx={{ 
@@ -136,19 +139,21 @@ const OffersPage = () => {
               background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              backgroundClip: 'text',
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
             }}
           >
             Exclusive Offers
           </Typography>
         </Stack>
         <Typography 
-          variant="h6" 
+          variant={isMobile ? "body1" : "h6"} 
           color="text.secondary" 
           sx={{ 
             fontFamily: theme.typography.fontFamily,
-            maxWidth: 600,
-            mx: 'auto'
+            maxWidth: isMobile ? 300 : 600,
+            mx: 'auto',
+            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
           }}
         >
           Unlock personalized deals based on your shopping journey. Climb membership tiers to access premium discounts.
@@ -157,23 +162,23 @@ const OffersPage = () => {
 
       {/* Membership Status Card */}
       <Card sx={{ 
-        mb: 4, 
-        borderRadius: 3, 
+        mb: { xs: 3, sm: 4, md: 4 }, 
+        borderRadius: isMobile ? 2 : 3, 
         border: `2px solid ${getTierColor(userTier)}`,
         background: `linear-gradient(135deg, ${alpha(getTierColor(userTier), 0.1)}, ${alpha(theme.palette.background.paper, 0.8)})`,
         backdropFilter: 'blur(10px)',
         boxShadow: `0 8px 32px rgba(0, 0, 0, 0.1)`
       }}>
         <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: { xs: 1, sm: 2 } }}>
             <Box>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <StarsIcon sx={{ fontSize: 36, color: getTierColor(userTier) }} />
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <StarsIcon sx={{ fontSize: isMobile ? 24 : 36, color: getTierColor(userTier) }} />
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant={isMobile ? "body1" : "h5"} sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' } }}>
                     {getTierLabel(userTier)}
                   </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     Current Membership Tier
                   </Typography>
                 </Box>
@@ -181,29 +186,29 @@ const OffersPage = () => {
             </Box>
             
             <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, color: getTierColor(userTier) }}>
+              <Typography variant={isMobile ? "h6" : "h4"} sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, color: getTierColor(userTier), fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' } }}>
                 ₹{totalSpent.toFixed(2)}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                 Total Spent • {orderCount} Orders
               </Typography>
             </Box>
           </Box>
           
           {getNextTier && (
-            <Box sx={{ mt: 3 }}>
-              <Divider sx={{ mb: 2 }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: 1 }}>
+            <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+              <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, fontFamily: theme.typography.fontFamily, mb: { xs: 0.5, sm: 1 }, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 Progress to {getNextTier.name} Tier
               </Typography>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 1, sm: 2 }} alignItems="center">
                 <Box sx={{ flexGrow: 1 }}>
                   <LinearProgress 
                     variant="determinate" 
                     value={Math.min(100, (totalSpent / getNextTier.spending) * 100)} 
                     sx={{ 
-                      height: 10, 
-                      borderRadius: 5,
+                      height: isMobile ? 6 : 10, 
+                      borderRadius: isMobile ? 3 : 5,
                       bgcolor: alpha(theme.palette.divider, 0.3),
                       '& .MuiLinearProgress-bar': {
                         bgcolor: getNextTier.color
@@ -211,18 +216,18 @@ const OffersPage = () => {
                     }} 
                   />
                 </Box>
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, minWidth: 200 }}>
+                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, minWidth: isMobile ? 120 : 200, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                   ₹{totalSpent.toFixed(2)} of ₹{getNextTier.spending} spent
                 </Typography>
               </Stack>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" sx={{ mt: 1 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 1, sm: 2 }} alignItems="center" sx={{ mt: { xs: 0.5, sm: 1 } }}>
                 <Box sx={{ flexGrow: 1 }}>
                   <LinearProgress 
                     variant="determinate" 
                     value={Math.min(100, (orderCount / getNextTier.orders) * 100)} 
                     sx={{ 
-                      height: 10, 
-                      borderRadius: 5,
+                      height: isMobile ? 6 : 10, 
+                      borderRadius: isMobile ? 3 : 5,
                       bgcolor: alpha(theme.palette.divider, 0.3),
                       '& .MuiLinearProgress-bar': {
                         bgcolor: getNextTier.color
@@ -230,7 +235,7 @@ const OffersPage = () => {
                     }} 
                   />
                 </Box>
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, minWidth: 200 }}>
+                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, minWidth: isMobile ? 120 : 200, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                   {orderCount} of {getNextTier.orders} orders
                 </Typography>
               </Stack>
@@ -241,42 +246,45 @@ const OffersPage = () => {
 
       {/* Offers Section */}
       <Typography 
-        variant="h4" 
+        variant={isMobile ? "h6" : "h4"} 
         sx={{ 
           fontFamily: theme.typography.fontFamily,
           fontWeight: 700,
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           display: 'flex',
           alignItems: 'center',
-          gap: 1
+          gap: 0.5,
+          fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' }
         }}
       >
-        <LocalOfferIcon sx={{ color: theme.palette.primary.main }} />
+        <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: isMobile ? 20 : 28 }} />
         Your Personalized Offers
       </Typography>
 
       {offers.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, boxShadow: theme.shadows[3] }}>
-          <LocalOfferIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+        <Paper sx={{ p: isMobile ? 3 : 6, textAlign: 'center', borderRadius: isMobile ? 2 : 3, boxShadow: theme.shadows[3] }}>
+          <LocalOfferIcon sx={{ fontSize: isMobile ? 40 : 64, color: 'grey.400', mb: 2 }} />
           <Typography 
-            variant="h5" 
+            variant={isMobile ? "body1" : "h5"} 
             color="text.secondary" 
             sx={{ 
               fontFamily: theme.typography.fontFamily,
               mb: 2,
-              fontWeight: 600
+              fontWeight: 600,
+              fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' }
             }}
           >
             No Special Offers Available
           </Typography>
           <Typography 
-            variant="body1" 
+            variant="body2" 
             color="text.secondary" 
             sx={{ 
               fontFamily: theme.typography.fontFamily,
-              mb: 3,
-              maxWidth: 500,
-              mx: 'auto'
+              mb: isMobile ? 2 : 3,
+              maxWidth: isMobile ? 250 : 500,
+              mx: 'auto',
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
             }}
           >
             We couldn't find any special offers for your current membership tier. 
@@ -284,21 +292,22 @@ const OffersPage = () => {
           </Typography>
           <Button 
             variant="contained" 
-            size="large"
+            size={isMobile ? "small" : "large"}
             onClick={() => navigate('/CropCorner')}
             sx={{ 
               borderRadius: '50px',
-              px: 4,
-              py: 1.5,
+              px: isMobile ? 2 : 4,
+              py: isMobile ? 0.75 : 1.5,
               fontWeight: 600,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' }
             }}
           >
-            Start Shopping
+            {isMobile ? 'Shop' : 'Start Shopping'}
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={isMobile ? 1.5 : 3}>
           {offers.map((offer) => (
             <Grid key={offer._id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card 
@@ -306,11 +315,11 @@ const OffersPage = () => {
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  borderRadius: 3,
+                  borderRadius: isMobile ? 2 : 3,
                   border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
+                    transform: isMobile ? 'none' : 'translateY(-8px)',
                     boxShadow: theme.shadows[12],
                     border: `1px solid ${theme.palette.primary.main}`
                   },
@@ -326,19 +335,20 @@ const OffersPage = () => {
                   width: 0, 
                   height: 0,
                   borderStyle: 'solid',
-                  borderWidth: '0 60px 60px 0',
+                  borderWidth: isMobile ? '0 40px 40px 0' : '0 60px 60px 0',
                   borderColor: `transparent ${theme.palette.primary.main} transparent transparent`,
                   zIndex: 1
                 }} />
-                <CardContent sx={{ flexGrow: 1, pt: 3, pb: 2, position: 'relative', zIndex: 2 }}>
-                  <Box sx={{ mb: 2, textAlign: 'center' }}>
+                <CardContent sx={{ flexGrow: 1, pt: isMobile ? 2 : 3, pb: isMobile ? 1 : 2, position: 'relative', zIndex: 2 }}>
+                  <Box sx={{ mb: isMobile ? 1 : 2, textAlign: 'center' }}>
                     <Typography 
-                      variant="h3" 
+                      variant={isMobile ? "h4" : "h3"} 
                       fontWeight="800" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
                         color: theme.palette.primary.main,
-                        mb: 1
+                        mb: 0.5,
+                        fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       {offer.discountType === 'percentage' 
@@ -351,38 +361,42 @@ const OffersPage = () => {
                       size="small" 
                       sx={{ 
                         fontWeight: 'bold',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        height: isMobile ? 20 : 24,
+                        fontSize: isMobile ? '0.6rem' : '0.75rem'
                       }} 
                     />
                   </Box>
                   
-                  <Divider sx={{ my: 2 }} />
+                  <Divider sx={{ my: isMobile ? 1 : 2 }} />
                   
                   <Typography 
-                    variant="h6" 
+                    variant={isMobile ? "body1" : "h6"} 
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
-                      mb: 2,
+                      mb: isMobile ? 1 : 2,
                       textAlign: 'center',
-                      fontWeight: 700
+                      fontWeight: 700,
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     {offer.code}
                   </Typography>
                   
-                  <Box sx={{ mb: 2 }}>
+                  <Box sx={{ mb: isMobile ? 1 : 2 }}>
                     <Typography 
                       variant="body2" 
                       color="text.secondary" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
-                        mb: 1,
+                        mb: 0.5,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1
+                        gap: 0.5,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }}
                     >
-                      <TrendingUpIcon fontSize="small" />
+                      <TrendingUpIcon fontSize="small" sx={{ fontSize: isMobile ? 12 : 16 }} />
                       {offer.minPurchase > 0 
                         ? `Minimum purchase: ₹${offer.minPurchase}` 
                         : 'No minimum purchase required'}
@@ -395,30 +409,32 @@ const OffersPage = () => {
                         fontFamily: theme.typography.fontFamily,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1
+                        gap: 0.5,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }}
                     >
-                      <EmojiEventsIcon fontSize="small" />
+                      <EmojiEventsIcon fontSize="small" sx={{ fontSize: isMobile ? 12 : 16 }} />
                       Expires: {new Date(offer.expiresAt).toLocaleDateString()}
                     </Typography>
                   </Box>
                 </CardContent>
                 
-                <CardActions sx={{ p: 2, pt: 0 }}>
+                <CardActions sx={{ p: isMobile ? 1 : 2, pt: 0 }}>
                   <Button
                     variant="contained"
                     fullWidth
-                    size="large"
+                    size={isMobile ? "small" : "large"}
                     onClick={() => handleApplyCoupon(offer.code)}
                     sx={{
                       borderRadius: '50px',
-                      py: 1.5,
+                      py: isMobile ? 0.75 : 1.5,
                       fontWeight: 'bold',
                       textTransform: 'none',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       '&:hover': {
                         boxShadow: '0 6px 16px rgba(0,0,0,0.2)'
-                      }
+                      },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }
                     }}
                   >
                     Apply to Cart
@@ -431,59 +447,60 @@ const OffersPage = () => {
       )}
 
       {/* Membership Benefits Section */}
-      <Box sx={{ mt: 6, p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+      <Box sx={{ mt: { xs: 4, sm: 6, md: 6 }, p: isMobile ? 2 : 3, borderRadius: isMobile ? 2 : 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
         <Typography 
-          variant="h4" 
+          variant={isMobile ? "h6" : "h4"} 
           sx={{ 
             fontFamily: theme.typography.fontFamily,
             fontWeight: 700,
-            mb: 3,
+            mb: { xs: 2, sm: 3 },
             display: 'flex',
             alignItems: 'center',
-            gap: 1
+            gap: 0.5,
+            fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2rem' }
           }}
         >
-          <StarsIcon sx={{ color: theme.palette.primary.main }} />
+          <StarsIcon sx={{ color: theme.palette.primary.main, fontSize: isMobile ? 20 : 28 }} />
           Membership Tiers & Benefits
         </Typography>
         
-        <Grid container spacing={3}>
+        <Grid container spacing={isMobile ? 1.5 : 3}>
           <Grid size={{ xs: 12, md: 4 }}>
-            <Card sx={{ height: '100%', borderRadius: 2, border: '1px solid #CD7F32', boxShadow: theme.shadows[4] }}>
+            <Card sx={{ height: '100%', borderRadius: isMobile ? 1 : 2, border: '1px solid #CD7F32', boxShadow: theme.shadows[4] }}>
               <CardContent>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Box sx={{ textAlign: 'center', mb: isMobile ? 1 : 2 }}>
                   <Chip 
                     label="Bronze" 
                     sx={{ 
                       bgcolor: '#CD7F32', 
                       color: 'white', 
                       fontWeight: 'bold',
-                      fontSize: '1.1rem',
-                      height: 36,
-                      mb: 1
+                      fontSize: isMobile ? '0.8rem' : '1.1rem',
+                      height: isMobile ? 24 : 36,
+                      mb: 0.5
                     }} 
                   />
-                  <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant={isMobile ? "body1" : "h5"} sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' } }}>
                     ₹0+
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     or 0+ orders
                   </Typography>
                 </Box>
                 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: isMobile ? 1 : 2 }} />
                 
-                <Stack spacing={1.5}>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EmojiEventsIcon fontSize="small" sx={{ color: '#CD7F32' }} />
+                <Stack spacing={isMobile ? 0.75 : 1.5}>
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <EmojiEventsIcon fontSize="small" sx={{ color: '#CD7F32', fontSize: isMobile ? 12 : 16 }} />
                     Earn 3% Harvest Coins
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocalOfferIcon fontSize="small" sx={{ color: '#CD7F32' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <LocalOfferIcon fontSize="small" sx={{ color: '#CD7F32', fontSize: isMobile ? 12 : 16 }} />
                     Access to basic offers
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon fontSize="small" sx={{ color: '#CD7F32' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <TrendingUpIcon fontSize="small" sx={{ color: '#CD7F32', fontSize: isMobile ? 12 : 16 }} />
                     Limited to moderate discounts
                   </Typography>
                 </Stack>
@@ -492,41 +509,41 @@ const OffersPage = () => {
           </Grid>
           
           <Grid size={{ xs: 12, md: 4 }}>
-            <Card sx={{ height: '100%', borderRadius: 2, border: '1px solid #C0C0C0', boxShadow: theme.shadows[6] }}>
+            <Card sx={{ height: '100%', borderRadius: isMobile ? 1 : 2, border: '1px solid #C0C0C0', boxShadow: theme.shadows[6] }}>
               <CardContent>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Box sx={{ textAlign: 'center', mb: isMobile ? 1 : 2 }}>
                   <Chip 
                     label="Silver" 
                     sx={{ 
                       bgcolor: '#C0C0C0', 
                       color: 'white', 
                       fontWeight: 'bold',
-                      fontSize: '1.1rem',
-                      height: 36,
-                      mb: 1
+                      fontSize: isMobile ? '0.8rem' : '1.1rem',
+                      height: isMobile ? 24 : 36,
+                      mb: 0.5
                     }} 
                   />
-                  <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant={isMobile ? "body1" : "h5"} sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' } }}>
                     ₹2000+
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     or 5+ orders
                   </Typography>
                 </Box>
                 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: isMobile ? 1 : 2 }} />
                 
-                <Stack spacing={1.5}>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EmojiEventsIcon fontSize="small" sx={{ color: '#C0C0C0' }} />
+                <Stack spacing={isMobile ? 0.75 : 1.5}>
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <EmojiEventsIcon fontSize="small" sx={{ color: '#C0C0C0', fontSize: isMobile ? 12 : 16 }} />
                     Earn 5% Harvest Coins
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocalOfferIcon fontSize="small" sx={{ color: '#C0C0C0' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <LocalOfferIcon fontSize="small" sx={{ color: '#C0C0C0', fontSize: isMobile ? 12 : 16 }} />
                     Access to better offers
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon fontSize="small" sx={{ color: '#C0C0C0' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <TrendingUpIcon fontSize="small" sx={{ color: '#C0C0C0', fontSize: isMobile ? 12 : 16 }} />
                     Higher-value discounts
                   </Typography>
                 </Stack>
@@ -535,41 +552,41 @@ const OffersPage = () => {
           </Grid>
           
           <Grid size={{ xs: 12, md: 4 }}>
-            <Card sx={{ height: '100%', borderRadius: 2, border: '1px solid #FFD700', boxShadow: theme.shadows[8] }}>
+            <Card sx={{ height: '100%', borderRadius: isMobile ? 1 : 2, border: '1px solid #FFD700', boxShadow: theme.shadows[8] }}>
               <CardContent>
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Box sx={{ textAlign: 'center', mb: isMobile ? 1 : 2 }}>
                   <Chip 
                     label="Gold" 
                     sx={{ 
                       bgcolor: '#FFD700', 
                       color: 'black', 
                       fontWeight: 'bold',
-                      fontSize: '1.1rem',
-                      height: 36,
-                      mb: 1
+                      fontSize: isMobile ? '0.8rem' : '1.1rem',
+                      height: isMobile ? 24 : 36,
+                      mb: 0.5
                     }} 
                   />
-                  <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant={isMobile ? "body1" : "h5"} sx={{ fontWeight: 700, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' } }}>
                     ₹8000+
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     or 10+ orders
                   </Typography>
                 </Box>
                 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: isMobile ? 1 : 2 }} />
                 
-                <Stack spacing={1.5}>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EmojiEventsIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                <Stack spacing={isMobile ? 0.75 : 1.5}>
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <EmojiEventsIcon fontSize="small" sx={{ color: '#FFD700', fontSize: isMobile ? 12 : 16 }} />
                     Earn 8% Harvest Coins
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LocalOfferIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <LocalOfferIcon fontSize="small" sx={{ color: '#FFD700', fontSize: isMobile ? 12 : 16 }} />
                     Access to all exclusive offers
                   </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                  <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    <TrendingUpIcon fontSize="small" sx={{ color: '#FFD700', fontSize: isMobile ? 12 : 16 }} />
                     Premium discounts & benefits
                   </Typography>
                 </Stack>

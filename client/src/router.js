@@ -43,7 +43,6 @@ import AdminUserAddressesPage from './pages/admin/AdminUserAddressesPage';
 import MyActivityPage from './pages/MyActivityPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SearchPage from './pages/SearchPage';
-import HashtagPage from './pages/HashtagPage';
 import ExploreGroupsPage from './pages/ExploreGroupsPage'; // New
 import ExploreAllPage from './pages/ExploreAllPage'; // New
 import CreateGroupPage from './pages/CreateGroupPage'; // New
@@ -74,7 +73,29 @@ export default function AppRouter() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/user/:username" element={<PublicProfilePage />} /> {/* New: Public Profile Page */}
       <Route path="/post/:id" element={<PostPage />} /> {/* New: Single Post Page */}
-      <Route path="/feed" element={<FeedPage />} /> {/* New */}
+      {/* Moved /feed inside PrivateRoute */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/feed" element={<FeedPage />} /> {/* New */}
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/addresses" element={<AddressManagementPage />} />
+        <Route path="/profile/collections" element={<MyCollectionsPage />} /> {/* New */}
+        <Route path="/profile/saved-posts" element={<SavedPostsPage />} />
+        <Route path="/profile/my-activity" element={<MyActivityPage />} />
+        <Route path="/profile/blocked-users" element={<BlockedUsersPage />} />
+        <Route path="/profile/wishlist" element={<WishlistPage />} />
+        <Route path="/g/:slug/edit" element={<EditGroupPage />} /> {/* Moved inside PrivateRoute */} {/* Corrected PrivateRoute usage */}
+        <Route path="/community/create" element={<CreateGroupPage />} /> {/* New */}
+        <Route path="/create-post" element={<CreatePostPage />} /> {/* New */}
+        <Route path="/create-recipe" element={<CreatePostPage />} /> {/* New */}
+        <Route path="/profile/support-tickets" element={<MySupportTicketsPage />} />
+        <Route path="/support/ticket/:id" element={<SupportTicketDetailsPage />} />
+        <Route path="/profile/orders" element={<OrderHistoryPage />} />
+        <Route path="/messages" element={<MessengerPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/offers" element={<OffersPage />} /> // Add this route
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/order/:id" element={<OrderDetailsPage />} />
+      </Route>
       <Route path="/community" element={<Community />} />
       <Route path="/community/popular" element={<PopularPostsPage />} /> {/* New: Popular Posts Page */}
       <Route path="/community/explore-all" element={<ExploreAllPage />} /> {/* New: Explore All Page */}

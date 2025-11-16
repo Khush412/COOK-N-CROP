@@ -122,41 +122,41 @@ const EditOrderPage = () => {
 
   return (
     <Container maxWidth="lg">
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Button onClick={() => navigate('/admin/orders')} startIcon={<ArrowBackIcon />} sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Button onClick={() => navigate('/admin/orders')} startIcon={<ArrowBackIcon />} sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
           Back to Manage Orders
         </Button>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
           Edit Order #{orderId.slice(-6)}
         </Typography>
       </Paper>
 
-      {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>{error}</Alert>}
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         <Grid size={{ xs: 12, lg: 8 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>1. User</Typography>
-            {user && <Alert severity="info" sx={{ mt: 2, fontFamily: theme.typography.fontFamily }}>Editing order for: <strong>{user.username}</strong></Alert>}
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>1. User</Typography>
+            {user && <Alert severity="info" sx={{ mt: 2, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Editing order for: <strong>{user.username}</strong></Alert>}
           </Paper>
 
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>2. Add/Edit Products</Typography>
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3 }}>
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>2. Add/Edit Products</Typography>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: { sm: 'center' }, mb: 3 }}>
               <Autocomplete sx={{ flexGrow: 1 }} options={productOptions} getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={(option, value) => option._id === value._id} value={product} onChange={(event, newValue) => setProduct(newValue)}
                 onInputChange={handleProductSearch} loading={productLoading}
                 renderInput={(params) => (
                   <TextField {...params} label="Search for a product to add..." variant="outlined"
                     InputProps={{ ...params.InputProps, endAdornment: (<>{productLoading ? <Loader size="small" color="inherit" /> : null}{params.InputProps.endAdornment}</>),}}
-                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }}
+                    InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }}
+                    sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }}
                   />
                 )}
               />
-              <Button variant="contained" onClick={handleAddProduct} disabled={!product} sx={{ fontFamily: theme.typography.fontFamily }}>Add</Button>
+              <Button variant="contained" onClick={handleAddProduct} disabled={!product} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' }, minWidth: { xs: '100%', sm: 'auto' } }}>Add</Button>
             </Box>
-            <Typography variant="h6" gutterBottom sx={{ fontFamily: theme.typography.fontFamily }}>Order Items</Typography>
+            <Typography variant="h6" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>Order Items</Typography>
             <List>
               {orderItems.map(item => (
                 <ListItem key={item.product} secondaryAction={<IconButton edge="end" aria-label="delete" onClick={() => handleRemoveItem(item.product)}><DeleteIcon /></IconButton>}>
@@ -164,31 +164,119 @@ const EditOrderPage = () => {
                     <Avatar 
                       src={item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`} 
                       variant="rounded" 
+                      sx={{ width: { xs: 40, sm: 50 }, height: { xs: 40, sm: 50 } }}
                     />
                   </ListItemAvatar>
-                  <ListItemText primary={item.name} secondary={`Qty: ${item.qty} - ₹${(item.price * item.qty).toFixed(2)}`} primaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily }} />
+                  <ListItemText 
+                    primary={item.name} 
+                    secondary={`Qty: ${item.qty} - ₹${(item.price * item.qty).toFixed(2)}`} 
+                    primaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }} 
+                    secondaryTypographyProps={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }} 
+                  />
                 </ListItem>
               ))}
             </List>
           </Paper>
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, position: 'sticky', top: 100 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>3. Shipping Address</Typography>
-            <TextField label="Full Name" name="fullName" value={shippingAddress.fullName || ''} onChange={handleAddressChange} fullWidth margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="Street" name="street" value={shippingAddress.street || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="City" name="city" value={shippingAddress.city || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="State" name="state" value={shippingAddress.state || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="Zip Code" name="zipCode" value={shippingAddress.zipCode || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="Country" name="country" value={shippingAddress.country || ''} onChange={handleAddressChange} fullWidth required margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
-            <TextField label="Phone (Optional)" name="phone" value={shippingAddress.phone || ''} onChange={handleAddressChange} fullWidth margin="normal" InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily } }} />
+          <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, position: 'sticky', top: { xs: 80, sm: 100 } }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>3. Shipping Address</Typography>
+            <TextField 
+              label="Full Name" 
+              name="fullName" 
+              value={shippingAddress.fullName || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="Street" 
+              name="street" 
+              value={shippingAddress.street || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              required 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="City" 
+              name="city" 
+              value={shippingAddress.city || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              required 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="State" 
+              name="state" 
+              value={shippingAddress.state || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              required 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="Zip Code" 
+              name="zipCode" 
+              value={shippingAddress.zipCode || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              required 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="Country" 
+              name="country" 
+              value={shippingAddress.country || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              required 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
+            <TextField 
+              label="Phone (Optional)" 
+              name="phone" 
+              value={shippingAddress.phone || ''} 
+              onChange={handleAddressChange} 
+              fullWidth 
+              margin="normal" 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+              sx={{ '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '1rem' } } }} 
+            />
             <Divider sx={{ my: 3 }} />
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Order Summary</Typography>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '1rem', sm: '1.25rem' } }}>Order Summary</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal</Typography>
-              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{subtotal.toFixed(2)}</Typography>
+              <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Subtotal</Typography>
+              <Typography fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>₹{subtotal.toFixed(2)}</Typography>
             </Box>
-            <Button variant="contained" color="primary" fullWidth size="large" onClick={handleSaveChanges} disabled={saving} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', py: 1.5 }}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              fullWidth 
+              size="large" 
+              onClick={handleSaveChanges} 
+              disabled={saving} 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily, 
+                fontWeight: 'bold', 
+                borderRadius: '50px', 
+                py: 1.5,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
               {saving ? <Loader size="small" /> : 'Save Changes'}
             </Button>
           </Paper>

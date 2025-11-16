@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ThemeProviderComponent as ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext"; // New
@@ -17,6 +17,35 @@ function AppContent() {
   const location = useLocation();
   // Don't show footer on messenger page
   const hideFooter = location.pathname === '/messages';
+  
+  const [showMobileDock, setShowMobileDock] = useState(true);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem('showMobileDock');
+    if (saved !== null) {
+      setShowMobileDock(JSON.parse(saved));
+    }
+  }, []);
+  
+  // Listen for changes to the MobileDock visibility
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'showMobileDock') {
+        setShowMobileDock(JSON.parse(e.newValue));
+      }
+    };
+    
+    const handleMobileDockToggle = (e) => {
+      setShowMobileDock(e.detail.visible);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('mobiledock-toggle', handleMobileDockToggle);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('mobiledock-toggle', handleMobileDockToggle);
+    };
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -27,7 +56,7 @@ function AppContent() {
       <Chatbot />
       <ScrollToTopButton />
       {!hideFooter && <Footer />}
-      <MobileDock />
+      {showMobileDock && <MobileDock />}
     </div>
   );
 }

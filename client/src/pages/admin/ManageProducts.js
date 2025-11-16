@@ -243,63 +243,102 @@ const ManageProducts = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
           Manage Products
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Add, edit, and organize all products in your store.
         </Typography>
       </Paper>
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
             <TextField
               label="Search by Name or Description"
               variant="outlined"
               size="small"
+              fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: 250, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-              inputProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+              sx={{ minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
+              inputProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
             />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel sx={{ fontFamily: theme.typography.fontFamily }}>Category</InputLabel>
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+              <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Category</InputLabel>
               <Select
                 value={categoryFilter}
                 label="Category"
                 onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
                 MenuProps={{
                   PaperProps: {
                     sx: {
                       '& .MuiMenuItem-root': {
                         fontFamily: theme.typography.fontFamily,
+                        fontSize: { xs: '0.75rem', sm: '1rem' }
                       },
                     },
                   },
                 }}
               >
-                <MenuItem value="All">All Categories</MenuItem>
+                <MenuItem value="All" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>All Categories</MenuItem>
                 {categories.map(category => (
-                  <MenuItem key={category} value={category}>{category}</MenuItem>
+                  <MenuItem key={category} value={category} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>{category}</MenuItem>
                 ))}
               </Select>
             </FormControl>
             {numSelected > 0 && (
-              <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDeleteSelected} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
+              <Button 
+                variant="contained" 
+                color="error" 
+                startIcon={<DeleteIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} 
+                onClick={handleDeleteSelected} 
+                sx={{ 
+                  borderRadius: 2, 
+                  fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  py: { xs: 0.5, sm: 1 },
+                  px: { xs: 1, sm: 2 },
+                  width: { xs: '100%', sm: 'auto' }
+                }}
+              >
                 Delete Selected ({numSelected})
               </Button>
             )}
           </Stack>
-          <Stack direction="row" spacing={1}>
-            <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={handleOpenCsvImportDialog} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 1 }} sx={{ width: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 } }}>
+            <Button 
+              variant="outlined" 
+              startIcon={<UploadFileIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} 
+              onClick={handleOpenCsvImportDialog} 
+              sx={{ 
+                borderRadius: 2, 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 },
+                width: { xs: '50%', sm: 'auto' }
+              }}
+            >
               Import CSV
             </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}>
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} 
+              onClick={() => handleOpenDialog()} 
+              sx={{ 
+                borderRadius: 2, 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 },
+                width: { xs: '50%', sm: 'auto' }
+              }}
+            >
               Add Product
             </Button>
           </Stack>
@@ -307,11 +346,11 @@ const ManageProducts = () => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table sx={{ minWidth: { xs: 600, sm: 800, md: 1000 } }}>
                 <TableHead>
                   <TableRow>
                     <TableCell padding="checkbox">
@@ -322,13 +361,13 @@ const ManageProducts = () => {
                         inputProps={{ 'aria-label': 'select all products' }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Image</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Price</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Stock</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Image</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Stock</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Status</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -336,15 +375,24 @@ const ManageProducts = () => {
                     products.map((product) => {
                       const isItemSelected = isSelected(product._id);
                       return (
-                        <TableRow key={product._id} hover onClick={(event) => handleSelectClick(event, product._id)} role="checkbox" aria-checked={isItemSelected} tabIndex={-1} selected={isItemSelected} sx={{
-                          backgroundColor: product.countInStock <= lowStockThreshold ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
-                          '& td': { py: 1.5 },
-                          '&:hover': {
-                            backgroundColor: product.countInStock <= lowStockThreshold 
-                              ? alpha(theme.palette.warning.main, 0.15) 
-                              : alpha(theme.palette.primary.main, 0.02)
-                          }
-                        }}>
+                        <TableRow 
+                          key={product._id} 
+                          hover 
+                          onClick={(event) => handleSelectClick(event, product._id)} 
+                          role="checkbox" 
+                          aria-checked={isItemSelected} 
+                          tabIndex={-1} 
+                          selected={isItemSelected} 
+                          sx={{
+                            backgroundColor: product.countInStock <= lowStockThreshold ? alpha(theme.palette.warning.main, 0.1) : 'inherit',
+                            '& td': { py: { xs: 1, sm: 1.5 } },
+                            '&:hover': {
+                              backgroundColor: product.countInStock <= lowStockThreshold 
+                                ? alpha(theme.palette.warning.main, 0.15) 
+                                : alpha(theme.palette.primary.main, 0.02)
+                            }
+                          }}
+                        >
                           <TableCell padding="checkbox">
                             <Checkbox
                               checked={isItemSelected}
@@ -355,59 +403,71 @@ const ManageProducts = () => {
                             <Avatar 
                               src={product.images && product.images.length > 0 ? `${process.env.REACT_APP_API_URL}${product.images[0]}` : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
                               variant="rounded" 
-                              sx={{ width: 50, height: 50, borderRadius: 2 }} 
+                              sx={{ width: { xs: 40, sm: 50 }, height: { xs: 40, sm: 50 }, borderRadius: 2 }} 
                             />
                           </TableCell>
-                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, mb: 0.5 }}>
+                          <TableCell id={`product-checkbox-${product._id}`} sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               {product.name}
                             </Typography>
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             <Chip 
                               label={product.category} 
                               size="small" 
                               variant="outlined"
-                              sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                              sx={{ 
+                                borderRadius: 1, 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                              }}
                             />
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               ₹{product.price.toFixed(2)}
                             </Typography>
                             {product.salePrice && product.salePrice < product.price && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontFamily: theme.typography.fontFamily }}>
+                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                                   ₹{product.price.toFixed(2)}
                                 </Typography>
                                 <Chip 
-                                  icon={<LocalOfferIcon sx={{ fontSize: 12 }} />}
+                                  icon={<LocalOfferIcon sx={{ fontSize: { xs: 10, sm: 12 } }} />}
                                   label={`${Math.round(((product.price - product.salePrice) / product.price) * 100)}%`}
                                   size="small"
                                   color="error"
-                                  sx={{ height: 20, '& .MuiChip-icon': { fontSize: 10, mr: 0.2 }, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }}
+                                  sx={{ 
+                                    height: { xs: 16, sm: 20 }, 
+                                    '& .MuiChip-icon': { fontSize: { xs: 8, sm: 10 }, mr: 0.2 }, 
+                                    '& .MuiChip-label': { 
+                                      px: 0.5, 
+                                      fontSize: { xs: '0.5rem', sm: '0.65rem' }, 
+                                      fontWeight: 500 
+                                    } 
+                                  }}
                                 />
                               </Box>
                             )}
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                 {product.countInStock}
                               </Typography>
                               {product.countInStock <= lowStockThreshold && (
                                 <Tooltip title="Low Stock">
-                                  <WarningAmberIcon sx={{ fontSize: 18, color: 'warning.main' }} />
+                                  <WarningAmberIcon sx={{ fontSize: { xs: 14, sm: 18 }, color: 'warning.main' }} />
                                 </Tooltip>
                               )}
                             </Box>
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                              {product.isFeatured && <StarIcon sx={{ fontSize: 16, color: 'secondary.main' }} />}
-                              {product.badges?.isNew && <Chip label="New" size="small" color="info" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
-                              {product.badges?.isOrganic && <Chip label="Organic" size="small" color="success" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
-                              {product.badges?.isBestseller && <Chip label="Best" size="small" color="primary" sx={{ height: 20, '& .MuiChip-label': { px: 0.5, fontSize: '0.65rem', fontWeight: 500 } }} />}
+                              {product.isFeatured && <StarIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: 'secondary.main' }} />}
+                              {product.badges?.isNew && <Chip label="New" size="small" color="info" sx={{ height: { xs: 16, sm: 20 }, '& .MuiChip-label': { px: 0.5, fontSize: { xs: '0.5rem', sm: '0.65rem' }, fontWeight: 500 } }} />}
+                              {product.badges?.isOrganic && <Chip label="Organic" size="small" color="success" sx={{ height: { xs: 16, sm: 20 }, '& .MuiChip-label': { px: 0.5, fontSize: { xs: '0.5rem', sm: '0.65rem' }, fontWeight: 500 } }} />}
+                              {product.badges?.isBestseller && <Chip label="Best" size="small" color="primary" sx={{ height: { xs: 16, sm: 20 }, '& .MuiChip-label': { px: 0.5, fontSize: { xs: '0.5rem', sm: '0.65rem' }, fontWeight: 500 } }} />}
                             </Box>
                           </TableCell>
                           <TableCell align="right">
@@ -416,7 +476,7 @@ const ManageProducts = () => {
                               onClick={(event) => handleActionsClick(event, product)}
                               sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
                             >
-                              <MoreVertIcon fontSize="small" />
+                              <MoreVertIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -425,12 +485,12 @@ const ManageProducts = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} align="center">
-                        <Box sx={{ p: 6, textAlign: 'center' }}>
-                          <Inventory2Icon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                        <Box sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center' }}>
+                          <Inventory2Icon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                             No products found
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             Try adjusting your search criteria or add a new product
                           </Typography>
                         </Box>
@@ -439,7 +499,7 @@ const ManageProducts = () => {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </Box>
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <Pagination
@@ -452,7 +512,8 @@ const ManageProducts = () => {
                   sx={{ 
                     '& .MuiPaginationItem-root': { 
                       borderRadius: 2,
-                      fontFamily: theme.typography.fontFamily
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }
                   }}
                 />
@@ -465,14 +526,14 @@ const ManageProducts = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleActionsClose}
-        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily } }}
+        sx={{ '& .MuiMenuItem-root': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } } }}
       >
         <MenuItem onClick={() => {
           handleFeatureToggle(selectedProduct?._id);
           handleActionsClose();
         }}>
           <ListItemIcon>
-            {selectedProduct?.isFeatured ? <StarBorderIcon fontSize="small" /> : <StarIcon fontSize="small" />}
+            {selectedProduct?.isFeatured ? <StarBorderIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} /> : <StarIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />}
           </ListItemIcon>
           <ListItemText>{selectedProduct?.isFeatured ? "Unfeature Product" : "Feature Product"}</ListItemText>
         </MenuItem>
@@ -481,7 +542,7 @@ const ManageProducts = () => {
           handleActionsClose();
         }}>
           <ListItemIcon>
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
           </ListItemIcon>
           <ListItemText>Edit Product</ListItemText>
         </MenuItem>
@@ -490,7 +551,7 @@ const ManageProducts = () => {
           handleActionsClose();
         }} sx={{ color: 'error.main' }}>
           <ListItemIcon>
-            <DeleteIcon fontSize="small" color="error" />
+            <DeleteIcon fontSize="small" color="error" sx={{ fontSize: { xs: 16, sm: 20 } }} />
           </ListItemIcon>
           <ListItemText>Delete Product</ListItemText>
         </MenuItem>
@@ -505,11 +566,11 @@ const ManageProducts = () => {
 
       {/* CSV Import Dialog */}
       <Dialog open={csvImportDialogOpen} onClose={handleCloseCsvImportDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: theme.typography.fontFamily, pb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
           Import Products from CSV
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily, mb: 2 }}>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily, mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Upload a CSV file to bulk import products. Make sure your file follows the required format.
           </DialogContentText>
           
@@ -517,8 +578,15 @@ const ManageProducts = () => {
             <Button
               variant="outlined"
               component="label"
-              startIcon={<DownloadIcon />}
-              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, mb: 2 }}
+              startIcon={<DownloadIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
+              sx={{ 
+                borderRadius: 2, 
+                fontFamily: theme.typography.fontFamily, 
+                mb: 2,
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Download Template
               <Input
@@ -537,8 +605,14 @@ const ManageProducts = () => {
             <Button
               variant="outlined"
               component="label"
-              startIcon={<UploadFileIcon />}
-              sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+              startIcon={<UploadFileIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
+              sx={{ 
+                borderRadius: 2, 
+                fontFamily: theme.typography.fontFamily,
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Choose CSV File
               <Input
@@ -549,7 +623,7 @@ const ManageProducts = () => {
               />
             </Button>
             {csvFile && (
-              <Typography variant="body2" sx={{ mt: 1, fontFamily: theme.typography.fontFamily }}>
+              <Typography variant="body2" sx={{ mt: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                 Selected: {csvFile.name}
               </Typography>
             )}
@@ -558,7 +632,7 @@ const ManageProducts = () => {
           {csvImportResult && (
             <Alert 
               severity={csvImportResult.success ? "success" : "error"} 
-              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}
+              sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}
             >
               {csvImportResult.message}
             </Alert>
@@ -567,7 +641,11 @@ const ManageProducts = () => {
         <DialogActions sx={{ p: 2 }}>
           <Button 
             onClick={handleCloseCsvImportDialog} 
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Cancel
           </Button>
@@ -576,7 +654,11 @@ const ManageProducts = () => {
             variant="contained" 
             disabled={!csvFile || csvImportLoading}
             startIcon={csvImportLoading ? <Loader size="small" /> : null}
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             {csvImportLoading ? 'Importing...' : 'Import'}
           </Button>
@@ -590,18 +672,22 @@ const ManageProducts = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1 }}>
+        <DialogTitle id="alert-dialog-title" sx={{ fontFamily: theme.typography.fontFamily, pb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
           {confirmAction?.title}
         </DialogTitle>
         <DialogContent sx={{ fontFamily: theme.typography.fontFamily }}>
-          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily }}>
+          <DialogContentText id="alert-dialog-description" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             {confirmAction?.message}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button 
             onClick={() => setConfirmDialogOpen(false)} 
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Cancel
           </Button>
@@ -609,7 +695,11 @@ const ManageProducts = () => {
             onClick={executeConfirmAction} 
             variant="contained" 
             autoFocus
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Confirm
           </Button>

@@ -417,7 +417,8 @@ const ProductPage = () => {
           slidesToShow: 1,
           slidesToScroll: 1,
           infinite: true,
-          dots: false
+          dots: false,
+          arrows: false
         }
       }
     ]
@@ -441,7 +442,7 @@ const ProductPage = () => {
   };
   
   return (
-    <Container maxWidth="lg" sx={{ mt: 12, py: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 8, sm: 6, md: 12 }, py: { xs: 1, sm: 2, md: 4 } }}>
       {/* Breadcrumbs */}
       <Breadcrumbs 
         aria-label="breadcrumb" 
@@ -449,17 +450,17 @@ const ProductPage = () => {
         separator={<NavigateNextIcon fontSize="small" />}
       >
         <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-          <HomeIcon fontSize="small" sx={{ mr: 0.5 }} />
-          Home
+          <HomeIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.9rem', sm: '1rem' } }} />
+          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Home</Typography>
         </RouterLink>
         <RouterLink to="/CropCorner" style={{ textDecoration: 'none', color: 'inherit' }}>
-          Store
+          <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Store</Typography>
         </RouterLink>
-        <Typography color="text.primary">{product.name}</Typography>
+        <Typography color="text.primary" variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }} noWrap>{product.name}</Typography>
       </Breadcrumbs>
 
-      <Paper sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, boxShadow: 3 }}>
-        <Grid container spacing={4}>
+      <Paper sx={{ p: { xs: 1, sm: 2, md: 4 }, borderRadius: { xs: 2, sm: 3, md: 4 }, boxShadow: 3 }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Product Images */}
           <Grid size={{ xs: 12, md: 6 }}>
             {product.images && product.images.length > 0 ? (
@@ -479,7 +480,7 @@ const ProductPage = () => {
                           height: '115%', // Make image taller
                           objectFit: 'cover',
                           objectPosition: 'center top',
-                          borderRadius: 2,
+                          borderRadius: { xs: 1, sm: 2 },
                         }}
                       />
                     </Box>
@@ -490,8 +491,8 @@ const ProductPage = () => {
                 {product.images.length > 1 && (
                   <ImageList 
                     sx={{ 
-                      mt: 2, 
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr)) !important',
+                      mt: { xs: 1, sm: 2 }, 
+                      gridTemplateColumns: { xs: 'repeat(auto-fill, minmax(60px, 1fr))', sm: 'repeat(auto-fill, minmax(80px, 1fr))' } + ' !important',
                       gap: '12px !important',
                       overflowX: 'auto',
                       overflowY: 'hidden',
@@ -516,7 +517,7 @@ const ProductPage = () => {
                       <ImageListItem 
                         key={index} 
                         sx={{ 
-                          borderRadius: 1, 
+                          borderRadius: { xs: 0.5, sm: 1 }, 
                           overflow: 'hidden',
                           border: '2px solid transparent',
                           cursor: 'pointer',
@@ -534,7 +535,7 @@ const ProductPage = () => {
                           alt={`Thumbnail ${index + 1}`}
                           sx={{
                             width: '100%',
-                            height: 80,
+                            height: { xs: 60, sm: 80 },
                             objectFit: 'cover',
                             display: 'block'
                           }}
@@ -557,7 +558,7 @@ const ProductPage = () => {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    borderRadius: 2,
+                    borderRadius: { xs: 1, sm: 2 },
                   }}
                 />
               </Box>
@@ -575,7 +576,8 @@ const ProductPage = () => {
                     fontWeight: 600, 
                     fontFamily: theme.typography.fontFamily,
                     letterSpacing: 1.2,
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' }
                   }}
                 >
                   {product.category}
@@ -587,7 +589,8 @@ const ProductPage = () => {
                     fontWeight: 800, 
                     fontFamily: theme.typography.fontFamily,
                     mt: 0.5,
-                    lineHeight: 1.2
+                    lineHeight: 1.2,
+                    fontSize: { xs: '1.4rem', sm: '2rem', md: '2.5rem' }
                   }}
                 >
                   {product.name}
@@ -626,7 +629,8 @@ const ProductPage = () => {
                         fontWeight: 600, 
                         fontFamily: theme.typography.fontFamily, 
                         textDecoration: 'line-through',
-                        display: 'inline'
+                        display: 'inline',
+                        fontSize: { xs: '0.9rem', sm: '1.25rem', md: '1.5rem' }
                       }}
                     >
                       ₹{product.price.toFixed(2)}
@@ -639,7 +643,8 @@ const ProductPage = () => {
                       fontWeight: 800, 
                       fontFamily: theme.typography.fontFamily, 
                       ml: hasDiscount ? 1 : 0,
-                      display: 'inline'
+                      display: 'inline',
+                      fontSize: { xs: '1.2rem', sm: '1.75rem', md: '2rem' }
                     }}
                   >
                     ₹{effectivePrice.toFixed(2)}
@@ -652,8 +657,8 @@ const ProductPage = () => {
                     size="medium" 
                     sx={{ 
                       fontWeight: 'bold',
-                      fontSize: '0.9rem',
-                      height: '32px'
+                      fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
+                      height: { xs: '24px', sm: '28px', md: '32px' }
                     }}
                   />
                 )}
@@ -676,8 +681,8 @@ const ProductPage = () => {
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   whiteSpace: 'pre-line',
-                  fontSize: '1.1rem',
-                  lineHeight: 1.7
+                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                  lineHeight: 1.6
                 }}
               >
                 {product.description}
@@ -694,8 +699,11 @@ const ProductPage = () => {
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 600,
-                      fontSize: '0.8rem',
-                      height: '28px'
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                      height: { xs: '20px', sm: '24px', md: '28px' },
+                      '& .MuiChip-icon': {
+                        fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' }
+                      }
                     }}
                   />
                 )}
@@ -708,8 +716,11 @@ const ProductPage = () => {
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 600,
-                      fontSize: '0.8rem',
-                      height: '28px'
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                      height: { xs: '20px', sm: '24px', md: '28px' },
+                      '& .MuiChip-icon': {
+                        fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' }
+                      }
                     }}
                   />
                 )}
@@ -722,8 +733,11 @@ const ProductPage = () => {
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 600,
-                      fontSize: '0.8rem',
-                      height: '28px'
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                      height: { xs: '20px', sm: '24px', md: '28px' },
+                      '& .MuiChip-icon': {
+                        fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' }
+                      }
                     }}
                   />
                 )}
@@ -736,8 +750,11 @@ const ProductPage = () => {
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 600,
-                      fontSize: '0.8rem',
-                      height: '28px'
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                      height: { xs: '20px', sm: '24px', md: '28px' },
+                      '& .MuiChip-icon': {
+                        fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' }
+                      }
                     }}
                   />
                 )}
@@ -750,8 +767,11 @@ const ProductPage = () => {
                     sx={{ 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 600,
-                      fontSize: '0.8rem',
-                      height: '28px'
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
+                      height: { xs: '20px', sm: '24px', md: '28px' },
+                      '& .MuiChip-icon': {
+                        fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' }
+                      }
                     }}
                   />
                 )}
@@ -767,8 +787,8 @@ const ProductPage = () => {
                     size="medium" 
                     sx={{ 
                       fontWeight: 'bold',
-                      fontSize: '0.9rem',
-                      height: '32px'
+                      fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
+                      height: { xs: '24px', sm: '28px', md: '32px' }
                     }}
                   />
                 ) : (
@@ -778,8 +798,8 @@ const ProductPage = () => {
                     size="medium" 
                     sx={{ 
                       fontWeight: 'bold',
-                      fontSize: '0.9rem',
-                      height: '32px'
+                      fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
+                      height: { xs: '24px', sm: '28px', md: '32px' }
                     }}
                   />
                 )}
@@ -788,7 +808,7 @@ const ProductPage = () => {
               {/* Add to Cart / Wishlist */}
               <Box sx={{ mt: 2 }}>
                 {product.countInStock > 0 ? (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
                     {quantityInCart > 0 ? (
                       <Stack 
                         direction="row" 
@@ -797,8 +817,8 @@ const ProductPage = () => {
                         sx={{ 
                           border: `2px solid ${theme.palette.divider}`, 
                           borderRadius: 3,
-                          px: 1.5,
-                          py: 0.5
+                          px: { xs: 1, sm: 1.5 },
+                          py: { xs: 0.25, sm: 0.5 }
                         }}
                       >
                         <IconButton 
@@ -806,8 +826,8 @@ const ProductPage = () => {
                           onClick={() => handleUpdateQuantity(Math.max(0, quantityInCart - 1))}
                           disabled={cartLoading}
                           sx={{ 
-                            width: 40, 
-                            height: 40 
+                            width: { xs: 36, sm: 40 }, 
+                            height: { xs: 36, sm: 40 } 
                           }}
                         >
                           <RemoveIcon />
@@ -815,10 +835,10 @@ const ProductPage = () => {
                         <Typography 
                           sx={{ 
                             fontFamily: theme.typography.fontFamily, 
-                            minWidth: 40, 
+                            minWidth: { xs: 36, sm: 40 }, 
                             textAlign: 'center',
                             fontWeight: 600,
-                            fontSize: '1.1rem'
+                            fontSize: { xs: '1rem', sm: '1.1rem' }
                           }}
                         >
                           {quantityInCart}
@@ -828,8 +848,8 @@ const ProductPage = () => {
                           onClick={() => handleUpdateQuantity(quantityInCart + 1)}
                           disabled={cartLoading || quantityInCart >= product.countInStock}
                           sx={{ 
-                            width: 40, 
-                            height: 40 
+                            width: { xs: 36, sm: 40 }, 
+                            height: { xs: 36, sm: 40 } 
                           }}
                         >
                           <AddIcon />
@@ -844,12 +864,13 @@ const ProductPage = () => {
                         sx={{ 
                           borderRadius: 3, 
                           px: { xs: 2, sm: 4 }, 
-                          py: 1.5,
+                          py: { xs: 1, sm: 1.5 },
                           fontFamily: theme.typography.fontFamily,
                           fontWeight: 700,
                           textTransform: 'none',
-                          flexGrow: { xs: 1, sm: 0 },
+                          flexGrow: 1,
                           boxShadow: 3,
+                          fontSize: { xs: '0.875rem', sm: '1rem' },
                           '&:hover': {
                             boxShadow: 5
                           }
@@ -865,8 +886,8 @@ const ProductPage = () => {
                         sx={{ 
                           border: `2px solid ${theme.palette.divider}`,
                           borderRadius: 3,
-                          width: 50,
-                          height: 50
+                          width: { xs: 44, sm: 50 },
+                          height: { xs: 44, sm: 50 }
                         }}
                       >
                         {user?.wishlist?.includes(product._id) ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
@@ -880,8 +901,8 @@ const ProductPage = () => {
                         sx={{ 
                           border: `2px solid ${theme.palette.divider}`,
                           borderRadius: 3,
-                          width: 50,
-                          height: 50
+                          width: { xs: 44, sm: 50 },
+                          height: { xs: 44, sm: 50 }
                         }}
                       >
                         <ShareIcon />
@@ -917,7 +938,7 @@ const ProductPage = () => {
                       sx={{ 
                         fontFamily: theme.typography.fontFamily, 
                         fontWeight: 700,
-                        fontSize: '1.1rem'
+                        fontSize: { xs: '1rem', sm: '1.1rem' }
                       }}
                     >
                       Product Information
@@ -925,16 +946,16 @@ const ProductPage = () => {
                   </AccordionSummary>
                   <AccordionDetails>
                     <Stack spacing={1.5}>
-                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                         <strong>Category:</strong> {product.category}
                       </Typography>
                       {product.brand && (
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                           <strong>Brand:</strong> {product.brand}
                         </Typography>
                       )}
                       {product.unit && (
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                           <strong>Unit:</strong> {product.unit}
                         </Typography>
                       )}
@@ -963,7 +984,7 @@ const ProductPage = () => {
                       sx={{ 
                         fontFamily: theme.typography.fontFamily, 
                         fontWeight: 700,
-                        fontSize: '1.1rem'
+                        fontSize: { xs: '1rem', sm: '1.1rem' }
                       }}
                     >
                       Shipping & Returns
@@ -972,20 +993,20 @@ const ProductPage = () => {
                   <AccordionDetails>
                     <Stack spacing={2}>
                       <Stack direction="row" spacing={1.5} alignItems="center">
-                        <LocalShippingIcon color="primary" sx={{ fontSize: '1.8rem' }} />
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <LocalShippingIcon color="primary" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' } }}>
                           Free shipping on orders over ₹200
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={1.5} alignItems="center">
-                        <SecurityIcon color="primary" sx={{ fontSize: '1.8rem' }} />
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <SecurityIcon color="primary" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' } }}>
                           Secure payment options
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={1.5} alignItems="center">
-                        <AutorenewIcon color="primary" sx={{ fontSize: '1.8rem' }} />
-                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                        <AutorenewIcon color="primary" sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                        <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' } }}>
                           1-day return policy
                         </Typography>
                       </Stack>
@@ -1006,7 +1027,8 @@ const ProductPage = () => {
             sx={{ 
               fontWeight: 800, 
               fontFamily: theme.typography.fontFamily, 
-              mb: 3 
+              mb: 3,
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
             }}
           >
             Customer Reviews
@@ -1015,9 +1037,9 @@ const ProductPage = () => {
           {isAuthenticated && (
             <Paper 
               sx={{ 
-                p: { xs: 2, md: 3 }, 
+                p: { xs: 1.5, sm: 2, md: 3 }, 
                 mb: 4, 
-                borderRadius: 3,
+                borderRadius: { xs: 2, sm: 3 },
                 boxShadow: 2
               }}
             >
@@ -1026,7 +1048,8 @@ const ProductPage = () => {
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   mb: 2,
-                  fontWeight: 700
+                  fontWeight: 700,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' }
                 }}
               >
                 Write a Review
@@ -1069,9 +1092,10 @@ const ProductPage = () => {
                       borderRadius: 3, 
                       fontFamily: theme.typography.fontFamily,
                       fontWeight: 700,
-                      px: 4,
-                      py: 1.5,
+                      px: { xs: 3, sm: 4 },
+                      py: { xs: 1, sm: 1.5 },
                       boxShadow: 3,
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
                       '&:hover': {
                         boxShadow: 5
                       }
@@ -1094,7 +1118,8 @@ const ProductPage = () => {
               variant="h5" 
               sx={{ 
                 fontFamily: theme.typography.fontFamily,
-                fontWeight: 700
+                fontWeight: 700,
+                fontSize: { xs: '1.25rem', sm: '1.5rem' }
               }}
             >
               {filteredAndSortedReviews.length} Reviews
@@ -1149,8 +1174,8 @@ const ProductPage = () => {
                 <Paper 
                   key={review._id} 
                   sx={{ 
-                    p: { xs: 2, md: 3 }, 
-                    borderRadius: 3,
+                    p: { xs: 1.5, sm: 2, md: 3 }, 
+                    borderRadius: { xs: 2, sm: 3 },
                     boxShadow: 1
                   }}
                 >
@@ -1171,7 +1196,8 @@ const ProductPage = () => {
                             variant="h6" 
                             sx={{ 
                               fontWeight: 700, 
-                              fontFamily: theme.typography.fontFamily 
+                              fontFamily: theme.typography.fontFamily,
+                              fontSize: { xs: '1rem', sm: '1.25rem' }
                             }}
                           >
                             {review.name}
@@ -1194,8 +1220,8 @@ const ProductPage = () => {
                       variant="body1" 
                       sx={{ 
                         fontFamily: theme.typography.fontFamily,
-                        fontSize: '1.1rem',
-                        lineHeight: 1.7
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                        lineHeight: 1.6
                       }}
                     >
                       {review.comment}
@@ -1207,7 +1233,9 @@ const ProductPage = () => {
                         disabled={upvotingReviewId === review._id}
                         sx={{ 
                           border: `1px solid ${theme.palette.divider}`,
-                          borderRadius: 2
+                          borderRadius: 2,
+                          width: { xs: 36, sm: 40 },
+                          height: { xs: 36, sm: 40 }
                         }}
                       >
                         <ThumbUpIcon fontSize="small" />
@@ -1250,18 +1278,19 @@ const ProductPage = () => {
               sx={{ 
                 fontWeight: 800, 
                 fontFamily: theme.typography.fontFamily, 
-                mb: 3 
+                mb: 3,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
               }}
             >
               Related Products
             </Typography>
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', overflowX: 'auto', gap: 2, pb: 2, '&::-webkit-scrollbar': { height: 6 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 3 } }}>
               {relatedProducts.map((relatedProduct) => (
-                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
+                <Box key={relatedProduct._id} sx={{ minWidth: { xs: '80vw', sm: '40vw', md: '22vw' }, flexShrink: 0 }}>
                   <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         )}
 
@@ -1274,18 +1303,19 @@ const ProductPage = () => {
               sx={{ 
                 fontWeight: 800, 
                 fontFamily: theme.typography.fontFamily, 
-                mb: 3 
+                mb: 3,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
               }}
             >
               Customer Also Ordered
             </Typography>
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', overflowX: 'auto', gap: 2, pb: 2, '&::-webkit-scrollbar': { height: 6 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 3 } }}>
               {relatedProducts.map((relatedProduct) => (
-                <Grid key={relatedProduct._id} size={{ xs: 6, sm: 4, md: 3 }}>
+                <Box key={relatedProduct._id} sx={{ minWidth: { xs: '80vw', sm: '40vw', md: '22vw' }, flexShrink: 0 }}>
                   <ProductCard product={relatedProduct} showSnackbar={(msg, severity) => setSnackbar({ open: true, message: msg })} />
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         )}
       </Paper>

@@ -27,6 +27,7 @@ import {
   Tooltip,
   Card,
   CardContent,
+  useMediaQuery,
 } from '@mui/material';
 import orderService from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
@@ -52,6 +53,8 @@ const OrderDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -149,7 +152,7 @@ const OrderDetailsPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 14 }, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
         <Loader size="large" />
       </Container>
     );
@@ -157,7 +160,7 @@ const OrderDetailsPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
@@ -165,7 +168,7 @@ const OrderDetailsPage = () => {
 
   if (!order) {
     return (
-      <Container maxWidth="md" sx={{ mt: { xs: 12, sm: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 14 }, mb: 4, fontFamily: theme.typography.fontFamily }}>
         <Alert severity="info">Order not found.</Alert>
       </Container>
     );
@@ -179,23 +182,23 @@ const OrderDetailsPage = () => {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 12, sm: 14 }, mb: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 10, sm: 12, md: 14 }, mb: 4 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: { xs: 3, sm: 4 }, borderRadius: { xs: 2, sm: 3, md: 4 }, background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` }}>
+        <Typography variant={isMobile ? "h4" : "h3"} component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
           Order Details
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
           Order #{order._id}
         </Typography>
       </Paper>
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: 3, borderRadius: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-        <Grid container spacing={3} alignItems="center">
+      <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2, md: 3 }, mb: { xs: 2, sm: 3 }, borderRadius: { xs: 2, sm: 3 }, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+        <Grid container spacing={isMobile ? 2 : 3} alignItems="center">
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Box sx={{ 
-                width: 40, 
-                height: 40, 
+                width: isMobile ? 32 : 40, 
+                height: isMobile ? 32 : 40, 
                 borderRadius: '50%', 
                 bgcolor: alpha(theme.palette.primary.main, 0.1), 
                 display: 'flex', 
@@ -203,24 +206,24 @@ const OrderDetailsPage = () => {
                 justifyContent: 'center',
                 mr: 1.5
               }}>
-                <ScheduleIcon sx={{ color: theme.palette.primary.main }} />
+                <ScheduleIcon sx={{ color: theme.palette.primary.main, fontSize: isMobile ? 20 : 24 }} />
               </Box>
-              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Placed On
               </Typography>
             </Box>
-            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, ml: 5.5 }}>
+            <Typography variant={isMobile ? "body2" : "body1"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, ml: isMobile ? 4.5 : 5.5, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               {format(new Date(order.createdAt), 'PPP')}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', ml: 5.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', ml: isMobile ? 4.5 : 5.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
               ({formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })})
             </Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Box sx={{ 
-                width: 40, 
-                height: 40, 
+                width: isMobile ? 32 : 40, 
+                height: isMobile ? 32 : 40, 
                 borderRadius: '50%', 
                 bgcolor: alpha(theme.palette.secondary.main, 0.1), 
                 display: 'flex', 
@@ -228,21 +231,21 @@ const OrderDetailsPage = () => {
                 justifyContent: 'center',
                 mr: 1.5
               }}>
-                <ReceiptLongIcon sx={{ color: theme.palette.secondary.main }} />
+                <ReceiptLongIcon sx={{ color: theme.palette.secondary.main, fontSize: isMobile ? 20 : 24 }} />
               </Box>
-              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Total Amount
               </Typography>
             </Box>
-            <Typography variant="body1" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, ml: 5.5, fontSize: '1.2rem' }}>
+            <Typography variant={isMobile ? "body1" : "body1"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, ml: isMobile ? 4.5 : 5.5, fontSize: { xs: '1rem', sm: '1.2rem' } }}>
               ₹{order.totalPrice.toFixed(2)}
             </Typography>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Box sx={{ 
-                width: 40, 
-                height: 40, 
+                width: isMobile ? 32 : 40, 
+                height: isMobile ? 32 : 40, 
                 borderRadius: '50%', 
                 bgcolor: alpha(theme.palette.info.main, 0.1), 
                 display: 'flex', 
@@ -250,9 +253,9 @@ const OrderDetailsPage = () => {
                 justifyContent: 'center',
                 mr: 1.5
               }}>
-                <ReceiptLongIcon sx={{ color: theme.palette.info.main }} />
+                <ReceiptLongIcon sx={{ color: theme.palette.info.main, fontSize: isMobile ? 20 : 24 }} />
               </Box>
-              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', mb: 0.5 }}>
+              <Typography variant="overline" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', mb: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Status
               </Typography>
             </Box>
@@ -261,35 +264,47 @@ const OrderDetailsPage = () => {
               color={statusColors[order.status] || 'default'} 
               sx={{ 
                 fontFamily: theme.typography.fontFamily, 
-                ml: 5.5,
+                ml: isMobile ? 4.5 : 5.5,
                 fontWeight: 'bold',
-                fontSize: '0.9rem',
-                height: 28
+                fontSize: { xs: '0.75rem', sm: '0.9rem' },
+                height: isMobile ? 24 : 28
               }}
-              size="medium"
+              size={isMobile ? "small" : "medium"}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Stack direction="row" spacing={1.5}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-end' } }}>
+            <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? 1 : 1.5} sx={{ width: isMobile ? '100%' : 'auto' }}>
               <Button
                 variant="contained"
                 color="secondary"
                 startIcon={reordering ? <Loader size="small" color="inherit" /> : <ReplayIcon />}
                 onClick={handleReorder}
                 disabled={reordering || order.status === 'Canceled' || order.orderItems.length === 0}
-                sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', borderRadius: '50px', px: 2 }}
+                sx={{ 
+                  fontFamily: theme.typography.fontFamily, 
+                  fontWeight: 'bold', 
+                  borderRadius: '50px', 
+                  px: isMobile ? 1.5 : 2,
+                  py: isMobile ? 0.75 : 1,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  width: isMobile ? '100%' : 'auto'
+                }}
+                size={isMobile ? "small" : "medium"}
               > 
-                Re-order
+                {isMobile ? 'Re-order' : 'Re-order'}
               </Button>
               {user?.role === 'admin' && (
                 <Button 
                   component={RouterLink} 
                   to={`/admin/orders/edit/${order._id}`} 
                   variant="outlined" 
-                  startIcon={<EditIcon />}
+                  startIcon={<EditIcon sx={{ fontSize: isMobile ? 16 : 20 }} />}
                   sx={{ 
                     borderRadius: '50px', 
-                    px: 2,
+                    px: isMobile ? 1.5 : 2,
+                    py: isMobile ? 0.75 : 1,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    width: isMobile ? '100%' : 'auto',
                     borderColor: alpha(theme.palette.primary.main, 0.3),
                     color: theme.palette.primary.main,
                     '&:hover': {
@@ -297,6 +312,7 @@ const OrderDetailsPage = () => {
                       backgroundColor: alpha(theme.palette.primary.main, 0.05)
                     }
                   }}
+                  size={isMobile ? "small" : "medium"}
                 >
                   Edit
                 </Button>
@@ -308,11 +324,24 @@ const OrderDetailsPage = () => {
 
       {/* Order History Timeline */}
       {order && (
-        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+        <Paper elevation={2} sx={{ p: { xs: 1, sm: 2, md: 3 }, borderRadius: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 3 } }}>
+          <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' } }}>
             Order Status Timeline
           </Typography>
-          <Stepper activeStep={standardStatusFlow.indexOf(order.status)} alternativeLabel sx={{ mt: 3 }}>
+          <Stepper 
+            activeStep={standardStatusFlow.indexOf(order.status)} 
+            alternativeLabel 
+            sx={{ 
+              mt: { xs: 1.5, sm: 3 },
+              '& .MuiStepLabel-label': {
+                fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' }
+              },
+              '& .MuiStepConnector-line': {
+                borderColor: theme.palette.divider
+              }
+            }}
+            orientation="horizontal"
+          >
             {standardStatusFlow.map((status, index) => {
               // Find if this status exists in the order history
               const historyItem = order.statusHistory?.find(item => item.status === status);
@@ -330,21 +359,22 @@ const OrderDetailsPage = () => {
                           display: 'flex', 
                           alignItems: 'center', 
                           justifyContent: 'center',
-                          width: 48,
-                          height: 48,
+                          width: isMobile ? 20 : 48,
+                          height: isMobile ? 20 : 48,
                           borderRadius: '50%',
                           bgcolor: statusColors[status] 
                             ? `${theme.palette[statusColors[status]].main}`
                             : theme.palette.grey[300],
                           color: 'white',
-                          boxShadow: isActive ? 4 : 2,
+                          boxShadow: isActive ? 2 : 1,
                           transform: isActive ? 'scale(1.1)' : 'scale(1)',
                           transition: 'all 0.3s ease',
-                          border: isActive ? `3px solid ${theme.palette.grey[400]}` : 'none'
+                          border: isActive ? `1px solid ${theme.palette.grey[400]}` : 'none'
                         }}
                       >
-                        {statusIcons[status] || <PendingIcon />}
+                        {statusIcons[status] || <PendingIcon sx={{ fontSize: isMobile ? 10 : 20 }} />}
                       </Box>
+
                     }
                     StepIconProps={{
                       sx: {
@@ -366,9 +396,9 @@ const OrderDetailsPage = () => {
                       textAlign: 'center',
                       transform: isActive ? 'scale(1.05)' : 'scale(1)',
                       transition: 'all 0.3s ease',
-                      py: 0.5,
-                      px: 1,
-                      borderRadius: 1,
+                      py: isMobile ? 0.1 : 0.25,
+                      px: isMobile ? 0.25 : 0.5,
+                      borderRadius: 0.5,
                       bgcolor: isActive ? alpha(statusColors[status] ? theme.palette[statusColors[status]].main : theme.palette.grey[300], 0.1) : 'transparent'
                     }}>
                       <Typography 
@@ -378,18 +408,19 @@ const OrderDetailsPage = () => {
                           color: statusColors[status] 
                             ? theme.palette[statusColors[status]].main
                             : 'inherit',
-                          textShadow: isActive ? `0 0 4px ${alpha(statusColors[status] ? theme.palette[statusColors[status]].main : theme.palette.grey[300], 0.3)}` : 'none'
+                          textShadow: isActive ? `0 0 2px ${alpha(statusColors[status] ? theme.palette[statusColors[status]].main : theme.palette.grey[300], 0.3)}` : 'none',
+                          fontSize: { xs: '0.5rem', sm: '0.65rem', md: '0.875rem' }
                         }}
                       >
                         {status}
                       </Typography>
                       {historyItem ? (
-                        <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily }}>
-                          {format(new Date(historyItem.timestamp), 'MMM d, h:mm a')}
+                        <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.35rem', sm: '0.45rem' } }}>
+                          {format(new Date(historyItem.timestamp), 'MMM d')}
                         </Typography>
                       ) : isActive ? (
-                        <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary' }}>
-                          In Progress
+                        <Typography variant="caption" sx={{ fontFamily: theme.typography.fontFamily, color: 'text.secondary', fontSize: { xs: '0.35rem', sm: '0.45rem' } }}>
+                          Now
                         </Typography>
                       ) : null}
                     </Box>
@@ -401,28 +432,28 @@ const OrderDetailsPage = () => {
         </Paper>
       )}
 
-        <Grid container spacing={4}>
+        <Grid container spacing={isMobile ? 2 : 4}>
           {/* Order Items */}
           <Grid size={{ xs: 12 }}>
-            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: { xs: 2, sm: 3 }, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, sm: 2 } }}>
                 <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
-                  borderRadius: 2, 
+                  width: isMobile ? 40 : 48, 
+                  height: isMobile ? 40 : 48, 
+                  borderRadius: { xs: 1.5, sm: 2 }, 
                   bgcolor: alpha(theme.palette.primary.main, 0.1), 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
                   mr: 2
                 }}>
-                  <ShoppingCartIcon sx={{ color: theme.palette.primary.main }} />
+                  <ShoppingCartIcon sx={{ color: theme.palette.primary.main, fontSize: isMobile ? 20 : 24 }} />
                 </Box>
-                <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' } }}>
                   Order Items
                 </Typography>
               </Box>
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: { xs: 1.5, sm: 2 } }} />
               <List>
                 {order.orderItems.map((item) => (
                   <React.Fragment key={item._id}>
@@ -431,9 +462,9 @@ const OrderDetailsPage = () => {
                       to={item.product ? `/product/${item.product._id}` : undefined}
                       alignItems="flex-start"
                       sx={{
-                        py: 2,
-                        px: 2,
-                        borderRadius: 2,
+                        py: { xs: 1.5, sm: 2 },
+                        px: { xs: 1.5, sm: 2 },
+                        borderRadius: { xs: 1.5, sm: 2 },
                         cursor: item.product ? 'pointer' : 'default',
                         '&:hover': { 
                           bgcolor: item.product ? alpha(theme.palette.action.hover, 0.3) : 'transparent',
@@ -451,9 +482,9 @@ const OrderDetailsPage = () => {
                           src={item.images && item.images.length > 0 ? `${process.env.REACT_APP_API_URL}${item.images[0]}` : (item.image ? `${process.env.REACT_APP_API_URL}${item.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`)} 
                           variant="rounded" 
                           sx={{ 
-                            width: 80, 
-                            height: 80, 
-                            mr: 2, 
+                            width: isMobile ? 60 : 80, 
+                            height: isMobile ? 60 : 80, 
+                            mr: { xs: 1.5, sm: 2 }, 
                             border: `2px solid ${theme.palette.divider}`,
                             boxShadow: 2
                           }} 
@@ -461,22 +492,22 @@ const OrderDetailsPage = () => {
                       </ListItemAvatar>
                       <ListItemText
                         primary={
-                          <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily, color: item.product ? 'text.primary' : 'text.disabled' }}>
+                          <Typography variant={isMobile ? "body1" : "h6"} fontWeight="bold" sx={{ mb: 0.5, fontFamily: theme.typography.fontFamily, color: item.product ? 'text.primary' : 'text.disabled', fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' } }}>
                             {item.name} {!item.product && '(Product no longer available)'}
                           </Typography>
                         }
                         secondary={
-                          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 1 }}>
+                          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 2 }, mt: 1 }}>
                             <Box>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                                 Quantity: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{item.qty}</Typography>
                               </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                                 Price: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>₹{item.price.toFixed(2)}</Typography>{item.unit ? ` / ${item.unit}` : ''}
                               </Typography>
                             </Box>
                             <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="body1" color="text.primary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant={isMobile ? "body2" : "body1"} color="text.primary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                                 Subtotal: <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>₹{(item.price * item.qty).toFixed(2)}</Typography>
                               </Typography>
                             </Box>
@@ -494,51 +525,51 @@ const OrderDetailsPage = () => {
 
           {/* Shipping & Payment Summary */}
           <Grid size={{ xs: 12 }}>
-            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
-              <Grid container spacing={4}> 
+            <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2, md: 3 }, borderRadius: { xs: 2, sm: 3 }, border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}` }}>
+              <Grid container spacing={isMobile ? 2 : 4}> 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, sm: 2 } }}>
                     <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: 2, 
+                      width: isMobile ? 40 : 48, 
+                      height: isMobile ? 40 : 48, 
+                      borderRadius: { xs: 1.5, sm: 2 }, 
                       bgcolor: alpha(theme.palette.secondary.main, 0.1), 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
                       mr: 2
                     }}>
-                      <LocalShippingIcon sx={{ color: theme.palette.secondary.main }} />
+                      <LocalShippingIcon sx={{ color: theme.palette.secondary.main, fontSize: isMobile ? 20 : 24 }} />
                     </Box>
-                    <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                    <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' } }}>
                       Shipping Address
                     </Typography>
                   </Box>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: { xs: 1.5, sm: 2 } }} />
                   <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 2, 
+                    p: { xs: 1.5, sm: 2 }, 
+                    borderRadius: { xs: 1.5, sm: 2 }, 
                     bgcolor: alpha(theme.palette.grey[100], 0.5),
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
                   }}>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
                       {order.shippingAddress.fullName && <Typography component="span" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{order.shippingAddress.fullName}</Typography>}
                     </Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>{order.shippingAddress.street}</Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>{order.shippingAddress.country}</Typography>
-                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily }}>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>{order.shippingAddress.street}</Typography>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</Typography>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, mb: 0.5, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>{order.shippingAddress.country}</Typography>
+                    <Typography variant="body1" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
                       <strong>Phone:</strong> {order.shippingAddress.phone}
                     </Typography>
                   </Box>
                   
                   {order.deliveryTimeSlot && (
-                    <Box sx={{ mt: 3, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <Box sx={{ mt: { xs: 2, sm: 3 }, p: { xs: 1.5, sm: 2 }, border: `1px solid ${theme.palette.divider}`, borderRadius: { xs: 1.5, sm: 2 }, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
                       <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-                        <ScheduleIcon fontSize="small" color="primary" />
-                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Delivery Time Slot</Typography>
+                        <ScheduleIcon fontSize={isMobile ? "small" : "medium"} color="primary" sx={{ fontSize: isMobile ? 16 : 20 }} />
+                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Delivery Time Slot</Typography>
                       </Stack>
-                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, ml: 3.5 }}>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, ml: isMobile ? 3 : 3.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         {order.deliveryTimeSlot === 'morning' && '🌅 Morning (8AM - 12PM)'}
                         {order.deliveryTimeSlot === 'afternoon' && '☀️ Afternoon (12PM - 5PM)'}
                         {order.deliveryTimeSlot === 'evening' && '🌆 Evening (5PM - 8PM)'}
@@ -547,94 +578,94 @@ const OrderDetailsPage = () => {
                   )}
                   
                   {order.orderNotes && (
-                    <Box sx={{ mt: 2, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+                    <Box sx={{ mt: { xs: 1.5, sm: 2 }, p: { xs: 1.5, sm: 2 }, border: `1px solid ${theme.palette.divider}`, borderRadius: { xs: 1.5, sm: 2 }, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
                       <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-                        <NoteIcon fontSize="small" color="info" />
-                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Order Notes</Typography>
+                        <NoteIcon fontSize={isMobile ? "small" : "medium"} color="info" sx={{ fontSize: isMobile ? 16 : 20 }} />
+                        <Typography variant="subtitle2" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Order Notes</Typography>
                       </Stack>
-                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontStyle: 'italic', ml: 3.5 }}>
+                      <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontStyle: 'italic', ml: isMobile ? 3 : 3.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         "{order.orderNotes}"
                       </Typography>
                     </Box>
                   )}
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, sm: 2 } }}>
                     <Box sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: 2, 
+                      width: isMobile ? 40 : 48, 
+                      height: isMobile ? 40 : 48, 
+                      borderRadius: { xs: 1.5, sm: 2 }, 
                       bgcolor: alpha(theme.palette.success.main, 0.1), 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
                       mr: 2
                     }}>
-                      <ReceiptLongIcon sx={{ color: theme.palette.success.main }} />
+                      <ReceiptLongIcon sx={{ color: theme.palette.success.main, fontSize: isMobile ? 20 : 24 }} />
                     </Box>
-                    <Typography variant="h5" gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                    <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' } }}>
                       Payment Summary
                     </Typography>
                   </Box>
-                  <Divider sx={{ mb: 2 }} />
-                  <Stack spacing={1.5}>
+                  <Divider sx={{ mb: { xs: 1.5, sm: 2 } }} />
+                  <Stack spacing={isMobile ? 1 : 1.5}>
                     <Stack direction="row" justifyContent="space-between">
-                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Subtotal:</Typography>
-                      <Typography sx={{ fontFamily: theme.typography.fontFamily }}>₹{order.subtotal.toFixed(2)}</Typography>
+                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Subtotal:</Typography>
+                      <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>₹{order.subtotal.toFixed(2)}</Typography>
                     </Stack>
                     {order.harvestCoinsDiscount > 0 && (
                       <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Discount:</Typography>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>-₹{order.harvestCoinsDiscount.toFixed(2)}</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Harvest Coins Discount:</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>-&#8377;{order.harvestCoinsDiscount.toFixed(2)}</Typography>
                       </Stack>
                     )}
                     {order.discount?.amount > 0 && (
                       <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.main' }}>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Coupon Discount ({order.discount.code}):</Typography>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>-₹{order.discount.amount.toFixed(2)}</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Coupon Discount ({order.discount.code}):</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>-&#8377;{order.discount.amount.toFixed(2)}</Typography>
                       </Stack>
                     )}
                     <Stack direction="row" justifyContent="space-between">
-                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Shipping:</Typography>
-                      <Typography sx={{ fontFamily: theme.typography.fontFamily }}>
+                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Shipping:</Typography>
+                      <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                         {order.deliveryCharge > 0 ? `₹${order.deliveryCharge.toFixed(2)}` : 'Free'}
                       </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between">
-                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>Payment Method:</Typography>
-                      <Chip label={order.paymentMethod} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+                      <Typography color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Payment Method:</Typography>
+                      <Chip label={order.paymentMethod} size={isMobile ? "small" : "medium"} variant="outlined" sx={{ borderRadius: 1, fontSize: { xs: '0.7rem', sm: '0.75rem' } }} />
                     </Stack>
                     <Divider sx={{ my: 1 }} />
                     <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>Total:</Typography>
-                      <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main }}>₹{order.totalPrice.toFixed(2)}</Typography>
+                      <Typography variant={isMobile ? "body1" : "h6"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' } }}>Total:</Typography>
+                      <Typography variant={isMobile ? "body1" : "h6"} fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily, color: theme.palette.primary.main, fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' } }}>₹{order.totalPrice.toFixed(2)}</Typography>
                     </Stack>
                     {order.harvestCoinsEarned > 0 && (
-                      <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, p: 1.5, bgcolor: alpha(theme.palette.success.main, 0.1), borderRadius: 1 }}>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily }}>Harvest Coins Earned:</Typography>
-                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>{order.harvestCoinsEarned} coins</Typography>
+                      <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, p: { xs: 1, sm: 1.5 }, bgcolor: alpha(theme.palette.success.main, 0.1), borderRadius: 1 }}>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>Harvest Coins Earned:</Typography>
+                        <Typography sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>{order.harvestCoinsEarned} coins</Typography>
                       </Stack>
                     )}
                   </Stack>
                   
                   {/* Customer Support */}
-                  <Box sx={{ mt: 4 }}>
-                    <Card variant="outlined" sx={{ borderRadius: 2, border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
-                      <CardContent>
+                  <Box sx={{ mt: { xs: 2, sm: 4 } }}>
+                    <Card variant="outlined" sx={{ borderRadius: { xs: 1.5, sm: 2 }, border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}` }}>
+                      <CardContent sx={{ p: { xs: 1.5, sm: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 2 } } }}>
                         <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-                          <SupportAgentIcon color="primary" />
-                          <Typography variant="h6" sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold' }}>
+                          <SupportAgentIcon color="primary" sx={{ fontSize: isMobile ? 20 : 24 }} />
+                          <Typography variant={isMobile ? "body1" : "h6"} sx={{ fontFamily: theme.typography.fontFamily, fontWeight: 'bold', fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
                             Need Help?
                           </Typography>
                         </Stack>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontFamily: theme.typography.fontFamily }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 1.5, sm: 2 }, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                           If you have any questions about your order, our support team is here to help.
                         </Typography>
                         <Button 
                           variant="outlined" 
                           component={RouterLink} 
                           to="/support"
-                          startIcon={<SupportAgentIcon />}
+                          startIcon={<SupportAgentIcon sx={{ fontSize: isMobile ? 16 : 20 }} />}
                           sx={{ 
                             borderRadius: '50px', 
                             fontFamily: theme.typography.fontFamily,
@@ -643,8 +674,13 @@ const OrderDetailsPage = () => {
                             '&:hover': {
                               borderColor: theme.palette.primary.main,
                               backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                            }
+                            },
+                            px: { xs: 1.5, sm: 2 },
+                            py: { xs: 0.75, sm: 1 },
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                            width: isMobile ? '100%' : 'auto'
                           }}
+                          size={isMobile ? "small" : "medium"}
                         >
                           Contact Support
                         </Button>
@@ -658,7 +694,7 @@ const OrderDetailsPage = () => {
 
         </Grid>
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

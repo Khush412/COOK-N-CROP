@@ -354,19 +354,19 @@ const ManageCoupons = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, fontFamily: theme.typography.fontFamily, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}>
           Manage Coupons
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
           Create and manage discount codes for your store.
         </Typography>
       </Paper>
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
+          <Box sx={{ flexGrow: 1, maxWidth: { xs: '100%', sm: 400 } }}>
             <TextField
               label="Search by Code"
               variant="outlined"
@@ -374,27 +374,30 @@ const ManageCoupons = () => {
               fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }} 
+              InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
               sx={{ 
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: 2,
                   fontFamily: theme.typography.fontFamily 
                 },
-                '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily }
+                '& .MuiInputBase-input': { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }
               }}
               InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />,
+                startAdornment: <SearchIcon sx={{ mr: 1, fontSize: { xs: 16, sm: 20 }, color: 'text.secondary' }} />
               }}
             />
           </Box>
           <Button 
             variant="contained" 
-            startIcon={<AddIcon />} 
+            startIcon={<AddIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} 
             onClick={() => handleOpenDialog()} 
             sx={{ 
               borderRadius: 2, 
               fontFamily: theme.typography.fontFamily,
-              px: 3
+              px: { xs: 2, sm: 3 },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              py: { xs: 0.5, sm: 1 },
+              alignSelf: { xs: 'flex-end', sm: 'auto' }
             }}
           >
             Add Coupon
@@ -403,20 +406,20 @@ const ManageCoupons = () => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}><Loader size="large" /></Box>
         ) : error ? (
-          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2 }}>{error}</Alert>
+          <Alert severity="error" sx={{ fontFamily: theme.typography.fontFamily, borderRadius: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>{error}</Alert>
         ) : (
           <>
-            <TableContainer>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table sx={{ minWidth: { xs: 600, sm: 800, md: 1000 } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Code</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Discount</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Expires</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Usage</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Tiers</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Code</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Discount</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Expires</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Usage</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Tiers</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold', fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -429,13 +432,13 @@ const ManageCoupons = () => {
                           key={coupon._id} 
                           hover
                           sx={{
-                            '& td': { py: 1.5 },
+                            '& td': { py: { xs: 1, sm: 1.5 } },
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.primary.main, 0.02)
                             }
                           }}
                         >
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             <Chip 
                               label={coupon.code} 
                               color="primary" 
@@ -443,25 +446,26 @@ const ManageCoupons = () => {
                               sx={{ 
                                 fontWeight: 'bold',
                                 borderRadius: 1,
-                                fontFamily: theme.typography.fontFamily
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' }
                               }} 
                             />
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
                             </Typography>
                             {coupon.minPurchase > 0 && (
-                              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block' }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, display: 'block', fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                                 Min: ₹{coupon.minPurchase}
                               </Typography>
                             )}
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               {format(new Date(coupon.expiresAt), 'PP')}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                               {format(new Date(coupon.expiresAt), 'p')}
                             </Typography>
                           </TableCell>
@@ -470,27 +474,31 @@ const ManageCoupons = () => {
                               label={status} 
                               color={status === 'Active' ? 'success' : 'error'} 
                               size="small" 
-                              sx={{ borderRadius: 1, fontFamily: theme.typography.fontFamily }}
+                              sx={{ 
+                                borderRadius: 1, 
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                              }}
                             />
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>
+                              <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                                 {coupon.timesUsed}
                               </Typography>
                               {coupon.usageLimit && (
-                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                                   / {coupon.usageLimit}
                                 </Typography>
                               )}
                               {!coupon.usageLimit && (
-                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}>
                                   / ∞
                                 </Typography>
                               )}
                             </Box>
                             {coupon.usageLimit && (
-                              <Box sx={{ width: 80, height: 6, bgcolor: 'grey.200', borderRadius: 3, mt: 0.5, overflow: 'hidden' }}>
+                              <Box sx={{ width: { xs: 60, sm: 80 }, height: { xs: 4, sm: 6 }, bgcolor: 'grey.200', borderRadius: 3, mt: 0.5, overflow: 'hidden' }}>
                                 <Box 
                                   sx={{ 
                                     width: `${Math.min(100, (coupon.timesUsed / coupon.usageLimit) * 100)}%`, 
@@ -501,32 +509,32 @@ const ManageCoupons = () => {
                               </Box>
                             )}
                           </TableCell>
-                          <TableCell sx={{ fontFamily: theme.typography.fontFamily }}>
-                            <Stack direction="row" spacing={0.5}>
-                              {coupon.tierRestrictions.includes('bronze') && <Chip label="B" size="small" sx={{ bgcolor: '#CD7F32', color: 'white', width: 24, height: 24, borderRadius: 1 }} />}
-                              {coupon.tierRestrictions.includes('silver') && <Chip label="S" size="small" sx={{ bgcolor: '#C0C0C0', color: 'white', width: 24, height: 24, borderRadius: 1 }} />}
-                              {coupon.tierRestrictions.includes('gold') && <Chip label="G" size="small" sx={{ bgcolor: '#FFD700', color: 'black', width: 24, height: 24, borderRadius: 1 }} />}
+                          <TableCell sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                            <Stack direction="row" spacing={{ xs: 0.25, sm: 0.5 }}>
+                              {coupon.tierRestrictions.includes('bronze') && <Chip label="B" size="small" sx={{ bgcolor: '#CD7F32', color: 'white', width: { xs: 20, sm: 24 }, height: { xs: 20, sm: 24 }, borderRadius: 1, fontSize: { xs: '0.625rem', sm: '0.75rem' } }} />}
+                              {coupon.tierRestrictions.includes('silver') && <Chip label="S" size="small" sx={{ bgcolor: '#C0C0C0', color: 'white', width: { xs: 20, sm: 24 }, height: { xs: 20, sm: 24 }, borderRadius: 1, fontSize: { xs: '0.625rem', sm: '0.75rem' } }} />}
+                              {coupon.tierRestrictions.includes('gold') && <Chip label="G" size="small" sx={{ bgcolor: '#FFD700', color: 'black', width: { xs: 20, sm: 24 }, height: { xs: 20, sm: 24 }, borderRadius: 1, fontSize: { xs: '0.625rem', sm: '0.75rem' } }} />}
                             </Stack>
                           </TableCell>
                           <TableCell align="right">
-                            <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                            <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} justifyContent="flex-end">
                               <Tooltip title="View Orders">
                                 <IconButton 
                                   component={RouterLink} 
                                   to={`/admin/coupons/${coupon.code}/orders`}
                                   size="small"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                                 >
-                                  <VisibilityIcon fontSize="small" />
+                                  <VisibilityIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Edit Coupon">
                                 <IconButton 
                                   onClick={() => handleOpenDialog(coupon)}
                                   size="small"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                                 >
-                                  <EditIcon fontSize="small" />
+                                  <EditIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Delete Coupon">
@@ -534,9 +542,9 @@ const ManageCoupons = () => {
                                   onClick={() => handleDeleteCoupon(coupon._id)} 
                                   color="error"
                                   size="small"
-                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+                                  sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                                 >
-                                  <DeleteIcon fontSize="small" />
+                                  <DeleteIcon fontSize="small" sx={{ fontSize: { xs: 16, sm: 20 } }} />
                                 </IconButton>
                               </Tooltip>
                             </Stack>
@@ -547,12 +555,12 @@ const ManageCoupons = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} align="center">
-                        <Box sx={{ p: 6, textAlign: 'center' }}>
-                          <DiscountIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1 }}>
+                        <Box sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center' }}>
+                          <DiscountIcon sx={{ fontSize: { xs: 36, sm: 48 }, color: 'grey.400', mb: 2 }} />
+                          <Typography variant="h6" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, mb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                             No coupons found
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                             Try adjusting your search criteria or add a new coupon
                           </Typography>
                         </Box>
@@ -561,7 +569,7 @@ const ManageCoupons = () => {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </Box>
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <Pagination
@@ -574,7 +582,8 @@ const ManageCoupons = () => {
                   sx={{ 
                     '& .MuiPaginationItem-root': { 
                       borderRadius: 2,
-                      fontFamily: theme.typography.fontFamily
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }
                   }}
                 />
@@ -591,19 +600,23 @@ const ManageCoupons = () => {
         loading={formLoading}
       />
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily, pb: 1 }}>
-          <WarningAmberIcon color="warning" />
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontFamily: theme.typography.fontFamily, pb: 1, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+          <WarningAmberIcon color="warning" sx={{ fontSize: { xs: 20, sm: 24 } }} />
           {confirmAction?.title}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily }}>
+          <DialogContentText sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             {confirmAction?.message}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button 
             onClick={() => setConfirmDialogOpen(false)} 
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Cancel
           </Button>
@@ -612,7 +625,11 @@ const ManageCoupons = () => {
             color="error" 
             variant="contained" 
             autoFocus 
-            sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily }}
+            sx={{ 
+              borderRadius: 2, 
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Confirm
           </Button>
