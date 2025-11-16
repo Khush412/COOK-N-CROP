@@ -12,7 +12,7 @@ import FeaturedProductCard from '../components/FeaturedProductCard';
 import ProminentCTA from '../components/ProminentCTA';
 import NewsletterSignup from '../components/NewsletterSignup';
 import PromotionalCarousel from '../components/PromotionalCarousel'; // Import the PromotionalCarousel component
-import CircularGallery from '../custom_components/CircularGallery'; // Import the CircularGallery component
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import DomeGallery from '../custom_components/DomeGallery';
@@ -497,98 +497,6 @@ const FeaturedProductsMarquee = () => {
   );
 };
 
-// Add this component to fetch featured products and pass them to the CircularGallery
-const FeaturedProductsGallery = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const theme = useTheme();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        // Fetch all products without a limit
-        const res = await api.get('/products?getAll=true');
-        
-        // Handle array response
-        let products = Array.isArray(res.data) ? res.data : [];
-        
-        // Transform products into gallery items with product IDs
-        const galleryItems = products
-          .filter(product => {
-            // Only include products that have images
-            return (product.images && product.images.length > 0) || product.image;
-          })
-          .map(product => ({
-            id: product._id, // Add product ID for click handling
-            image: product.images && product.images.length > 0 
-              ? `${process.env.REACT_APP_API_URL}${product.images[0]}` 
-              : (product.image ? `${process.env.REACT_APP_API_URL}${product.image}` : `${process.env.PUBLIC_URL}/images/placeholder.png`),
-            text: product.name
-          }));
-        
-        setItems(galleryItems);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load products');
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) {
-    return (
-      <Box sx={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader size="large" />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>{error}</div>;
-  }
-
-  // If no items, show a message
-  if (items.length === 0) {
-    return <div style={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No products available</div>;
-  }
-
-  // Use the CircularGallery component with all products
-  return (
-    <div style={{ height: '500px', position: 'relative' }}>
-      <CircularGallery 
-        items={items}
-        bend={-2} // Changed to -2 for downward curve
-        textColor="#808080" // Changed to greyish color for better visibility on both dark and white backgrounds
-        borderRadius={0.3}
-        font="bold 20px Figtree"
-        scrollSpeed={1.5}
-        scrollEase={0.05}
-        autoScroll={true}
-        autoScrollSpeed={0.1}
-        height={500}
-        onImageClick={(productId) => {
-          // Navigate to product detail page
-          console.log('Main card clicked for product:', productId);
-          navigate(`/product/${productId}`);
-        }}
-        onEyeButtonClick={(productId) => {
-          // Show product highlight (could open a modal or show a highlight panel)
-          console.log('Eye button clicked for product:', productId);
-          // For now, we'll just navigate to the product page
-          // In a more advanced implementation, this could open a highlight modal
-          navigate(`/product/${productId}`);
-        }}
-      />
-    </div>
-  );
-};
 
 // Add this component to fetch featured recipes and pass them to the DomeGallery
 const FeaturedRecipesGallery = () => {
@@ -741,7 +649,11 @@ const FeaturedRecipesGallery = () => {
   };
 
   if (loading) {
-    return <div style={{ height: isMobile ? '300px' : '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+    return (
+      <div style={{ height: isMobile ? '300px' : '600px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader size="medium" />
+      </div>
+    );
   }
 
   if (error) {

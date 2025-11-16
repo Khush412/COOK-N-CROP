@@ -217,7 +217,7 @@ const FeedbackPage = () => {
               fontSize: { xs: '0.85rem', sm: '1rem' }
             }}
           >
-            {loading ? (isMobile ? 'Submitting...' : 'Submit Feedback') : (isMobile ? 'Submit' : 'Submit Feedback')}
+            {loading ? (isMobile ? 'Submitting' : 'Submit Feedback') : (isMobile ? 'Submit' : 'Submit Feedback')}
           </Button>
         </Box>
       </Paper>

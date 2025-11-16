@@ -6,7 +6,6 @@ import {
   TextField,
   Button,
   Avatar,
-  CircularProgress,
   Alert,
   Stack,
   Divider,
@@ -559,16 +558,7 @@ const Profile = () => {
                           fontFamily: theme.typography.fontFamily
                         }} 
                       />
-                      <Chip 
-                        label={`${dashboardData?.recentPosts?.length || 0} Posts`} 
-                        size="small"
-                        sx={{ 
-                          bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                          color: theme.palette.secondary.main,
-                          fontWeight: 600,
-                          fontFamily: theme.typography.fontFamily
-                        }} 
-                      />
+                      
                     </Box>
                   </Box>
                   <Slide direction="left" in={true} timeout={700}>

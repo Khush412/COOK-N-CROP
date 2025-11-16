@@ -110,7 +110,7 @@ router.post('/me/delete-account', protect, async (req, res) => {
     // Anonymize user data instead of hard deleting to preserve community content integrity
     user.username = `user_${user._id.toString().slice(-8)}`;
     user.email = `${user._id}@deleted.co`;
-    user.password = undefined; // This will be removed by the pre-save hook if not modified
+    user.password = undefined; // This will be properly handled by the updated pre-save hook
     user.bio = 'This account has been deleted.';
     user.profilePic = null;
     user.isActive = false;

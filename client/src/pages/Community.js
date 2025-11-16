@@ -8,7 +8,6 @@ import {
   Grid,
   Button,
   Paper,
-  CircularProgress,
   Alert,
   Divider,
   Snackbar,
@@ -200,20 +199,23 @@ export default function Community() {
       // Determine which page we're on
       const currentPath = window.location.pathname;
       
+      // Only send search term if it's not just "#" or empty
+      const effectiveSearchTerm = debouncedSearchTerm && debouncedSearchTerm !== '#' ? debouncedSearchTerm : '';
+      
       let data;
       if (currentPath === '/community/popular') {
         // For popular page, fetch top posts
         data = await communityService.getPosts('top', pageToFetch, {
           isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
           tags: selectedTags,
-          search: debouncedSearchTerm,
+          search: effectiveSearchTerm,
         });
       } else if (currentPath === '/community') {
         // For home page, fetch randomized posts
         data = await communityService.getPosts('new', pageToFetch, {
           isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
           tags: selectedTags,
-          search: debouncedSearchTerm,
+          search: effectiveSearchTerm,
         });
         
         // Shuffle the posts to create a randomized feed (only for first page)
@@ -225,7 +227,7 @@ export default function Community() {
         data = await communityService.getPosts(sort, pageToFetch, {
           isRecipe: contentFilter === 'recipes' ? true : contentFilter === 'discussions' ? false : undefined,
           tags: selectedTags,
-          search: debouncedSearchTerm,
+          search: effectiveSearchTerm,
         });
       }
       
@@ -311,7 +313,19 @@ export default function Community() {
       try {
         const tags = await communityService.getTrendingTags(10); // Increase limit to ensure we get enough tags
         console.log('Fetched trending tags:', tags); // Debug log
-        setTrendingTags(tags);
+        
+        // If no tags are returned, use default tags
+        if (!tags || tags.length === 0) {
+          setTrendingTags([
+            { tag: 'cooking', count: 15 },
+            { tag: 'recipe', count: 12 },
+            { tag: 'food', count: 10 },
+            { tag: 'healthy', count: 8 },
+            { tag: 'vegetarian', count: 7 }
+          ]);
+        } else {
+          setTrendingTags(tags);
+        }
       } catch (err) { 
         console.error("Error fetching trending tags: ", err); 
         // Set some default tags for testing
@@ -1151,9 +1165,9 @@ export default function Community() {
                 width: { xs: '100%', md: 'auto' }
               }}
             >
-              <Stack spacing={2.5}>
+              <Stack spacing={2.5} sx={{ width: '100%' }}>
                 {/* Search Bar and Create Post Button */}
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 }, mb: { xs: 1.5, md: 2 } }}>
                   <TextField
                     fullWidth
                     variant="outlined"
@@ -1163,39 +1177,46 @@ export default function Community() {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ fontSize: 20 }} />
+                          <SearchIcon sx={{ fontSize: { xs: 16, md: 20 } }} />
                         </InputAdornment>
                       ),
                     }}
                     sx={{ 
-                      borderRadius: 2,
+                      borderRadius: { xs: 2, md: 3 },
                       '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
+                        borderRadius: { xs: 2, md: 3 },
                         fontFamily: theme.typography.fontFamily,
-                        height: 40,
+                        height: { xs: 32, md: 44 },
                       },
                       '& .MuiInputBase-input': {
                         fontFamily: theme.typography.fontFamily,
-                        fontSize: '0.875rem',
-                        py: 0.5,
+                        fontSize: { xs: '0.8rem', md: '1rem' },
+                        py: { xs: 0.25, md: 1 },
                       }
                     }}
                   />
                   <Button
                     variant="contained"
-                    // Show just "Create" text on mobile, "Create" with icon on desktop
-                    startIcon={<AddIcon sx={{ fontSize: 18, display: { xs: 'none', md: 'inline' } }} />}
+                    startIcon={<AddIcon sx={{ fontSize: { xs: 14, md: 16 } }} />}
                     onClick={handleCreateClick}
                     sx={{ 
-                      borderRadius: 2,
+                      borderRadius: { xs: 3, md: 4 },
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
-                      height: 40,
-                      fontSize: '0.875rem',
-                      px: 1,
+                      height: { xs: 32, md: 44 },
+                      fontSize: { xs: '0.8rem', md: '1rem' },
+                      px: { xs: 0.75, md: 3 },
+                      minWidth: { xs: 'auto', md: 120 },
+                      boxShadow: 3,
+                      '&:hover': {
+                        boxShadow: 5,
+                        transform: 'translateY(-1px)',
+                      },
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    Create
+                    <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Create Post</Box>
+                    <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Create</Box>
                   </Button>
                 </Box>
                 
@@ -1286,174 +1307,196 @@ export default function Community() {
                   </Box>
                 )}
                 {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
-                {!loading && !error && posts.length === 0 && (
-                  viewMode !== 'grid' ? (
-                    <Paper 
-                      elevation={0}
-                      sx={{ 
-                        p: 8, 
-                        textAlign: 'center', 
-                        borderRadius: 3,
-                        border: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2 }}>
-                        No posts yet
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                        Be the first to start a conversation!
-                      </Typography>
-                      <Button 
-                        variant="contained" 
-                        onClick={handleCreateClick}
-                        startIcon={<AddIcon />}
-                        sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700 }}
-                      >
-                        Create Post
-                      </Button>
-                    </Paper>
-                  ) : (
-                    <Paper 
-                      elevation={0}
-                      sx={{ 
-                        p: 8, 
-                        textAlign: 'center', 
-                        borderRadius: 3,
-                        border: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Typography variant="h5" sx={{ color: "text.secondary", fontSize: 20, fontWeight: 700, mb: 2 }}>
-                        No image posts yet
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                        Be the first to share a post with images!
-                      </Typography>
-                      <Button 
-                        variant="contained" 
-                        onClick={handleCreateClick}
-                        startIcon={<AddIcon />}
-                        sx={{ borderRadius: 3, px: 4, py: 1.5, fontWeight: 700 }}
-                      >
-                        Create Post
-                      </Button>
-                    </Paper>
-                  )
-                )}
-                
+
+                {/* Posts Content - This is where posts and empty state are rendered */}
                 {viewMode !== 'grid' ? (
                   <Stack spacing={2}>
-                    {posts.map((post, index) => (
-                      <React.Fragment key={post._id}>
-                        {viewMode === 'card' && (
-                          <div ref={index === posts.length - 1 ? lastPostRef : null}>
-                            <PostCard
-                              post={post}
-                              user={user}
-                              onUpvote={handleUpvote}
-                              upvotingPosts={upvotingPosts}
-                              onToggleSave={handleToggleSave}
-                              savingPosts={savingPosts}
-                              showSnackbar={setSnackbar}
-                              displayMode="card"
-                            />
-                          </div>
-                        )}
-                        {viewMode === 'compact' && (
-                          <div ref={index === posts.length - 1 ? lastPostRef : null}>
-                            <PostCard
-                              post={post}
-                              user={user}
-                              onUpvote={handleUpvote}
-                              upvotingPosts={upvotingPosts}
-                              onToggleSave={handleToggleSave}
-                              savingPosts={savingPosts}
-                              showSnackbar={setSnackbar}
-                              displayMode="compact"
-                            />
-                          </div>
-                        )}
-                      </React.Fragment>
-                    ))}
+                    {!loading && !error && posts.length === 0 ? (
+                      <Paper 
+                        elevation={0}
+                        sx={{ 
+                          p: { xs: 4, md: 8 }, 
+                          textAlign: 'center', 
+                          borderRadius: 3,
+                          border: `1px solid ${theme.palette.divider}`,
+                          width: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <Typography variant="h5" sx={{ color: "text.secondary", fontSize: { xs: 18, md: 20 }, fontWeight: 700, mb: 2 }}>
+                          No posts yet
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.9rem', md: '1rem' } }}>
+                          Be the first to start a conversation!
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          onClick={handleCreateClick}
+                          startIcon={<AddIcon />}
+                          sx={{ 
+                            borderRadius: 3, 
+                            px: { xs: 2, md: 4 }, 
+                            py: { xs: 1, md: 1.5 }, 
+                            fontWeight: 700,
+                            fontSize: { xs: '0.9rem', md: '1rem' },
+                            minWidth: { xs: 'auto', md: 120 }
+                          }}
+                        >
+                          Create Post
+                        </Button>
+                      </Paper>
+                    ) : (
+                      posts.map((post, index) => (
+                        <React.Fragment key={post._id}>
+                          {viewMode === 'card' && (
+                            <div ref={index === posts.length - 1 ? lastPostRef : null}>
+                              <PostCard
+                                post={post}
+                                user={user}
+                                onUpvote={handleUpvote}
+                                upvotingPosts={upvotingPosts}
+                                onToggleSave={handleToggleSave}
+                                savingPosts={savingPosts}
+                                showSnackbar={setSnackbar}
+                                displayMode="card"
+                              />
+                            </div>
+                          )}
+                          {viewMode === 'compact' && (
+                            <div ref={index === posts.length - 1 ? lastPostRef : null}>
+                              <PostCard
+                                post={post}
+                                user={user}
+                                onUpvote={handleUpvote}
+                                upvotingPosts={upvotingPosts}
+                                onToggleSave={handleToggleSave}
+                                savingPosts={savingPosts}
+                                showSnackbar={setSnackbar}
+                                displayMode="compact"
+                              />
+                            </div>
+                          )}
+                        </React.Fragment>
+                      ))
+                    )}
                   </Stack>
                 ) : (
                   // Grid view - only show posts with images
                   <Grid container spacing={2}>
-                    {(() => {
-                      const imagePosts = posts.filter(post => post.media && post.media.length > 0);
-                      return imagePosts.map((post, index) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
-                          <Box 
-                            ref={index === imagePosts.length - 1 ? lastPostRef : null}
-                            onClick={() => navigate(`/post/${post._id}`)}
-                            sx={{
-                              borderRadius: 3,
-                              overflow: 'hidden',
-                              cursor: 'pointer',
-                              boxShadow: 2,
-                              '&:hover': {
-                                boxShadow: 4,
-                                transform: 'translateY(-2px)',
-                              },
-                              height: '100%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              transition: 'all 0.3s ease',
-                              bgcolor: theme.palette.background.paper,
+                    {!loading && !error && posts.length === 0 ? (
+                      <Grid size={{ xs: 12 }} sx={{ display: 'flex' }}>
+                        <Paper 
+                          elevation={0}
+                          sx={{ 
+                            p: { xs: 4, md: 8 }, 
+                            textAlign: 'center', 
+                            borderRadius: 3,
+                            border: `1px solid ${theme.palette.divider}`,
+                            width: '100%',
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <Typography variant="h5" sx={{ color: "text.secondary", fontSize: { xs: 18, md: 20 }, fontWeight: 700, mb: 2 }}>
+                            No image posts found
+                          </Typography>
+                          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontSize: { xs: '0.9rem', md: '1rem' } }}>
+                            Be the first to share an image post!
+                          </Typography>
+                          <Button 
+                            variant="contained" 
+                            onClick={handleCreateClick}
+                            startIcon={<AddIcon />}
+                            sx={{ 
+                              borderRadius: 3, 
+                              px: { xs: 2, md: 4 }, 
+                              py: { xs: 1, md: 1.5 }, 
+                              fontWeight: 700,
+                              fontSize: { xs: '0.9rem', md: '1rem' },
+                              minWidth: { xs: 'auto', md: 120 }
                             }}
                           >
-                            <Box
-                              component="img"
-                              src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
-                              alt={post.title}
+                            Create Post
+                          </Button>
+                        </Paper>
+                      </Grid>
+                    ) : (
+                      (() => {
+                        const imagePosts = posts.filter(post => post.media && post.media.length > 0);
+                        return imagePosts.map((post, index) => (
+                          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                            <Box 
+                              ref={index === imagePosts.length - 1 ? lastPostRef : null}
+                              onClick={() => navigate(`/post/${post._id}`)}
                               sx={{
-                                width: '100%',
-                                height: 200,
-                                objectFit: 'cover',
-                                borderBottom: `1px solid ${theme.palette.divider}`,
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                boxShadow: 2,
+                                '&:hover': {
+                                  boxShadow: 4,
+                                  transform: 'translateY(-2px)',
+                                },
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                transition: 'all 0.3s ease',
+                                bgcolor: theme.palette.background.paper,
                               }}
-                            />
-                            <Box sx={{ p: 2 }}>
-                              <Typography 
-                                variant="h6" 
-                                sx={{ 
-                                  fontWeight: 700, 
-                                  fontSize: 16, 
-                                  lineHeight: 1.4,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  fontFamily: theme.typography.fontFamily,
-                                  mb: 1,
+                            >
+                              <Box
+                                component="img"
+                                src={`${process.env.REACT_APP_API_URL}${post.media[0].url}`}
+                                alt={post.title}
+                                sx={{
+                                  width: '100%',
+                                  height: 200,
+                                  objectFit: 'cover',
+                                  borderBottom: `1px solid ${theme.palette.divider}`,
                                 }}
-                              >
-                                {post.title}
-                              </Typography>
-                              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                                <Avatar 
-                                  src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
-                                  alt={post.user?.username || 'User'}
-                                  sx={{ width: 24, height: 24, fontSize: 12 }}
-                                >
-                                  {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                                </Avatar>
+                              />
+                              <Box sx={{ p: 2 }}>
                                 <Typography 
-                                  variant="caption" 
+                                  variant="h6" 
                                   sx={{ 
-                                    fontWeight: 500, 
-                                    color: 'text.secondary',
+                                    fontWeight: 700, 
+                                    fontSize: 16, 
+                                    lineHeight: 1.4,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
                                     fontFamily: theme.typography.fontFamily,
+                                    mb: 1,
                                   }}
                                 >
-                                  {post.user?.username || 'Unknown'}
+                                  {post.title}
                                 </Typography>
-                              </Stack>
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                                  <Avatar 
+                                    src={post.user?.profilePic ? `${process.env.REACT_APP_API_URL}${post.user.profilePic}` : undefined}
+                                    alt={post.user?.username || 'User'}
+                                    sx={{ width: 24, height: 24, fontSize: 12 }}
+                                  >
+                                    {post.user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                                  </Avatar>
+                                  <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                      fontWeight: 500, 
+                                      color: 'text.secondary',
+                                      fontFamily: theme.typography.fontFamily,
+                                    }}
+                                  >
+                                    {post.user?.username || 'Unknown'}
+                                  </Typography>
+                                </Stack>
+                              </Box>
                             </Box>
-                          </Box>
-                        </Grid>
-                      ));
-                    })()}
+                          </Grid>
+                        ));
+                      })()
+                    )}
                   </Grid>
                 )}
 

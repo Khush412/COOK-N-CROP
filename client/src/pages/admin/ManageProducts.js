@@ -255,25 +255,36 @@ const ManageProducts = () => {
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center' }}>
             <TextField
               label="Search by Name or Description"
               variant="outlined"
               size="small"
-              fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 },
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                height: { sm: 40 } // Fixed height for laptop view
+              }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
               inputProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
             />
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 }, height: { sm: 40 } }}>
               <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Category</InputLabel>
               <Select
                 value={categoryFilter}
                 label="Category"
                 onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
+                sx={{ 
+                  borderRadius: 2, 
+                  fontFamily: theme.typography.fontFamily,
+                  height: { sm: 40 }, // Fixed height for laptop view
+                  '& .MuiSelect-select': { 
+                    py: { xs: 1, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '1rem' }
+                  }
+                }}
                 MenuProps={{
                   PaperProps: {
                     sx: {
@@ -303,14 +314,15 @@ const ManageProducts = () => {
                   fontSize: { xs: '0.75rem', sm: '0.875rem' },
                   py: { xs: 0.5, sm: 1 },
                   px: { xs: 1, sm: 2 },
-                  width: { xs: '100%', sm: 'auto' }
+                  width: { xs: '100%', sm: 'auto' },
+                  height: { sm: 40 } // Fixed height for laptop view
                 }}
               >
                 Delete Selected ({numSelected})
               </Button>
             )}
           </Stack>
-          <Stack direction="row" spacing={{ xs: 1, sm: 1 }} sx={{ width: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 } }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 1 }} sx={{ width: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 }, alignItems: 'center' }}>
             <Button 
               variant="outlined" 
               startIcon={<UploadFileIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />} 
@@ -321,7 +333,8 @@ const ManageProducts = () => {
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 py: { xs: 0.5, sm: 1 },
                 px: { xs: 1, sm: 2 },
-                width: { xs: '50%', sm: 'auto' }
+                width: { xs: '50%', sm: 'auto' },
+                height: { sm: 40 } // Fixed height for laptop view
               }}
             >
               Import CSV
@@ -336,7 +349,8 @@ const ManageProducts = () => {
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 py: { xs: 0.5, sm: 1 },
                 px: { xs: 1, sm: 2 },
-                width: { xs: '50%', sm: 'auto' }
+                width: { xs: '50%', sm: 'auto' },
+                height: { sm: 40 } // Fixed height for laptop view
               }}
             >
               Add Product

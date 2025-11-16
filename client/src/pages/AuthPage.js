@@ -23,6 +23,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
+import PixelBlast from "../custom_components/PixelBlastBackground";
 
 export default function AuthPage() {
   const theme = useTheme();
@@ -285,7 +286,7 @@ export default function AuthPage() {
   return (
     <Box
       sx={{
-        bgcolor: theme.palette.background.default,
+        bgcolor: "transparent",
         color: theme.palette.text.primary,
         fontFamily: theme.typography.fontFamily,
         display: "flex",
@@ -294,8 +295,43 @@ export default function AuthPage() {
         px: 2,
         pt: { xs: 12, md: 12 },
         pb: 6,
+        position: "relative",
+        minHeight: "100vh",
       }}
     >
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: -1,
+      }}>
+        <PixelBlast 
+          variant="circle"
+          pixelSize={3}
+          color={theme.palette.primary.main}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          speed={0.4}
+          patternScale={1.5}
+          patternDensity={0.8}
+          pixelSizeJitter={0.2}
+          edgeFade={0.3}
+          enableRipples={true}
+          rippleIntensityScale={1.2}
+          rippleThickness={0.12}
+          rippleSpeed={0.4}
+          liquid={true}
+          liquidStrength={0.18}
+          liquidRadius={1.5}
+          liquidWobbleSpeed={3.5}
+          noiseAmount={0.02}
+          transparent={true}
+        />
+      </div>
       <C.Container>
         <C.SignUpContainer $signingIn={signingIn}>
           <C.Form onSubmit={handleSignUp} autoComplete="off">
@@ -436,9 +472,10 @@ export default function AuthPage() {
             sx: {
               borderRadius: 3,
               p: 1,
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+              background: `linear-gradient(135deg, ${theme.palette.mode === "dark" ? "rgba(0, 32, 0, 0.8)" : "rgba(255, 255, 255, 0.8)"} 0%, ${theme.palette.mode === "dark" ? "rgba(0, 32, 0, 0.8)" : "rgba(255, 255, 255, 0.8)"} 100%)`,
               boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
               position: "relative",
+              backdropFilter: "blur(10px)",
             },
           }}
         >
@@ -559,9 +596,10 @@ export default function AuthPage() {
             sx: {
               borderRadius: 3,
               p: 1,
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+              background: `linear-gradient(135deg, ${theme.palette.mode === "dark" ? "rgba(0, 32, 0, 0.8)" : "rgba(255, 255, 255, 0.8)"} 0%, ${theme.palette.mode === "dark" ? "rgba(0, 32, 0, 0.8)" : "rgba(255, 255, 255, 0.8)"} 100%)`,
               boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
               position: "relative",
+              backdropFilter: "blur(10px)",
             },
           }}
         >

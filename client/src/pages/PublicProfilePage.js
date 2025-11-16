@@ -33,7 +33,6 @@ import {
   Zoom,
   Slide,
   Collapse,
-  CircularProgress,
   useMediaQuery,
   Snackbar,
 } from '@mui/material';
@@ -786,7 +785,7 @@ const PublicProfilePage = () => {
                         }}
                       >
                         {followLoading ? (
-                          <CircularProgress size={20} sx={{ color: 'inherit' }} />
+                          <Loader size="small" color="inherit" />
                         ) : isFollowing ? (
                           'Unfollow'
                         ) : (

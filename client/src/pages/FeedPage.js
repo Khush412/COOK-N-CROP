@@ -6,7 +6,6 @@ import {
   Container,
   Typography,
   Grid,
-  CircularProgress,
   Alert,
   Pagination,
   Button,
@@ -200,11 +199,38 @@ const FeedPage = () => {
 
       try {
         const tags = await communityService.getTrendingTags();
-        setTrendingTags(tags);
-        sessionStorage.setItem('trendingTags', JSON.stringify(tags));
+        
+        // If no tags are returned, use default tags
+        if (!tags || tags.length === 0) {
+          const defaultTags = [
+            { tag: 'cooking', count: 15 },
+            { tag: 'recipe', count: 12 },
+            { tag: 'food', count: 10 },
+            { tag: 'healthy', count: 8 },
+            { tag: 'vegetarian', count: 7 }
+          ];
+          setTrendingTags(defaultTags);
+          sessionStorage.setItem('trendingTags', JSON.stringify(defaultTags));
+        } else {
+          setTrendingTags(tags);
+          sessionStorage.setItem('trendingTags', JSON.stringify(tags));
+        }
+        
         sessionStorage.setItem('trendingTags_time', Date.now());
       } catch (err) {
         console.error("Error fetching trending tags: ", err);
+        
+        // Set default tags even when there's an error
+        const defaultTags = [
+          { tag: 'cooking', count: 15 },
+          { tag: 'recipe', count: 12 },
+          { tag: 'food', count: 10 },
+          { tag: 'healthy', count: 8 },
+          { tag: 'vegetarian', count: 7 }
+        ];
+        setTrendingTags(defaultTags);
+        sessionStorage.setItem('trendingTags', JSON.stringify(defaultTags));
+        sessionStorage.setItem('trendingTags_time', Date.now());
       }
     };
     fetchTrendingTags();
@@ -577,7 +603,11 @@ const FeedPage = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textAlign: 'center', py: 1 }}>
-                  {recommendationsLoading ? 'Loading...' : 'Follow more users to get personalized recommendations'}
+                  {recommendationsLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <Loader size="small" />
+                    </Box>
+                  ) : 'Follow more users to get personalized recommendations'}
                 </Typography>
               )}
             </Box>
@@ -638,7 +668,11 @@ const FeedPage = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ fontFamily: theme.typography.fontFamily, textAlign: 'center', py: 1 }}>
-                  {recommendationsLoading ? 'Loading...' : 'Join more groups to get personalized recommendations'}
+                  {recommendationsLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <Loader size="small" />
+                    </Box>
+                  ) : 'Join more groups to get personalized recommendations'}
                 </Typography>
               )}
             </Box>

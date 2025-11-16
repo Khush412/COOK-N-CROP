@@ -10,7 +10,6 @@ import {
   IconButton,
   Chip,
   useTheme,
-  CircularProgress,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';

@@ -32,7 +32,6 @@ import {
   alpha,
   Collapse,
   Drawer,
-  CircularProgress,
   Fab
 } from '@mui/material';
 import { 
@@ -1398,15 +1397,18 @@ const MessengerPage = () => {
                     >
                       {/* Sending indicator */}
                       {msg.isSending && (
-                        <CircularProgress 
-                          size={16} 
+                        <Box
                           sx={{ 
                             position: 'absolute', 
                             top: 4, 
-                            right: 4,
-                            color: isSender ? 'primary.contrastText' : 'primary.main'
-                          }} 
-                        />
+                            right: 4
+                          }}
+                        >
+                          <Loader 
+                            size="tiny" 
+                            color={isSender ? theme.palette.primary.contrastText : theme.palette.primary.main}
+                          />
+                        </Box>
                       )}
                       {/* Failed to send indicator */}
                       {msg.failedToSend && (
@@ -1967,7 +1969,9 @@ const MessengerPage = () => {
               ? `${selectedConversation?.participants?.find(p => p._id === typingUsers[0])?.username || 'User'} is typing...`
               : `${typingUsers.length} people are typing...`}
           </Typography>
-          <CircularProgress size={8} sx={{ ml: 0.75 }} />
+          <Box sx={{ ml: 0.75, display: 'flex', alignItems: 'center' }}>
+            <Loader size="tiny" />
+          </Box>
         </Box>
       )}
 

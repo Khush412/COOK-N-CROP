@@ -24,7 +24,6 @@ import {
   Grid,
   TextField,
   Tooltip,
-  CircularProgress,
   Stack,
   InputAdornment,
   Avatar
@@ -650,7 +649,7 @@ const ManageAutoJoinGroups = () => {
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
-              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
+              startIcon={saving ? <Loader size="tiny" color="inherit" /> : <SaveIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
               onClick={handleSaveConfig}
               disabled={saving}
               sx={{ 

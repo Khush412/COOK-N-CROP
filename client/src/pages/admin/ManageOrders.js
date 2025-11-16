@@ -103,28 +103,39 @@ const ManageOrders = () => {
 
       <Paper elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: { xs: 1, sm: 2 } }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, width: { xs: '100%', sm: 'auto' } }}>
+          <Stack direction="row" spacing={{ xs: 1, sm: 2 }} sx={{ flexGrow: 1, flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
             <TextField
               label="Search by ID, User, or Email"
               variant="outlined"
               size="small"
-              fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ minWidth: { xs: '100%', sm: 250 }, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 },
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                height: { sm: 40 } // Fixed height for laptop view
+              }}
               InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
               inputProps={{ sx: { fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } } }}
               InputProps={{
                 startAdornment: <SearchIcon sx={{ mr: 1, fontSize: { xs: 16, sm: 20 }, color: 'text.secondary' }} />,
               }}
             />
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 }, height: { sm: 40 } }}>
               <InputLabel sx={{ fontFamily: theme.typography.fontFamily, fontSize: { xs: '0.75rem', sm: '1rem' } }}>Status</InputLabel>
               <Select
                 value={statusFilter}
                 label="Status"
                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                sx={{ borderRadius: 2, fontFamily: theme.typography.fontFamily, width: { xs: '100%', sm: 'auto' } }}
+                sx={{ 
+                  borderRadius: 2, 
+                  fontFamily: theme.typography.fontFamily,
+                  height: { sm: 40 }, // Fixed height for laptop view
+                  '& .MuiSelect-select': { 
+                    py: { xs: 1, sm: 1 },
+                    fontSize: { xs: '0.75rem', sm: '1rem' }
+                  }
+                }}
                 IconComponent={FilterListIcon}
                 MenuProps={{
                   PaperProps: {
@@ -158,7 +169,8 @@ const ManageOrders = () => {
               py: { xs: 0.5, sm: 1 },
               px: { xs: 1, sm: 2 },
               width: { xs: '100%', sm: 'auto' },
-              mt: { xs: 1, sm: 0 }
+              mt: { xs: 1, sm: 0 },
+              height: { sm: 40 } // Fixed height for laptop view
             }}
           >
             Create Order

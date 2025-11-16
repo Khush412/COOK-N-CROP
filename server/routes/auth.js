@@ -135,9 +135,13 @@ router.post('/register', registerValidation, validate, async (req, res) => {
         </div>
       </div>
     `;
-    sendEmail({ email: user.email, subject: 'Welcome to Cook-N-Crop!', message: welcomeMessage }).catch(err => {
-      console.error('Failed to send welcome email:', err);
-    });
+    try {
+      console.log('Sending welcome email to:', user.email);
+      await sendEmail({ email: user.email, subject: 'Welcome to Cook-N-Crop!', message: welcomeMessage });
+      console.log('Welcome email sent successfully to:', user.email);
+    } catch (err) {
+      console.error('Failed to send welcome email to:', user.email, err);
+    }
 
     // Emit real-time event to admins
     const io = req.app.get('io');
@@ -281,6 +285,7 @@ router.post('/forgot-password', async (req, res) => {
   `;
 
   try {
+      console.log('Sending password reset email to:', user.email);
       await sendEmail({
         email: user.email,
         subject: 'Password Reset Request for Cook-N-Crop',
@@ -289,10 +294,11 @@ router.post('/forgot-password', async (req, res) => {
 
       // Only save the token if the email was sent successfully
       await user.save();
+      console.log('Password reset email sent successfully to:', user.email);
 
       res.status(200).json({ success: true, message: 'If a user with that email exists, a password reset link has been sent.' });
   } catch (err) {
-      console.error('Email sending error:', err);
+      console.error('Email sending error for:', user.email, err);
       // Do not save the user with the reset token if email fails.
       // This allows the user to try again without being locked out.
       res.status(500).json({ success: false, message: 'Could not send password reset email. Please try again later.' });

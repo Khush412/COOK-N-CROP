@@ -16,6 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CategoryIcon from '@mui/icons-material/Category';
 import searchService from '../services/searchService';
+import Loader from '../custom_components/Loader';
 
 const EnhancedSearch = ({ searchTerm, setSearchTerm, onSearchSubmit }) => {
   const theme = useTheme();
@@ -143,9 +144,7 @@ const EnhancedSearch = ({ searchTerm, setSearchTerm, onSearchSubmit }) => {
         >
           {isLoading ? (
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Typography sx={{ fontFamily: theme.typography.fontFamily }}>
-                Loading suggestions...
-              </Typography>
+              <Loader size="small" />
             </Box>
           ) : (
             <>

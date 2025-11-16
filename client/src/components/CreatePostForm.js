@@ -263,7 +263,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
             sx={{ borderRadius: '12px', '& .MuiSelect-select': { fontFamily: theme.typography.fontFamily } }}
           >
             {groupsLoading ? (
-              <MenuItem value="" disabled sx={{ fontFamily: theme.typography.fontFamily }}><em>Loading groups...</em></MenuItem>
+              <MenuItem value="" disabled sx={{ fontFamily: theme.typography.fontFamily, display: 'flex', justifyContent: 'center', py: 1 }}><Loader size="small" /></MenuItem>
             ) : userGroups.length === 0 ? (
               <MenuItem value="" disabled sx={{ fontFamily: theme.typography.fontFamily }}><em>You haven't joined any groups yet.</em></MenuItem>
             ) : (
@@ -508,7 +508,7 @@ const CreatePostForm = ({ onSubmit, onCancel, loading, forceRecipe, initialData 
             startIcon={loading ? <Loader size="small" color="inherit" /> : null}
             sx={{ borderRadius: '50px', px: 4, py: 1.2, fontFamily: theme.typography.fontFamily }}
           >
-            {loading ? (initialData ? 'Saving...' : 'Posting...') : (initialData ? 'Save Changes' : 'Submit Post')}
+            {loading ? (initialData ? 'Saving' : 'Posting') : (initialData ? 'Save Changes' : 'Submit Post')}
           </Button>
         </Stack>
       </Stack>

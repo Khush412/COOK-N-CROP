@@ -6,220 +6,351 @@ Cook'N'Crop is a feature-rich, modern web platform built with the MERN stack (Mo
 
 ---
 
-### ✨ Live Demo
+## 🌟 Overview
 
-*[Live Demo](https://cookncrop.onrender.com)*
+Cook'N'Crop is a comprehensive food community platform that brings together three key aspects of the food ecosystem:
+
+1. **Social Community**: Users can share recipes, cooking tips, and food experiences
+2. **E-commerce Marketplace**: Fresh produce and ingredients available for purchase
+3. **Loyalty Program**: Harvest Coins reward system for engaged users
+
+The platform features a modern, responsive design with customizable themes, real-time messaging, and a rich user experience.
 
 ---
 
 ## 🚀 Key Features
 
-This project is packed with features designed to create a seamless and engaging user experience.
+### 👤 **User Authentication & Management**
+- **Secure Registration & Login**: Email/password authentication with JWT-based sessions
+- **OAuth 2.0 Integration**: Social login via Google, GitHub, and LinkedIn
+- **Password Management**: Secure "Forgot Password" and "Reset Password" functionality
+- **User Profiles**: Customizable profiles with avatars, bios, and social connections
+- **Role-based Access Control**: User, moderator, and admin roles with appropriate permissions
+- **Account Security**: Session management, account deactivation, and security settings
 
-#### 👤 **Authentication & User Management**
-- **Secure Registration & Login**: Standard email/password authentication with JWT-based sessions.
-- **OAuth 2.0 Integration**: Users can sign up or log in using Google, GitHub, or LinkedIn.
-- **Password Management**: Secure "Forgot Password" and "Reset Password" functionality via email.
-- **User Dashboard**: A private, personalized space for users to manage their profile, view orders, see saved posts, and configure security settings.
-- **Public Profiles**: View other users' profiles, see their posts and comments, and follow them.
+### 🛒 **E-commerce Marketplace (Crop Corner)**
+- **Product Catalog**: Extensive catalog of fresh produce, ingredients, and food items
+- **Advanced Filtering**: Search and filter by category, price, tags, ratings, and availability
+- **Product Details**: Rich product information including nutrition facts, variants, and badges
+- **Shopping Cart**: Persistent cart system with quantity management
+- **Checkout Process**: Multi-step checkout with address management and payment options
+- **Order Management**: Complete order history with status tracking
+- **Product Reviews**: Rating and review system with upvoting capabilities
+- **Wishlist**: Save favorite products for later purchase
+- **Recently Viewed**: Track and revisit previously viewed products
+- **Personalized Recommendations**: AI-driven product suggestions based on user behavior
 
-#### 🛒 **E-commerce (The Crop'Corner)**
-- **Product Marketplace**: A fully functional store for fresh ingredients and other products.
-- **Advanced Filtering & Sorting**: Easily find products by name, category, price range, and more.
-- **Shopping Cart**: A persistent cart to add, remove, and update item quantities.
-- **Checkout System**: A multi-step checkout process with address management and coupon code validation.
-- **Order History**: Users can view details of their past orders and re-order items with a single click.
-- **Product Reviews**: Users can rate and review products they've purchased.
+### 📝 **Community & Recipe Sharing**
+- **Post Creation**: Rich text editor for creating recipes and general posts
+- **Recipe Format**: Structured recipe posts with ingredients, instructions, and prep times
+- **Shoppable Recipes**: One-click ingredient purchasing from recipes
+- **Post Interactions**: Upvoting, saving, and commenting on posts
+- **Nested Comments**: Multi-level comment system with collapsible threads
+- **Content Groups**: Community groups for specific interests and topics
+- **Collections**: User-created collections of favorite posts and recipes
+- **Content Discovery**: Trending, popular, and personalized content feeds
+- **Advanced Search**: Powerful search across posts, users, and content
 
-#### 📝 **Community & Recipes**
-- **Post Creation**: Users can create, edit, and delete posts, which can be general discussions or detailed recipes.
-- **Rich Recipe Format**: Recipes include ingredients, instructions, prep/cook times, servings, and can be tagged with relevant products.
-- **Shoppable Recipes**: A standout feature that automatically finds matching ingredients from the store and allows users to add them all to their cart.
-- **Interactive Content**: Upvote, save for later, and comment on posts.
-- **Nested & Collapsible Comments**: A sophisticated, multi-level comment system with upvoting, replies, and smart collapsing for readability.
+### 💬 **Real-Time Communication**
+- **Instant Messaging**: Private one-on-one messaging between users
+- **Real-time Notifications**: Live updates for messages, comments, and platform activity
+- **Presence Indicators**: Online/offline status for contacts
+- **Message Reactions**: Emoji reactions to messages
+- **Media Sharing**: Image and file sharing in conversations
+- **Message Status**: Read receipts and delivery confirmations
 
-#### 💬 **Real-Time Interaction**
-- **Live Messenger**: A private, one-on-one messaging system built with Socket.IO for instant communication.
-- **Admin Notifications**: Admins receive real-time notifications for events like new user registrations.
+### 🛠️ **Support & Moderation**
+- **Help Center**: Comprehensive FAQ and support documentation
+- **Ticket System**: User support ticket creation and management
+- **Content Reporting**: Report inappropriate posts, comments, or users
+- **User Blocking**: Block unwanted interactions from other users
+- **Admin Moderation**: Content and user management tools for administrators
+- **Community Guidelines**: Clear rules and policies for platform usage
 
-#### 🛠️ **Support & Moderation**
-- **Contact & Support System**: A comprehensive support page with an FAQ and a contact form that creates support tickets.
-- **Ticket Tracking**: Users can view their support tickets and correspond with admins.
-- **Reporting System**: Users can report inappropriate posts or comments.
-- **Block System**: Users can block others to prevent unwanted interaction.
+### 🎁 **Loyalty & Rewards Program**
+- **Harvest Coins**: Earn coins through purchases and platform engagement
+- **Tiered Membership**: Bronze, Silver, and Gold membership levels with increasing benefits
+- **Redemption System**: Exchange coins for discounts and special offers
+- **Activity Rewards**: Bonus coins for community participation
+- **Referral Program**: Earn coins by inviting friends to the platform
 
-#### 🎨 **Modern UI/UX**
-- **Fully Responsive Design**: A beautiful and intuitive interface that works on all devices, built with Material-UI.
-- **Custom Theming**: Includes a theme switcher for light/dark modes and a font selector for a personalized look.
-- **Smooth Animations**: Engaging animations and page transitions using Framer Motion.
-- **Global Search**: A powerful search bar in the header to find products, posts, and users from anywhere on the site.
+### 🎨 **Modern UI/UX Features**
+- **Responsive Design**: Fully responsive interface that works on all devices
+- **Customizable Themes**: Multiple color themes (Royal Amethyst, Forest Mist, Sunset Glow, Ocean Breeze)
+- **Light/Dark Mode**: Toggle between light and dark color schemes
+- **Font Customization**: Choose from multiple font options for personalized reading
+- **Animations**: Smooth transitions and micro-interactions throughout the interface
+- **Accessibility**: WCAG-compliant design for users with disabilities
+- **Performance Optimized**: Lazy loading, code splitting, and efficient data fetching
+
+### 🔧 **Admin Panel**
+- **Dashboard Analytics**: Real-time statistics and visualizations
+- **User Management**: View, edit, and manage all user accounts
+- **Product Management**: Add, edit, import (CSV), and manage inventory
+- **Order Management**: Process and track customer orders
+- **Content Moderation**: Review reported content and user-generated posts
+- **Broadcast System**: Send announcements to all platform users
+- **Coupon Management**: Create and manage discount codes
+- **Group Management**: Administer community groups and auto-join settings
+- **Support Ticket Handling**: Manage and respond to user support requests
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-| Category       | Technology                                                              |
-|----------------|-------------------------------------------------------------------------|
-| **Frontend**   | React, React Router, Material-UI, Styled Components, Axios, Socket.IO Client, Framer Motion |
-| **Backend**    | Node.js, Express.js                                                     |
-| **Database**   | MongoDB with Mongoose                                                   |
-| **Auth**       | Passport.js (JWT, Google, GitHub, LinkedIn), bcrypt.js                  |
-| **Real-Time**  | Socket.IO                                                               |
-| **Email**      | Nodemailer                                                              |
+### Frontend
+- **React**: Modern component-based UI library
+- **Material-UI**: Comprehensive React component library
+- **React Router**: Declarative routing for React applications
+- **Styled Components**: Visual primitives for themeable component styling
+- **Axios**: Promise-based HTTP client for API requests
+- **Socket.IO Client**: Real-time bidirectional event-based communication
+- **Framer Motion**: Production-ready motion library for React
+- **Redux/Zustand**: State management solutions
+- **Formik & Yup**: Form handling and validation
+- **React Query**: Server state management
+
+### Backend
+- **Node.js**: JavaScript runtime for server-side development
+- **Express.js**: Fast, unopinionated web framework
+- **MongoDB**: Document-oriented NoSQL database
+- **Mongoose**: Elegant MongoDB object modeling
+- **Passport.js**: Authentication middleware with multiple strategies
+- **JWT**: JSON Web Tokens for secure authentication
+- **Socket.IO**: Real-time bidirectional event-based communication
+- **Nodemailer**: Email sending capabilities
+- **Multer**: Middleware for handling multipart/form-data
+- **Bcrypt.js**: Password hashing and security
+- **Stripe**: Payment processing integration
+
+### DevOps & Tools
+- **Git**: Distributed version control system
+- **npm/yarn**: Package managers for JavaScript
+- **ESLint**: JavaScript linting utility
+- **Prettier**: Code formatter for consistent styling
+- **Jest**: JavaScript testing framework
+- **Docker**: Containerization platform (optional)
+- **Render/Heroku**: Cloud platform for deployment
 
 ---
 
 ## 🏁 Getting Started
 
-Follow these instructions to get a local copy of the project up and running for development and testing purposes.
-
 ### Prerequisites
-
 - **Node.js** (v16 or later)
 - **npm** or **yarn**
-- **MongoDB**: A local instance or a cloud-based service like MongoDB Atlas.
+- **MongoDB**: Local instance or cloud service (MongoDB Atlas)
 
 ### Installation
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/cook-n-crop.git
-    cd cook-n-crop
-    ```
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/your-username/cook-n-crop.git
+   cd cook-n-crop
+   ```
 
-2.  **Set up the Backend:**
-    - Navigate to the server directory: `cd server`
-    - Install dependencies: `npm install`
-    - Create a `.env` file in the `server` directory and add the following environment variables. Replace the placeholder values with your actual configuration.
+2. **Set up the Backend:**
+   ```sh
+   cd server
+   npm install
+   ```
+   
+   Create a `.env` file in the `server` directory:
+   ```env
+   # Server Configuration
+   NODE_ENV=development
+   PORT=5000
+   
+   # Database
+   MONGO_URI=your_mongodb_connection_string
+   
+   # JWT
+   JWT_SECRET=your_jwt_secret
+   JWT_EXPIRE=7d
+   
+   # Session Secret
+   SESSION_SECRET=your_super_strong_session_secret
+   
+   # Client URL
+   CLIENT_URL=http://localhost:3000
+   
+   # Email Configuration (Brevo/Sendinblue recommended)
+   EMAIL_HOST=smtp-relay.brevo.com
+   EMAIL_PORT=587
+   EMAIL_USER=your_brevo_login_email@example.com
+   EMAIL_PASS=your_brevo_smtp_key
+   FROM_EMAIL=noreply@yourdomain.com
+   FROM_NAME=Cook'N'Crop
+   
+   # OAuth Credentials
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   LINKEDIN_CLIENT_ID=your_linkedin_client_id
+   LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
+   ```
 
-    ```env
-    # Server Configuration
-    NODE_ENV=development
-    PORT=5000
-
-    # Database
-    MONGO_URI=your_mongodb_connection_string
-
-    # JWT
-    JWT_SECRET=your_jwt_secret
-    JWT_EXPIRE=7d
-
-    # Session Secret (important for security)
-    # Use a long, random string. You can generate one here: https://www.grc.com/passwords.htm
-    SESSION_SECRET=your_super_strong_session_secret
-
-    # Client URL
-    # For local development, use http://localhost:3000
-    # For production, this MUST be your live frontend URL (e.g., https://cookncrop.onrender.com)
-    CLIENT_URL=http://localhost:3000
-
-    # --- Production Email: Choose ONE of the options below ---
-
-    # Option 1: Brevo (formerly Sendinblue) - Recommended
-    # Free tier is generous. May require phone verification to prevent spam.
-    # 1. Sign up at brevo.com, go to SMTP & API, create an SMTP Key.
-    EMAIL_HOST=smtp-relay.brevo.com # Brevo SMTP server
-    EMAIL_PORT=587
-    EMAIL_USER=your_brevo_login_email@example.com # The "Login" value from your Brevo SMTP page
-    EMAIL_PASS=your_brevo_smtp_key # The SMTP key you generated
-    FROM_EMAIL=noreply@yourdomain.com
-    FROM_NAME=Cook'N'Crop
-
-    # Option 2: Mailgun
-    # Also has a free tier. May require a credit card for identity verification (won't be charged on free plan).
-    # 1. Sign up at mailgun.com, add and verify your domain.
-    # 2. Go to Sending > Domain Settings > SMTP credentials to find your details.
-    # EMAIL_HOST=smtp.mailgun.org # Or your region-specific host (e.g., smtp.eu.mailgun.org)
-    # EMAIL_PORT=587
-    # EMAIL_USER=postmaster@your.verified.domain # Your SMTP username from Mailgun
-    # EMAIL_PASS=your_mailgun_smtp_password # The password for that SMTP user
-
-    # OAuth Credentials
-    GOOGLE_CLIENT_ID=your_google_client_id
-    GOOGLE_CLIENT_SECRET=your_google_client_secret
-    GITHUB_CLIENT_ID=your_github_client_id
-    GITHUB_CLIENT_SECRET=your_github_client_secret
-    LINKEDIN_CLIENT_ID=your_linkedin_client_id
-    LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
-
-    # --- OAuth Setup ---
-    # You can create and manage your OAuth credentials for Google, GitHub, and Twitter
-    # in their respective developer consoles. For Google, go to https://console.cloud.google.com/
-
-    # --- OAuth Callback URLs ---
-    # When setting up your OAuth apps on Google, GitHub, and Twitter,
-    # you must provide these authorized callback URLs. It must be an EXACT match,
-    # including https://
-    #
-    # Google Authorized redirect URI:
-    # https://cookncrop.onrender.com/api/auth/google/callback
-    #
-    # GitHub Authorization callback URL:
-    # https://cookncrop.onrender.com/api/auth/github/callback
-    #
-    # LinkedIn Authorized redirect URLs:
-    # https://cookncrop.onrender.com/api/auth/linkedin/callback
-    ```
-
-3.  **Set up the Frontend:**
-    - Navigate to the client directory: `cd ../client`
-    - Install dependencies: `npm install`
-    - Create a `.env` file in the `client` directory:
-
-    ```env
-    REACT_APP_API_URL=http://localhost:5000
-    ```
+3. **Set up the Frontend:**
+   ```sh
+   cd ../client
+   npm install
+   ```
+   
+   Create a `.env` file in the `client` directory:
+   ```env
+   REACT_APP_API_URL=http://localhost:5000
+   ```
 
 ### Running the Application
 
-1.  **Start the Backend Server:**
-    - From the `server` directory, run:
-    ```sh
-    npm run dev
-    ```
-    The server will start on the port specified in your `.env` file (e.g., 5000).
+1. **Start the Backend Server:**
+   ```sh
+   cd server
+   npm run dev
+   ```
 
-2.  **Start the Frontend Development Server:**
-    - From the `client` directory, run:
-    ```sh
-    npm start
-    ```
-    The React application will open in your browser at `http://localhost:3000`.
+2. **Start the Frontend Development Server:**
+   ```sh
+   cd client
+   npm start
+   ```
 
 ---
 
 ## 📂 Project Structure
 
-The project is organized into two main parts: `client` and `server`.
-
 ```
 cook-n-crop/
-├── client/
-│   ├── public/
-│   └── src/
-│       ├── assets/
-│       ├── components/
-│       ├── contexts/
-│       ├── hooks/
-│       ├── pages/
-│       ├── services/
-│       └── App.js
-├── server/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── utils/
-│   └── server.js
-└── README.md
+├── client/                    # React frontend application
+│   ├── public/                # Static assets
+│   └── src/                   # Source code
+│       ├── assets/            # Images, icons, and other media
+│       ├── components/        # Reusable UI components
+│       ├── contexts/          # React context providers
+│       ├── hooks/             # Custom React hooks
+│       ├── pages/             # Page components
+│       ├── services/          # API service functions
+│       ├── custom_components/ # Custom UI components
+│       └── App.js             # Main application component
+├── server/                    # Node.js backend API
+│   ├── config/                # Configuration files
+│   ├── controllers/           # Request handlers
+│   ├── middleware/            # Custom middleware functions
+│   ├── models/                # Mongoose data models
+│   ├── routes/                # API route definitions
+│   ├── services/              # Business logic services
+│   ├── utils/                 # Utility functions
+│   └── server.js              # Main server file
+└── README.md                  # Project documentation
 ```
-
-- **`client`**: Contains the React frontend application, created with Create React App.
-- **`server`**: Contains the Node.js/Express backend API.
 
 ---
 
-## 🎉 Congratulations!
+## 🎯 Core Functionality Deep Dive
 
-You've built an incredibly robust and feature-complete application. From the complex authentication flows and real-time interactions to the polished, themeable UI, this project showcases a wide range of modern web development skills. It's ready for deployment and for a community to start enjoying it. Well done!
+### User System
+The user system is built on a robust authentication foundation with multiple login options. Users can register with email/password or use OAuth providers. The profile system allows for customization with avatars, bios, and social connections. Role-based permissions ensure appropriate access levels for regular users, moderators, and administrators.
+
+### E-commerce Platform
+The marketplace features a comprehensive product catalog with advanced search and filtering capabilities. Products include detailed information like nutrition facts, variants for different sizes/weights, and badges for special attributes (organic, bestseller, etc.). The shopping experience includes a persistent cart, multi-step checkout, and order tracking.
+
+### Community Features
+The social aspect of Cook'N'Crop centers around recipe sharing and community engagement. Users can create rich recipe posts with structured ingredients and instructions. The shoppable recipe feature allows one-click purchasing of all ingredients. Posts support upvoting, commenting, and saving, with a sophisticated nested comment system.
+
+### Real-time Communication
+The messaging system provides instant communication between users with features like online presence indicators, message reactions, and media sharing. Real-time notifications keep users updated on platform activity.
+
+### Loyalty Program
+Harvest Coins provide tangible rewards for user engagement. The tiered system offers increasing benefits with higher membership levels, and coins can be redeemed for discounts on future purchases.
+
+---
+
+## 🔒 Security Features
+
+- **Password Encryption**: All passwords are hashed using bcrypt
+- **JWT Authentication**: Secure token-based authentication
+- **Session Management**: Proper session handling and cleanup
+- **Rate Limiting**: Protection against brute force attacks
+- **Input Validation**: Server-side validation for all user inputs
+- **CORS Configuration**: Controlled cross-origin resource sharing
+- **Helmet.js**: Security headers for Express applications
+- **Environment Variables**: Sensitive data stored securely
+
+---
+
+## 📱 Responsive Design
+
+The application is built with a mobile-first approach and features:
+
+- **Adaptive Layouts**: Components adjust to different screen sizes
+- **Touch-friendly Controls**: Optimized for touch interactions
+- **Performance Optimization**: Lazy loading and efficient data fetching
+- **Cross-browser Compatibility**: Works across modern browsers
+- **Progressive Web App**: Installable on mobile devices
+
+---
+
+## 🧪 Testing Strategy
+
+The application implements a comprehensive testing approach:
+
+- **Unit Testing**: Component and function testing with Jest
+- **Integration Testing**: API endpoint testing
+- **End-to-End Testing**: User flow testing with Cypress
+- **Performance Testing**: Load and stress testing
+- **Accessibility Testing**: WCAG compliance verification
+
+---
+
+## 🚀 Deployment Options
+
+### Development
+- Local development with hot reloading
+- MongoDB local instance or Atlas
+
+### Production
+- **Frontend**: Deploy to Netlify, Vercel, or static hosting
+- **Backend**: Deploy to Render, Heroku, or cloud VPS
+- **Database**: MongoDB Atlas for managed database service
+- **CDN**: Content delivery network for static assets
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions to Cook'N'Crop! To contribute:
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
+
+Please ensure your code follows our style guidelines and includes appropriate tests.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors who have helped build this platform
+- Inspired by the need to connect food lovers, cooks, and farmers
+- Built with modern web technologies for the best user experience
+
+---
+
+## 📞 Support
+
+For support, please open an issue on GitHub or contact our team at support@cookncrop.com.
+
+---
+
+## 🎉 Conclusion
+
+Cook'N'Crop represents a comprehensive solution for the modern food community. With its blend of social features, e-commerce capabilities, and loyalty rewards, it provides a complete platform for food enthusiasts to connect, share, and shop. The application demonstrates best practices in full-stack development with a focus on user experience, security, and scalability.

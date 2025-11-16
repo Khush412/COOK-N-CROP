@@ -197,8 +197,8 @@ router.get('/', optionalAuth, async (req, res) => {
 
     // Handle search parameter
     if (search) {
-      // Check if this is a hashtag search (starts with #)
-      if (search.startsWith('#')) {
+      // Check if this is a hashtag search (starts with # and has content after #)
+      if (search.startsWith('#') && search.length > 1) {
         const cleanSearch = search.substring(1);
         if (matchConditions.$or) {
           // If we already have an $or condition, add to it
@@ -211,9 +211,14 @@ router.get('/', optionalAuth, async (req, res) => {
             { hashtags: cleanSearch }
           ];
         }
+      } else if (search.startsWith('#') && search.length === 1) {
+        // If search is just "#", don't add any search conditions
+        // This prevents errors when user just types "#" without any hashtag
       } else {
-        // Regular text search
-        matchConditions.$text = { $search: search };
+        // Regular text search - only add if search term is not empty
+        if (search.trim() !== '') {
+          matchConditions.$text = { $search: search };
+        }
       }
     }
 
@@ -247,7 +252,7 @@ router.get('/', optionalAuth, async (req, res) => {
     }
 
     // Add sorting stages
-    if (sort === 'relevance' && search) {
+    if (sort === 'relevance' && search && search.trim() !== '' && !search.startsWith('#')) {
       pipeline.push({ $sort: { score: { $meta: 'textScore' } } });
     } else if (sort === 'top') {
       pipeline.push({ $addFields: { sortScore: '$voteScore' } });
@@ -288,7 +293,7 @@ router.get('/', optionalAuth, async (req, res) => {
       commentCount: { $size: { $ifNull: ['$comments', []] } },
     };
 
-    if (search) {
+    if (search && search.trim() !== '' && !search.startsWith('#')) {
       projectStage.score = { $meta: 'textScore' };
     }
 
@@ -399,12 +404,9 @@ router.get('/feed', protect, async (req, res) => { // protect middleware already
 // @access  Public
 router.get('/tags/trending', async (req, res) => {
   try {
-    // Get tags from posts in the last 30 days to keep it fresh
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
+    // Remove the date filter to show all trending tags
     const tags = await Post.aggregate([
-      { $match: { createdAt: { $gte: thirtyDaysAgo }, tags: { $ne: null, $not: { $size: 0 } } } },
+      { $match: { tags: { $ne: null, $not: { $size: 0 } } } }, // Remove date filter
       { $unwind: '$tags' },
       { $group: { _id: '$tags', count: { $sum: 1 } } },
       { $sort: { count: -1 } },

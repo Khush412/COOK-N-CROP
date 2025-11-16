@@ -85,8 +85,8 @@ router.get('/posts', optionalAuth, async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Check if this is a hashtag search (starts with #)
-    const isHashtagSearch = q.startsWith('#');
+    // Check if this is a hashtag search (starts with # and has content after #)
+    const isHashtagSearch = q.startsWith('#') && q.length > 1;
     const cleanQuery = isHashtagSearch ? q.substring(1) : q;
 
     let postMatchQuery;
@@ -98,9 +98,17 @@ router.get('/posts', optionalAuth, async (req, res) => {
           { hashtags: cleanQuery }
         ]
       };
+    } else if (q.startsWith('#') && q.length === 1) {
+      // If search is just "#", return empty results
+      postMatchQuery = { _id: null }; // This will return no results
     } else {
-      // For regular text searches, use text index
-      postMatchQuery = { $text: { $search: q } };
+      // For regular text searches, use text index - only if query is not empty
+      if (q.trim() !== '') {
+        postMatchQuery = { $text: { $search: q } };
+      } else {
+        // If query is empty, don't add text search condition
+        postMatchQuery = {};
+      }
     }
 
     if (req.user) {
@@ -247,12 +255,9 @@ router.get('/hashtag/:hashtag', optionalAuth, async (req, res) => {
 // @access  Public
 router.get('/trending-hashtags', async (req, res) => {
   try {
-    // Get trending hashtags from posts in the last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+    // Remove the date filter to show all trending hashtags
     const hashtags = await Post.aggregate([
-      { $match: { createdAt: { $gte: sevenDaysAgo }, hashtags: { $ne: null, $not: { $size: 0 } } } }, // Keep the date filter
+      { $match: { hashtags: { $ne: null, $not: { $size: 0 } } } }, // Remove date filter
       { $unwind: '$hashtags' },
       { $group: { _id: '$hashtags', count: { $sum: 1 } } },
       { $sort: { count: -1 } },

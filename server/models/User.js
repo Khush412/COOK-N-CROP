@@ -256,7 +256,8 @@ userSchema.pre('save', async function(next) {
     }
   }
 
-  if (!this.isModified('password')) return next();
+  // Only hash the password if it's being modified and is not undefined/null
+  if (!this.isModified('password') || !this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(12);

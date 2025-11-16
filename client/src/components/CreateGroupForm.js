@@ -205,7 +205,7 @@ const CreateGroupForm = ({ onSubmit, onCancel, loading, initialData }) => {
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button onClick={onCancel} disabled={loading} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>Cancel</Button>
           <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={loading ? <Loader size="small" /> : null} sx={{ fontFamily: theme.typography.fontFamily, borderRadius: '50px' }}>
-            {loading ? 'Saving...' : (initialData ? 'Save Changes' : 'Create Group')}
+            {loading ? (initialData ? 'Saving' : 'Creating') : (initialData ? 'Save Changes' : 'Create Group')}
           </Button>
         </Stack>
       </Stack>

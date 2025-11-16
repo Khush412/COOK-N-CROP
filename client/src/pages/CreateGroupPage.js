@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Container, Typography, Paper, TextField, Button, CircularProgress,
+  Box, Container, Typography, Paper, TextField, Button,
   Snackbar, Alert, alpha, Stack, Card, CardContent, CardMedia
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';

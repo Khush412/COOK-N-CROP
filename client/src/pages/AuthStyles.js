@@ -1,7 +1,9 @@
 import styled, { css } from "styled-components";
 
 export const Container = styled.div`
-  background-color: ${({ theme }) => theme.palette.background.paper};
+  background-color: ${({ theme }) => theme.palette.mode === "dark" 
+    ? "rgba(36, 32, 43, 0.8)"  /* #24202b with 80% opacity */
+    : "rgba(255, 255, 255, 0.8)"};  /* white with 80% opacity */
   border-radius: 10px;
   box-shadow: ${({ theme }) =>
     theme.palette.mode === "dark"
@@ -14,6 +16,7 @@ export const Container = styled.div`
   min-height: 440px;
   color: ${({ theme }) => theme.palette.text.primary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
+  backdrop-filter: blur(10px);
 
   @media (max-width: 768px) {
     max-width: 95vw;
@@ -66,7 +69,7 @@ export const SignInContainer = styled.div`
 `;
 
 export const Form = styled.form`
-  background-color: ${({ theme }) => theme.palette.background.default};
+  background-color: transparent;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 0 45px; height: 100%; text-align: center;
 
@@ -84,10 +87,11 @@ export const Title = styled.h1`
 `;
 
 export const Input = styled.input`
-  background-color: ${({ theme }) => theme.palette.mode === "dark" ? "#444" : "#eee"};
+  background-color: ${({ theme }) => theme.palette.mode === "dark" ? "rgba(68, 68, 68, 0.7)" : "rgba(238, 238, 238, 0.7)"};
   border: none; border-radius: 4px; color: ${({ theme }) => theme.palette.text.primary};
   padding: 12px 15px; margin: 8px 0; width: 100%; box-sizing: border-box;
   font-family: ${({ theme }) => theme.typography.fontFamily};
+  backdrop-filter: blur(5px);
   ::placeholder {
     color: ${({ theme }) => theme.palette.mode === "dark" ? "#bbb" : "#666"};
   }
@@ -151,11 +155,12 @@ export const OverlayContainer = styled.div`
 `;
 
 export const Overlay = styled.div`
-  background-color: ${({ theme }) => theme.palette.primary.main};
+  background-color: ${({ theme }) => `${theme.palette.primary.main}CC`}; /* Using hex with alpha (CC = ~80% opacity) */
   color: ${({ theme }) => theme.palette.primary.contrastText};
   position: relative; left: -100%; height: 100%; width: 200%;
   transform: translateX(0); transition: transform 0.6s ease-in-out;
   ${({ $signingIn }) => !$signingIn && css`transform: translateX(50%);`}
+  backdrop-filter: blur(5px);
 
   @media (max-width: 768px) {
     left: 0;
