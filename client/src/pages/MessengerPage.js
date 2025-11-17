@@ -60,11 +60,14 @@ import {
 import { format, isToday, isYesterday } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { useSearchParams } from 'react-router-dom';
 import messagingService from '../services/messagingService';
 import userService from '../services/userService';
 import Loader from '../custom_components/Loader';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+
+
 
 const MessengerPage = () => {
   const theme = useTheme();
@@ -73,6 +76,8 @@ const MessengerPage = () => {
   const socket = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const processedQueryRef = useRef(false);
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -80,6 +85,9 @@ const MessengerPage = () => {
   const [loading, setLoading] = useState({ convos: true, messages: false });
   const [isSending, setIsSending] = useState(false);
   const [convoSearch, setConvoSearch] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState([]); // New state for user search results
+  const [showUserSearch, setShowUserSearch] = useState(false); // New state to control user search dropdown
+  const userSearchTimeoutRef = useRef(null); // Ref to control search debounce
   const [messageSearch, setMessageSearch] = useState('');
   const [messageSearchResults, setMessageSearchResults] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -112,6 +120,89 @@ const MessengerPage = () => {
     type: '',
     filename: ''
   });
+
+  // Function to search users by username
+  const searchUsers = async (query) => {
+    if (!query.trim()) {
+      setUserSearchResults([]);
+      setShowUserSearch(false);
+      return;
+    }
+    
+    try {
+      // Call the user search API
+      const results = await userService.searchUsers(query);
+      setUserSearchResults(results);
+      setShowUserSearch(results.length > 0);
+    } catch (err) {
+      console.error('Failed to search users:', err);
+      setUserSearchResults([]);
+      setShowUserSearch(false);
+    }
+  };
+
+  // Handle conversation search input
+  const handleConvoSearchChange = (e) => {
+    const value = e.target.value;
+    setConvoSearch(value);
+    
+    // Check if the input starts with @ for user search
+    if (value.startsWith('@') && value.length > 1) {
+      const query = value.substring(1); // Remove the @ symbol
+      
+      // Clear any existing timeout
+      if (userSearchTimeoutRef.current) {
+        clearTimeout(userSearchTimeoutRef.current);
+      }
+      
+      // Set a new timeout for debounced search
+      userSearchTimeoutRef.current = setTimeout(() => {
+        searchUsers(query);
+      }, 300); // 300ms debounce
+    } else {
+      // Hide user search if not starting with @
+      setShowUserSearch(false);
+      setUserSearchResults([]);
+    }
+  };
+
+  // Handle selecting a user from search results
+  const handleSelectUserFromSearch = async (userData) => {
+    try {
+      // Check if conversation already exists
+      const existingConvo = conversations.find(c =>
+        c.participants.length === 2 && c.participants.some(p => p._id === userData._id)
+      );
+      
+      if (existingConvo) {
+        // If conversation exists, select it
+        handleSelectConversation(existingConvo);
+      } else {
+        // If conversation doesn't exist, create a placeholder
+        const placeholderConvo = {
+          _id: `temp_${userData._id}`,
+          participants: [
+            { _id: user.id, username: user.username, profilePic: user.profilePic },
+            { _id: userData._id, username: userData.username, profilePic: userData.profilePic }
+          ],
+          lastMessage: { content: `Start a conversation with ${userData.username}` },
+          isPlaceholder: true,
+          unreadCount: 0,
+        };
+        setConversations(prev => [placeholderConvo, ...prev.filter(c => !c.isPlaceholder)]);
+        setSelectedConversation(placeholderConvo);
+        setMessages([]);
+      }
+      
+      // Clear search
+      setConvoSearch('');
+      setShowUserSearch(false);
+      setUserSearchResults([]);
+    } catch (err) {
+      console.error('Failed to start conversation with user:', err);
+      alert('Failed to start conversation with user. Please try again.');
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -183,6 +274,15 @@ const MessengerPage = () => {
       }, 0);
     }
   }, [reactionAnchorEl]);
+
+  // Cleanup search timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (userSearchTimeoutRef.current) {
+        clearTimeout(userSearchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Custom hook to ensure popover stays within viewport
   const adjustPopoverPosition = useCallback((popoverElement) => {
@@ -321,16 +421,21 @@ const MessengerPage = () => {
   }, [messages, selectedConversation]);
 
   const handleSelectConversation = useCallback(async (convo) => {
+    console.log('Selecting conversation:', convo);
     setSelectedConversation(convo);
     setMessages([]);
     setReplyingTo(null);
     if (convo.isPlaceholder) {
+      console.log('Selected conversation is a placeholder, not fetching messages');
       return; // Don't fetch messages for a placeholder
     }
+    console.log('Removing placeholder conversations');
     setConversations(prev => prev.filter(c => !c.isPlaceholder));
     setLoading(prev => ({ ...prev, messages: true }));
     try {
+      console.log('Fetching messages for conversation:', convo._id);
       const data = await messagingService.getMessages(convo._id);
+      console.log('Fetched messages:', data);
       // Resolve referenced messages to ensure they have full data
       const messagesWithResolvedReferences = data.map(msg => {
         if (msg.referencedMessage && typeof msg.referencedMessage === 'string') {
@@ -356,14 +461,34 @@ const MessengerPage = () => {
   // This effect handles starting a new conversation from a user profile
   useEffect(() => {
     const newConvoUser = location.state?.newConversationWith;
+    const toUsername = searchParams.get('to');
+    
+    // Debug logging
+    console.log('MessengerPage effect triggered:', { newConvoUser, toUsername, user, loading: loading.convos, conversations, processed: processedQueryRef.current });
+    
+    // Wait for user and conversations to be loaded
+    if (!user || loading.convos) {
+      console.log('Waiting for user and conversations to load...');
+      return;
+    }
+    
+    // Prevent duplicate processing - but only for the same parameters
+    if (processedQueryRef.current && processedQueryRef.current.toUsername === toUsername && processedQueryRef.current.newConvoUser === (newConvoUser ? newConvoUser._id : null)) {
+      console.log('Effect already processed for these parameters, skipping');
+      return;
+    }
+    
     if (newConvoUser && user && !loading.convos) {
+      console.log('Handling newConvoUser:', newConvoUser);
       const existingConvo = conversations.find(c =>
         c.participants.length === 2 && c.participants.some(p => p._id === newConvoUser._id)
       );
 
       if (existingConvo) {
+        console.log('Existing conversation found:', existingConvo);
         handleSelectConversation(existingConvo);
       } else {
+        console.log('Creating placeholder for newConvoUser:', newConvoUser);
         const placeholderConvo = {
           _id: `temp_${newConvoUser._id}`,
           participants: [
@@ -379,9 +504,78 @@ const MessengerPage = () => {
         setMessages([]);
       }
       navigate(location.pathname, { replace: true });
-    }
-  }, [location.state, user, loading.convos, conversations, navigate, handleSelectConversation, location.pathname]);
+      processedQueryRef.current = { toUsername, newConvoUser: newConvoUser._id };
+    } else if (toUsername && user && !loading.convos) {
+      // Handle query parameter for starting a new conversation
+      const fetchUserAndStartConversation = async () => {
+        try {
+          console.log('Fetching user by username:', toUsername);
+          const res = await userService.getUserByUsername(toUsername);
+          console.log('User fetch response:', res);
+          
+          // Extract user data correctly - the user object is in res.data.user or res.user
+          const userData = res.data?.user || res.user || res.data || res;
+          console.log('Extracted user data:', userData);
+          
+          // Validate user data
+          if (!userData || !userData._id) {
+            console.error('Invalid user data received:', userData);
+            alert('Could not find user to start conversation with.');
+            return;
+          }
+          
+          // Check if conversation already exists
+          const existingConvo = conversations.find(c =>
+            c.participants.length === 2 && c.participants.some(p => p._id === userData._id)
+          );
+          
+          console.log('Existing conversation check:', { existingConvo, conversations });
 
+          if (existingConvo) {
+            console.log('Existing conversation found for toUsername:', existingConvo);
+            handleSelectConversation(existingConvo);
+          } else {
+            console.log('Creating placeholder for toUsername:', { userData });
+            const placeholderConvo = {
+              _id: `temp_${userData._id}`,
+              participants: [
+                { _id: user.id, username: user.username, profilePic: user.profilePic },
+                { _id: userData._id, username: userData.username, profilePic: userData.profilePic }
+              ],
+              lastMessage: { content: `Start a conversation with ${userData.username}` },
+              isPlaceholder: true,
+              unreadCount: 0,
+            };
+            console.log('Setting placeholder conversation:', placeholderConvo);
+            setConversations(prev => {
+              console.log('Updating conversations with placeholder, previous conversations:', prev);
+              const updated = [placeholderConvo, ...prev.filter(c => !c.isPlaceholder)];
+              console.log('Updated conversations:', updated);
+              return updated;
+            });
+            // Use a small delay to ensure the conversation list is updated before selecting
+            setTimeout(() => {
+              console.log('Selecting placeholder conversation');
+              setSelectedConversation(placeholderConvo);
+              setMessages([]);
+            }, 0);
+          }
+          // Remove the query parameter from URL
+          navigate(location.pathname, { replace: true });
+          processedQueryRef.current = { toUsername, newConvoUser: null };
+        } catch (err) {
+          console.error('Failed to fetch user for new conversation:', err);
+          // Show error to user
+          alert('Failed to start conversation with user. Please try again.');
+        }
+      };
+      
+      fetchUserAndStartConversation();
+    } else {
+      console.log('No action taken in useEffect - conditions not met');
+    }
+  }, [location.state, searchParams, user, loading.convos, conversations, navigate, handleSelectConversation, location.pathname]);
+  
   useEffect(() => {
     if (socket) {
       socket.on('new_private_message', (message) => {
@@ -397,7 +591,6 @@ const MessengerPage = () => {
           }
           setMessages(prev => [...prev, resolvedMessage]);
         }
-        fetchConversations();
       });
 
       // Listen for message reactions
@@ -765,6 +958,17 @@ const MessengerPage = () => {
     const otherParticipant = convo.participants.find(p => p._id !== user.id);
     return otherParticipant?.username.toLowerCase().includes(convoSearch.toLowerCase());
   });
+  
+  // Debug logging for conversations
+  useEffect(() => {
+    console.log('Conversations updated:', conversations);
+    console.log('Selected conversation:', selectedConversation);
+  }, [conversations, selectedConversation]);
+
+  // Debug logging for messages
+  useEffect(() => {
+    console.log('Messages updated:', messages);
+  }, [messages]);
 
   const formatMessageTime = (dateString) => {
     // Handle undefined or null dateString
@@ -1001,30 +1205,85 @@ const MessengerPage = () => {
       </Box>
 
       {/* Search */}
-      <TextField
-        fullWidth
-        size="small"
-        placeholder="Search conversations..."
-        variant="outlined"
-        value={convoSearch}
-        onChange={(e) => setConvoSearch(e.target.value)}
-        sx={{ 
-          mb: 2,
-          '& .MuiOutlinedInput-root': { 
-            borderRadius: 2,
-            bgcolor: 'background.paper'
-          }, 
-          '& .MuiInputBase-input': { 
-            fontFamily: theme.typography.fontFamily 
-          },
-          maxWidth: '100%',
-        }}
-        InputProps={{
-          startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18 }} /></InputAdornment>,
-        }}
-        InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
-      />
-
+      <Box data-message-search-container>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search conversations or type @username to start chat..."
+          variant="outlined"
+          value={convoSearch}
+          onChange={handleConvoSearchChange}
+          sx={{ 
+            mb: 2,
+            '& .MuiOutlinedInput-root': { 
+              borderRadius: 2,
+              bgcolor: 'background.paper'
+            }, 
+            '& .MuiInputBase-input': { 
+              fontFamily: theme.typography.fontFamily 
+            },
+            maxWidth: '100%',
+          }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18 }} /></InputAdornment>,
+          }}
+          InputLabelProps={{ sx: { fontFamily: theme.typography.fontFamily } }}
+        />
+        
+        {/* User Search Results Dropdown */}
+        {showUserSearch && userSearchResults.length > 0 && (
+          <Paper 
+            sx={{ 
+              position: 'absolute', 
+              top: 100, 
+              left: 16, 
+              right: 16, 
+              maxHeight: 200, 
+              overflowY: 'auto', 
+              zIndex: 1000,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.shadows[4],
+              borderRadius: 2,
+              mb: 2
+            }}
+          >
+            <List>
+              {userSearchResults.map((user) => (
+                <ListItemButton 
+                  key={user._id}
+                  onClick={() => handleSelectUserFromSearch(user)}
+                  sx={{ 
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    '&:last-child': {
+                      borderBottom: 'none'
+                    }
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar 
+                      src={user.profilePic && user.profilePic.startsWith('http') ? user.profilePic : user.profilePic ? `${process.env.REACT_APP_API_URL}${user.profilePic}` : undefined}
+                      sx={{ width: 32, height: 32 }}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={user.username} 
+                    secondary={user.bio ? user.bio.substring(0, 50) + (user.bio.length > 50 ? '...' : '') : 'No bio'}
+                    primaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 500
+                    }}
+                    secondaryTypographyProps={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: '0.8rem'
+                    }}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          </Paper>
+        )}
+      </Box>
+      
       {/* Conversations List - Always visible without dropdown */}
       <List component="div" disablePadding sx={{ 
         transition: 'all 0.3s ease-in-out',

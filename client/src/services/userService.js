@@ -132,6 +132,16 @@ const searchUsers = async (query) => {
 };
 
 // New function for personalized recommendations
+const getUserByUsername = async (username) => {
+  try {
+    const response = await api.get(`/users/profile/${username}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user by username:', error);
+    throw error;
+  }
+};
+
 const getRecommendations = async () => {
   try {
     // Since the backend endpoint doesn't exist, we'll generate recommendations based on available data
@@ -211,6 +221,7 @@ const userService = {
   getBlockedUsers,
   getDashboardData,
   searchUsers,
+  getUserByUsername, // New function
   getRecommendations, // New function
 };
 
