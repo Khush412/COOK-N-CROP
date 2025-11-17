@@ -17,7 +17,6 @@ import {
   DialogTitle,
   Container,
   Fade,
-  useMediaQuery,
   Grid,
   List,
   ListItemButton,

@@ -6,7 +6,6 @@ import {
   Container,
   Paper,
   TextField,
-  InputAdornment,
   FormControl,
   Button,
   Divider,
@@ -17,7 +16,6 @@ import {
   AccordionDetails,
   Snackbar,
   Alert,
-  Skeleton,
   RadioGroup,
   FormControlLabel,
   Radio,
@@ -29,28 +27,16 @@ import {
   Stack,
   Chip,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import HistoryIcon from '@mui/icons-material/History';
 import ClearIcon from '@mui/icons-material/Clear';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import NewReleasesIcon from '@mui/icons-material/NewReleases';
-import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import FlashOnIcon from '@mui/icons-material/FlashOn';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import productService from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import recentlyViewedService from '../services/recentlyViewedService';
-import Slider from 'react-slick';
 import { Slider as MuiSlider } from '@mui/material';
 import EnhancedSearch from '../components/EnhancedSearch';
 import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
-import PersonalizedOffers from '../components/PersonalizedOffers';
 import { useAuth } from '../contexts/AuthContext';
 import Loader from '../custom_components/Loader';
 

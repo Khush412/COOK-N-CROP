@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box, Container, Typography, Alert, Paper, Grid, Button, IconButton, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, alpha,
-  Card, CardContent, CardActions, Chip, Avatar, Divider, Pagination, ToggleButtonGroup, ToggleButton,
+  Card, CardContent,  Pagination, ToggleButtonGroup, ToggleButton,
   InputAdornment, InputBase, useTheme, FormControl, useMediaQuery
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -11,9 +11,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Bookmarks as BookmarksIcon,
   Search as SearchIcon,
-  Sort as SortIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
   CollectionsBookmark as CollectionsBookmarkIcon

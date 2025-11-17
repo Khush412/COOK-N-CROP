@@ -7,7 +7,6 @@ import {
   Typography,
   Grid,
   Alert,
-  Pagination,
   Button,
   Paper,
   Snackbar,
@@ -22,7 +21,6 @@ import {
   Select,
   MenuItem,
   Stack,
-  Divider,
   Avatar,
   List,
   ListItem,
@@ -36,9 +34,6 @@ import {
 import { useTheme as useMuiTheme } from "@mui/material/styles";
 import {
   DynamicFeed as DynamicFeedIcon,
-  NewReleases as NewReleasesIcon,
-  TrendingUp as TrendingUpIcon,
-  Forum as ForumIcon,
   Search as SearchIcon,
   FilterList as FilterListIcon,
   Add as AddIcon,
@@ -50,7 +45,6 @@ import {
   ViewList as ViewListIcon,
   Apps as AppsIcon,
   Timer as TimerIcon,
-  People as PeopleIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
 import communityService from '../services/communityService';

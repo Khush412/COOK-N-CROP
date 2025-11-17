@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Typography, Alert, Table, TableBody, TableCell, Box, Pagination, Container,
-  TableContainer, TableHead, TableRow, Paper, Tooltip, Chip, Button, Stack
+  TableHead, TableRow, Paper, Tooltip, Chip, Button, 
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import couponService from '../../services/couponService';

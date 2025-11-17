@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Typography, Box, Paper, Grid, Alert, useTheme, alpha, 
-  Avatar, Stack, Button, Chip, IconButton, Tooltip, Tabs, Tab, 
+  Avatar,  Button, Chip, IconButton, Tooltip, Tabs, Tab, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Divider, LinearProgress, Card, CardContent, CardHeader, useMediaQuery
+   Card,  useMediaQuery
 } from '@mui/material';
 import { 
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import PostAddIcon from '@mui/icons-material/PostAdd';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -23,15 +22,9 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ReportIcon from '@mui/icons-material/Report';
 import GroupIcon from '@mui/icons-material/Group';
 import StarIcon from '@mui/icons-material/Star';
-import PendingIcon from '@mui/icons-material/Pending';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import { formatDistanceToNow, format } from 'date-fns';
-import { useSocket } from '../../contexts/SocketContext';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
-import groupService from '../../services/groupService';
-import productService from '../../services/productService';
 import Loader from '../../custom_components/Loader';
 
 // Enhanced Stat Card Component with better design

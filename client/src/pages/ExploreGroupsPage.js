@@ -9,14 +9,12 @@ import {
   Paper,
   Alert,
   Stack,
-  Avatar,
   Card,
   CardMedia,
   CardContent,
   CardActions,
   TextField,
   InputAdornment,
-  Chip,
   ToggleButtonGroup,
   ToggleButton,
   useMediaQuery,
@@ -26,7 +24,6 @@ import {
   Add as AddIcon, 
   People as PeopleIcon, 
   Search as SearchIcon,
-  Sort as SortIcon
 } from '@mui/icons-material';
 import groupService from '../services/groupService';
 import { useAuth } from '../contexts/AuthContext';

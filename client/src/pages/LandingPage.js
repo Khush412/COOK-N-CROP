@@ -4,11 +4,9 @@ import { useTheme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
-import Slider from 'react-slick';
 import { ArrowForward, FormatQuote, MenuBook, LocalShipping, Shield, Timer, EmojiEvents, Verified, Star, CheckCircle } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../config/axios';
-import FeaturedProductCard from '../components/FeaturedProductCard';
 import ProminentCTA from '../components/ProminentCTA';
 import NewsletterSignup from '../components/NewsletterSignup';
 import PromotionalCarousel from '../components/PromotionalCarousel'; // Import the PromotionalCarousel component
@@ -16,13 +14,9 @@ import PromotionalCarousel from '../components/PromotionalCarousel'; // Import t
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import DomeGallery from '../custom_components/DomeGallery';
-// Import the custom animated testimonials component
 import { AnimatedTestimonials } from '../custom_components/animatedTestimonials';
-// Import the ThreeDMarque component
 import { ThreeDMarquee } from '../custom_components/ThreeDMarque';
-// Import the 3D Carousel component
 import ThreeDCarousel from '../custom_components/ThreeDCarousel';
-// Import the custom Loader component
 import Loader from '../custom_components/Loader';
 
 // Reusable component for animated sections

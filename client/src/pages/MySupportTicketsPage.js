@@ -19,7 +19,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Divider,
   Pagination,
   ToggleButtonGroup,
   ToggleButton,
@@ -28,7 +27,6 @@ import {
   Zoom,
   Slide,
   Collapse,
-  Avatar,
   useMediaQuery,
 } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -37,7 +35,6 @@ import {
   QuestionAnswer as QuestionAnswerIcon,
   Search as SearchIcon,
   PriorityHigh as PriorityHighIcon,
-  LowPriority as LowPriorityIcon,
   ViewModule as ViewModuleIcon,
   ViewList as ViewListIcon,
   Category as CategoryIcon,

@@ -25,14 +25,12 @@ import {
   ListItemIcon,
   ListItemText,
   Collapse,
-  Badge,
   useTheme,
   alpha,
   InputAdornment,
   FormControl,
   Select,
   MenuItem,
-  Pagination,
   useMediaQuery, // Add this import for mobile detection
 } from "@mui/material";
 import {

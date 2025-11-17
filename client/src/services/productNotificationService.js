@@ -1,7 +1,5 @@
 import api from '../config/axios';
 
-const API_URL = '/products';
-
 // Set up price drop alert for a product
 const setUpPriceDropAlert = async (productId) => {
   try {

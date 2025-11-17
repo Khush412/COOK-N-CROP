@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   Paper, Typography, Box, TextField, Button, Alert, Container, Stack, Card, CardContent, 
-  CardActions, IconButton, Chip, Tooltip, LinearProgress, Grid, Divider, useTheme, alpha
+  CardActions,  Chip,  LinearProgress, Grid, Divider, useTheme, alpha
 } from '@mui/material';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import HistoryIcon from '@mui/icons-material/History';
 import PreviewIcon from '@mui/icons-material/Preview';
 import TemplateIcon from '@mui/icons-material/Description';
-import InsertEmoticonIcon from '@mui/icons-material/InsertEmoticon';
 import LinkIcon from '@mui/icons-material/Link';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
 import InfoIcon from '@mui/icons-material/Info';
 import adminService from '../../services/adminService';
 import Loader from '../../custom_components/Loader';
