@@ -187,6 +187,78 @@ const MessengerPage = () => {
     return () => clearInterval(interval);
   }, [fetchConversations, loading.convos]);
 
+  // Ensure emoji data is loaded
+  useEffect(() => {
+    // The data is already imported, but we can log it to ensure it's loaded
+    console.log('Emoji data loaded:', data);
+  }, []);
+
+  // Adjust popover position to stay within viewport
+  useEffect(() => {
+    if (reactionAnchorEl) {
+      // Force popover to reposition if needed
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    }
+  }, [reactionAnchorEl]);
+
+  // Custom hook to ensure popover stays within viewport
+  const adjustPopoverPosition = useCallback((popoverElement) => {
+    if (!popoverElement) return;
+    
+    const rect = popoverElement.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Check if popover goes beyond right edge
+    if (rect.right > viewportWidth) {
+      popoverElement.style.left = (rect.left - (rect.right - viewportWidth) - 10) + 'px';
+    }
+    
+    // Check if popover goes beyond left edge
+    if (rect.left < 0) {
+      popoverElement.style.left = '10px';
+    }
+    
+    // Check if popover goes beyond bottom edge
+    if (rect.bottom > viewportHeight) {
+      popoverElement.style.top = (rect.top - (rect.bottom - viewportHeight) - 10) + 'px';
+    }
+    
+    // Check if popover goes beyond top edge
+    if (rect.top < 0) {
+      popoverElement.style.top = '10px';
+    }
+  }, []);
+
+  // Apply positioning adjustments when popover opens
+  useEffect(() => {
+    if (reactionAnchorEl || emojiPickerOpen) {
+      const handleResize = () => {
+        const reactionPopover = document.querySelector('[data-emoji-popover="reaction"]');
+        const mainPopover = document.querySelector('[data-emoji-popover="main"]');
+        
+        if (reactionPopover) {
+          adjustPopoverPosition(reactionPopover);
+        }
+        
+        if (mainPopover) {
+          adjustPopoverPosition(mainPopover);
+        }
+      };
+      
+      // Add a small delay to ensure popover is rendered
+      const timeoutId = setTimeout(handleResize, 100);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [reactionAnchorEl, emojiPickerOpen, adjustPopoverPosition]);
+
   // Comprehensive validation of all conversations
   useEffect(() => {
     // Only run this validation when we have messages loaded for the selected conversation
@@ -199,8 +271,14 @@ const MessengerPage = () => {
             if (messages.length === 0) {
               return { ...convo, lastMessage: null };
             }
-            // Otherwise, set lastMessage to the actual last message
+            // Check if the last message has content or attachments
             const lastMessage = messages[messages.length - 1];
+            const hasAttachments = lastMessage && lastMessage.attachments && lastMessage.attachments.length > 0;
+            // If the last message has no content and no attachments, set lastMessage to null
+            if ((!lastMessage.content || !lastMessage.content.trim()) && !hasAttachments) {
+              return { ...convo, lastMessage: null };
+            }
+            // Otherwise, set lastMessage to the actual last message
             return { ...convo, lastMessage: lastMessage };
           }
           // For other conversations, leave them as they are
@@ -218,8 +296,10 @@ const MessengerPage = () => {
         setConversations(prev => {
           return prev.map(convo => {
             if (convo._id === selectedConversation._id) {
-              // If we have no messages locally, or if the last message has no content
-              if (messages.length === 0 || (messages.length > 0 && (!messages[messages.length - 1].content || !messages[messages.length - 1].content.trim()))) {
+              // If we have no messages locally, or if the last message has no content and no attachments
+              const lastMessage = messages[messages.length - 1];
+              const hasAttachments = lastMessage && lastMessage.attachments && lastMessage.attachments.length > 0;
+              if (messages.length === 0 || (messages.length > 0 && (!lastMessage.content || !lastMessage.content.trim()) && !hasAttachments)) {
                 return { ...convo, lastMessage: null };
               }
               // If we have messages, make sure the lastMessage is correctly set
@@ -628,6 +708,7 @@ const MessengerPage = () => {
     setEmojiPickerOpen(false);
   };
 
+
   const handleEmojiPickerOpen = (event) => {
     setEmojiAnchorEl(event.currentTarget);
     setEmojiPickerOpen(true);
@@ -739,8 +820,16 @@ const MessengerPage = () => {
       // Get the actual last message from our loaded messages
       const actualLastMessage = messages[messages.length - 1];
       
-      // If the last message has no content, show "No messages yet"
-      if (!actualLastMessage.content || !actualLastMessage.content.trim()) {
+      // Check if the message has attachments
+      const hasAttachments = actualLastMessage.attachments && actualLastMessage.attachments.length > 0;
+      
+      // If the message has attachments, show "Attachment" regardless of content
+      if (hasAttachments) {
+        return `${actualLastMessage.sender._id === user.id ? 'You sent ' : ''}Attachment`;
+      }
+      
+      // If the last message has no content or only whitespace, show "No messages yet"
+      if (!actualLastMessage.content || typeof actualLastMessage.content !== 'string' || actualLastMessage.content.trim() === '') {
         return 'No messages yet';
       }
       
@@ -761,8 +850,21 @@ const MessengerPage = () => {
       return 'No messages yet';
     }
     
-    // If lastMessage exists but has no content or empty content, no messages
-    if (!convo.lastMessage.content || !convo.lastMessage.content.trim()) {
+    // If lastMessage is an empty object, no messages
+    if (Object.keys(convo.lastMessage).length === 0) {
+      return 'No messages yet';
+    }
+    
+    // Check if the message has attachments
+    const hasAttachments = convo.lastMessage.attachments && convo.lastMessage.attachments.length > 0;
+    
+    // If the message has attachments, show "Attachment" regardless of content
+    if (hasAttachments) {
+      return `${convo.lastMessage.sender && convo.lastMessage.sender._id === user.id ? 'You sent ' : ''}Attachment`;
+    }
+    
+    // If lastMessage exists but has no content or only whitespace, show "No messages yet"
+    if (!convo.lastMessage.content || typeof convo.lastMessage.content !== 'string' || convo.lastMessage.content.trim() === '') {
       return 'No messages yet';
     }
     
@@ -805,8 +907,14 @@ const MessengerPage = () => {
               if (messagesWithResolvedReferences.length === 0) {
                 return { ...convo, lastMessage: null };
               }
-              // Otherwise, set lastMessage to the new last message
+              // Check if the last message has content or attachments
               const newLastMessage = messagesWithResolvedReferences[messagesWithResolvedReferences.length - 1];
+              const hasAttachments = newLastMessage && newLastMessage.attachments && newLastMessage.attachments.length > 0;
+              // If the last message has no content and no attachments, set lastMessage to null
+              if ((!newLastMessage.content || !newLastMessage.content.trim()) && !hasAttachments) {
+                return { ...convo, lastMessage: null };
+              }
+              // Otherwise, set lastMessage to the new last message
               return { ...convo, lastMessage: newLastMessage };
             }
             return convo;
@@ -828,6 +936,11 @@ const MessengerPage = () => {
             // Additional check: if we have messages, make sure the lastMessage is correctly set
             else if (selectedConversation && selectedConversation._id === conversationId && messages.length > 0) {
               const lastMessage = messages[messages.length - 1];
+              const hasAttachments = lastMessage && lastMessage.attachments && lastMessage.attachments.length > 0;
+              // If the last message has no content and no attachments, set lastMessage to null
+              if ((!lastMessage.content || !lastMessage.content.trim()) && !hasAttachments) {
+                return { ...convo, lastMessage: null };
+              }
               return { ...convo, lastMessage: lastMessage };
             }
           }
@@ -2254,6 +2367,36 @@ const MessengerPage = () => {
       pt: 8,
       overflow: 'hidden'
     }}>
+      {/* Custom CSS for emoji picker */}
+      <style>{`
+        .emoji-mart,
+        .emoji-mart * {
+          box-sizing: border-box;
+          line-height: 1.15;
+        }
+        .emoji-mart-bar {
+          border: 0 solid #cfd8dc;
+        }
+        .emoji-mart-search input {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.875rem;
+        }
+        .emoji-mart-search-icon {
+          display: none;
+        }
+        .emoji-mart-category-label span {
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .emoji-mart-emoji {
+          font-size: 1.125rem;
+          padding: 0.125rem;
+        }
+        .emoji-mart-emoji:hover {
+          transform: scale(1.1);
+          transition: transform 0.2s ease;
+        }
+      `}</style>
       {/* Mobile sidebar toggle button - always visible on mobile */}
       <IconButton
         onClick={() => setMobileDrawerOpen(true)}
@@ -2807,6 +2950,17 @@ const MessengerPage = () => {
           vertical: 'bottom',
           horizontal: 'left',
         }}
+        sx={{
+          '& .MuiPopover-paper': {
+            overflow: 'visible',
+          }
+        }}
+        marginThreshold={16}
+        PaperProps={{
+          'data-emoji-popover': 'reaction',
+        }}
+        disableAutoFocus
+        disableEnforceFocus
       >
         <Picker 
           data={data}
@@ -2822,6 +2976,19 @@ const MessengerPage = () => {
           previewPosition="none"
           skinTonePosition="none"
           theme={theme.palette.mode}
+          showPreview={false}
+          showSkinTones={false}
+          style={{
+            maxWidth: '260px',
+            maxHeight: '260px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            border: '1px solid #e0e0e0',
+            boxShadow: theme.shadows[3],
+            backgroundColor: theme.palette.background.paper
+          }}
+          emojiVersion="14.0"
+          perLine={8}
         />
       </Popover>
 
@@ -2837,6 +3004,17 @@ const MessengerPage = () => {
           vertical: 'bottom',
           horizontal: 'left',
         }}
+        sx={{
+          '& .MuiPopover-paper': {
+            overflow: 'visible',
+          }
+        }}
+        marginThreshold={16}
+        PaperProps={{
+          'data-emoji-popover': 'main',
+        }}
+        disableAutoFocus
+        disableEnforceFocus
       >
         <Picker 
           data={data}
@@ -2849,6 +3027,19 @@ const MessengerPage = () => {
           previewPosition="none"
           skinTonePosition="none"
           theme={theme.palette.mode}
+          showPreview={false}
+          showSkinTones={false}
+          style={{
+            maxWidth: '260px',
+            maxHeight: '260px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            border: '1px solid #e0e0e0',
+            boxShadow: theme.shadows[3],
+            backgroundColor: theme.palette.background.paper
+          }}
+          emojiVersion="14.0"
+          perLine={8}
         />
       </Popover>
     </Box>

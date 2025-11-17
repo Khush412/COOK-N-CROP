@@ -20,7 +20,10 @@ router.get('/conversations', protect, async (req, res) => {
       .populate('participants', 'username profilePic blockedUsers')
       .populate({
         path: 'lastMessage',
-        populate: { path: 'sender', select: 'username' }
+        populate: [
+          { path: 'sender', select: 'username' },
+          { path: 'attachments' }
+        ]
       })
       .sort({ updatedAt: -1 });
 

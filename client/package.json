@@ -53,6 +53,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:legacy": "react-scripts --legacy-peer-deps build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
