@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -20,6 +20,7 @@ const MobileDock = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isSearchClosing, setIsSearchClosing] = useState(false);
+  const searchInputRef = useRef(null);
   
   // Don't render on desktop
   if (!isMobile) {
@@ -79,6 +80,19 @@ const MobileDock = () => {
     }, 300);
   };
 
+  // Focus the search input when the search opens
+  useEffect(() => {
+    if (mobileSearchOpen && searchInputRef.current) {
+      // Small delay to ensure the component is rendered
+      setTimeout(() => {
+        const inputElement = searchInputRef.current.querySelector('input');
+        if (inputElement) {
+          inputElement.focus();
+        }
+      }, 100);
+    }
+  }, [mobileSearchOpen]);
+
   return (
     <>
       {/* Mobile Search Drawer */}
@@ -97,7 +111,7 @@ const MobileDock = () => {
           boxShadow: theme.shadows[4],
           animation: isSearchClosing ? 'slideOutToTop 0.3s ease-out forwards' : 'slideInFromTop 0.3s ease-out forwards'
         }}>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1 }} ref={searchInputRef}>
             <EnhancedGlobalSearch 
               fullWidth 
               onSearchComplete={() => closeSearch()}
