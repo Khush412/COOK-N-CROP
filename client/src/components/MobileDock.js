@@ -22,11 +22,6 @@ const MobileDock = () => {
   const [isSearchClosing, setIsSearchClosing] = useState(false);
   const searchInputRef = useRef(null);
   
-  // Don't render on desktop
-  if (!isMobile) {
-    return null;
-  }
-  
   // Calculate cart item count
   const cartItemCount = cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
@@ -68,7 +63,8 @@ const MobileDock = () => {
       icon: <CartIcon sx={{ color: theme.palette.mode === 'dark' ? 'black' : 'white', fontSize: '20px' }} />,
       label: 'Cart',
       description: 'View cart',
-      onClick: () => navigate('/cart')
+      onClick: () => navigate('/cart'),
+      badgeCount: cartItemCount
     }
   ];
 
@@ -92,6 +88,11 @@ const MobileDock = () => {
       }, 100);
     }
   }, [mobileSearchOpen]);
+
+  // Don't render on desktop
+  if (!isMobile) {
+    return null;
+  }
 
   return (
     <>
@@ -187,6 +188,7 @@ const MobileDock = () => {
               boxShadow: theme.shadows[3],
               border: `1px solid ${theme.palette.divider}`,
               transition: 'all 0.2s ease-in-out',
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-5px) scale(1.1)';
