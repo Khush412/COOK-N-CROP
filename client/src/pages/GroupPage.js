@@ -464,29 +464,32 @@ const GroupPage = () => {
                 </IconButton>
               </Box>
 
-              {/* Second row: Create Post button and view mode toggle aligned on the same line */}
+              {/* Second row: Controls arranged differently for mobile and desktop */}
               <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   flexWrap: "wrap",
-                  gap: 1,
+                  gap: 0.5,
+                  width: "100%",
                 }}
               >
+                {/* Left side: Dropdowns */}
                 <Box
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    gap: { xs: 0.5, sm: 1 },
+                    gap: { xs: 0.5, sm: 0.75 },
                     alignItems: "center",
-                    width: "100%",
+                    width: { xs: "100%", md: "auto" },
+                    order: { xs: 1, md: 1 },
                   }}
                 >
                   {/* Content Filter Dropdown */}
                   <FormControl
                     size="small"
-                    sx={{ width: { xs: "48%", sm: "48%" } }}
+                    sx={{ width: { xs: "48%", sm: "48%", md: "auto" }, minWidth: { md: 120 } }}
                   >
                     <Select
                       value={contentFilter}
@@ -499,30 +502,30 @@ const GroupPage = () => {
                       }}
                       sx={{
                         borderRadius: 2,
-                        height: { xs: 36, sm: 42 },
-                        fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                        height: { xs: 32, sm: 36 },
+                        fontSize: { xs: "0.8rem", sm: "0.9rem" },
                         "& .MuiSelect-select": {
-                          py: { xs: 0.8, sm: 1.3 },
-                          pl: { xs: 1.3, sm: 1.8 },
-                          pr: { xs: 2.3, sm: 3.3 },
+                          py: { xs: 0.5, sm: 0.8 },
+                          pl: { xs: 1, sm: 1.3 },
+                          pr: { xs: 2, sm: 2.5 },
                         },
                       }}
                     >
                       <MenuItem
                         value="all"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         All
                       </MenuItem>
                       <MenuItem
                         value="recipes"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         Recipes
                       </MenuItem>
                       <MenuItem
                         value="discussions"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         Discussions
                       </MenuItem>
@@ -532,7 +535,7 @@ const GroupPage = () => {
                   {/* Sort Options Dropdown */}
                   <FormControl
                     size="small"
-                    sx={{ width: { xs: "48%", sm: "48%" } }}
+                    sx={{ width: { xs: "48%", sm: "48%", md: "auto" }, minWidth: { md: 120 } }}
                   >
                     <Select
                       value={sort}
@@ -542,42 +545,56 @@ const GroupPage = () => {
                       }}
                       sx={{
                         borderRadius: 2,
-                        height: { xs: 36, sm: 42 },
-                        fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                        height: { xs: 32, sm: 36 },
+                        fontSize: { xs: "0.8rem", sm: "0.9rem" },
                         "& .MuiSelect-select": {
-                          py: { xs: 0.8, sm: 1.3 },
-                          pl: { xs: 1.3, sm: 1.8 },
-                          pr: { xs: 2.3, sm: 3.3 },
+                          py: { xs: 0.5, sm: 0.8 },
+                          pl: { xs: 1, sm: 1.3 },
+                          pr: { xs: 2, sm: 2.5 },
                         },
                       }}
                     >
                       <MenuItem
                         value="new"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         New
                       </MenuItem>
                       <MenuItem
                         value="top"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         Top
                       </MenuItem>
                       <MenuItem
                         value="hot"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         Hot
                       </MenuItem>
                       <MenuItem
                         value="discussed"
-                        sx={{ fontSize: { xs: "0.85rem", sm: "0.95rem" } }}
+                        sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
                       >
                         Most Discussed
                       </MenuItem>
                     </Select>
                   </FormControl>
+                </Box>
 
+                {/* Right side: View Mode Toggle and Create Post button - stacked vertically on mobile, horizontal on desktop */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: { xs: 1, sm: 0.75 },
+                    alignItems: "center",
+                    width: { xs: "100%", md: "auto" },
+                    order: { xs: 3, md: 2 },
+                    justifyContent: { xs: "space-between", md: "flex-start" },
+                    mt: { xs: 1, md: 0 },
+                  }}
+                >
                   {/* View Mode Toggle */}
                   <ToggleButtonGroup
                     value={viewMode}
@@ -586,42 +603,42 @@ const GroupPage = () => {
                       newViewMode && setViewMode(newViewMode)
                     }
                     size="small"
-                    sx={{ height: { xs: 36, sm: 42 } }}
+                    sx={{ height: { xs: 32, sm: 36 } }}
                   >
                     <ToggleButton
                       value="card"
                       sx={{
-                        px: { xs: 1.2, sm: 1.9 },
+                        px: { xs: 1, sm: 1.5 },
                         borderRadius: 2,
                         border: `1px solid ${theme.palette.divider}`,
                       }}
                     >
                       <GridViewIcon
-                        sx={{ fontSize: { xs: "1.15rem", sm: "1.35rem" } }}
+                        sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                       />
                     </ToggleButton>
                     <ToggleButton
                       value="compact"
                       sx={{
-                        px: { xs: 1.2, sm: 1.9 },
+                        px: { xs: 1, sm: 1.5 },
                         borderRadius: 2,
                         border: `1px solid ${theme.palette.divider}`,
                       }}
                     >
                       <ViewListIcon
-                        sx={{ fontSize: { xs: "1.15rem", sm: "1.35rem" } }}
+                        sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                       />
                     </ToggleButton>
                     <ToggleButton
                       value="grid"
                       sx={{
-                        px: { xs: 1.2, sm: 1.9 },
+                        px: { xs: 1, sm: 1.5 },
                         borderRadius: 2,
                         border: `1px solid ${theme.palette.divider}`,
                       }}
                     >
                       <AppsIcon
-                        sx={{ fontSize: { xs: "1.15rem", sm: "1.35rem" } }}
+                        sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                       />
                     </ToggleButton>
                   </ToggleButtonGroup>
@@ -630,7 +647,7 @@ const GroupPage = () => {
                     variant="contained"
                     startIcon={
                       <AddIcon
-                        sx={{ fontSize: { xs: "1.15rem", sm: "1.35rem" } }}
+                        sx={{ fontSize: { xs: "1rem", sm: "1.2rem" } }}
                       />
                     }
                     onClick={() =>
@@ -641,12 +658,12 @@ const GroupPage = () => {
                     sx={{
                       fontFamily: theme.typography.fontFamily,
                       borderRadius: "50px",
-                      px: { xs: 1.9, sm: 2.4 },
-                      py: { xs: 0.8, sm: 1.3 },
-                      fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.5, sm: 0.8 },
+                      fontSize: { xs: "0.8rem", sm: "0.9rem" },
                       minWidth: "auto",
-                      ml: 1,
-                      height: { xs: 36, sm: 42 },
+                      ml: 0.5,
+                      height: { xs: 32, sm: 36 },
                     }}
                   >
                     Create Post

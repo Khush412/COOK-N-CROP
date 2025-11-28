@@ -860,10 +860,13 @@ const PostCard = ({
               </Tooltip>
               
               <Button
-                component={RouterLink}
-                to={`/post/${post._id}`}
                 size="small"
                 variant="contained"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/post/${post._id}`;
+                }}
                 sx={{
                   fontWeight: 600,
                   textTransform: "none",
@@ -877,10 +880,6 @@ const PostCard = ({
                     boxShadow: 3,
                   },
                   height: isMobile ? 24 : { xs: 28, sm: 32 },
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
                 }}
               >
                 View

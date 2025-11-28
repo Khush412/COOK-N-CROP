@@ -861,7 +861,7 @@ const PostPage = () => {
               Comments ({post.comments.length})
             </Typography>
 
-            {isAuthenticated && !replyingTo ? ( // Only show main comment form if not replying
+            {isAuthenticated && !replyingTo ? ( // Show main comment form when not replying to a specific comment
               <CommentForm onSubmit={handleCommentSubmit} loading={isCommenting} />
             ) : (
               !isAuthenticated && (
@@ -879,13 +879,15 @@ const PostPage = () => {
                   onReplyClick={handleReplyClick}
                   onUpvote={handleCommentUpvote}
                   upvotingComments={upvotingComments}
-                  isEditing={comment._id === replyingTo && replyingTo !== null}
-                  onEdit={handleUpdateComment}
-                  onDelete={openDeleteCommentConfirm}
-                  onReport={handleOpenReportDialog}
-                  currentUser={user}
-                  isAuthenticated={isAuthenticated}
-                  postId={id}
+                  replyingTo={replyingTo}
+                  onCancelReply={() => setReplyingTo(null)}
+                  onCommentSubmit={handleCommentSubmit}
+                  isSubmitting={isCommenting}
+                  onCommentUpdate={handleUpdateComment}
+                  onCommentDelete={openDeleteCommentConfirm}
+                  onReportComment={handleOpenReportDialog}
+                  depth={0}
+                  postGroup={post.group}
                 />
               ))}
             </List>

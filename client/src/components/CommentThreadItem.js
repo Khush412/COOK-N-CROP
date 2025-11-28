@@ -30,12 +30,12 @@ import RichTextDisplay from './RichTextDisplay';
 
 const CommentThreadItem = ({
   comment,
-  onReply,
+  onReplyClick,
   replyingTo,
   onCancelReply,
   onCommentSubmit,
   isSubmitting,
-  onCommentUpvote,
+  onUpvote,
   upvotingComments,
   onCommentUpdate,
   onCommentDelete,
@@ -84,7 +84,16 @@ const CommentThreadItem = ({
       navigate('/login?redirect=/post/' + comment.post);
       return;
     }
-    onCommentUpvote(comment._id);
+    onUpvote(comment._id);
+  };
+
+  const handleReplySubmit = async (commentData) => {
+    // Pass the parent comment ID when submitting a reply
+    const replyData = {
+      ...commentData,
+      parentCommentId: comment._id
+    };
+    await onCommentSubmit(replyData);
   };
 
   return (
@@ -240,7 +249,7 @@ const CommentThreadItem = ({
                     </Box>
                     <Button 
                       size="small" 
-                      onClick={() => onReply(comment._id)} 
+                      onClick={() => onReplyClick(comment._id)}
                       sx={{ 
                         fontSize: isMobile ? '0.75rem' : '0.875rem', 
                         textTransform: 'none', 
@@ -276,7 +285,7 @@ const CommentThreadItem = ({
           )}
           {isReplying && (
             <Box sx={{ mt: isMobile ? 1 : 2 }}>
-              <CommentForm onSubmit={onCommentSubmit} loading={isSubmitting} />
+              <CommentForm onSubmit={handleReplySubmit} loading={isSubmitting} />
               <Button 
                 size="small" 
                 onClick={onCancelReply} 
@@ -300,7 +309,22 @@ const CommentThreadItem = ({
         <Collapse in={repliesExpanded} timeout="auto" unmountOnExit>
           <List sx={{ pt: isMobile ? 1 : 2, pl: isMobile ? 1 : { xs: 2, sm: 4 }, borderLeft: '2px solid', borderColor: 'divider', ml: isMobile ? 1 : 2.5, mt: isMobile ? 1 : 2 }}>
             {comment.replies.map((reply) => ( // Pass postGroup to nested comments
-              <CommentThreadItem key={reply._id} comment={reply} onReply={onReply} replyingTo={replyingTo} onCancelReply={onCancelReply} onCommentSubmit={onCommentSubmit} isSubmitting={isSubmitting} onCommentUpvote={onCommentUpvote} upvotingComments={upvotingComments} onCommentUpdate={onCommentUpdate} onCommentDelete={onCommentDelete} onReportComment={onReportComment} depth={depth + 1} postGroup={postGroup} />
+              <CommentThreadItem 
+                key={reply._id} 
+                comment={reply} 
+                onReplyClick={onReplyClick} 
+                replyingTo={replyingTo} 
+                onCancelReply={onCancelReply} 
+                onCommentSubmit={onCommentSubmit} 
+                isSubmitting={isSubmitting} 
+                onUpvote={onUpvote} 
+                upvotingComments={upvotingComments} 
+                onCommentUpdate={onCommentUpdate} 
+                onCommentDelete={onCommentDelete} 
+                onReportComment={onReportComment} 
+                depth={depth + 1} 
+                postGroup={postGroup} 
+              />
             ))}
           </List>
         </Collapse>

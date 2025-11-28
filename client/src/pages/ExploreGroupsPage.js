@@ -171,10 +171,10 @@ const ExploreGroupsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 4, sm: 5 } }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 6.5, sm: 8.5 }, py: { xs: 2, sm: 3 } }}>
       <Paper sx={{ 
-        p: { xs: 4, md: 6 }, 
-        mb: { xs: 4, sm: 5, md: 6 }, 
+        p: { xs: 2, md: 3 }, 
+        mb: { xs: 2, sm: 3, md: 4 }, 
         borderRadius: { xs: 2, sm: 3, md: 4 }, 
         background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})` 
       }}>
@@ -182,28 +182,28 @@ const ExploreGroupsPage = () => {
           direction={isMobile ? "column" : "row"} 
           justifyContent="space-between" 
           alignItems={isMobile ? "flex-start" : "center"} 
-          sx={{ mb: { xs: 3.5, sm: 4 } }}
-          spacing={isMobile ? 3.5 : 0}
+          sx={{ mb: { xs: 2, sm: 2.5 } }}
+          spacing={isMobile ? 2 : 0}
         >
           <Box>
             <Typography 
-              variant={isMobile ? "h5" : "h3"} 
+              variant={isMobile ? "h5" : "h4"} 
               component="h1" 
               sx={{ 
                 fontWeight: 800, 
-                mb: 2.5, 
+                mb: 1.5, 
                 fontFamily: theme.typography.fontFamily,
-                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' }
               }}
             >
               Explore Groups
             </Typography>
             <Typography 
-              variant={isMobile ? "body1" : "h6"} 
+              variant={isMobile ? "body2" : "body1"} 
               color="text.secondary" 
               sx={{ 
                 fontFamily: theme.typography.fontFamily,
-                fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' }
               }}
             >
               Discover communities around your favorite food topics.
@@ -216,10 +216,10 @@ const ExploreGroupsPage = () => {
             sx={{ 
               fontFamily: theme.typography.fontFamily, 
               borderRadius: '50px',
-              fontSize: { xs: '0.95rem', sm: '1rem', md: '1rem' },
-              px: { xs: 4, sm: 5, md: 6 },
-              py: { xs: 3, sm: 3.5, md: 3.5 },
-              minWidth: { xs: 'auto', sm: '145px', md: '175px' }
+              fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
+              px: { xs: 2, sm: 3, md: 4 },
+              py: { xs: 1, sm: 1.5, md: 1.5 },
+              minWidth: { xs: 'auto', sm: '100px', md: '120px' }
             }}
             fullWidth={isMobile}
           >
@@ -229,11 +229,11 @@ const ExploreGroupsPage = () => {
         
         {/* Search and Filter Section */}
         <Paper sx={{ 
-          p: { xs: 3.5, sm: 4, md: 4.5 }, 
-          mb: { xs: 3.5, sm: 4, md: 4.5 }, 
+          p: { xs: 2, sm: 2.5, md: 3 }, 
+          mb: { xs: 2, sm: 2.5, md: 3 }, 
           borderRadius: { xs: 2, sm: 2.5, md: 3 } 
         }}>
-          <Stack spacing={isMobile ? 1.5 : 2}>
+          <Stack spacing={isMobile ? 1 : 1.5}>
             {/* Search Bar */}
             <TextField
               fullWidth
@@ -243,38 +243,38 @@ const ExploreGroupsPage = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon fontSize={isMobile ? "small" : "medium"} />
+                    <SearchIcon fontSize={isMobile ? "small" : "small"} />
                   </InputAdornment>
                 ),
               }}
               sx={{ 
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: isMobile ? '15px' : '20px',
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontSize: isMobile ? '0.85rem' : '0.95rem'
                 },
                 fontFamily: theme.typography.fontFamily
               }}
               InputLabelProps={{ 
                 sx: { 
                   fontFamily: theme.typography.fontFamily,
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontSize: isMobile ? '0.85rem' : '0.95rem'
                 } 
               }}
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? "small" : "small"}
             />
             
             {/* Sort Options */}
             <Stack 
               direction={isMobile ? "column" : "row"} 
-              spacing={isMobile ? 1 : 2} 
+              spacing={isMobile ? 1 : 1.5} 
               alignItems={isMobile ? "flex-start" : "center"}
             >
               <Typography 
-                variant="body1" 
+                variant="body2" 
                 sx={{ 
                   fontFamily: theme.typography.fontFamily, 
                   fontWeight: 600,
-                  fontSize: isMobile ? '0.9rem' : '1rem'
+                  fontSize: isMobile ? '0.85rem' : '0.95rem'
                 }}
               >
                 Sort by:
@@ -283,16 +283,16 @@ const ExploreGroupsPage = () => {
                 value={sortOption}
                 exclusive
                 onChange={(e, newValue) => newValue && setSortOption(newValue)}
-                size={isMobile ? "small" : "medium"}
+                size={isMobile ? "small" : "small"}
                 sx={{
                   '& .MuiToggleButton-root': {
                     fontFamily: theme.typography.fontFamily,
                     textTransform: 'none',
                     borderRadius: isMobile ? '15px' : '20px',
                     border: 'none',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem',
-                    px: isMobile ? 1 : 2,
-                    py: isMobile ? 0.5 : 1,
+                    fontSize: isMobile ? '0.7rem' : '0.8rem',
+                    px: isMobile ? 1 : 1.5,
+                    py: isMobile ? 0.5 : 0.75,
                     '&.Mui-selected': {
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.primary.contrastText,
